@@ -56,7 +56,7 @@ for package, version in REQUIRED_PACKAGES:
 print("依赖检查完成，开始导入模块...\n")
 
 # 原始的导入语句
-from flask import Flask, request, jsonify, send_from_directory, render_template, url_for, send_file, make_response
+from flask import Flask, request, jsonify, send_from_directory, render_template, url_for, send_file, make_response, redirect
 from flask_cors import CORS
 import os
 import sqlite3
@@ -74,7 +74,7 @@ import traceback
 from utils.excel_processor import ExcelProcessor
 from utils.comment_processor import batch_update_comments, generate_comments_pdf, generate_preview_html
 try:
-    from utils.pdf_exporter import export_comments_to_pdf  # 导入PDF导出函数
+    from utils.pdf_exporter_fixed import export_comments_to_pdf  # 导入修复后的PDF导出函数
 except ImportError:
     # 创建一个简化版的PDF导出函数，返回格式与正常函数一致
     def export_comments_to_pdf(*args, **kwargs):
@@ -87,6 +87,8 @@ except ImportError:
 from utils.grades_manager import GradesManager
 from utils.comment_generator import CommentGenerator
 from utils.report_exporter import ReportExporter
+# 导入学生模块
+from students import students_bp, create_student_template
 
 # 导入仪表盘模块
 try:
@@ -139,6 +141,9 @@ app = Flask(__name__,
             static_folder='./',
             template_folder='./')
 CORS(app)  # 启用跨域资源共享
+
+# 注册学生蓝图
+app.register_blueprint(students_bp)
 
 # 初始化仪表盘模块
 if dashboard_enabled:
@@ -253,56 +258,6 @@ def reset_db():
 
 # 初始化数据库
 init_db()
-
-# 创建学生导入模板
-def create_student_template():
-    template_dir = 'templates'
-    if not os.path.exists(template_dir):
-        os.makedirs(template_dir)
-    
-    template_path = os.path.join(template_dir, 'student_template.xlsx')
-    
-    # 如果文件存在且被占用，则跳过创建
-    if os.path.exists(template_path):
-        try:
-            # 尝试打开文件，如果可以打开就先删除
-            with open(template_path, 'a'):
-                pass
-            os.remove(template_path)
-        except:
-            print("学生模板文件被占用，跳过创建")
-            return
-    
-    wb = Workbook()
-    ws = wb.active
-    ws.title = "学生信息"
-    
-    # 设置标题行
-    headers = ['学号', '姓名', '性别', '班级', '身高(cm)', '体重(kg)', '胸围(cm)', '肺活量(ml)', '龋齿(个)', '左眼视力', '右眼视力']
-    for i, header in enumerate(headers, 1):
-        cell = ws.cell(row=1, column=i, value=header)
-        cell.font = Font(bold=True)
-        cell.alignment = Alignment(horizontal='center')
-        ws.column_dimensions[get_column_letter(i)].width = 15
-    
-    # 添加示例数据
-    example_data = ['1', '张三', '男', '三年级一班', '135', '32', '65', '1500', '0', '5.0', '5.0']
-    for i, value in enumerate(example_data, 1):
-        ws.cell(row=2, column=i, value=value)
-    
-    # 添加说明文字
-    ws.cell(row=4, column=1, value="说明事项：")
-    ws.cell(row=5, column=1, value="1. 请按照示例格式填写学生信息")
-    ws.cell(row=6, column=1, value='2. 性别请填写"男"或"女"')
-    ws.cell(row=7, column=1, value="3. 班级格式: 三年级一班")
-    ws.cell(row=8, column=1, value="4. 视力格式: 5.0 或 4.8 等")
-    
-    # 合并说明文字的单元格
-    for i in range(4, 9):
-        ws.merge_cells(start_row=i, start_column=1, end_row=i, end_column=5)
-    
-    wb.save(template_path)
-    print("学生Excel模板创建完成")
 
 # 创建模板文件
 try:

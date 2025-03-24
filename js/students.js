@@ -12,6 +12,9 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // 初始化导入功能
         initImportStudents();
+        
+        // 设置模态框事件监听
+        setupStudentModalEvents();
     }
 
     // 绑定搜索事件
@@ -165,10 +168,43 @@ document.addEventListener('DOMContentLoaded', function() {
     fixModalAccessibility();
 });
 
+// 全局变量，用于跟踪保存状态
+let isSavingStudent = false;
+
 // 初始化学生列表
 function initStudentList() {
     // 从服务器加载学生数据
     loadStudentsFromServer();
+}
+
+// 添加模态框关闭事件监听和保存按钮重置函数
+function setupStudentModalEvents() {
+    // 添加编辑模态框关闭事件监听
+    const editStudentModal = document.getElementById('editStudentModal');
+    if (editStudentModal) {
+        editStudentModal.addEventListener('hidden.bs.modal', function() {
+            // 重置保存状态
+            isSavingStudent = false;
+            
+            // 重置保存按钮状态
+            const saveBtn = editStudentModal.querySelector('.btn-primary');
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '保存';
+            }
+        });
+    }
+}
+
+// 重置编辑学生保存按钮状态
+function resetEditStudentSaveButton() {
+    const saveBtn = document.querySelector('#editStudentModal .btn-primary');
+    if (saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = '保存';
+    }
+    // 重置保存状态
+    isSavingStudent = false;
 }
 
 // 创建学生卡片
@@ -624,6 +660,12 @@ function addStudent() {
 
 // 打开编辑学生模态框
 function openEditStudentModal(studentId) {
+    // 重置保存状态
+    isSavingStudent = false;
+    
+    // 重置保存按钮状态
+    resetEditStudentSaveButton();
+    
     // 显示加载状态
     const loadingToast = showNotification('正在加载学生数据...', 'info', false);
     
@@ -685,6 +727,12 @@ function openEditStudentModal(studentId) {
 
 // 保存编辑的学生信息
 function saveEditedStudent() {
+    // 如果已经在保存过程中，则不执行新的保存操作
+    if (isSavingStudent) {
+        showNotification('正在保存，请稍候...', 'info');
+        return;
+    }
+    
     const id = document.getElementById('editStudentId').value;
     const name = document.getElementById('editStudentName').value;
     const gender = document.querySelector('input[name="editGender"]:checked')?.value;
@@ -730,6 +778,9 @@ function saveEditedStudent() {
     
     console.log('待更新的学生数据:', updatedStudent);
     
+    // 设置保存状态为true
+    isSavingStudent = true;
+    
     // 显示处理状态
     const saveBtn = document.querySelector('#editStudentModal .btn-primary');
     if (saveBtn) {
@@ -742,11 +793,9 @@ function saveEditedStudent() {
     
     // 设置超时处理，确保按钮状态不会永久停留在"保存中"
     const resetTimeout = setTimeout(() => {
-        // 如果5秒内没有收到响应，重置按钮状态
-        if (saveBtn) {
-            saveBtn.disabled = false;
-            saveBtn.innerHTML = '保存';
-        }
+        // 如果5秒内没有收到响应，重置按钮状态和保存状态
+        resetEditStudentSaveButton();
+        
         if (loadingNotification) {
             loadingNotification.close();
         }
@@ -754,86 +803,107 @@ function saveEditedStudent() {
     }, 5000);
     
     // 使用服务器API更新学生信息
-    fetch(`/api/students/${id}`, {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(updatedStudent)
-    })
-    .then(response => {
-        console.log('服务器响应状态码:', response.status);
-        console.log('服务器响应头:', [...response.headers.entries()]);
-        
-        // 尝试获取响应文本，以便查看原始响应
-        return response.text().then(text => {
-            console.log('原始响应内容:', text);
+    try {
+        fetch(`/api/students/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(updatedStudent)
+        })
+        .then(response => {
+            console.log('服务器响应状态码:', response.status);
+            console.log('服务器响应头:', [...response.headers.entries()]);
             
             // 清除超时定时器
             clearTimeout(resetTimeout);
             
-            // 尝试将文本解析为JSON
-            try {
-                const data = text ? JSON.parse(text) : {};
-                if (!response.ok) {
-                    return Promise.reject(data.error || `服务器错误(${response.status}): ${response.statusText}`);
+            // 尝试获取响应文本，以便查看原始响应
+            return response.text().then(text => {
+                console.log('原始响应内容:', text);
+                
+                // 尝试将文本解析为JSON
+                try {
+                    const data = text ? JSON.parse(text) : {};
+                    if (!response.ok) {
+                        return Promise.reject(data.error || `服务器错误(${response.status}): ${response.statusText}`);
+                    }
+                    return data;
+                } catch (e) {
+                    console.error('解析响应JSON时出错:', e);
+                    resetEditStudentSaveButton(); // 解析错误时重置按钮
+                    return Promise.reject(`无法解析服务器响应: ${e.message}\n原始响应: ${text}`);
                 }
-                return data;
-            } catch (e) {
-                console.error('解析响应JSON时出错:', e);
-                return Promise.reject(`无法解析服务器响应: ${e.message}\n原始响应: ${text}`);
+            }).catch(err => {
+                console.error('处理文本响应时出错:', err);
+                resetEditStudentSaveButton(); // 处理响应错误时重置按钮
+                return Promise.reject(err);
+            });
+        })
+        .then(data => {
+            console.log('更新学生成功，服务器响应:', data);
+            
+            // 关闭加载通知
+            if (loadingNotification) {
+                loadingNotification.close();
             }
-        });
-    })
-    .then(data => {
-        console.log('更新学生成功，服务器响应:', data);
-        
-        // 关闭加载通知
-        if (loadingNotification) {
-            loadingNotification.close();
-        }
-        
-        if (data.status === 'ok') {
-            // 关闭模态框
-            const modal = bootstrap.Modal.getInstance(document.getElementById('editStudentModal'));
-            if (modal) modal.hide();
             
-            // 显示成功消息
-            showNotification(data.message || '学生信息已更新', 'success');
+            // 重置保存状态
+            isSavingStudent = false;
             
-            // 刷新学生列表
-            loadStudentsFromServer();
-        } else {
-            // 服务器可能返回了非错误状态码但包含错误信息
-            showNotification(data.message || '更新失败，请稍后重试', 'warning');
+            if (data.status === 'ok') {
+                // 关闭模态框
+                const modal = bootstrap.Modal.getInstance(document.getElementById('editStudentModal'));
+                if (modal) modal.hide();
+                
+                // 显示成功消息
+                showNotification(data.message || '学生信息已更新', 'success');
+                
+                // 刷新学生列表
+                loadStudentsFromServer();
+            } else {
+                // 服务器可能返回了非错误状态码但包含错误信息
+                showNotification(data.message || '更新失败，请稍后重试', 'warning');
+                
+                // 恢复保存按钮状态
+                resetEditStudentSaveButton();
+            }
+        })
+        .catch(error => {
+            console.error('更新学生出错:', error);
+            
+            // 清除超时定时器
+            clearTimeout(resetTimeout);
+            
+            // 关闭加载通知
+            if (loadingNotification) {
+                loadingNotification.close();
+            }
+            
+            // 显示错误消息
+            showNotification(`更新学生信息出错: ${error}`, 'error');
             
             // 恢复保存按钮状态
-            if (saveBtn) {
-                saveBtn.disabled = false;
-                saveBtn.innerHTML = '保存';
-            }
-        }
-    })
-    .catch(error => {
-        console.error('更新学生出错:', error);
-        
-        // 清除超时定时器
+            resetEditStudentSaveButton();
+        })
+        .finally(() => {
+            // 确保无论如何都重置状态
+            setTimeout(() => {
+                resetEditStudentSaveButton();
+            }, 500);
+        });
+    } catch (uncaughtError) {
+        // 捕获其他未预期的异常
+        console.error('执行保存操作时发生未预期的错误:', uncaughtError);
         clearTimeout(resetTimeout);
         
-        // 关闭加载通知
         if (loadingNotification) {
             loadingNotification.close();
         }
         
-        // 显示错误消息
-        showNotification(`更新学生信息出错: ${error}`, 'error');
-        
-        // 恢复保存按钮状态
-        if (saveBtn) {
-            saveBtn.disabled = false;
-            saveBtn.innerHTML = '保存';
-        }
-    });
+        showNotification(`保存时发生错误: ${uncaughtError.message}`, 'error');
+        resetEditStudentSaveButton();
+    }
 }
 
 // 删除学生
