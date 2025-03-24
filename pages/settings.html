@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>系统设置 - 班主任管理系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/boxicons@latest/css/boxicons.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            padding: 20px;
+        }
+        .page-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #3498db;
+        }
+        .settings-card {
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+        .settings-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+        .settings-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: #3498db;
+        }
+        .settings-title {
+            font-weight: 600;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+        }
+        .settings-title i {
+            margin-right: 10px;
+            font-size: 1.4rem;
+            color: #3498db;
+        }
+        .form-label {
+            font-weight: 500;
+            color: #555;
+        }
+        .nav-pills .nav-link {
+            color: #555;
+            border-radius: 8px;
+            padding: 10px 15px;
+            margin-bottom: 5px;
+            transition: all 0.3s ease;
+        }
+        .nav-pills .nav-link:hover {
+            background-color: #f0f7ff;
+        }
+        .nav-pills .nav-link.active {
+            background-color: #3498db;
+            color: #fff;
+        }
+        .nav-pills .nav-link i {
+            margin-right: 8px;
+        }
+        .tab-content {
+            padding: 20px 0;
+        }
+        .avatar-container {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background-color: #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            overflow: hidden;
+            border: 3px solid #3498db;
+            position: relative;
+        }
+        .avatar-container i {
+            font-size: 4rem;
+            color: #3498db;
+        }
+        .avatar-upload {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: #fff;
+            text-align: center;
+            padding: 5px 0;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        .color-option {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            margin-right: 10px;
+            cursor: pointer;
+            border: 2px solid #fff;
+            box-shadow: 0 0 0 1px #ccc;
+            transition: all 0.3s ease;
+        }
+        .color-option:hover, .color-option.active {
+            transform: scale(1.1);
+            box-shadow: 0 0 0 2px #3498db;
+        }
+        .color-blue {
+            background-color: #3498db;
+        }
+        .color-green {
+            background-color: #2ecc71;
+        }
+        .color-purple {
+            background-color: #9b59b6;
+        }
+        .color-orange {
+            background-color: #e67e22;
+        }
+        .color-red {
+            background-color: #e74c3c;
+        }
+        .card {
+            margin-bottom: 20px;
+        }
+        
+        /* API状态显示样式 */
+        .api-status {
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-weight: 500;
+        }
+        
+        .api-status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .api-status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <h1 class="page-title">系统设置</h1>
+        
+        <div class="row">
+            <div class="col-md-3">
+                <div class="settings-card">
+                    <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                        <button class="nav-link active" id="v-pills-ai-tab" data-bs-toggle="pill" data-bs-target="#v-pills-ai" type="button" role="tab">
+                            <i class='bx bx-bot'></i> AI评语设置
+                        </button>
+                        <button class="nav-link" id="v-pills-about-tab" data-bs-toggle="pill" data-bs-target="#v-pills-about" type="button" role="tab">
+                            <i class='bx bx-info-circle'></i> 关于系统
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-9">
+                <div class="settings-card">
+                    <div class="tab-content" id="v-pills-tabContent">
+                        <!-- AI评语设置 -->
+                        <div class="tab-pane fade show active" id="v-pills-ai" role="tabpanel">
+                            <h2 class="settings-title"><i class='bx bx-bot'></i> AI评语设置</h2>
+                            <div class="alert alert-info">
+                                <i class='bx bx-info-circle'></i> 设置AI评语生成功能的相关参数，以获得更好的评语生成效果。
+                </div>
+                
+                <div class="card mb-4">
+                    <div class="card-header">
+                                    <h5 class="mb-0">API设置</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="deepseekApiKey" class="form-label">DeepSeek API密钥</label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="deepseekApiKey" placeholder="输入您的DeepSeek API密钥">
+                                <button class="btn btn-outline-secondary" type="button" id="toggleDeepseekKeyBtn">
+                                    <i class='bx bx-show'></i>
+                                </button>
+                            </div>
+                            <div class="form-text">用于生成学生评语的API密钥，请在 <a href="https://www.deepseek.com/" target="_blank">DeepSeek官网</a> 获取</div>
+                            <div class="form-text mt-2 text-danger" id="apiHelp">
+                                <i class='bx bx-info-circle'></i> 注意：DeepSeek API可能需要付费使用。若遇到"Payment Required"错误，请确保您的账户已充值或激活。
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <button class="btn btn-primary" id="saveDeepseekApiBtn">保存API设置</button>
+                            <button class="btn btn-outline-info ms-2" id="testDeepseekApiBtn">测试连接</button>
+                        </div>
+                        <!-- 添加状态显示元素 -->
+                        <div id="apiStatus" class="api-status mt-2" style="display: none;"></div>
+                    </div>
+                </div>
+                
+                <div class="card mb-4">
+                    <div class="card-header">
+                                    <h5 class="mb-0">评语生成设置</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                                        <label for="commentLength" class="form-label">评语长度</label>
+                                        <select class="form-select" id="commentLength">
+                                            <option value="short">简短 (100-150字)</option>
+                                            <option value="medium" selected>中等 (200-300字)</option>
+                                            <option value="long">详细 (400-500字)</option>
+                                        </select>
+                        </div>
+                        <div class="mb-3">
+                                        <label for="commentStyle" class="form-label">评语风格</label>
+                                        <select class="form-select" id="commentStyle">
+                                            <option value="encouraging" selected>鼓励型</option>
+                                            <option value="objective">客观型</option>
+                                            <option value="suggestive">建议型</option>
+                            </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="focusArea" class="form-label">重点关注</label>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="focusAcademic" checked>
+                                            <label class="form-check-label" for="focusAcademic">学习表现</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="focusBehavior" checked>
+                                            <label class="form-check-label" for="focusBehavior">行为表现</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="focusActivity" checked>
+                                            <label class="form-check-label" for="focusActivity">活动参与</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="focusSuggestion" checked>
+                                            <label class="form-check-label" for="focusSuggestion">改进建议</label>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-primary" id="saveAiSettingsBtn">
+                                        <i class='bx bx-save'></i> 保存设置
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 关于系统 -->
+                        <div class="tab-pane fade" id="v-pills-about" role="tabpanel">
+                            <h2 class="settings-title"><i class='bx bx-info-circle'></i> 关于系统</h2>
+                            
+                            <div class="card mb-4">
+                                <div class="card-body text-center">
+                                    <img src="../img/logo.png" alt="班主任管理系统" style="max-width: 200px; margin-bottom: 20px;">
+                                    <h4>班主任管理系统</h4>
+                                    <p class="mb-1">版本：1.0.0</p>
+                                    <p class="text-muted">最后更新：<span id="lastUpdateTime">加载中...</span></p>
+                                    <hr>
+                                    <p>班主任管理系统是一款专门为班主任设计的教育管理软件。它可以帮助班主任高效地管理班级事务，包括学生信息、评语生成、成绩管理等。</p>
+                                    <div class="mt-4">
+                                        <p><strong>版权所有 © <span id="copyrightYear">2023</span> 青柠半夏</strong></p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="card mb-4">
+                                        <div class="card-header">
+                                            <h5 class="mb-0">联系方式</h5>
+                                        </div>
+                                        <div class="card-body text-center">
+                                            <p><strong>微信扫码关注：</strong></p>
+                                            <img src="../img/vx.jpg" alt="微信二维码" style="max-width: 180px; margin: 10px 0;">
+                                            <p class="mt-3"><strong>QQ联系：</strong> 492610718</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="card mb-4">
+                                        <div class="card-header">
+                                            <h5 class="mb-0">系统信息</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <ul class="list-group list-group-flush">
+                                                <li class="list-group-item d-flex justify-content-between">
+                                                    <span>操作系统</span>
+                                                    <span id="osInfo">Windows</span>
+                                                </li>
+                                                <li class="list-group-item d-flex justify-content-between">
+                                                    <span>运行环境</span>
+                                                    <span id="runtimeInfo">Electron</span>
+                                                </li>
+                                                <li class="list-group-item d-flex justify-content-between">
+                                                    <span>数据库</span>
+                                                    <span id="dbTypeInfo">WebStorage/IndexedDB</span>
+                                                </li>
+                                                <li class="list-group-item d-flex justify-content-between">
+                                                    <span>内存使用</span>
+                                                    <span id="memoryUsage">约 120MB</span>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast容器 -->
+    <div id="toastContainer" class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999;"></div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/settings.js"></script>
+    <script>
+        // 页面加载时获取设置
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                // 加载API设置
+                const response = await fetch('/api/settings');
+                const data = await response.json();
+                if (data.status === 'ok') {
+                    document.getElementById('deepseekApiKey').value = data.settings.deepseek_api_key || '';
+                }
+                
+                // 加载AI评语设置
+                if (data.settings.ai_comments) {
+                    document.getElementById('commentLength').value = data.settings.ai_comments.length || 'medium';
+                    document.getElementById('commentStyle').value = data.settings.ai_comments.style || 'encouraging';
+                    document.getElementById('focusAcademic').checked = data.settings.ai_comments.focus_academic !== false;
+                    document.getElementById('focusBehavior').checked = data.settings.ai_comments.focus_behavior !== false;
+                    document.getElementById('focusActivity').checked = data.settings.ai_comments.focus_activity !== false;
+                    document.getElementById('focusSuggestion').checked = data.settings.ai_comments.focus_suggestion !== false;
+                }
+                
+                // 直接使用模拟系统信息，不再调用API
+                displayMockSystemInfo();
+            } catch (error) {
+                console.error('获取设置失败:', error);
+                showToast('error', '获取设置失败，请刷新页面重试');
+            }
+            
+            // 确保默认显示AI评语设置选项卡
+            const aiTab = document.getElementById('v-pills-ai-tab');
+            if (aiTab) {
+                aiTab.click();
+            }
+        });
+
+        // 切换API密钥显示/隐藏
+        document.getElementById('toggleDeepseekKeyBtn').addEventListener('click', function() {
+            const apiKeyInput = document.getElementById('deepseekApiKey');
+            const icon = this.querySelector('i');
+            if (apiKeyInput.type === 'password') {
+                apiKeyInput.type = 'text';
+                icon.classList.remove('bx-show');
+                icon.classList.add('bx-hide');
+            } else {
+                apiKeyInput.type = 'password';
+                icon.classList.remove('bx-hide');
+                icon.classList.add('bx-show');
+            }
+        });
+
+        // 显示API状态
+        function showApiStatus(status, message) {
+            const statusDiv = document.getElementById('apiStatus');
+            if (!statusDiv) {
+                console.error('找不到状态显示元素');
+                return;
+            }
+            
+            statusDiv.textContent = message;
+            statusDiv.className = `api-status ${status}`;
+            statusDiv.style.display = 'block';
+            
+            // 3秒后自动隐藏
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 3000);
+        }
+
+        // 测试API连接
+        document.getElementById('testDeepseekApiBtn').addEventListener('click', async function() {
+            const apiKey = document.getElementById('deepseekApiKey').value.trim();
+            if (!apiKey) {
+                showApiStatus('error', '请输入API密钥');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/test-deepseek', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ api_key: apiKey })
+                });
+                const data = await response.json();
+                
+                if (data.status === 'ok') {
+                    showApiStatus('success', 'API连接测试成功');
+                } else {
+                    // 检查是否是付款相关的错误
+                    if (data.message && data.message.includes('402') && data.message.includes('Payment Required')) {
+                        showApiStatus('error', '账户付款问题：您的DeepSeek账户可能余额不足或需要付费激活');
+                    } else {
+                        showApiStatus('error', data.message || 'API连接测试失败');
+                    }
+                }
+            } catch (error) {
+                showApiStatus('error', 'API连接测试失败: ' + error.message);
+            }
+        });
+
+        // 保存API设置
+        document.getElementById('saveDeepseekApiBtn').addEventListener('click', async function() {
+            const apiKey = document.getElementById('deepseekApiKey').value.trim();
+            try {
+                const response = await fetch('/api/settings/deepseek', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ api_key: apiKey })
+                });
+                const data = await response.json();
+                if (data.status === 'ok') {
+                    showApiStatus('success', '设置已保存');
+                } else {
+                    showApiStatus('error', data.message);
+                }
+            } catch (error) {
+                showApiStatus('error', '保存设置失败: ' + error.message);
+            }
+        });
+        
+        // 保存AI评语设置
+        document.getElementById('saveAiSettingsBtn').addEventListener('click', async function() {
+            const settings = {
+                length: document.getElementById('commentLength').value,
+                style: document.getElementById('commentStyle').value,
+                focus_academic: document.getElementById('focusAcademic').checked,
+                focus_behavior: document.getElementById('focusBehavior').checked,
+                focus_activity: document.getElementById('focusActivity').checked,
+                focus_suggestion: document.getElementById('focusSuggestion').checked
+            };
+            
+            try {
+                const response = await fetch('/api/settings/ai-comments', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(settings)
+                });
+                const data = await response.json();
+                if (data.status === 'ok') {
+                    showToast('success', 'AI评语设置已保存');
+                } else {
+                    showToast('error', data.message || '保存设置失败');
+                }
+            } catch (error) {
+                showToast('error', '保存设置失败: ' + error.message);
+            }
+        });
+        
+        // 显示模拟系统信息
+        function displayMockSystemInfo() {
+            const systemInfoContainer = document.getElementById('systemInfoContainer');
+            if (systemInfoContainer) {
+                const mockInfo = {
+                    version: '1.2.0',
+                    environment: 'Production',
+                    startTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(), // 3天前
+                    memoryUsage: 1024 * 1024 * 75 // 75MB
+                };
+                
+                systemInfoContainer.innerHTML = `
+                    <div class="list-group">
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>系统版本</span>
+                            <span class="badge bg-primary rounded-pill">${mockInfo.version}</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>运行环境</span>
+                            <span class="text-muted">${mockInfo.environment}</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>启动时间</span>
+                            <span class="text-muted">${new Date(mockInfo.startTime).toLocaleString()}</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>内存使用</span>
+                            <span class="badge bg-info rounded-pill">${formatBytes(mockInfo.memoryUsage)}</span>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+        
+        // 格式化字节大小
+        function formatBytes(bytes, decimals = 2) {
+            if (bytes === 0) return '0 Bytes';
+            
+            const k = 1024;
+            const dm = decimals < 0 ? 0 : decimals;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+            
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+        }
+    </script>
+</body>
+</html>
