@@ -196,11 +196,7 @@ class DeepSeekAPI:
                 comment = result["choices"][0]["message"]["content"].strip()
                 logger.info(f"成功提取评语: {comment[:50]}...")
                 
-                # 严格确保评语不超过260字
-                if len(comment) > 260:
-                    comment = comment[:257] + "..."
-                    logger.warning(f"生成的评语超过260字，已截断。原长度: {len(comment)}")
-                # 确保评语不超过设定的最大长度（即使小于260）
+                # 确保评语不超过最大长度
                 if len(comment) > max_length:
                     comment = comment[:max_length]
                     logger.info(f"评语已截断至{max_length}字")
