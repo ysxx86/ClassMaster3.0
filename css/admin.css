@@ -1,0 +1,88 @@
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+.page-container {
+    padding: 2rem;
+}
+.page-header {
+    margin-bottom: 2rem;
+}
+.card {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    border: none;
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+}
+.card-header {
+    background-color: #fff;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 1rem 1.5rem;
+}
+.card-body {
+    padding: 1.5rem;
+}
+.btn-primary {
+    background-color: #4e73df;
+    border-color: #4e73df;
+}
+.btn-primary:hover {
+    background-color: #3756a4;
+    border-color: #3756a4;
+}
+.table-responsive {
+    overflow-x: auto;
+}
+.table th {
+    font-weight: 600;
+    color: #5a5c69;
+}
+.table td {
+    vertical-align: middle;
+}
+.badge-status {
+    font-size: 0.75rem;
+    padding: 0.35em 0.65em;
+}
+.admin-badge {
+    background-color: #4e73df;
+    color: white;
+}
+.teacher-badge {
+    background-color: #1cc88a;
+    color: white;
+}
+.user-actions {
+    white-space: nowrap;
+}
+.form-label {
+    font-weight: 500;
+}
+.batch-form {
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+.batch-template-row {
+    margin-bottom: 10px;
+}
+.batch-form-controls {
+    text-align: right;
+    margin-top: 15px;
+}
+.import-excel-form {
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+.password-table {
+    margin-top: 20px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+.excel-template-note {
+    font-size: 0.85rem;
+    margin-top: 10px;
+}

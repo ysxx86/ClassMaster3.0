@@ -1,0 +1,30 @@
+2025-03-27 15:24:21,773 - utils.pdf_exporter_fixed - INFO - PDF导出模块: ReportLab库已成功导入
+2025-03-27 15:24:21,780 - utils.comment_processor - INFO - ReportLab库已成功导入
+2025-03-27 15:24:21,783 - grades - INFO - 成绩表初始化完成
+2025-03-27 15:24:21,785 - utils.deepseek_api - INFO - 使用默认DeepSeek API密钥
+2025-03-27 15:24:21,785 - __main__ - INFO - 服务器启动
+2025-03-27 15:24:21,803 - __main__ - INFO - 初始化数据库
+2025-03-27 15:24:21,804 - __main__ - INFO - 现有数据库列: ['id', 'name', 'gender', 'class', 'height', 'weight', 'chest_circumference', 'vital_capacity', 'dental_caries', 'vision_left', 'vision_right', 'physical_test_status', 'comments', 'created_at', 'updated_at', 'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'semester', 'class_id']
+2025-03-27 15:24:21,804 - __main__ - INFO - 数据库初始化完成
+2025-03-27 15:24:21,809 - users - INFO - 用户表初始化完成
+2025-03-27 15:24:21,809 - grades - INFO - 成绩表初始化完成
+检查并安装关键依赖...
+✓ requests 已安装
+✓ reportlab 已安装
+✓ flask 已安装
+✓ flask_cors 已安装
+✓ flask_login 已安装
+✓ pandas 已安装
+✓ openpyxl 已安装
+✓ werkzeug 已安装
+依赖检查完成，开始导入模块...
+
+✓ 仪表盘模块已导入
+! DeepSeek API密钥未设置，AI评语生成功能不可用
+✓ 仪表盘功能已初始化
+学生Excel模板创建完成
+Traceback (most recent call last):
+  File "/Users/kmduyy/Desktop/ClassMaster2.0/server.py", line 848, in <module>
+    parser = argparse.ArgumentParser(description='ClassMaster 2.0 服务器')
+             ^^^^^^^^
+NameError: name 'argparse' is not defined. Did you forget to import 'argparse'?

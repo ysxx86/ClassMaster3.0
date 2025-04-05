@@ -1,0 +1,17 @@
+Flask==2.0.1
+Werkzeug==2.0.1
+Jinja2==3.0.3
+SQLAlchemy==1.4.46
+Flask-SQLAlchemy==2.5.1
+python-docx==0.8.11
+numpy==1.24.3
+pandas==1.5.3
+reportlab==3.6.12
+docxtpl==0.16.4
+lxml==4.9.3
+openpyxl==3.0.9
+pillow==9.5.0
+requests==2.31.0
+Flask-CORS==3.0.10
+docx2pdf==0.1.8
+pywin32==306

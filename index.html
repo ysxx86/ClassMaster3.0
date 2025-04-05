@@ -1,0 +1,469 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>班主任管理系统</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/tutorial.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/boxicons-local.css">
+    <script src="js/session-timeout.js"></script>
+    <style>
+        .user-info {
+            display: flex;
+            align-items: center;
+            margin-left: auto;
+        }
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 8px;
+            font-weight: bold;
+            color: #495057;
+        }
+        .user-name {
+            font-weight: 500;
+            margin-right: 12px;
+            color: #495057;
+        }
+        .dropdown-toggle::after {
+            margin-left: 0.5em;
+        }
+        .admin-only {
+            display: none; /* 默认隐藏管理员选项 */
+        }
+        
+        /* iframe加载优化 */
+        .content-iframe {
+            position: relative;
+            min-height: 400px; /* 最小高度，避免内容跳动 */
+            background: #fff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 50 50"><circle cx="25" cy="25" r="20" fill="none" stroke="%23007bff" stroke-width="5"><animate attributeName="stroke-dashoffset" dur="1.5s" from="0" to="125" repeatCount="indefinite"/><animate attributeName="stroke-dasharray" dur="1.5s" values="1,150;90,150;90,150" repeatCount="indefinite"/></circle></svg>') center center no-repeat;
+            transition: opacity 0.3s ease;
+        }
+        
+        .content-iframe.loaded {
+            background: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 应用头部 -->
+    <header class="app-header">
+        <div class="container-fluid">
+            <div class="row align-items-center">
+                <div class="col">
+                    <div class="app-logo">
+                        <img src="img/logo.png" alt="泉州东海湾实验学校" class="img-fluid">
+                        <h1>班主任管理系统</h1>
+                    </div>
+                </div>
+                <div class="col-auto">
+                    <div class="user-info">
+                        <div class="user-avatar">
+                            <i class='bx bx-user'></i>
+                        </div>
+                        <div class="dropdown">
+                            <a class="dropdown-toggle" href="#" role="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <span class="user-name" id="currentUsername">用户</span>
+                                <span class="text-muted">|</span>
+                                <span class="text-muted">当前班级：</span>
+                                <span class="text-primary" id="currentClass">暂无班级</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#changePasswordModal"><i class='bx bx-lock-alt'></i> 修改密码</a></li>
+                                <li><div class="dropdown-divider"></div></li>
+                                <li class="dropdown-item-text">
+                                    <div class="d-grid">
+                                        <button class="btn btn-sm btn-primary" id="startTutorialBtn">
+                                            <i class='bx bx-help-circle'></i> 查看新手教程
+                                        </button>
+                                    </div>
+                                </li>
+                                <li><div class="dropdown-divider"></div></li>
+                                <li><a class="dropdown-item" href="/logout"><i class='bx bx-log-out'></i> 退出登录</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="app-main">
+        <div class="container-fluid">
+            <div class="row">
+                <!-- 侧边栏导航 -->
+                <div class="col-md-2">
+                    <nav class="sidebar">
+                        <ul class="nav flex-column">
+                            <li class="nav-item">
+                                <a class="nav-link active" href="#home" data-bs-toggle="tab" data-iframe="pages/home.html">
+                                    <i class='bx bx-home'></i> 首页
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#students" data-bs-toggle="tab" data-iframe="pages/students.html">
+                                    <i class='bx bx-user'></i> 学生管理
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#comments" data-bs-toggle="tab" data-iframe="pages/comments.html">
+                                    <i class='bx bx-message-square-detail'></i> 评语管理
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#grades" data-bs-toggle="tab" data-iframe="pages/grades.html">
+                                    <i class='bx bx-bar-chart-alt-2'></i> 成绩管理
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#deyu" data-bs-toggle="tab" data-iframe="pages/deyu.html">
+                                    <i class='bx bx-heart'></i> 德育维度
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#export" data-bs-toggle="tab" data-iframe="pages/export.html">
+                                    <i class='bx bx-export'></i> 导出报告
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#settings" data-bs-toggle="tab" data-iframe="pages/settings.html">
+                                    <i class='bx bx-cog'></i> 系统设置
+                                </a>
+                            </li>
+                            <li class="nav-item admin-only">
+                                <a class="nav-link" href="#admin" data-bs-toggle="tab" data-iframe="pages/admin.html">
+                                    <i class='bx bx-server'></i> 管理后台
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+                
+                <!-- 内容显示区 -->
+                <div class="col-md-10">
+                    <div class="content-area">
+                        <div class="tab-content" id="mainContent">
+                            <div class="tab-pane fade show active" id="home">
+                                <iframe src="pages/home.html" frameborder="0" class="content-iframe"></iframe>
+                            </div>
+                            <div class="tab-pane fade" id="students">
+                                <iframe src="pages/students.html" frameborder="0" class="content-iframe"></iframe>
+                            </div>
+                            <div class="tab-pane fade" id="comments">
+                                <iframe src="pages/comments.html" frameborder="0" class="content-iframe"></iframe>
+                            </div>
+                            <div class="tab-pane fade" id="grades">
+                                <iframe src="pages/grades.html" frameborder="0" class="content-iframe"></iframe>
+                            </div>
+                            <div class="tab-pane fade" id="deyu">
+                                <iframe src="pages/deyu.html" frameborder="0" class="content-iframe"></iframe>
+                            </div>
+                            <div class="tab-pane fade" id="export">
+                                <iframe src="pages/export.html" frameborder="0" class="content-iframe"></iframe>
+                            </div>
+                            <div class="tab-pane fade" id="settings">
+                                <iframe src="pages/settings.html" frameborder="0" class="content-iframe"></iframe>
+                            </div>
+                            <div class="tab-pane fade" id="admin">
+                                <iframe src="pages/admin.html" frameborder="0" class="content-iframe"></iframe>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 修改密码模态框 -->
+    <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="changePasswordModalLabel">修改密码</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="changePasswordAlert"></div>
+                    <form id="changePasswordForm">
+                        <div class="mb-3">
+                            <label for="currentPassword" class="form-label">当前密码</label>
+                            <input type="password" class="form-control" id="currentPassword" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="newPassword" class="form-label">新密码</label>
+                            <input type="password" class="form-control" id="newPassword" required>
+                            <div class="form-text">密码长度至少为6个字符</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="confirmPassword" class="form-label">确认新密码</label>
+                            <input type="password" class="form-control" id="confirmPassword" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" id="savePasswordBtn">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/tutorial.js"></script>
+    <script>
+        // 防止非管理员直接访问管理页面
+        function checkAdminAccess() {
+            const adminTab = document.getElementById('admin');
+            if (adminTab) {
+                const adminIframe = adminTab.querySelector('iframe');
+                if (adminIframe) {
+                    adminIframe.onload = function() {
+                        // 检查是否有权限访问
+                        fetch('/api/current-user')
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.status === 'ok' && !data.user.is_admin) {
+                                    // 非管理员尝试访问管理页面，重定向到首页
+                                    window.location.href = '/';
+                                }
+                            })
+                            .catch(error => {
+                                console.error('访问权限检查失败:', error);
+                                // 出错也重定向到首页
+                                window.location.href = '/';
+                            });
+                    };
+                }
+            }
+        }
+
+        // 预加载管理后台页面（如果是管理员）
+        function preloadAdminPage(isAdmin) {
+            if (isAdmin) {
+                console.log('预加载管理后台页面');
+                const adminIframe = document.querySelector('#admin iframe');
+                if (adminIframe && adminIframe.getAttribute('src') === 'pages/admin.html') {
+                    // 已经设置了src，无需操作
+                } else if (adminIframe) {
+                    // 开始加载
+                    adminIframe.setAttribute('src', 'pages/admin.html');
+                }
+            }
+        }
+
+        // 获取当前用户信息并处理管理员权限
+        fetch('/api/current-user')
+            .then(response => {
+                if (response.status === 200) {
+                    return response.json();
+                } else {
+                    throw new Error('获取用户信息失败');
+                }
+            })
+            .then(data => {
+                console.log('获取到的用户信息:', data);
+                
+                let isAdmin = false;
+                
+                // 检查当前用户是否是管理员
+                if (data.status === 'ok' && data.user.is_admin) {
+                    isAdmin = true;
+                    // 显示管理员菜单
+                    document.querySelectorAll('.admin-only').forEach(item => {
+                        item.style.display = 'block';
+                    });
+                    // 为管理页面添加权限检查
+                    checkAdminAccess();
+                    // 预加载管理后台页面
+                    setTimeout(() => preloadAdminPage(true), 100);
+                } else {
+                    // 非管理员用户，移除管理后台标签页
+                    const adminTab = document.getElementById('admin');
+                    if (adminTab) {
+                        adminTab.remove();
+                    }
+                    // 如果用户尝试通过URL参数访问admin页面，重定向到首页
+                    const params = new URLSearchParams(window.location.search);
+                    if (params.get('tab') === 'admin') {
+                        window.location.href = '/';
+                    }
+                }
+                
+                // 设置当前用户名和班级名称
+                if (data.status === 'ok') {
+                    // 设置用户名
+                    document.getElementById('currentUsername').textContent = data.user.username;
+                    
+                    // 设置班级名称
+                    const currentClassElement = document.getElementById('currentClass');
+                    if (currentClassElement) {
+                        // 详细记录原始获取到的班级数据
+                        console.log('原始用户数据:', JSON.stringify(data.user));
+                        console.log('班级名称(原始):', data.user.class_name, '类型:', typeof data.user.class_name);
+                        console.log('班级ID(原始):', data.user.class_id, '类型:', typeof data.user.class_id);
+                        
+                        // 确保班级名称是字符串类型
+                        let classNameValue = String(data.user.class_name || "");
+                        let classIdValue = data.user.class_id;
+                        
+                        console.log('处理后班级名称:', classNameValue, '类型:', typeof classNameValue);
+                        console.log('处理后班级ID:', classIdValue, '类型:', typeof classIdValue);
+                        
+                        // 明确的条件判断逻辑
+                        if (classNameValue && 
+                            classNameValue !== 'null' && 
+                            classNameValue !== 'undefined' && 
+                            classNameValue !== '暂无班级' &&
+                            classNameValue.trim() !== '') {
+                            // 优先使用班级名称
+                            currentClassElement.textContent = classNameValue;
+                            console.log('最终显示班级名称:', classNameValue);
+                        } else if (classIdValue) {
+                            // 如果没有班级名称但有班级ID，直接查询班级表获取名称
+                            fetch(`/api/classes/${classIdValue}`)
+                                .then(response => response.json())
+                                .then(classData => {
+                                    if (classData.status === 'ok' && classData.class && classData.class.class_name) {
+                                        currentClassElement.textContent = classData.class.class_name;
+                                        console.log('从API获取到的班级名称:', classData.class.class_name);
+                                    } else {
+                                        // 如果API也无法获取班级名称，显示班级ID
+                                        currentClassElement.textContent = "班级ID: " + classIdValue;
+                                        console.log('无法获取班级名称，显示ID:', classIdValue);
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('获取班级信息失败:', error);
+                                    currentClassElement.textContent = "班级ID: " + classIdValue;
+                                });
+                        } else {
+                            // 如果都没有，显示暂无班级
+                            currentClassElement.textContent = '暂无班级';
+                            console.log('显示: 暂无班级(无班级信息)');
+                        }
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('获取用户信息失败:', error);
+            });
+            
+        // 处理密码修改
+        document.getElementById('savePasswordBtn').addEventListener('click', function() {
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            // 表单验证
+            if (!currentPassword || !newPassword || !confirmPassword) {
+                showChangePasswordAlert('danger', '请填写所有必填字段');
+                return;
+            }
+            
+            if (newPassword.length < 6) {
+                showChangePasswordAlert('danger', '新密码长度必须至少为6个字符');
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                showChangePasswordAlert('danger', '两次输入的新密码不一致');
+                return;
+            }
+            
+            // 禁用按钮防止重复提交
+            const saveBtn = document.getElementById('savePasswordBtn');
+            const originalBtnText = saveBtn.innerHTML;
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 处理中...';
+            
+            // 发送修改密码请求
+            fetch('/api/change-password', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    current_password: currentPassword,
+                    new_password: newPassword,
+                    confirm_password: confirmPassword
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.status === 'ok') {
+                    showChangePasswordAlert('success', data.message || '密码修改成功');
+                    // 清空表单
+                    document.getElementById('changePasswordForm').reset();
+                    
+                    // 3秒后关闭模态框
+                    setTimeout(function() {
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('changePasswordModal'));
+                        modal.hide();
+                    }, 3000);
+                } else {
+                    showChangePasswordAlert('danger', data.message || '密码修改失败');
+                }
+            })
+            .catch(error => {
+                console.error('修改密码时出错:', error);
+                showChangePasswordAlert('danger', '修改密码失败，请稍后重试');
+            })
+            .finally(() => {
+                // 恢复按钮状态
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = originalBtnText;
+            });
+        });
+        
+        // 显示密码修改提示
+        function showChangePasswordAlert(type, message) {
+            const alertContainer = document.getElementById('changePasswordAlert');
+            const alertHtml = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+            
+            alertContainer.innerHTML = alertHtml;
+        }
+
+        // 新手教程按钮事件绑定
+        document.getElementById('startTutorialBtn').addEventListener('click', function() {
+            window.restartTutorial();
+        });
+
+        // 初始化所有iframe的加载事件
+        function initIframeLoadEvents() {
+            document.querySelectorAll('.content-iframe').forEach(iframe => {
+                iframe.addEventListener('load', function() {
+                    // 添加loaded类，移除加载指示器
+                    this.classList.add('loaded');
+                });
+            });
+        }
+
+        // 在DOM加载完成后初始化iframe加载事件
+        document.addEventListener('DOMContentLoaded', initIframeLoadEvents);
+    </script>
+</body>
+</html>

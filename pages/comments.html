@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="user-class-id" content="1">
+    <title>评语管理 - 班主任管理系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../css/boxicons-local.css" rel="stylesheet">
+    <link href="../css/comments.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container-fluid">
+        <div id="commentsHeader">
+            <h1 class="page-title">评语管理</h1>
+        </div>
+        
+        <div class="action-bar">
+            <div>
+                <button class="btn btn-success" id="exportCommentsBtn">
+                    <i class='bx bx-export'></i> 导出评语
+                </button>
+                <button class="btn btn-info" id="printPreviewBtn">
+                    <i class='bx bx-printer'></i> 打印预览
+                </button>
+            </div>
+            <div class="input-group" style="max-width: 300px;">
+                <input type="text" class="form-control" placeholder="搜索学生..." id="searchStudent">
+                <button class="btn btn-outline-secondary" type="button">
+                    <i class='bx bx-search'></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- 评语卡片区域 -->
+        <div class="row" id="commentCards">
+            <!-- 评语卡片将由JavaScript动态生成 -->
+            
+            <!-- 空状态 -->
+            <div class="col-12 d-none" id="emptyState">
+                <div class="empty-state">
+                    <i class='bx bx-message-x'></i>
+                    <h3>暂无评语信息</h3>
+                    <p>您可以为学生添加评语</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 编辑评语模态框 -->
+    <div class="modal fade" id="editCommentModal" tabindex="-1" aria-labelledby="editCommentModalLabel" data-bs-backdrop="static">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editCommentModalLabel">编辑评语</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editCommentForm">
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h5 id="modalStudentName">学生姓名</h5>
+                                    <div class="text-muted" id="modalStudentId">学号: 0000</div>
+                                </div>
+                                <div class="form-check form-switch mt-2">
+                                    <input class="form-check-input" type="checkbox" id="appendModeSwitch">
+                                    <label class="form-check-label" for="appendModeSwitch">添加到原有评语</label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="commentText" class="form-label">评语内容</label>
+            
+                            <textarea class="form-control" id="commentText" rows="6" required></textarea>
+                            <div class="form-text d-flex justify-content-between">
+                                <span>字数限制: <span id="commentCharCount">0/260</span></span>
+                                <span class="text-muted">最多260字</span>
+                            </div>
+                        </div>
+                        
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" id="saveCommentBtn">保存评语</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 打印预览模态框 -->
+    <div class="modal fade" id="printPreviewModal" tabindex="-1" data-bs-backdrop="static">
+        <div class="modal-dialog modal-fullscreen">
+            <div class="modal-content">
+                <div class="modal-header no-print">
+                    <h5 class="modal-title">学生评语打印预览</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0 d-flex justify-content-center align-items-start overflow-auto">
+                    <div class="preview-comment-paper mb-4" id="previewContent">
+                        <!-- 预览内容将由JavaScript动态生成 -->
+                    </div>
+                </div>
+                <div class="modal-footer no-print">
+                    <div class="d-flex align-items-center me-auto">
+                        <i class="bx bx-info-circle me-2 text-primary" style="font-size: 1.2rem;"></i>
+                        <span class="text-muted">
+                            打印设置: <strong>横向A4</strong>(297×210mm)，<strong>无边距</strong>模式，比例<strong>100%</strong>
+                        </span>
+                    </div>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" id="printBtn">
+                        <i class='bx bx-printer me-1'></i> 打印
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 通知容器 -->
+    <div id="toastContainer" class="position-fixed bottom-0 end-0 p-3" style="z-index: 5"></div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/data.js"></script>
+    <script src="../js/comments.js"></script>
+</body>
+</html>
