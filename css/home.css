@@ -1,0 +1,166 @@
+body {
+    font-family: 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+    background-color: #f5f7fa;
+    color: #333;
+    padding: 20px;
+}
+.dashboard-card {
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+    padding: 20px;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+    height: 100%;
+}
+.dashboard-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+.dashboard-icon {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+    color: #3498db;
+}
+.dashboard-title {
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+.dashboard-value {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: #3498db;
+}
+.dashboard-desc {
+    color: #666;
+    font-size: 0.9rem;
+}
+.quick-action {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    border-radius: 12px;
+    background-color: #f8f9fa;
+    margin-bottom: 10px;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    color: #333;
+}
+.quick-action:hover {
+    background-color: #3498db;
+    color: #fff;
+}
+.quick-action i {
+    font-size: 1.5rem;
+    margin-right: 15px;
+}
+.welcome-banner {
+    background: linear-gradient(135deg, #3498db, #2ecc71);
+    color: #fff;
+    border-radius: 12px;
+    padding: 30px;
+    margin-bottom: 30px;
+    position: relative;
+    overflow: hidden;
+}
+.welcome-banner::before {
+    content: '';
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    width: 200px;
+    height: 200px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+}
+.welcome-banner::after {
+    content: '';
+    position: absolute;
+    bottom: -30px;
+    left: -30px;
+    width: 120px;
+    height: 120px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+}
+.welcome-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    position: relative;
+    z-index: 1;
+}
+.welcome-subtitle {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 1;
+}
+.recent-activity {
+    margin-top: 20px;
+}
+.activity-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+.activity-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #f0f7ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    color: #3498db;
+}
+.activity-content {
+    flex: 1;
+}
+.activity-title {
+    font-weight: 500;
+    margin-bottom: 5px;
+}
+.activity-time {
+    font-size: 0.8rem;
+    color: #666;
+}
+.chart-container {
+    height: 250px;
+    margin-top: 20px;
+}
+
+/* 数据加载占位符样式 */
+.loading-placeholder {
+    display: inline-block;
+    position: relative;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading-pulse 1.5s infinite;
+    min-width: 80px;
+    border-radius: 4px;
+}
+
+@keyframes loading-pulse {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* 缓存数据提示样式 */
+.cached-data-notice {
+    background-color: #fff3cd;
+    color: #856404;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    display: inline-block;
+    margin-top: 8px;
+}
