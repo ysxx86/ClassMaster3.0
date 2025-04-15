@@ -5,6 +5,7 @@ import subprocess
 import os
 import json
 import argparse
+import re
 
 def check_and_install(package, version=None):
     """检查并安装Python包"""
@@ -222,6 +223,391 @@ def global_change_password():
     """全局API: 密码修改，转发到users_bp的change_password函数"""
     from users import change_password
     return change_password()
+
+# 轮播图片管理API
+@app.route('/api/carousel/images', methods=['GET'])
+def get_carousel_images():
+    """获取轮播图片列表"""
+    try:
+        # 创建目录（如果不存在）
+        backgrounds_dir = os.path.join('img', 'backgrounds')
+        if not os.path.exists(backgrounds_dir):
+            os.makedirs(backgrounds_dir)
+            
+        # 获取轮播设置中的最大图片数量
+        max_images = 0  # 0表示不限制
+        try:
+            settings_file = os.path.join('img', 'carousel_settings.json')
+            if os.path.exists(settings_file):
+                with open(settings_file, 'r', encoding='utf-8') as f:
+                    settings = json.load(f)
+                    if 'maxImages' in settings:
+                        max_images = int(settings['maxImages'])
+        except (json.JSONDecodeError, ValueError, TypeError, FileNotFoundError) as e:
+            logger.warning(f"获取轮播设置中的maxImages失败: {str(e)}")
+            
+        # 获取所有图片文件
+        image_files = []
+        for filename in os.listdir(backgrounds_dir):
+            if filename.lower().endswith(('.jpg', '.jpeg', '.png')):
+                file_path = os.path.join(backgrounds_dir, filename)
+                # 获取文件大小（以MB为单位）和修改时间
+                size_mb = round(os.path.getsize(file_path) / (1024 * 1024), 2)
+                mod_time = datetime.datetime.fromtimestamp(os.path.getmtime(file_path))
+                
+                # 尝试从文件名提取序号，用于排序
+                try:
+                    # 匹配bg01.jpg, bg02.jpg等格式的文件名
+                    match = re.match(r'bg(\d+)\.(jpg|jpeg|png)', filename.lower())
+                    if match:
+                        order = int(match.group(1))
+                    else:
+                        # 如果不是标准格式，则使用文件修改时间的时间戳作为排序依据
+                        order = int(os.path.getmtime(file_path))
+                except (ValueError, TypeError):
+                    # 如果提取失败，则使用文件修改时间的时间戳
+                    order = int(os.path.getmtime(file_path))
+                
+                image_files.append({
+                    'name': filename,
+                    'url': f'/img/backgrounds/{filename}',  # 路径保持不变，确保不会被重复添加前缀
+                    'size': size_mb,
+                    'modified': mod_time.strftime('%Y-%m-%d %H:%M:%S'),
+                    'order': order  # 添加排序字段
+                })
+        
+        # 按order字段排序
+        image_files.sort(key=lambda x: x['order'])
+        
+        # 如果设置了最大图片数量且大于0，则限制返回的图片数量
+        if max_images > 0 and len(image_files) > max_images:
+            image_files = image_files[:max_images]
+            logger.info(f"限制轮播图片数量为{max_images}张")
+        
+        # 移除order字段，不需要返回给前端
+        for img in image_files:
+            img.pop('order', None)
+        
+        # 确保Content-Type正确设置为application/json
+        response = jsonify({
+            'status': 'success',
+            'images': image_files
+        })
+        response.headers['Content-Type'] = 'application/json'
+        return response
+    except Exception as e:
+        logger.error(f"获取轮播图片列表失败: {str(e)}")
+        response = jsonify({
+            'status': 'error',
+            'message': f'获取轮播图片失败: {str(e)}'
+        }), 500
+        if response[0]:
+            response[0].headers['Content-Type'] = 'application/json'
+        return response
+
+@app.route('/api/carousel/images', methods=['POST'])
+@login_required
+def upload_carousel_image():
+    """上传轮播图片"""
+    try:
+        # 检查是否有文件
+        if 'file' not in request.files:
+            logger.error("未找到上传的文件，request.files内容：%s", request.files)
+            return jsonify({
+                'status': 'error',
+                'message': '未找到上传的文件'
+            }), 400
+            
+        file = request.files['file']
+        
+        # 检查文件名
+        if file.filename == '':
+            return jsonify({
+                'status': 'error',
+                'message': '未选择文件'
+            }), 400
+            
+        # 检查文件类型
+        if not file.filename.lower().endswith(('.jpg', '.jpeg', '.png')):
+            return jsonify({
+                'status': 'error',
+                'message': '只支持JPG或PNG格式的图片'
+            }), 400
+            
+        # 检查文件大小 (限制为5MB)
+        MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
+        file.seek(0, os.SEEK_END)
+        file_size = file.tell()
+        file.seek(0)  # 重置文件指针到开头
+        
+        if file_size > MAX_FILE_SIZE:
+            return jsonify({
+                'status': 'error',
+                'message': f'文件过大，最大支持5MB，当前文件大小: {round(file_size / (1024 * 1024), 2)}MB'
+            }), 400
+            
+        # 验证图片内容
+        try:
+            from PIL import Image
+            img = Image.open(file)
+            img.verify()  # 验证图片文件
+            file.seek(0)  # 重置文件指针
+            
+            # 获取图片尺寸
+            img = Image.open(file)
+            width, height = img.size
+            file.seek(0)  # 重置文件指针
+            
+            # 检查图片尺寸 (可选，确保图片符合展示要求)
+            MIN_WIDTH, MIN_HEIGHT = 800, 400  # 最小宽高要求
+            if width < MIN_WIDTH or height < MIN_HEIGHT:
+                return jsonify({
+                    'status': 'error',
+                    'message': f'图片尺寸过小，建议至少{MIN_WIDTH}x{MIN_HEIGHT}像素，当前尺寸: {width}x{height}像素'
+                }), 400
+        except Exception as e:
+            logger.error(f"验证图片失败: {str(e)}", exc_info=True)
+            return jsonify({
+                'status': 'error',
+                'message': f'无效的图片文件: {str(e)}'
+            }), 400
+            
+        # 创建目录（如果不存在）
+        backgrounds_dir = os.path.join('img', 'backgrounds')
+        try:
+            if not os.path.exists(backgrounds_dir):
+                os.makedirs(backgrounds_dir)
+                logger.info(f"创建轮播图片目录：{backgrounds_dir}")
+        except Exception as e:
+            logger.error(f"创建轮播图片目录失败: {str(e)}", exc_info=True)
+            return jsonify({
+                'status': 'error',
+                'message': f'无法创建图片存储目录: {str(e)}'
+            }), 500
+            
+        # 获取现有文件数量
+        existing_files = [f for f in os.listdir(backgrounds_dir) 
+                         if f.lower().endswith(('.jpg', '.jpeg', '.png'))]
+        
+        # 处理替换逻辑
+        replace_mode = False
+        replace_index = 0
+        if 'replace_index' in request.form:
+            try:
+                replace_index = int(request.form['replace_index'])
+                if replace_index > 0:  # 任何大于0的索引都有效
+                    replace_mode = True
+            except ValueError:
+                pass
+        
+        # 如果是替换模式，使用现有的文件名
+        if replace_mode:
+            # 查找对应索引的文件
+            matching_files = [f for f in existing_files if f.startswith(f"bg{replace_index:02d}")]
+            if matching_files:
+                # 删除旧文件
+                for old_file in matching_files:
+                    old_path = os.path.join(backgrounds_dir, old_file)
+                    if os.path.exists(old_path):
+                        os.remove(old_path)
+                        logger.info(f"删除准备替换的轮播图片：{old_file}")
+                
+                # 使用相同索引和新文件的扩展名
+                file_ext = os.path.splitext(file.filename)[1].lower()
+                new_filename = f"bg{replace_index:02d}{file_ext}"
+            else:
+                # 如果未找到指定索引的文件，使用新索引
+                file_ext = os.path.splitext(file.filename)[1].lower()
+                new_filename = f"bg{len(existing_files) + 1:02d}{file_ext}"
+        else:
+            # 生成新的文件名，使用当前最大索引+1
+            max_index = 0
+            for f in existing_files:
+                match = re.match(r'bg(\d+)\.(jpg|jpeg|png)', f.lower())
+                if match:
+                    try:
+                        index = int(match.group(1))
+                        max_index = max(max_index, index)
+                    except ValueError:
+                        continue
+            
+            file_ext = os.path.splitext(file.filename)[1].lower()
+            new_filename = f"bg{max_index + 1:02d}{file_ext}"
+        
+        # 保存文件
+        file_path = os.path.join(backgrounds_dir, new_filename)
+        file.save(file_path)
+        
+        # 记录日志
+        logger.info(f"成功{'替换' if replace_mode else '上传'}轮播图片：{new_filename}")
+        
+        # 返回成功响应
+        return jsonify({
+            'status': 'success',
+            'message': f"图片{'替换' if replace_mode else '上传'}成功",
+            'image': {
+                'name': new_filename,
+                'url': f'/img/backgrounds/{new_filename}',  # 确保URL路径正确
+                'size': round(os.path.getsize(file_path) / (1024 * 1024), 2),
+                'modified': datetime.datetime.fromtimestamp(os.path.getmtime(file_path)).strftime('%Y-%m-%d %H:%M:%S')
+            }
+        })
+    except Exception as e:
+        logger.error(f"上传轮播图片失败: {str(e)}", exc_info=True)
+        return jsonify({
+            'status': 'error',
+            'message': f'上传图片失败: {str(e)}'
+        }), 500
+
+@app.route('/api/carousel/images/<filename>', methods=['DELETE'])
+@login_required
+def delete_carousel_image(filename):
+    """删除轮播图片"""
+    try:
+        # 安全检查文件名
+        if '..' in filename or '/' in filename:
+            return jsonify({
+                'status': 'error',
+                'message': '无效的文件名'
+            }), 400
+            
+        # 检查文件是否存在
+        backgrounds_dir = os.path.join('img', 'backgrounds')
+        file_path = os.path.join(backgrounds_dir, filename)
+        if not os.path.exists(file_path):
+            return jsonify({
+                'status': 'error',
+                'message': '文件不存在'
+            }), 404
+            
+        # 删除文件
+        os.remove(file_path)
+        
+        # 记录日志
+        logger.info(f"成功删除轮播图片：{filename}")
+        
+        # 重命名其他文件以保持连续序号
+        try:
+            # 获取剩余文件并按名称排序
+            remaining_files = [f for f in os.listdir(backgrounds_dir) 
+                              if f.lower().endswith(('.jpg', '.jpeg', '.png'))]
+            remaining_files.sort()
+            
+            # 按序号依次重命名
+            for i, old_name in enumerate(remaining_files):
+                # 获取文件扩展名
+                _, file_ext = os.path.splitext(old_name)
+                # 新文件名
+                new_name = f"bg{i+1:02d}{file_ext}"
+                # 如果与当前名称不同，则重命名
+                if old_name != new_name:
+                    old_path = os.path.join(backgrounds_dir, old_name)
+                    new_path = os.path.join(backgrounds_dir, new_name)
+                    os.rename(old_path, new_path)
+                    logger.info(f"轮播图片重命名：{old_name} -> {new_name}")
+        except Exception as e:
+            # 重命名错误不影响删除操作的结果，仅记录日志
+            logger.error(f"重命名轮播图片失败: {str(e)}", exc_info=True)
+        
+        # 返回成功响应
+        return jsonify({
+            'status': 'success',
+            'message': '图片删除成功'
+        })
+    except Exception as e:
+        logger.error(f"删除轮播图片失败: {str(e)}", exc_info=True)
+        return jsonify({
+            'status': 'error',
+            'message': f'删除图片失败: {str(e)}'
+        }), 500
+
+@app.route('/api/carousel/settings', methods=['GET'])
+def get_carousel_settings():
+    """获取轮播设置"""
+    try:
+        # 获取或创建默认设置
+        settings_file = os.path.join('img', 'carousel_settings.json')
+        
+        if os.path.exists(settings_file):
+            with open(settings_file, 'r', encoding='utf-8') as f:
+                settings = json.load(f)
+        else:
+            # 默认设置
+            settings = {
+                'interval': 5000,
+                'animation': 'fade',
+                'indicatorStyle': 'rounded-pill',
+                'indicatorColor': '#3498db',
+                'showProgress': True,
+                'maxImages': 5  # 默认最大显示5张图片
+            }
+            
+        # 确保Content-Type正确设置为application/json
+        response = jsonify({
+            'status': 'success',
+            'settings': settings
+        })
+        response.headers['Content-Type'] = 'application/json'
+        return response
+    except Exception as e:
+        logger.error(f"获取轮播设置失败: {str(e)}")
+        response = jsonify({
+            'status': 'error',
+            'message': f'获取轮播设置失败: {str(e)}'
+        }), 500
+        if response[0]:
+            response[0].headers['Content-Type'] = 'application/json'
+        return response
+
+@app.route('/api/carousel/settings', methods=['POST'])
+@login_required  # 保留保存设置的登录验证，只有登录用户才能修改设置
+def save_carousel_settings():
+    """保存轮播设置"""
+    try:
+        # 获取设置数据
+        settings = request.json
+        
+        # 验证所需字段
+        required_fields = ['interval', 'animation', 'indicatorStyle', 'indicatorColor', 'showProgress']
+        for field in required_fields:
+            if field not in settings:
+                return jsonify({
+                    'status': 'error',
+                    'message': f'缺少必要的设置字段: {field}'
+                }), 400
+        
+        # 确保maxImages字段存在，如不存在则设置默认值
+        if 'maxImages' not in settings:
+            settings['maxImages'] = 5
+        
+        # 验证maxImages为数字且大于0
+        try:
+            max_images = int(settings['maxImages'])
+            if max_images <= 0:
+                settings['maxImages'] = 5
+        except (ValueError, TypeError):
+            settings['maxImages'] = 5
+            
+        # 创建目录（如果不存在）
+        img_dir = os.path.join('img')
+        if not os.path.exists(img_dir):
+            os.makedirs(img_dir)
+            
+        # 保存设置
+        settings_file = os.path.join('img', 'carousel_settings.json')
+        with open(settings_file, 'w', encoding='utf-8') as f:
+            json.dump(settings, f, ensure_ascii=False, indent=2)
+            
+        return jsonify({
+            'status': 'success',
+            'message': '轮播设置保存成功'
+        })
+    except Exception as e:
+        logger.error(f"保存轮播设置失败: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': f'保存轮播设置失败: {str(e)}'
+        }), 500
 
 # 统一格式的重置密码API
 @app.route('/api/users/reset-password/<int:user_id>', methods=['POST'])
@@ -1132,6 +1518,11 @@ def upload_template():
     except Exception as e:
         app.logger.error(f"上传模板时出错: {str(e)}")
         return jsonify({"status": "error", "message": f"上传模板失败: {str(e)}"})
+
+# 特别处理图片目录，确保能够正确访问
+@app.route('/img/<path:path>')
+def serve_images(path):
+    return send_from_directory('img', path)
 
 # 初始化数据应用
 if __name__ == '__main__':

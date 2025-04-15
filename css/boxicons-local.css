@@ -3,7 +3,13 @@
   font-family: 'boxicons';
   font-weight: normal;
   font-style: normal;
-  src: url('https://unpkg.com/boxicons@2.1.4/fonts/boxicons.woff2') format('woff2');
+  
+  src: url('/fonts/boxicons.eot');
+  src: url('/fonts/boxicons.eot') format('embedded-opentype'),
+       url('/fonts/boxicons.woff2') format('woff2'),
+       url('/fonts/boxicons.woff') format('woff'),
+       url('/fonts/boxicons.ttf') format('truetype'),
+       url('/fonts/boxicons.svg?#boxicons') format('svg');
 }
 
 .bx {

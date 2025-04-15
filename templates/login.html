@@ -6,7 +6,7 @@
     <title>评语智能系统 - 登录</title>
     <!-- 引入 Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="../css/boxicons-local.css" rel="stylesheet">
+    <link href="/css/boxicons-local.css" rel="stylesheet">
     <!-- 自定义样式 -->
     <style>
         body {
@@ -51,9 +51,9 @@
             width: 90%;
             padding: 1.5rem 2rem;
             /* 透明度改为15% */
-            background-color: rgba(255, 255, 255, 0.15);
+            background-color: rgba(255, 255, 255, 0.35);
             border-radius: 10px;
-            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.35);
             backdrop-filter: blur(8px);
             /* 位置保持在上方 */
             transform: translateY(calc(40vh - 120px));
@@ -304,42 +304,70 @@
                 }
             }
             
-            // 直接使用默认图片，不进行API请求
-            createCarouselItemsWithDefault();
+            // 加载轮播图片和设置
+            loadCarouselSettings();
             
-            function createCarouselItemsWithDefault() {
-                // 使用硬编码的默认图片列表，避免请求错误
-                const bgImages = [
-                    'bg01.jpg', 'bg02.jpg', 'bg03.jpg', 'bg04.jpg', 'bg05.jpg',
-                    'bg06.jpg', 'bg07.jpg', 'bg08.jpg', 'bg09.jpg'
-                ];
-                renderCarouselItems(bgImages);
-            }
-            
-            // 原来的API请求代码保留但不使用，留作将来使用
+            // 加载轮播设置和图片
             function loadCarouselSettings() {
-                // 直接使用默认图片，避免API错误
-                createCarouselItemsWithDefault();
+                // 显示默认图片，以防API加载失败时有内容显示
+                initDefaultBackground();
                 
-                // 尝试从服务器获取设置（但目前不执行）
-                /* 
-                fetch('/api/carousel-settings')
+                // 获取轮播设置
+                fetch('/api/carousel/settings')
                 .then(response => {
                     if (!response.ok) {
-                        throw new Error('获取轮播设置失败');
+                        console.error('获取轮播设置失败，状态码:', response.status);
+                        throw new Error('获取轮播设置失败，状态码: ' + response.status);
                     }
                     return response.json();
                 })
                 .then(data => {
-                    if (data.status === 'ok' && data.settings) {
+                    console.log('成功获取轮播设置:', data);
+                    if (data.status === 'success' && data.settings) {
                         // 应用轮播设置
                         applyCarouselSettings(data.settings);
+                    } else {
+                        // 使用默认设置
+                        console.warn('使用默认轮播设置');
+                        applyCarouselSettings({
+                            interval: 5000,
+                            animation: 'fade',
+                            indicatorStyle: 'rounded-pill',
+                            indicatorColor: '#ffffff',
+                            showProgress: true,
+                            maxImages: 5
+                        });
                     }
                 })
                 .catch(error => {
-                    console.log('获取轮播设置失败，使用默认设置:', error);
+                    console.error('获取轮播设置失败，使用默认设置:', error);
+                    // 应用默认设置
+                    applyCarouselSettings({
+                        interval: 5000,
+                        animation: 'fade',
+                        indicatorStyle: 'rounded-pill',
+                        indicatorColor: '#ffffff',
+                        showProgress: true,
+                        maxImages: 5
+                    });
+                })
+                .finally(() => {
+                    // 加载轮播图片
+                    fetchBackgroundImages();
                 });
-                */
+            }
+            
+            // 初始化默认背景
+            function initDefaultBackground() {
+                const carouselInner = document.querySelector('.carousel-inner');
+                if (carouselInner && carouselInner.children.length === 0) {
+                    carouselInner.innerHTML = `
+                        <div class="carousel-item active">
+                            <img src="/img/backgrounds/bg01.jpg" class="d-block" alt="校园风景" 
+                                 onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiMzNDk4ZGIiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjI0IiBmaWxsPSIjZmZmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBhbGlnbm1lbnQtYmFzZWxpbmU9Im1pZGRsZSI+6KeG6aKR5Yqg6L295aSx6LSlPC90ZXh0Pjwvc3ZnPg=='">
+                        </div>
+                    `;
+                }
             }
             
             function applyCarouselSettings(settings) {
@@ -422,27 +450,105 @@
                 }
             }
             
-            function createCarouselItems() {
-                // 直接使用默认图片，避免额外请求
-                createCarouselItemsWithDefault();
+            function fetchBackgroundImages() {
+                // 从API获取背景图片
+                fetch('/api/carousel/images')
+                .then(response => {
+                    if (!response.ok) {
+                        console.error('获取背景图片失败，状态码:', response.status);
+                        throw new Error('获取背景图片失败，状态码: ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('成功获取轮播图片:', data);
+                    if (data.status === 'success' && data.images && data.images.length > 0) {
+                        // 获取轮播设置中的最大图片数量
+                        fetch('/api/carousel/settings')
+                        .then(response => response.json())
+                        .then(settingsData => {
+                            let maxImages = 5; // 默认值
+                            if (settingsData.status === 'success' && settingsData.settings) {
+                                maxImages = settingsData.settings.maxImages || 5;
+                            }
+                            
+                            // 限制图片数量
+                            const limitedImages = data.images.slice(0, maxImages).map(img => img.url);
+                            console.log('限制后的轮播图片URL列表:', limitedImages);
+                            renderCarouselItems(limitedImages);
+                        })
+                        .catch(error => {
+                            console.error('获取轮播设置失败:', error);
+                            // 使用默认限制
+                            const limitedImages = data.images.slice(0, 5).map(img => img.url);
+                            renderCarouselItems(limitedImages);
+                        });
+                    } else {
+                        // 没有图片或API失败，使用默认图片
+                        console.warn('未找到背景图片或API失败，使用默认图片');
+                        renderDefaultCarouselItems();
+                    }
+                })
+                .catch(error => {
+                    console.error('获取背景图片失败，使用默认图片:', error);
+                    renderDefaultCarouselItems();
+                });
             }
             
-            function fetchBackgroundImages() {
-                // 直接使用默认图片，避免API错误
+            // 渲染默认的轮播图片
+            function renderDefaultCarouselItems() {
                 const bgImages = [
                     'bg01.jpg', 'bg02.jpg', 'bg03.jpg', 'bg04.jpg', 'bg05.jpg',
                     'bg06.jpg', 'bg07.jpg', 'bg08.jpg', 'bg09.jpg'
                 ];
-                renderCarouselItems(bgImages);
+                
+                // 获取最大图片数量
+                let maxImages = 5; // 默认为5
+                try {
+                    fetch('/api/carousel/settings')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success' && data.settings) {
+                            maxImages = data.settings.maxImages || 5;
+                            // 限制默认图片数量
+                            const limitedImages = maxImages > 0 ? bgImages.slice(0, maxImages) : bgImages;
+                            // 使用绝对路径，避免相对路径拼接问题
+                            const defaultImages = limitedImages.map(img => `/img/backgrounds/${img}`);
+                            renderCarouselItems(defaultImages);
+                        } else {
+                            // 使用默认5张图片
+                            const defaultImages = bgImages.slice(0, 5).map(img => `/img/backgrounds/${img}`);
+                            renderCarouselItems(defaultImages);
+                        }
+                    })
+                    .catch(error => {
+                        console.error("获取轮播设置失败:", error);
+                        // 出错时使用默认5张图片
+                        const defaultImages = bgImages.slice(0, 5).map(img => `/img/backgrounds/${img}`);
+                        renderCarouselItems(defaultImages);
+                    });
+                } catch (error) {
+                    console.error("处理默认轮播图片出错:", error);
+                    // 出错时使用默认5张图片
+                    const defaultImages = bgImages.slice(0, 5).map(img => `/img/backgrounds/${img}`);
+                    renderCarouselItems(defaultImages);
+                }
             }
             
             function renderCarouselItems(images) {
                 const carouselInner = document.querySelector('.carousel-inner');
                 const indicators = document.querySelector('.carousel-indicators');
                 
+                if (!carouselInner || !indicators) return;
+                
                 // 清空现有内容
                 carouselInner.innerHTML = '';
                 indicators.innerHTML = '';
+                
+                // 如果没有图片，添加一个默认图片
+                if (!images || images.length === 0) {
+                    images = ['/img/backgrounds/bg01.jpg'];
+                }
                 
                 // 添加新的轮播项
                 images.forEach((img, index) => {
@@ -472,14 +578,36 @@
                     if (img.startsWith('http') || img.startsWith('/')) {
                         image.src = img;
                     } else {
-                        image.src = `../img/backgrounds/${img}`;
+                        // 使用绝对路径，避免路径拼接问题
+                        image.src = `/img/backgrounds/${img}`;
                     }
                     image.classList.add('d-block');
                     image.alt = `校园风景 ${index + 1}`;
                     
+                    // 添加错误处理
+                    image.onerror = function() {
+                        this.onerror = null;
+                        this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiMzNDk4ZGIiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjI0IiBmaWxsPSIjZmZmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBhbGlnbm1lbnQtYmFzZWxpbmU9Im1pZGRsZSI+6KeG6aKR5Yqg6L295aSx6LSlPC90ZXh0Pjwvc3ZnPg==';
+                        console.error(`图片加载失败: ${this.src}`);
+                    };
+                    
                     item.appendChild(image);
                     carouselInner.appendChild(item);
                 });
+                
+                // 重新初始化轮播
+                const carousel = document.getElementById('backgroundCarousel');
+                if (carousel) {
+                    const carouselInstance = bootstrap.Carousel.getInstance(carousel);
+                    if (carouselInstance) {
+                        carouselInstance.dispose();
+                    }
+                    // 设置间隔
+                    const interval = carousel.getAttribute('data-bs-interval') || 5000;
+                    new bootstrap.Carousel(carousel, {
+                        interval: parseInt(interval)
+                    });
+                }
             }
         });
     </script>
@@ -493,7 +621,7 @@
         <div class="carousel-inner">
             <!-- 轮播项将由JavaScript动态生成 -->
             <div class="carousel-item active">
-                <img src="../img/backgrounds/bg01.jpg" class="d-block" alt="校园风景">
+                <img src="/img/backgrounds/bg01.jpg" class="d-block" alt="校园风景">
             </div>
         </div>
     </div>
@@ -503,7 +631,7 @@
             <!-- 第一行：Logo和标题 -->
             <div class="login-header-section">
                 <div class="login-logo">
-                    <img src="../img/logo.png" alt="泉州东海湾实验学校">
+                    <img src="/img/logo.png" alt="泉州东海湾实验学校">
                 </div>
                 <div class="login-header">
                     <h1>评语智能系统</h1>
