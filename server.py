@@ -1519,9 +1519,9 @@ def upload_template():
         app.logger.error(f"上传模板时出错: {str(e)}")
         return jsonify({"status": "error", "message": f"上传模板失败: {str(e)}"})
 
-# 特别处理图片目录，确保能够正确访问
+# 图片路由
 @app.route('/img/<path:path>')
-def serve_images(path):
+def serve_img(path):
     return send_from_directory('img', path)
 
 # 初始化数据应用
