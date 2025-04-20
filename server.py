@@ -1423,7 +1423,7 @@ def save_deepseek_api_settings():
             deepseek_api = DeepSeekAPI(api_key)
             
         # 更新应用配置
-        current_app.config['deepseek_api'] = deepseek_api
+        app.config['deepseek_api'] = deepseek_api
             
         return jsonify({
             'status': 'ok', 
