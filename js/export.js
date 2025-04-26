@@ -9,6 +9,9 @@ let templateFile = null;
 let currentExportRequestId = null; // 用于跟踪当前导出请求ID
 let abortController = null; // 用于取消请求
 
+// 全局变量，用于记录轮询状态
+let progressPoller = null; 
+
 document.addEventListener('DOMContentLoaded', function() {
     console.log('初始化导出页面开始...');
     
@@ -875,8 +878,11 @@ async function exportReports(exportType = 'word') {
         
         progressModal.show();
             
-        // 更新进度
+        // 更新初始进度
         updateProgress(10, exportType === 'pdf' ? '正在准备PDF导出...' : '正在准备导出...');
+        
+        // 立即开始轮询进度 - 将这一行移到这里，确保在发送请求前就开始轮询
+        startPollingProgress(currentExportRequestId);
         
         try {
             // 防止重复请求
@@ -914,7 +920,7 @@ async function exportReports(exportType = 'word') {
             // 请求完成，重置标志
             window.isExporting = false;
             
-            // 更新进度
+            // 更新进度 - 只提供消息，不显示百分比
             updateProgress(60, exportType === 'pdf' ? '正在将Word转换为PDF...' : '正在处理响应...');
             console.log('服务器响应状态:', response.status);
             console.log('服务器响应类型:', response.headers.get('Content-Type'));
@@ -1176,24 +1182,17 @@ async function exportReports(exportType = 'word') {
     }
 }
 
-// 取消导出函数
+// 取消导出操作
 function cancelExport(requestId) {
-    if (!requestId || requestId !== currentExportRequestId) {
-        console.warn('没有进行中的导出或请求ID不匹配');
+    if (!requestId) {
+        console.warn('取消导出时未提供requestId');
         return;
     }
     
-    console.log('正在取消导出请求:', requestId);
+    // 停止轮询进度
+    stopPollingProgress();
     
-    // 更新UI显示状态
-    updateProgress(0, '正在取消导出...', 'warning');
-    
-    // 取消进行中的fetch请求
-    if (abortController) {
-        abortController.abort();
-    }
-    
-    // 向服务器发送取消请求
+    console.log('发送取消导出请求:', requestId);
     fetch('/api/cancel-export', {
         method: 'POST',
         headers: {
@@ -1232,33 +1231,29 @@ function cancelExport(requestId) {
     });
 }
 
-// 更新进度条和文本
+// 修改updateProgress函数，不显示百分比
 function updateProgress(percent, message, type = 'normal') {
     const progressBar = document.getElementById('progressBar');
     const progressText = document.getElementById('progressText');
     
-    if (progressBar) {
+    if (progressBar && progressText) {
+        // 只显示消息，不显示百分比
+        progressText.textContent = message;
+        
+        // 更新进度条
         progressBar.style.width = `${percent}%`;
         progressBar.setAttribute('aria-valuenow', percent);
         
-        // 根据类型设置进度条颜色
+        // 更新进度条样式
         progressBar.className = 'progress-bar';
-        if (type === 'error') {
-            progressBar.classList.add('bg-danger');
-        } else if (percent === 100) {
+        if (type === 'success') {
             progressBar.classList.add('bg-success');
+        } else if (type === 'warning') {
+            progressBar.classList.add('bg-warning');
+        } else if (type === 'error') {
+            progressBar.classList.add('bg-danger');
         } else {
             progressBar.classList.add('bg-primary', 'progress-bar-striped', 'progress-bar-animated');
-        }
-    }
-    
-    if (progressText) {
-        progressText.innerHTML = `${message} <span class="badge bg-secondary">${percent}%</span>`;
-        
-        if (type === 'error') {
-            progressText.classList.add('text-danger');
-        } else {
-            progressText.classList.remove('text-danger');
         }
     }
 }
@@ -2363,4 +2358,78 @@ function clearAllModalBackdrops() {
     document.body.style.paddingRight = '';
     
     console.log('已清理所有模态框背景');
+}
+
+// 开始轮询导出进度
+function startPollingProgress(requestId) {
+    // 先清除可能存在的旧轮询器
+    stopPollingProgress();
+    
+    // 设置轮询间隔
+    progressPoller = setInterval(async () => {
+        try {
+            // 调用API获取最新进度
+            const response = await fetch('/api/export-progress', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            });
+            
+            if (!response.ok) {
+                console.warn('获取进度信息失败:', response.status);
+                return;
+            }
+            
+            const progressData = await response.json();
+            
+            // 检查进度信息是否有效
+            if (progressData.status === 'idle') {
+                // 没有活动的导出任务，忽略
+                return;
+            }
+            
+            // 检查是否是当前请求的进度
+            if (progressData.request_id && progressData.request_id !== requestId) {
+                console.warn('收到的进度信息不属于当前请求');
+                return;
+            }
+            
+            // 获取进度条和文本元素
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            
+            // 更新进度条和文本
+            if (progressBar && progressText && progressData.message) {
+                // 始终只显示消息文本，不显示百分比
+                progressText.textContent = progressData.message;
+                
+                // 更新进度条
+                progressBar.style.width = `${progressData.percent}%`;
+                progressBar.setAttribute('aria-valuenow', progressData.percent);
+                
+                // 根据进度阶段设置颜色
+                progressBar.className = 'progress-bar';
+                if (progressData.percent === 100) {
+                    progressBar.classList.add('bg-success');
+                } else {
+                    progressBar.classList.add('bg-primary', 'progress-bar-striped', 'progress-bar-animated');
+                }
+            }
+        } catch (error) {
+            console.error('轮询进度时出错:', error);
+        }
+    }, 500); // 每500毫秒轮询一次
+    
+    console.log('开始轮询导出进度...');
+}
+
+// 停止轮询导出进度
+function stopPollingProgress() {
+    if (progressPoller) {
+        clearInterval(progressPoller);
+        progressPoller = null;
+        console.log('已停止轮询导出进度');
+    }
 }
