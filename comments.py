@@ -11,6 +11,7 @@ import zipfile
 import sys
 import platform
 import threading
+import time
 
 # 尝试导入pythoncom，如果不可用则跳过
 try:
@@ -37,6 +38,38 @@ except ImportError:
 # 创建评语管理蓝图
 comments_bp = Blueprint('comments', __name__)
 logger = logging.getLogger(__name__)
+
+# 添加导出进度全局变量
+export_progress = {
+    'message': '',
+    'percent': 0,
+    'timestamp': 0
+}
+
+# 更新导出进度信息
+def websocket_progress(message, percent=None, request_id=None):
+    """
+    更新导出进度信息
+    
+    参数:
+    - message: 进度消息内容
+    - percent: 百分比值(0-100)
+    - request_id: 请求ID
+    """
+    global export_progress
+    
+    # 更新进度信息
+    current_time = time.time()
+    export_progress['message'] = message
+    if percent is not None:
+        export_progress['percent'] = percent
+    export_progress['timestamp'] = current_time
+    export_progress['request_id'] = request_id
+    
+    # 打印日志
+    logger.info(f"导出进度更新: {message} ({percent if percent is not None else ''}%)")
+    
+    return export_progress
 
 # 获取数据库连接函数
 def get_db_connection():
@@ -1316,6 +1349,28 @@ def api_export_reports():
                         os.makedirs(pdf_dir, exist_ok=True)
                         logger.info(f"创建PDF输出目录: {pdf_dir}")
                         
+                        # 建立文件名与学生信息的映射，以便显示正确的学生名称
+                        student_name_map = {}
+                        for student in students:
+                            student_id = student['id']
+                            student_name = student['name']
+                            # 根据fileNameFormat设置确定文件名格式
+                            file_name_format = settings.get('fileNameFormat', 'id_name')
+                            if file_name_format == 'id_name':
+                                file_prefix = f"{student_id}_{student_name}"
+                            elif file_name_format == 'name_id':
+                                file_prefix = f"{student_name}_{student_id}"
+                            else:
+                                file_prefix = student_id
+                            
+                            # 将文件名前缀与学生名称关联
+                            for docx_file in docx_files:
+                                if docx_file.startswith(file_prefix) or file_prefix in docx_file:
+                                    student_name_map[docx_file] = student_name
+                                    break
+                        
+                        logger.info(f"创建学生文件名映射: {student_name_map}")
+                        
                         # 设置转换计数器
                         total_files = len(docx_files)
                         successful_conversions = 0
@@ -1335,6 +1390,16 @@ def api_export_reports():
                             docx_path = os.path.join(extract_dir, docx_file)
                             pdf_file = docx_file.replace('.docx', '.pdf')
                             pdf_path = os.path.join(pdf_dir, pdf_file)
+                            
+                            # 获取学生信息，尝试从映射中获取学生名称
+                            student_name = student_name_map.get(docx_file, "")
+                            if not student_name:
+                                # 如果映射中没有，则从文件名提取
+                                student_name = docx_file.replace('.docx', '').split('_')[-1] if '_' in docx_file else docx_file.replace('.docx', '')
+                            
+                            # 更新进度信息，显示当前学生名称和进度
+                            progress_message = update_progress_in_pdf_conversion(docx_file, student_name, i+1, total_files, request_id)
+                            logger.info(progress_message)
                             
                             # 执行转换，添加重试逻辑
                             logger.info(f"开始转换 [{i+1}/{total_files}]: {docx_path} -> {pdf_path}")
@@ -1396,6 +1461,11 @@ def api_export_reports():
                             
                             # 检查是否有PDF文件需要合并
                             if len(pdf_files) > 1:
+                                # 更新进度信息，显示正在合并
+                                merge_message = f"正在合并 {len(pdf_files)} 个PDF文件..."
+                                websocket_progress(merge_message, 90, request_id)
+                                logger.info(merge_message)
+                                
                                 logger.info(f"开始合并{len(pdf_files)}个PDF文件")
                                 merged_pdf_path = os.path.join(pdf_dir, "merged_reports.pdf")
                                 
@@ -1403,19 +1473,26 @@ def api_export_reports():
                                 merger = PyPDF2.PdfMerger()
                                 
                                 # 添加所有PDF文件
-                                for pdf_file in sorted(pdf_files):  # 排序确保顺序一致
+                                for idx, pdf_file in enumerate(sorted(pdf_files)):  # 排序确保顺序一致
                                     pdf_path = os.path.join(pdf_dir, pdf_file)
                                     if os.path.exists(pdf_path):
                                         try:
                                             merger.append(pdf_path)
+                                            # 更新合并进度
+                                            merge_progress = f"正在合并PDF文件 ({idx+1}/{len(pdf_files)})"
+                                            websocket_progress(merge_progress, 90 + int((idx+1)/len(pdf_files)*5), request_id)
                                             logger.info(f"成功添加PDF文件到合并器: {pdf_file}")
                                         except Exception as e:
                                             logger.error(f"添加PDF文件到合并器失败: {pdf_file}, 错误: {str(e)}")
                                 
                                 # 写入合并后的PDF文件
                                 try:
+                                    # 更新进度为正在写入合并文件
+                                    websocket_progress("正在生成合并后的PDF文件...", 95, request_id)
                                     merger.write(merged_pdf_path)
                                     merger.close()
+                                    # 更新进度为合并完成
+                                    websocket_progress("PDF文件合并完成", 98, request_id)
                                     logger.info(f"成功创建合并的PDF文件: {merged_pdf_path}")
                                     
                                     # 将合并的PDF文件添加到pdf_files列表中，确保它会被包含在zip包中
@@ -1576,3 +1653,38 @@ def get_students():
         logger.error(f"获取学生列表时出错: {str(e)}")
         logger.error(traceback.format_exc())
         return jsonify({'error': f'获取学生列表时出错: {str(e)}'}), 500
+
+# 添加导出进度查询接口
+@comments_bp.route('/api/export-progress', methods=['GET'])
+def get_export_progress():
+    """获取当前导出进度信息"""
+    global export_progress
+    
+    # 检查是否有有效的进度信息
+    current_time = time.time()
+    if current_time - export_progress.get('timestamp', 0) > 300:  # 5分钟内的进度才是有效的
+        # 超过5分钟没有更新，返回空进度
+        return jsonify({
+            'status': 'idle',
+            'message': '',
+            'percent': 0
+        })
+    
+    # 返回当前进度
+    return jsonify({
+        'status': 'processing' if export_progress.get('message') else 'idle',
+        'message': export_progress.get('message', ''),
+        'percent': export_progress.get('percent', 0),
+        'request_id': export_progress.get('request_id')
+    })
+
+# 更新导出报告的转换和合并进度显示
+def update_progress_in_pdf_conversion(docx_file, student_name, current_index, total_files, request_id=None):
+    """更新PDF转换进度"""
+    # 构建更清晰的进度信息
+    progress_message = f"正在导出学生报告: {student_name} ({current_index}/{total_files})"
+    # 计算百分比 (但前端不会显示)
+    percent = int((current_index / total_files) * 80) if total_files > 0 else 0
+    # 调用websocket_progress更新进度
+    websocket_progress(progress_message, percent, request_id)
+    return progress_message
