@@ -12,6 +12,7 @@ import sys
 import platform
 import threading
 import time
+import re
 
 # 尝试导入pythoncom，如果不可用则跳过
 try:
@@ -1466,8 +1467,56 @@ def api_export_reports():
                                 websocket_progress(merge_message, 90, request_id)
                                 logger.info(merge_message)
                                 
-                                logger.info(f"开始合并{len(pdf_files)}个PDF文件")
-                                merged_pdf_path = os.path.join(pdf_dir, "merged_reports.pdf")
+                                # 根据班主任的class_id获取完整的班级名称
+                                class_name = ""
+                                try:
+                                    # 获取当前登录用户的class_id
+                                    class_id = current_user.class_id if hasattr(current_user, 'class_id') else None
+                                    
+                                    if class_id:
+                                        # 连接数据库
+                                        conn = get_db_connection()
+                                        cursor = conn.cursor()
+                                        
+                                        # 查询classes表获取班级名称
+                                        cursor.execute('SELECT name FROM classes WHERE id = ?', (class_id,))
+                                        class_record = cursor.fetchone()
+                                        conn.close()
+                                        
+                                        if class_record and 'name' in class_record:
+                                            class_name = class_record['name']
+                                            logger.info(f"从数据库获取班级名称: '{class_name}'")
+                                        else:
+                                            logger.warning(f"未找到class_id为{class_id}的班级记录")
+                                            
+                                            # 尝试从学生信息中获取班级名称作为备选
+                                            if students and len(students) > 0:
+                                                class_name = students[0].get('class', '')
+                                                logger.info(f"从学生记录获取班级名称: '{class_name}'")
+                                    else:
+                                        logger.warning("当前用户没有关联的班级ID")
+                                        
+                                        # 尝试从学生信息中获取班级名称作为备选
+                                        if students and len(students) > 0:
+                                            class_name = students[0].get('class', '')
+                                            logger.info(f"从学生记录获取班级名称: '{class_name}'")
+                                except Exception as e:
+                                    logger.error(f"获取班级名称时出错: {str(e)}")
+                                    # 如果出错，尝试从学生信息获取班级
+                                    if students and len(students) > 0:
+                                        class_name = students[0].get('class', '')
+                                        logger.info(f"从学生记录获取班级名称: '{class_name}'")
+                                
+                                # 去除班级名称中可能存在的非法文件名字符
+                                if class_name:
+                                    import re
+                                    class_name = re.sub(r'[\\/*?:"<>|]', '', class_name)  # 移除Windows不允许的文件名字符
+                                
+                                # 生成合并PDF的文件名
+                                merged_pdf_filename = f"{class_name}合并.pdf" if class_name else "合并报告.pdf"
+                                logger.info(f"使用班级名称 '{class_name}' 生成合并PDF文件名: {merged_pdf_filename}")
+                                
+                                merged_pdf_path = os.path.join(pdf_dir, merged_pdf_filename)
                                 
                                 # 创建PDF合并器
                                 merger = PyPDF2.PdfMerger()
@@ -1496,7 +1545,7 @@ def api_export_reports():
                                     logger.info(f"成功创建合并的PDF文件: {merged_pdf_path}")
                                     
                                     # 将合并的PDF文件添加到pdf_files列表中，确保它会被包含在zip包中
-                                    pdf_files.append("merged_reports.pdf")
+                                    pdf_files.append(merged_pdf_filename)
                                 except Exception as e:
                                     logger.error(f"写入合并的PDF文件失败: {str(e)}")
                             else:
