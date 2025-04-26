@@ -1,0 +1,8 @@
+{
+  "interval": "3000",
+  "animation": "slide",
+  "indicatorStyle": "rectangle",
+  "indicatorColor": "#3498db",
+  "showProgress": true,
+  "maxImages": 5
+}
