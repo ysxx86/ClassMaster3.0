@@ -1351,48 +1351,85 @@ def api_export_reports():
                                     
                                     if success:
                                         logger.info(f"转换成功 (尝试 {attempt+1}): {docx_file}")
-                                        break
-                                    else:
-                                        logger.warning(f"转换失败 (尝试 {attempt+1}): {docx_file}")
+                                        pdf_files.append(pdf_file)
+                                        successful_conversions += 1
+                                        break  # 成功则退出重试循环
                                 except Exception as e:
-                                    logger.error(f"转换异常 (尝试 {attempt+1}): {str(e)}")
-                                    if attempt == 2:  # 最后一次尝试
-                                        logger.error(f"转换 {docx_file} 的所有尝试均失败")
-                            
-                            if success and os.path.exists(pdf_path):
-                                pdf_size = os.path.getsize(pdf_path)
-                                if pdf_size > 0:
-                                    logger.info(f"转换成功: {pdf_file} (大小: {pdf_size} 字节)")
-                                    pdf_files.append(pdf_file)
-                                    successful_conversions += 1
-                                else:
-                                    logger.warning(f"PDF文件大小为0: {pdf_file}")
-                            else:
-                                logger.warning(f"转换失败: {docx_file}")
+                                    logger.error(f"尝试转换第{attempt+1}次失败: {str(e)}")
+                                    success = False
+                                
+                                # 如果所有尝试都失败，记录错误
+                                if not success and attempt == 2:  # 最后一次尝试
+                                    logger.error(f"转换失败 {docx_file} 在3次尝试后")
                         
-                        # 检查转换成功率
-                        if len(pdf_files) == 0:
-                            logger.error("没有成功转换的PDF文件")
-                            raise Exception("未能成功转换任何PDF文件")
-                        elif len(pdf_files) < total_files:
-                            success_rate = (successful_conversions / total_files) * 100
-                            logger.warning(f"部分文件转换失败: {successful_conversions}/{total_files} 成功 (成功率: {success_rate:.1f}%)")
-                            # 如果成功率太低，可以考虑回退到Word格式
-                            if success_rate < 50:
-                                logger.error(f"成功率低于50%，回退到Word格式")
-                                raise Exception(f"PDF转换成功率太低 ({success_rate:.1f}%)，回退到Word格式")
-                        else:
-                            logger.info(f"所有文件均成功转换: {successful_conversions}/{total_files}")
+                        # 记录转换完成情况
+                        logger.info(f"完成转换: 成功 {successful_conversions}/{total_files} 文件")
+                        
+                        # 如果没有成功转换任何文件，返回错误
+                        if successful_conversions == 0:
+                            logger.error("没有成功转换任何文件为PDF")
+                            # 回退到原始Word文档结果
+                            return send_file(
+                                original_word_result,
+                                mimetype='application/zip',
+                                as_attachment=True,
+                                download_name='student_reports_word.zip'
+                            )
+                        
+                        # 将PDF文件合并为一个文件
+                        try:
+                            # 尝试导入PyPDF2
+                            try:
+                                import PyPDF2
+                                logger.info("成功导入PyPDF2")
+                            except ImportError:
+                                logger.error("无法导入PyPDF2库，尝试安装")
+                                try:
+                                    import subprocess
+                                    subprocess.check_call([sys.executable, "-m", "pip", "install", "PyPDF2"])
+                                    import PyPDF2
+                                    logger.info("成功安装并导入PyPDF2")
+                                except Exception as e:
+                                    logger.error(f"安装PyPDF2失败: {str(e)}")
+                                    # 如果无法安装则跳过合并，只提供单独的PDF文件
+                                    raise
                             
-                        # 再次检查请求是否已取消
-                        if request_id and is_export_cancelled(request_id):
-                            logger.info(f"转换完成后检测到请求已取消: {request_id}")
-                            return jsonify({
-                                'status': 'warning',
-                                'message': '导出操作已被用户取消'
-                            })
-                            
-                        # 创建PDF文件的ZIP
+                            # 检查是否有PDF文件需要合并
+                            if len(pdf_files) > 1:
+                                logger.info(f"开始合并{len(pdf_files)}个PDF文件")
+                                merged_pdf_path = os.path.join(pdf_dir, "merged_reports.pdf")
+                                
+                                # 创建PDF合并器
+                                merger = PyPDF2.PdfMerger()
+                                
+                                # 添加所有PDF文件
+                                for pdf_file in sorted(pdf_files):  # 排序确保顺序一致
+                                    pdf_path = os.path.join(pdf_dir, pdf_file)
+                                    if os.path.exists(pdf_path):
+                                        try:
+                                            merger.append(pdf_path)
+                                            logger.info(f"成功添加PDF文件到合并器: {pdf_file}")
+                                        except Exception as e:
+                                            logger.error(f"添加PDF文件到合并器失败: {pdf_file}, 错误: {str(e)}")
+                                
+                                # 写入合并后的PDF文件
+                                try:
+                                    merger.write(merged_pdf_path)
+                                    merger.close()
+                                    logger.info(f"成功创建合并的PDF文件: {merged_pdf_path}")
+                                    
+                                    # 将合并的PDF文件添加到pdf_files列表中，确保它会被包含在zip包中
+                                    pdf_files.append("merged_reports.pdf")
+                                except Exception as e:
+                                    logger.error(f"写入合并的PDF文件失败: {str(e)}")
+                            else:
+                                logger.info("只有一个或没有PDF文件，跳过合并步骤")
+                        except Exception as e:
+                            logger.error(f"合并PDF文件时出错: {str(e)}")
+                            logger.error(traceback.format_exc())
+                            # 如果合并失败，继续处理，仍然提供单独的PDF文件
+                        
+                        # 创建PDF文件的压缩包
                         pdf_zip_path = os.path.join(temp_dir, "pdf_reports.zip")
                         logger.info(f"创建PDF ZIP文件: {pdf_zip_path}")
                         
