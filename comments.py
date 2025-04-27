@@ -1061,11 +1061,11 @@ def api_export_reports():
         # 添加班级ID筛选，确保班主任只能导出本班级的学生
         if current_user.is_admin:
             # 管理员可以导出所有学生
-            query = f'SELECT * FROM students WHERE id IN ({placeholders})'
+            query = f'SELECT * FROM students WHERE id IN ({placeholders}) ORDER BY CAST(id AS INTEGER)'
             params = student_ids
         else:
             # 班主任只能导出本班级学生
-            query = f'SELECT * FROM students WHERE id IN ({placeholders}) AND class_id = ?'
+            query = f'SELECT * FROM students WHERE id IN ({placeholders}) AND class_id = ? ORDER BY CAST(id AS INTEGER)'
             params = student_ids + [current_user.class_id]
             logger.info(f"班主任模式：只导出班级ID为 {current_user.class_id} 的学生")
         
@@ -1521,15 +1521,39 @@ def api_export_reports():
                                 # 创建PDF合并器
                                 merger = PyPDF2.PdfMerger()
                                 
-                                # 添加所有PDF文件
-                                for idx, pdf_file in enumerate(sorted(pdf_files)):  # 排序确保顺序一致
+                                # 添加所有PDF文件，确保按学号顺序合并
+                                # 创建一个映射，关联文件名与对应的学生信息
+                                student_pdf_mapping = []
+                                for pdf_file in pdf_files:
+                                    # 跳过合并后的PDF文件
+                                    if pdf_file == merged_pdf_filename:
+                                        continue
+                                        
+                                    # 从文件名中提取学生ID
+                                    # 假设文件名格式为: ID_姓名.pdf 或 ID.pdf
+                                    student_id = pdf_file.split('_')[0].split('.')[0]
+                                    try:
+                                        # 尝试将学号转为整数进行比较
+                                        numeric_id = int(student_id)
+                                        student_pdf_mapping.append((numeric_id, pdf_file))
+                                    except ValueError:
+                                        # 如果学号不是数字，则保持原样
+                                        logger.warning(f"无法将学号解析为数字: {student_id}，文件名: {pdf_file}")
+                                        student_pdf_mapping.append((student_id, pdf_file))
+                                
+                                # 按学号排序
+                                student_pdf_mapping.sort(key=lambda x: x[0])
+                                logger.info(f"按学号顺序排序后的PDF文件列表: {[mapping[1] for mapping in student_pdf_mapping]}")
+                                
+                                # 按学号顺序合并PDF文件
+                                for idx, (_, pdf_file) in enumerate(student_pdf_mapping):
                                     pdf_path = os.path.join(pdf_dir, pdf_file)
                                     if os.path.exists(pdf_path):
                                         try:
                                             merger.append(pdf_path)
                                             # 更新合并进度
-                                            merge_progress = f"正在合并PDF文件 ({idx+1}/{len(pdf_files)})"
-                                            websocket_progress(merge_progress, 90 + int((idx+1)/len(pdf_files)*5), request_id)
+                                            merge_progress = f"正在合并PDF文件 ({idx+1}/{len(student_pdf_mapping)})"
+                                            websocket_progress(merge_progress, 90 + int((idx+1)/len(student_pdf_mapping)*5), request_id)
                                             logger.info(f"成功添加PDF文件到合并器: {pdf_file}")
                                         except Exception as e:
                                             logger.error(f"添加PDF文件到合并器失败: {pdf_file}, 错误: {str(e)}")
