@@ -4,6 +4,15 @@ body {
     color: #333;
     padding: 20px;
 }
+
+/* 添加页面滚动占位符 */
+.scroll-placeholder {
+    height: 300px !important;
+    width: 100% !important;
+    margin-bottom: 20px !important;
+    display: block !important;
+}
+
 .dashboard-card {
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);

@@ -219,6 +219,29 @@
         </div>
     </div>
 
+    <!-- 图表部分 -->
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="dashboard-card chart-card">
+                <h3>评分分布</h3>
+                <div class="chart-container">
+                    <canvas id="gradeChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="dashboard-card chart-card">
+                <h3>评语完成率</h3>
+                <div class="chart-container">
+                    <canvas id="commentsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加滚动占位符 -->
+    <div class="scroll-placeholder"></div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="/js/home.js"></script>
