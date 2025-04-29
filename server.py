@@ -182,7 +182,7 @@ def serve_fonts(filename):
 # 初始化Flask-Login
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = 'login'  # 设置登录视图
+login_manager.login_view = 'users.login'  # 设置登录视图
 
 # 用户加载函数
 @login_manager.user_loader
@@ -1536,11 +1536,6 @@ def upload_template():
 @app.route('/img/<path:path>')
 def serve_img(path):
     return send_from_directory('img', path)
-
-# 登录路由
-@app.route('/login')
-def login_redirect():
-    return redirect(url_for('users.login'))
 
 # 初始化数据应用
 if __name__ == '__main__':
