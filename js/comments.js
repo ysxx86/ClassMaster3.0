@@ -963,17 +963,16 @@ function showNotification(message, type = 'success', duration = 3000) {
     `;
     
     // 将Toast添加到容器
-    const toastContainer = document.getElementById('toastContainer');
-    if (toastContainer) {
-        toastContainer.appendChild(toast);
-    } else {
-        // 如果没有容器，创建一个并添加到body
-        const container = document.createElement('div');
-        container.id = 'toastContainer';
-        container.className = 'position-fixed bottom-0 end-0 p-3';
-        document.body.appendChild(container);
-        container.appendChild(toast);
+    let toastContainer = document.getElementById('toastContainer');
+    if (!toastContainer) {
+        // 如果没有容器，创建一个并添加到body，定位在屏幕中间
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'toastContainer';
+        toastContainer.className = 'position-fixed top-50 start-50 translate-middle p-3';
+        toastContainer.style.zIndex = '9999';
+        document.body.appendChild(toastContainer);
     }
+    toastContainer.appendChild(toast);
     
     // 监听隐藏事件，从DOM移除元素
     toast.addEventListener('hidden.bs.toast', function() {
@@ -1296,6 +1295,28 @@ function showAICommentAssistant(studentId, studentName, classId) {
         
         document.body.appendChild(modalElement);
         
+        // 自定义确认对话框模板
+        const confirmModalHTML = `
+            <div class="modal fade" id="aiConfirmModal" tabindex="-1" aria-labelledby="aiConfirmModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="aiConfirmModalLabel">确认</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body" id="aiConfirmModalBody">
+                            <!-- 确认消息内容 -->
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="aiConfirmCancelBtn">取消</button>
+                            <button type="button" class="btn btn-primary" id="aiConfirmOkBtn">确定</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', confirmModalHTML);
+        
         // 绑定API设置按钮事件 - 现在打开模态框而不是跳转
         document.getElementById('openApiSettingsBtn').addEventListener('click', function(e) {
             e.preventDefault();
@@ -1325,9 +1346,32 @@ function showAICommentAssistant(studentId, studentName, classId) {
         modalElement.appendChild(classIdField);
     }
     
+    if (!modalElement.querySelector('#lastStudentId')) {
+        const lastStudentIdField = document.createElement('input');
+        lastStudentIdField.type = 'hidden';
+        lastStudentIdField.id = 'lastStudentId';
+        modalElement.appendChild(lastStudentIdField);
+    }
+    
+    // 获取上一次学生ID
+    const lastStudentId = document.getElementById('lastStudentId').value;
+    
+    // 检查是否切换了学生 - 只有当lastStudentId存在且与当前学生ID不同时才清空
+    if (lastStudentId && lastStudentId !== studentId) {
+        console.log('学生已切换，清空个性化信息');
+        // 清空所有个性化输入框的值
+        document.getElementById('aiPersonalityInput').value = '';
+        document.getElementById('aiStudyInput').value = '';
+        document.getElementById('aiHobbiesInput').value = '';
+        document.getElementById('aiImprovementInput').value = '';
+    }
+    
     // 更新当前学生ID和班级ID
     document.getElementById('currentStudentId').value = studentId;
     document.getElementById('currentClassId').value = classId;
+    
+    // 先检查学生切换后再更新lastStudentId
+    document.getElementById('lastStudentId').value = studentId;
     
     // 设置学生姓名
     document.getElementById('aiModalStudentName').textContent = studentName;
@@ -1387,6 +1431,57 @@ function showAICommentAssistant(studentId, studentName, classId) {
     modal.show();
 }
 
+// 显示自定义确认对话框
+function showCustomConfirm(message, okCallback) {
+    const confirmModal = document.getElementById('aiConfirmModal');
+    const confirmBody = document.getElementById('aiConfirmModalBody');
+    const confirmOkBtn = document.getElementById('aiConfirmOkBtn');
+    const confirmCancelBtn = document.getElementById('aiConfirmCancelBtn');
+    
+    if (!confirmModal || !confirmBody || !confirmOkBtn || !confirmCancelBtn) {
+        // 降级到使用浏览器原生confirm
+        return confirm(message);
+    }
+    
+    // 设置消息内容
+    confirmBody.textContent = message;
+    
+    // 创建一个Promise来处理用户响应
+    return new Promise((resolve) => {
+        // 确定按钮事件
+        const okClickHandler = () => {
+            confirmOkBtn.removeEventListener('click', okClickHandler);
+            confirmCancelBtn.removeEventListener('click', cancelClickHandler);
+            const bsModal = bootstrap.Modal.getInstance(confirmModal);
+            if (bsModal) bsModal.hide();
+            resolve(true);
+            if (okCallback) okCallback();
+        };
+        
+        // 取消按钮事件
+        const cancelClickHandler = () => {
+            confirmOkBtn.removeEventListener('click', okClickHandler);
+            confirmCancelBtn.removeEventListener('click', cancelClickHandler);
+            resolve(false);
+        };
+        
+        // 模态框关闭事件
+        const modalHiddenHandler = () => {
+            confirmModal.removeEventListener('hidden.bs.modal', modalHiddenHandler);
+            resolve(false);
+        };
+        
+        // 绑定事件
+        confirmOkBtn.addEventListener('click', okClickHandler);
+        confirmCancelBtn.addEventListener('click', cancelClickHandler);
+        confirmModal.addEventListener('hidden.bs.modal', modalHiddenHandler);
+        
+        // 显示模态框
+        const modal = new bootstrap.Modal(confirmModal);
+        modal.show();
+    });
+}
+
 // 生成AI评语
 async function generateAIComment(studentId, classId) {
     try {
@@ -1408,7 +1503,9 @@ async function generateAIComment(studentId, classId) {
 
         // 检查是否填写了任何学生特征信息
         if (!personality && !studyPerformance && !hobbies && !improvement) {
-            if (!confirm('您没有填写任何学生特征信息，这将导致生成的评语缺乏个性化。是否仍要继续？')) {
+            // 使用自定义确认对话框替代浏览器原生confirm
+            const confirmed = await showCustomConfirm('您没有填写任何学生特征信息，这将导致生成的评语缺乏个性化。是否仍要继续？');
+            if (!confirmed) {
                 return; // 用户选择取消生成
             }
         }
@@ -1465,6 +1562,18 @@ async function generateAIComment(studentId, classId) {
                 additional_instructions: additionalInstructions
             })
         });
+
+        // 检查是否是会话超时或权限错误
+        if (response.status === 401 || response.status === 405) {
+            console.error('会话已过期，需要重新登录');
+            
+            // 显示会话超时提示
+            await showCustomConfirm('您的会话已超时，需要重新登录。点击确定将跳转到登录页面。');
+            
+            // 重定向到登录页面
+            window.location.href = '/login?timeout=true';
+            return;
+        }
 
         if (!response.ok) {
             throw new Error(`HTTP错误! 状态: ${response.status}`);
@@ -1569,6 +1678,20 @@ function useAIComment(studentId, classId) {
         })
         .then(response => {
             console.log('服务器响应状态:', response.status);
+            
+            // 检查是否是会话超时或权限错误
+            if (response.status === 401 || response.status === 405) {
+                console.error('会话已过期，需要重新登录');
+                
+                // 显示会话超时提示并重定向
+                showCustomConfirm('您的会话已超时，需要重新登录。点击确定将跳转到登录页面。')
+                .then((confirmed) => {
+                    window.location.href = '/login?timeout=true';
+                });
+                
+                throw new Error('会话已过期，请重新登录');
+            }
+            
             if (!response.ok) {
                 return response.text().then(text => {
                     try {
@@ -1613,7 +1736,11 @@ function useAIComment(studentId, classId) {
         })
         .catch(error => {
             console.error('保存评语失败:', error);
-            showNotification(`保存评语失败: ${error.message}`, 'error');
+            
+            // 不显示会话超时重复提示
+            if (!error.message.includes('会话已过期')) {
+                showNotification(`保存评语失败: ${error.message}`, 'error');
+            }
         })
         .finally(() => {
             // 恢复按钮状态
