@@ -41,11 +41,11 @@ class DashboardAPI:
         try:
             current_class = self.db_manager.get_current_class(current_user)
             current_semester = self.db_manager.get_current_semester()
-            total_students = self.db_manager.get_total_students()
+            total_students = self.db_manager.get_total_students(current_user)
             
-            comments = self.db_manager.get_comments_completion()
-            grades = self.db_manager.get_grades_completion()
-            reports = self.db_manager.get_reports_generation()
+            comments = self.db_manager.get_comments_completion(current_user)
+            grades = self.db_manager.get_grades_completion(current_user)
+            reports = self.db_manager.get_reports_generation(current_user)
             
             return jsonify({
                 'status': 'success',
@@ -70,7 +70,7 @@ class DashboardAPI:
     def get_comments_info(self):
         """获取评语完成情况"""
         try:
-            comments = self.db_manager.get_comments_completion()
+            comments = self.db_manager.get_comments_completion(current_user)
             return jsonify({
                 'status': 'success',
                 'data': comments
@@ -84,7 +84,7 @@ class DashboardAPI:
     def get_grades_info(self):
         """获取成绩录入情况"""
         try:
-            grades = self.db_manager.get_grades_completion()
+            grades = self.db_manager.get_grades_completion(current_user)
             return jsonify({
                 'status': 'success',
                 'data': grades
@@ -98,7 +98,7 @@ class DashboardAPI:
     def get_reports_info(self):
         """获取报告生成情况"""
         try:
-            reports = self.db_manager.get_reports_generation()
+            reports = self.db_manager.get_reports_generation(current_user)
             return jsonify({
                 'status': 'success',
                 'data': reports
