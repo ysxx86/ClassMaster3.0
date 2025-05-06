@@ -55,8 +55,8 @@ class DashboardAPI:
                     'total_students': total_students,
                     'comments_completed': comments['completed'],
                     'comments_percentage': comments['percentage'],
-                    'grades_completed': grades['all_completed'],
-                    'grades_percentage': round((grades['all_completed'] / grades['total'] * 100) if grades['total'] > 0 else 0, 1),
+                    'grades_completed': grades['has_some_grades'],
+                    'grades_percentage': round((grades['has_some_grades'] / grades['total'] * 100) if grades['total'] > 0 else 0, 1),
                     'reports_ready': reports['ready'],
                     'reports_percentage': reports['percentage']
                 }
