@@ -164,36 +164,47 @@ class DashboardManager:
         # 列出所有主要学科
         subjects = ['yuwen', 'shuxue', 'yingyu', 'daof', 'kexue', 'tiyu', 'yinyue', 'meishu']
         
-        # 构建查询语句，检查至少有一个学科成绩不为空（包含"无"也算作有效成绩）
-        query_conditions = [f"({subject} IS NOT NULL AND {subject} != '' OR {subject} = '无')" for subject in subjects]
-        query = f"""
-            SELECT COUNT(*) as completed 
-            FROM students 
-            WHERE {" OR ".join(query_conditions)}
-        """
-        
+        # 查询所有学生记录
         if user_class_id:
-            query += f" AND class_id = ?"
-            cursor.execute(query, (user_class_id,))
+            cursor.execute("SELECT id FROM students WHERE class_id = ?", (user_class_id,))
         else:
-            cursor.execute(query)
+            cursor.execute("SELECT id FROM students")
         
-        has_some_grades = cursor.fetchone()['completed']
+        student_ids = [row['id'] for row in cursor.fetchall()]
         
-        # 统计每个学生的成绩完成情况（包含"无"也算作有效成绩）
-        query_all_completed = f"""
-            SELECT COUNT(*) as all_completed
-            FROM students
-            WHERE {" AND ".join([f"({subject} IS NOT NULL AND {subject} != '' OR {subject} = '无')" for subject in subjects])}
-        """
+        # 统计每个学生的成绩录入情况
+        has_some_grades = 0  # 至少有一个科目成绩的学生数
+        all_completed = 0    # 所有科目都有成绩的学生数
         
-        if user_class_id:
-            query_all_completed += f" AND class_id = ?"
-            cursor.execute(query_all_completed, (user_class_id,))
-        else:
-            cursor.execute(query_all_completed)
-        
-        all_completed = cursor.fetchone()['all_completed']
+        for student_id in student_ids:
+            # 获取学生的所有科目成绩
+            cursor.execute(f"""
+                SELECT {', '.join(subjects)}
+                FROM students
+                WHERE id = ?
+            """, (student_id,))
+            
+            row = cursor.fetchone()
+            if not row:
+                continue
+                
+            # 检查是否至少有一个科目有成绩（包括"/"值，但不包括空值）
+            has_grade = False
+            all_grades_completed = True
+            
+            for subject in subjects:
+                grade = row[subject]
+                # 有效成绩：非空且不为空字符串，或者等于"/"
+                if grade is not None and (grade != '' or grade == '/'):
+                    has_grade = True
+                else:
+                    all_grades_completed = False
+            
+            if has_grade:
+                has_some_grades += 1
+                
+            if all_grades_completed:
+                all_completed += 1
         
         conn.close()
         
@@ -229,7 +240,8 @@ class DashboardManager:
             "class IS NOT NULL AND class != ''"
         ]
         
-        grade_conditions = [f"{subject} IS NOT NULL AND {subject} != ''" for subject in subjects]
+        # 将"/"也视为有效的成绩录入值
+        grade_conditions = [f"({subject} IS NOT NULL AND ({subject} != '' OR {subject} = '/'))" for subject in subjects]
         
         query = f"""
             SELECT COUNT(*) as ready

@@ -248,11 +248,11 @@ function renderGradesTable(grades) {
             select.setAttribute('data-student-id', studentGrade.student_id);
             select.setAttribute('data-subject', subject);
             
-            // 添加选项（支持优、良、及格、待及格、无五个等级）
-            ['', '优', '良', '及格', '待及格', '无'].forEach(option => {
+            // 添加选项（支持优、良、及格、待及格、/五个等级）
+            ['', '优', '良', '及格', '待及格', '/'].forEach(option => {
                 const optionEl = document.createElement('option');
                 optionEl.value = option;
-                optionEl.textContent = option || '无';
+                optionEl.textContent = option || '未填';
                 if (option === gradeValue) {
                     optionEl.selected = true;
                 }
@@ -268,7 +268,7 @@ function renderGradesTable(grades) {
                 select.classList.add('grade-c');
             } else if (gradeValue === '待及格') {
                 select.classList.add('grade-d');
-            } else if (gradeValue === '无') {
+            } else if (gradeValue === '/') {
                 select.classList.add('grade-none');
             }
             
@@ -351,7 +351,7 @@ function updateGrade(selectElement) {
         selectElement.classList.add('grade-c');
     } else if (value === '待及格') {
         selectElement.classList.add('grade-d');
-    } else if (value === '无') {
+    } else if (value === '/') {
         selectElement.classList.add('grade-none');
     }
     
@@ -1298,7 +1298,7 @@ function processPastedText(text) {
     }
     
     // 验证有效的等级
-    const validGrades = ['优', '良', '及格', '待及格', '无'];
+    const validGrades = ['优', '良', '及格', '待及格', '/'];
     
     // 记录要更新的数据
     const updatedGrades = {};
@@ -1326,7 +1326,7 @@ function processPastedText(text) {
             } else if (gradeValue === '待及格' || gradeValue === '待' || gradeValue === 'D' || gradeValue === 'd' || gradeValue === '不及格') {
                 gradeValue = '待及格';
             } else if (gradeValue === '/' || gradeValue === '无' || gradeValue === '缺' || gradeValue === '缺考') {
-                gradeValue = '无';
+                gradeValue = '/';
             }
         }
         
@@ -1345,7 +1345,7 @@ function processPastedText(text) {
                 select.classList.add('grade-c');
             } else if (gradeValue === '待及格') {
                 select.classList.add('grade-d');
-            } else if (gradeValue === '无') {
+            } else if (gradeValue === '/') {
                 select.classList.add('grade-none');
             }
             
