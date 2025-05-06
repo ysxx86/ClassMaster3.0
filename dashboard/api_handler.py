@@ -53,12 +53,21 @@ class DashboardAPI:
                     'current_class': current_class,
                     'current_semester': current_semester,
                     'total_students': total_students,
-                    'comments_completed': comments['completed'],
-                    'comments_percentage': comments['percentage'],
-                    'grades_completed': grades['has_some_grades'],
-                    'grades_percentage': round((grades['has_some_grades'] / grades['total'] * 100) if grades['total'] > 0 else 0, 1),
-                    'reports_ready': reports['ready'],
-                    'reports_percentage': reports['percentage']
+                    'comments': {
+                        'completed': comments['completed'],
+                        'total': comments['total'],
+                        'percentage': comments['percentage']
+                    },
+                    'grades': {
+                        'completed': grades['all_completed'],
+                        'total': grades['total'],
+                        'percentage': grades['percentage']
+                    },
+                    'reports': {
+                        'completed': reports['ready'],
+                        'total': reports['total'],
+                        'percentage': reports['percentage']
+                    }
                 }
             })
         except Exception as e:
