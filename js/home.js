@@ -51,16 +51,16 @@ function loadDashboardData() {
                 cards[0].querySelector('.dashboard-value').textContent = data.total_students;
                 
                 // 评语完成 - 第二个卡片
-                cards[1].querySelector('.dashboard-value').textContent = data.comments_completed;
-                cards[1].querySelector('.dashboard-desc').textContent = `已完成评语的学生数 (${data.comments_percentage}%)`;
+                cards[1].querySelector('.dashboard-value').textContent = data.comments.completed;
+                cards[1].querySelector('.dashboard-desc').textContent = `已完成评语的学生数 (${data.comments.percentage}%)`;
                 
                 // 成绩录入 - 第三个卡片
-                cards[2].querySelector('.dashboard-value').textContent = data.grades_completed;
-                cards[2].querySelector('.dashboard-desc').textContent = `已录入成绩的学生数 (${data.grades_percentage}%)`;
+                cards[2].querySelector('.dashboard-value').textContent = data.grades.completed;
+                cards[2].querySelector('.dashboard-desc').textContent = `已录入成绩的学生数 (${data.grades.percentage}%)`;
                 
                 // 报告生成 - 第四个卡片
-                cards[3].querySelector('.dashboard-value').textContent = data.reports_ready;
-                cards[3].querySelector('.dashboard-desc').textContent = `已生成报告的学生数 (${data.reports_percentage}%)`;
+                cards[3].querySelector('.dashboard-value').textContent = data.reports.completed;
+                cards[3].querySelector('.dashboard-desc').textContent = `已生成报告的学生数 (${data.reports.percentage}%)`;
             } else {
                 console.error('获取仪表盘数据失败', result.message);
                 showErrorMessage('获取数据失败，请刷新页面重试');
@@ -119,21 +119,21 @@ function updateDashboardWithData(data) {
         
         // 评语完成
         const commentCard = cards[1];
-        commentCard.querySelector('.dashboard-value').textContent = data.comments_completed || '0';
+        commentCard.querySelector('.dashboard-value').textContent = data.comments.completed || '0';
         commentCard.querySelector('.dashboard-desc').textContent = 
-            `已完成评语的学生数 (${data.comments_percentage || '0'}%)`;
+            `已完成评语的学生数 (${data.comments.percentage || '0'}%)`;
         
         // 成绩录入
         const gradeCard = cards[2];
-        gradeCard.querySelector('.dashboard-value').textContent = data.grades_completed || '0';
+        gradeCard.querySelector('.dashboard-value').textContent = data.grades.completed || '0';
         gradeCard.querySelector('.dashboard-desc').textContent = 
-            `已录入成绩的学生数 (${data.grades_percentage || '0'}%)`;
+            `已录入成绩的学生数 (${data.grades.percentage || '0'}%)`;
         
         // 报告生成
         const reportCard = cards[3];
-        reportCard.querySelector('.dashboard-value').textContent = data.reports_ready || '0';
+        reportCard.querySelector('.dashboard-value').textContent = data.reports.completed || '0';
         reportCard.querySelector('.dashboard-desc').textContent = 
-            `已生成报告的学生数 (${data.reports_percentage || '0'}%)`;
+            `已生成报告的学生数 (${data.reports.percentage || '0'}%)`;
     }
 }
 

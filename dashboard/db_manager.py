@@ -212,7 +212,7 @@ class DashboardManager:
             'total': total,
             'has_some_grades': has_some_grades,
             'all_completed': all_completed,
-            'percentage': round((has_some_grades / total * 100) if total > 0 else 0, 1)
+            'percentage': round((all_completed / total * 100) if total > 0 else 0, 1)
         }
     
     def get_reports_generation(self, user=None):
