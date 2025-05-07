@@ -841,6 +841,11 @@ function renderScoresTable(subjects, scores) {
         tableHead.appendChild(th);
     });
     
+    // 添加操作列
+    const actionTh = document.createElement('th');
+    actionTh.textContent = '操作';
+    tableHead.appendChild(actionTh);
+    
     // 按学生ID组织成绩数据
     const studentScores = {};
     scores.forEach(score => {
@@ -870,8 +875,15 @@ function renderScoresTable(subjects, scores) {
             const score = student.scores[subject];
             
             if (score !== undefined) {
-                // 根据成绩设置样式
-                td.textContent = score;
+                // 包装成可编辑的形式
+                td.innerHTML = `
+                    <span class="score-value" 
+                          data-student-id="${student.id}" 
+                          data-subject="${subject}" 
+                          data-original-score="${score}">
+                        ${score}
+                    </span>
+                `;
                 
                 // 应用颜色样式
                 if (score >= 90) {
@@ -891,7 +903,124 @@ function renderScoresTable(subjects, scores) {
             row.appendChild(td);
         });
         
+        // 添加操作按钮
+        const actionTd = document.createElement('td');
+        actionTd.innerHTML = `
+            <div class="btn-group btn-group-sm" role="group">
+                <button class="btn btn-outline-primary edit-student-scores-btn" data-student-id="${student.id}" data-student-name="${student.name}">
+                    <i class='bx bx-edit'></i>
+                </button>
+                <button class="btn btn-outline-danger delete-student-scores-btn" data-student-id="${student.id}" data-student-name="${student.name}">
+                    <i class='bx bx-trash'></i>
+                </button>
+            </div>
+        `;
+        row.appendChild(actionTd);
+        
         tableBody.appendChild(row);
+    });
+    
+    // 添加编辑按钮事件
+    document.querySelectorAll('.edit-student-scores-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const studentId = this.getAttribute('data-student-id');
+            const studentName = this.getAttribute('data-student-name');
+            
+            // 获取该学生的所有成绩
+            const studentScoreData = studentScores[studentId];
+            
+            // 打开编辑成绩模态框
+            openEditScoresModal(studentId, studentName, subjects, studentScoreData.scores);
+        });
+    });
+    
+    // 添加删除按钮事件
+    document.querySelectorAll('.delete-student-scores-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const studentId = this.getAttribute('data-student-id');
+            const studentName = this.getAttribute('data-student-name');
+            
+            if (confirm(`确定要删除学生 ${studentName}(${studentId}) 的所有成绩记录吗？此操作不可恢复。`)) {
+                deleteStudentScores(currentExam.id, studentId);
+            }
+        });
+    });
+    
+    // 单击成绩值可以直接编辑
+    document.querySelectorAll('.score-value').forEach(span => {
+        span.addEventListener('click', function() {
+            const studentId = this.getAttribute('data-student-id');
+            const subject = this.getAttribute('data-subject');
+            const originalScore = this.getAttribute('data-original-score');
+            
+            // 将文本替换为输入框
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.min = '0';
+            input.max = '100';
+            input.step = '0.5';
+            input.value = originalScore;
+            input.className = 'form-control form-control-sm';
+            input.style.width = '60px';
+            
+            // 替换内容
+            this.innerHTML = '';
+            this.appendChild(input);
+            input.focus();
+            
+            // 处理输入完成事件
+            const handleComplete = () => {
+                const newScore = parseFloat(input.value);
+                
+                // 验证输入
+                if (isNaN(newScore) || newScore < 0 || newScore > 100) {
+                    showNotification('error', '请输入0-100之间的有效分数');
+                    this.innerHTML = originalScore;
+                    return;
+                }
+                
+                // 如果分数没变，直接恢复显示
+                if (newScore === parseFloat(originalScore)) {
+                    this.innerHTML = originalScore;
+                    return;
+                }
+                
+                // 更新成绩
+                updateScore(currentExam.id, studentId, subject, newScore)
+                    .then(success => {
+                        if (success) {
+                            // 更新内容和属性
+                            this.innerHTML = newScore;
+                            this.setAttribute('data-original-score', newScore);
+                            
+                            // 可能需要更新单元格的颜色类
+                            const td = this.closest('td');
+                            td.className = '';
+                            if (newScore >= 90) {
+                                td.className = 'table-success';
+                            } else if (newScore >= 80) {
+                                td.className = 'table-info';
+                            } else if (newScore >= 60) {
+                                td.className = 'table-warning';
+                            } else {
+                                td.className = 'table-danger';
+                            }
+                        } else {
+                            // 恢复原始显示
+                            this.innerHTML = originalScore;
+                        }
+                    });
+            };
+            
+            // 添加事件监听器
+            input.addEventListener('blur', handleComplete);
+            input.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    handleComplete();
+                    e.preventDefault();
+                }
+            });
+        });
     });
 }
 
