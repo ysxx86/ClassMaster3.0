@@ -1377,7 +1377,8 @@ function updateExam() {
     const requestData = {
         exam_name: examName,
         exam_date: examDate,
-        subjects: subjects
+        subjects: subjects,
+        _method: 'PUT' // 添加方法覆盖参数，以支持某些不接受PUT的环境
     };
     
     // 如果是管理员，可能需要提供班级ID
@@ -1385,11 +1386,12 @@ function updateExam() {
         requestData.class_id = currentClassId;
     }
     
-    // 发送请求
+    // 发送请求 - 尝试使用POST方法，但在服务器端被解释为PUT
     fetch(`/api/exams/${examId}`, {
-        method: 'PUT',
+        method: 'POST', // 改为POST，但在数据中指定_method为PUT
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'X-HTTP-Method-Override': 'PUT' // 添加HTTP方法覆盖头
         },
         body: JSON.stringify(requestData)
     })
