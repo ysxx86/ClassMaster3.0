@@ -9,6 +9,8 @@ let currentExam = null;
 let examScores = {};
 let examStats = {};
 let charts = {};
+let selectedExams = [];
+let compareData = null;
 
 // DOM加载完成后初始化
 document.addEventListener('DOMContentLoaded', function() {
@@ -57,27 +59,26 @@ function setupEventListeners() {
     
     // 下载模板按钮
     document.getElementById('downloadTemplateBtn').addEventListener('click', function() {
-        downloadTemplate();
+        const examId = document.getElementById('uploadExamId').value;
+        downloadTemplate(examId);
     });
     
     // 上传模板下载按钮
     document.getElementById('uploadDownloadTemplateBtn').addEventListener('click', function() {
         const examId = document.getElementById('uploadExamId').value;
-        if (examId) {
-            downloadTemplate(examId);
-        }
+        downloadTemplate(examId);
     });
     
     // 文件上传预览
-    document.getElementById('scoresFileInput').addEventListener('change', function(e) {
-        if (this.files && this.files[0]) {
+    document.getElementById('scoresFileInput').addEventListener('change', function() {
+        if (this.files.length > 0) {
             previewScoresFile(this.files[0]);
         }
     });
     
-    // 上传考试成绩文件预览
-    document.getElementById('uploadScoresFileInput').addEventListener('change', function(e) {
-        if (this.files && this.files[0]) {
+    // 上传成绩文件预览
+    document.getElementById('uploadScoresFileInput').addEventListener('change', function() {
+        if (this.files.length > 0) {
             previewUploadScoresFile(this.files[0]);
         }
     });
@@ -87,6 +88,32 @@ function setupEventListeners() {
     
     // 更新考试按钮
     document.getElementById('updateExamBtn').addEventListener('click', updateExam);
+    
+    // 对比分析按钮事件
+    document.getElementById('compareExamsBtn').addEventListener('click', compareSelectedExams);
+    
+    // 全选按钮事件
+    document.getElementById('selectAllExams').addEventListener('change', function() {
+        const isChecked = this.checked;
+        document.querySelectorAll('.exam-checkbox').forEach(checkbox => {
+            checkbox.checked = isChecked;
+        });
+        
+        updateCompareButton();
+    });
+    
+    // 返回列表按钮（从对比分析页面）
+    document.getElementById('backToListFromCompareBtn').addEventListener('click', function() {
+        document.getElementById('compareResultContainer').style.display = 'none';
+        document.getElementById('examsContainer').parentElement.parentElement.style.display = 'block';
+    });
+    
+    // 学科下拉框变化事件
+    document.getElementById('compareSubjectSelect').addEventListener('change', function() {
+        if (compareData) {
+            renderComparisonCharts(compareData);
+        }
+    });
 }
 
 /**
@@ -224,8 +251,16 @@ function renderExamsList(exams) {
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col-md-4">
-                            <h5 class="card-title">${exam.exam_name}</h5>
-                            <p class="card-text text-muted">考试日期：${examDate}</p>
+                            <div class="d-flex align-items-center">
+                                <div class="form-check me-2">
+                                    <input class="form-check-input exam-checkbox" type="checkbox" value="${exam.id}" 
+                                        id="exam-${exam.id}" data-exam-name="${exam.exam_name}" data-subjects='${JSON.stringify(exam.subjects)}'>
+                                </div>
+                                <div>
+                                    <h5 class="card-title mb-0">${exam.exam_name}</h5>
+                                    <p class="card-text text-muted mb-0">考试日期：${examDate}</p>
+                                </div>
+                            </div>
                         </div>
                         <div class="col-md-4">
                             <p class="card-text">学科：${subjectsText}</p>
@@ -287,17 +322,25 @@ function renderExamsList(exams) {
             const examDate = this.getAttribute('data-exam-date');
             const subjects = JSON.parse(this.getAttribute('data-subjects'));
             
-            // 填充编辑表单
+            // 设置表单值
             document.getElementById('editExamId').value = examId;
             document.getElementById('editExamNameInput').value = examName;
-            document.getElementById('editExamDateInput').value = examDate.split('T')[0]; // 取日期部分
+            document.getElementById('editExamDateInput').value = examDate;
             
-            // 重置复选框
-            document.querySelectorAll('.edit-subject-checkbox').forEach(checkbox => {
-                checkbox.checked = subjects.includes(checkbox.value);
+            // 清除所有选择
+            document.querySelectorAll('.edit-subject-checkbox').forEach(cb => {
+                cb.checked = false;
             });
             
-            // 显示编辑模态框
+            // 设置学科选择
+            subjects.forEach(subject => {
+                const checkbox = document.getElementById(`editSubject${subject.replace(/[^a-zA-Z]/g, '')}`);
+                if (checkbox) {
+                    checkbox.checked = true;
+                }
+            });
+            
+            // 显示模态框
             const modal = new bootstrap.Modal(document.getElementById('editExamModal'));
             modal.show();
         });
@@ -309,11 +352,19 @@ function renderExamsList(exams) {
             const examId = this.getAttribute('data-exam-id');
             const examName = this.getAttribute('data-exam-name');
             
-            if (confirm(`确定要删除考试"${examName}"吗？此操作将同时删除所有相关的成绩数据，且不可恢复。`)) {
+            if (confirm(`确定要删除考试"${examName}"吗？此操作不可恢复，所有相关成绩数据都将被删除。`)) {
                 deleteExam(examId);
             }
         });
     });
+    
+    // 添加考试复选框事件，用于对比分析
+    document.querySelectorAll('.exam-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', updateCompareButton);
+    });
+    
+    // 初始化全选按钮状态
+    updateSelectAllCheckbox();
 }
 
 /**
@@ -1542,4 +1593,746 @@ function updateExam() {
         console.error('更新考试出错:', error);
         showNotification('error', '更新考试失败: ' + error.message);
     });
+}
+
+/**
+ * 更新学生单科成绩
+ * @param {number} examId 考试ID
+ * @param {string} studentId 学生ID
+ * @param {string} subject 学科
+ * @param {number} score 分数
+ * @returns {Promise<boolean>} 是否更新成功
+ */
+function updateScore(examId, studentId, subject, score) {
+    // 显示加载中
+    showNotification('info', '正在更新成绩...');
+    
+    // 准备请求数据
+    const requestData = {
+        exam_id: examId,
+        student_id: studentId,
+        subject: subject,
+        score: score
+    };
+    
+    // 发送请求
+    return fetch(`/api/exams/${examId}/scores/update`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'ok') {
+            showNotification('success', '成绩更新成功');
+            return true;
+        } else {
+            showNotification('error', data.message || '成绩更新失败');
+            return false;
+        }
+    })
+    .catch(error => {
+        console.error('更新成绩出错:', error);
+        showNotification('error', '更新成绩失败: ' + error.message);
+        return false;
+    });
+}
+
+/**
+ * 删除学生全部成绩
+ * @param {number} examId 考试ID
+ * @param {string} studentId 学生ID
+ */
+function deleteStudentScores(examId, studentId) {
+    // 显示加载中
+    showNotification('info', '正在删除成绩...');
+    
+    // 发送请求
+    fetch(`/api/exams/${examId}/scores/delete`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            exam_id: examId,
+            student_id: studentId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'ok') {
+            showNotification('success', '成绩删除成功');
+            
+            // 重新加载考试详情以刷新视图
+            loadExamDetail(examId);
+        } else {
+            showNotification('error', data.message || '成绩删除失败');
+        }
+    })
+    .catch(error => {
+        console.error('删除成绩出错:', error);
+        showNotification('error', '删除成绩失败: ' + error.message);
+    });
+}
+
+/**
+ * 打开编辑成绩模态框
+ * @param {string} studentId 学生ID
+ * @param {string} studentName 学生姓名
+ * @param {Array} subjects 学科列表
+ * @param {Object} scores 成绩数据
+ */
+function openEditScoresModal(studentId, studentName, subjects, scores) {
+    // 创建模态框HTML
+    const modalId = 'editScoresModal';
+    
+    // 检查是否已存在模态框
+    let modal = document.getElementById(modalId);
+    if (!modal) {
+        // 创建模态框
+        modal = document.createElement('div');
+        modal.id = modalId;
+        modal.className = 'modal fade';
+        modal.tabIndex = -1;
+        modal.setAttribute('aria-labelledby', 'editScoresModalLabel');
+        modal.setAttribute('aria-hidden', 'true');
+        
+        // 设置模态框内容
+        modal.innerHTML = `
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editScoresModalLabel">编辑学生成绩</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="editScoresForm">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">学生</label>
+                                    <input type="text" class="form-control" id="editScoresStudentName" readonly>
+                                    <input type="hidden" id="editScoresStudentId">
+                                </div>
+                            </div>
+                            <div class="row" id="editScoresSubjectsContainer">
+                                <!-- 学科输入字段将由JS动态生成 -->
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                        <button type="button" class="btn btn-primary" id="saveScoresBtn">保存修改</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // 添加到页面
+        document.body.appendChild(modal);
+    }
+    
+    // 显示学生信息
+    document.getElementById('editScoresStudentName').value = `${studentName} (${studentId})`;
+    document.getElementById('editScoresStudentId').value = studentId;
+    
+    // 清空并添加学科输入字段
+    const container = document.getElementById('editScoresSubjectsContainer');
+    container.innerHTML = '';
+    
+    subjects.forEach((subject, index) => {
+        const score = scores[subject] !== undefined ? scores[subject] : '';
+        
+        const col = document.createElement('div');
+        col.className = 'col-md-4 mb-3';
+        col.innerHTML = `
+            <label class="form-label">${subject}</label>
+            <input type="number" class="form-control edit-score-input" 
+                   data-subject="${subject}" 
+                   value="${score}" 
+                   min="0" max="100" step="0.5">
+        `;
+        
+        container.appendChild(col);
+    });
+    
+    // 保存按钮事件
+    document.getElementById('saveScoresBtn').onclick = function() {
+        saveEditedScores(studentId);
+    };
+    
+    // 显示模态框
+    const modalInstance = new bootstrap.Modal(modal);
+    modalInstance.show();
+}
+
+/**
+ * 保存编辑后的成绩
+ * @param {string} studentId 学生ID
+ */
+function saveEditedScores(studentId) {
+    // 收集所有成绩输入
+    const scoreInputs = document.querySelectorAll('.edit-score-input');
+    const scoreUpdates = [];
+    
+    // 验证并收集成绩数据
+    let hasErrors = false;
+    scoreInputs.forEach(input => {
+        const subject = input.getAttribute('data-subject');
+        const scoreValue = input.value.trim();
+        
+        if (scoreValue === '') {
+            // 空值跳过
+            return;
+        }
+        
+        const score = parseFloat(scoreValue);
+        
+        // 验证分数范围
+        if (isNaN(score) || score < 0 || score > 100) {
+            showNotification('error', `${subject} 的分数必须在0-100之间`);
+            hasErrors = true;
+            return;
+        }
+        
+        // 添加到更新列表
+        scoreUpdates.push({
+            subject: subject,
+            score: score
+        });
+    });
+    
+    // 如果有错误，不继续
+    if (hasErrors) {
+        return;
+    }
+    
+    // 如果没有更改，直接关闭
+    if (scoreUpdates.length === 0) {
+        bootstrap.Modal.getInstance(document.getElementById('editScoresModal')).hide();
+        return;
+    }
+    
+    // 显示加载中
+    showNotification('info', '正在更新成绩...');
+    
+    // 批量更新成绩
+    const requests = scoreUpdates.map(update => {
+        return updateScore(currentExam.id, studentId, update.subject, update.score);
+    });
+    
+    // 等待所有请求完成
+    Promise.all(requests)
+        .then(results => {
+            // 检查是否全部成功
+            const allSuccess = results.every(result => result === true);
+            
+            if (allSuccess) {
+                showNotification('success', '所有成绩更新成功');
+                
+                // 关闭模态框
+                bootstrap.Modal.getInstance(document.getElementById('editScoresModal')).hide();
+                
+                // 重新加载考试详情以刷新视图
+                loadExamDetail(currentExam.id);
+            } else {
+                showNotification('warning', '部分成绩更新失败，请重试');
+            }
+        })
+        .catch(error => {
+            console.error('批量更新成绩出错:', error);
+            showNotification('error', '更新成绩失败: ' + error.message);
+        });
+}
+
+/**
+ * 更新全选复选框状态
+ */
+function updateSelectAllCheckbox() {
+    const totalCheckboxes = document.querySelectorAll('.exam-checkbox').length;
+    const checkedCheckboxes = document.querySelectorAll('.exam-checkbox:checked').length;
+    
+    const selectAllCheckbox = document.getElementById('selectAllExams');
+    
+    if (totalCheckboxes === 0) {
+        selectAllCheckbox.disabled = true;
+        selectAllCheckbox.checked = false;
+    } else {
+        selectAllCheckbox.disabled = false;
+        selectAllCheckbox.checked = totalCheckboxes === checkedCheckboxes;
+    }
+}
+
+/**
+ * 更新对比按钮状态
+ */
+function updateCompareButton() {
+    // 获取所有选中的考试ID
+    selectedExams = Array.from(document.querySelectorAll('.exam-checkbox:checked')).map(checkbox => checkbox.value);
+    
+    // 更新按钮状态
+    const compareButton = document.getElementById('compareExamsBtn');
+    
+    if (selectedExams.length >= 2) {
+        compareButton.disabled = false;
+    } else {
+        compareButton.disabled = true;
+    }
+    
+    // 更新全选状态
+    updateSelectAllCheckbox();
+}
+
+/**
+ * 对比选中的考试
+ */
+function compareSelectedExams() {
+    if (selectedExams.length < 2) {
+        showNotification('warning', '请至少选择两次考试进行对比');
+        return;
+    }
+    
+    // 显示加载中
+    showNotification('info', '正在加载对比数据...');
+    
+    // 发送请求获取对比数据
+    fetch('/api/exams/compare', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            exam_ids: selectedExams
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'ok') {
+            // 保存对比数据
+            compareData = data.results;
+            
+            // 渲染对比分析页面
+            renderComparisonPage(compareData);
+            
+            // 隐藏考试列表，显示对比结果
+            document.getElementById('examsContainer').parentElement.parentElement.style.display = 'none';
+            document.getElementById('compareResultContainer').style.display = 'block';
+        } else {
+            showNotification('error', data.message || '加载对比数据失败');
+        }
+    })
+    .catch(error => {
+        console.error('加载对比数据出错:', error);
+        showNotification('error', '加载对比数据失败: ' + error.message);
+    });
+}
+
+/**
+ * 渲染对比分析页面
+ * @param {Object} data 对比数据
+ */
+function renderComparisonPage(data) {
+    // 渲染参与对比的考试列表
+    renderComparedExamsList(data.exams);
+    
+    // 设置学科选择下拉框
+    setupCompareSubjectSelect(data);
+    
+    // 渲染对比图表
+    renderComparisonCharts(data);
+    
+    // 渲染学生成绩对比表格
+    renderStudentComparisonTable(data);
+}
+
+/**
+ * 渲染参与对比的考试列表
+ * @param {Array} exams 考试数组
+ */
+function renderComparedExamsList(exams) {
+    const container = document.getElementById('comparedExamsList');
+    
+    const examsList = exams.map(exam => {
+        const examDate = new Date(exam.date).toLocaleDateString('zh-CN');
+        return `
+            <div class="badge bg-info p-2 me-2 mb-2">
+                ${exam.name}（${examDate}）
+            </div>
+        `;
+    }).join('');
+    
+    container.innerHTML = examsList;
+}
+
+/**
+ * 设置对比学科选择下拉框
+ * @param {Object} data 对比数据
+ */
+function setupCompareSubjectSelect(data) {
+    const select = document.getElementById('compareSubjectSelect');
+    select.innerHTML = '';
+    
+    // 添加公共学科选项
+    data.common_subjects.forEach(subject => {
+        const option = document.createElement('option');
+        option.value = subject;
+        option.textContent = subject;
+        select.appendChild(option);
+    });
+    
+    // 如果没有公共学科，添加所有学科
+    if (data.common_subjects.length === 0 && data.all_subjects) {
+        data.all_subjects.forEach(subject => {
+            const option = document.createElement('option');
+            option.value = subject;
+            option.textContent = subject;
+            select.appendChild(option);
+        });
+    }
+}
+
+/**
+ * 渲染对比图表
+ * @param {Object} data 对比数据
+ */
+function renderComparisonCharts(data) {
+    // 销毁现有图表
+    ['averageScoreComparisonChart', 'passRateComparisonChart', 'excellentRateComparisonChart', 'scoreDistributionComparisonChart'].forEach(chartId => {
+        if (charts[chartId]) {
+            charts[chartId].destroy();
+            delete charts[chartId];
+        }
+    });
+    
+    // 获取当前选择的学科
+    const selectedSubject = document.getElementById('compareSubjectSelect').value;
+    
+    if (!selectedSubject) {
+        return;
+    }
+    
+    // 准备图表数据
+    const labels = data.exams.map(exam => exam.name);
+    
+    // 1. 平均分对比图表
+    const averageScores = data.exams.map(exam => {
+        return exam.stats[selectedSubject] ? exam.stats[selectedSubject].average : 0;
+    });
+    
+    const averageScoreCtx = document.getElementById('averageScoreComparisonChart').getContext('2d');
+    charts['averageScoreComparisonChart'] = new Chart(averageScoreCtx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: `${selectedSubject}平均分`,
+                data: averageScores,
+                backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100
+                }
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: `${selectedSubject}学科平均分对比`
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `平均分: ${context.raw}`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    // 2. 及格率对比图表
+    const passRates = data.exams.map(exam => {
+        return exam.stats[selectedSubject] ? exam.stats[selectedSubject].pass_rate : 0;
+    });
+    
+    const passRateCtx = document.getElementById('passRateComparisonChart').getContext('2d');
+    charts['passRateComparisonChart'] = new Chart(passRateCtx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: `${selectedSubject}及格率`,
+                data: passRates,
+                backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: {
+                        callback: function(value) {
+                            return value + '%';
+                        }
+                    }
+                }
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: `${selectedSubject}学科及格率对比`
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `及格率: ${context.raw}%`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    // 3. 优秀率对比图表
+    const excellentRates = data.exams.map(exam => {
+        return exam.stats[selectedSubject] ? exam.stats[selectedSubject].excellent_rate : 0;
+    });
+    
+    const excellentRateCtx = document.getElementById('excellentRateComparisonChart').getContext('2d');
+    charts['excellentRateComparisonChart'] = new Chart(excellentRateCtx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: `${selectedSubject}优秀率`,
+                data: excellentRates,
+                backgroundColor: 'rgba(255, 159, 64, 0.6)',
+                borderColor: 'rgba(255, 159, 64, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: {
+                        callback: function(value) {
+                            return value + '%';
+                        }
+                    }
+                }
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: `${selectedSubject}学科优秀率对比`
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `优秀率: ${context.raw}%`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    // 4. 分数段分布对比图表
+    const distributionDatasets = [];
+    const distributionLabels = ['0-59', '60-69', '70-79', '80-89', '90-100'];
+    
+    data.exams.forEach((exam, index) => {
+        if (exam.stats[selectedSubject]) {
+            const distribution = exam.stats[selectedSubject].score_distribution;
+            const distributionData = [
+                distribution['0-59'] || 0,
+                distribution['60-69'] || 0,
+                distribution['70-79'] || 0,
+                distribution['80-89'] || 0,
+                distribution['90-100'] || 0
+            ];
+            
+            distributionDatasets.push({
+                label: exam.name,
+                data: distributionData,
+                backgroundColor: getChartColor(index, 0.6),
+                borderColor: getChartColor(index, 1),
+                borderWidth: 1
+            });
+        }
+    });
+    
+    const distributionCtx = document.getElementById('scoreDistributionComparisonChart').getContext('2d');
+    charts['scoreDistributionComparisonChart'] = new Chart(distributionCtx, {
+        type: 'bar',
+        data: {
+            labels: distributionLabels,
+            datasets: distributionDatasets
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: '人数'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: '分数段'
+                    }
+                }
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: `${selectedSubject}学科分数段分布对比`
+                }
+            }
+        }
+    });
+}
+
+/**
+ * 获取图表颜色
+ * @param {number} index 索引
+ * @param {number} alpha 透明度
+ * @returns {string} 颜色字符串
+ */
+function getChartColor(index, alpha) {
+    const colors = [
+        `rgba(54, 162, 235, ${alpha})`,   // 蓝色
+        `rgba(255, 99, 132, ${alpha})`,   // 红色
+        `rgba(75, 192, 192, ${alpha})`,   // 绿色
+        `rgba(255, 159, 64, ${alpha})`,   // 橙色
+        `rgba(153, 102, 255, ${alpha})`,  // 紫色
+        `rgba(255, 205, 86, ${alpha})`,   // 黄色
+        `rgba(201, 203, 207, ${alpha})`,  // 灰色
+        `rgba(0, 204, 150, ${alpha})`,    // 青绿色
+        `rgba(255, 100, 255, ${alpha})`,  // 粉色
+        `rgba(102, 102, 255, ${alpha})`   // 淡紫色
+    ];
+    
+    return colors[index % colors.length];
+}
+
+/**
+ * 渲染学生成绩对比表格
+ * @param {Object} data 对比数据
+ */
+function renderStudentComparisonTable(data) {
+    // 获取表头和表体元素
+    const tableHead = document.getElementById('compareStudentsTableHead');
+    const tableBody = document.getElementById('compareStudentsTableBody');
+    
+    // 获取当前选择的学科
+    const selectedSubject = document.getElementById('compareSubjectSelect').value;
+    
+    if (!selectedSubject) {
+        tableHead.innerHTML = '<tr><th>请选择一个学科进行对比</th></tr>';
+        tableBody.innerHTML = '';
+        return;
+    }
+    
+    // 生成表头
+    let headerRow = '<tr><th>学号</th><th>姓名</th>';
+    
+    // 添加考试名称列
+    data.exams.forEach(exam => {
+        headerRow += `<th>${exam.name}</th>`;
+    });
+    
+    // 添加分差列，如果有两次以上考试
+    if (data.exams.length >= 2) {
+        headerRow += '<th>最大分差</th><th>相比首考变化</th>';
+    }
+    
+    headerRow += '</tr>';
+    tableHead.innerHTML = headerRow;
+    
+    // 过滤出包含所选学科成绩的学生
+    const validStudents = data.students.filter(student => {
+        let hasScore = false;
+        for (const examId in student.scores) {
+            if (student.scores[examId][selectedSubject] !== undefined) {
+                hasScore = true;
+                break;
+            }
+        }
+        return hasScore;
+    });
+    
+    // 排序学生数据 (按学号)
+    validStudents.sort((a, b) => a.student_id.localeCompare(b.student_id));
+    
+    // 生成表格内容
+    const rows = validStudents.map(student => {
+        let row = `<tr><td>${student.student_id}</td><td>${student.student_name}</td>`;
+        
+        // 存储学生在每次考试中的成绩
+        const scores = [];
+        
+        // 添加每次考试的成绩
+        data.exams.forEach(exam => {
+            const examId = exam.id;
+            let score = '';
+            
+            if (student.scores[examId] && student.scores[examId][selectedSubject] !== undefined) {
+                score = student.scores[examId][selectedSubject];
+                scores.push(score);
+            }
+            
+            row += `<td>${score}</td>`;
+        });
+        
+        // 计算最大分差和变化趋势
+        if (data.exams.length >= 2 && scores.length >= 2) {
+            // 计算最大分差
+            const maxDiff = Math.max(...scores) - Math.min(...scores);
+            row += `<td>${maxDiff.toFixed(1)}</td>`;
+            
+            // 计算相比第一次考试的变化
+            const firstScore = scores[0];
+            const lastScore = scores[scores.length - 1];
+            const change = lastScore - firstScore;
+            
+            // 变化趋势显示，加上颜色标记
+            let changeHtml = '';
+            if (change > 0) {
+                changeHtml = `<span class="text-success">↑ ${change.toFixed(1)}</span>`;
+            } else if (change < 0) {
+                changeHtml = `<span class="text-danger">↓ ${Math.abs(change).toFixed(1)}</span>`;
+            } else {
+                changeHtml = `<span class="text-muted">→ 0</span>`;
+            }
+            
+            row += `<td>${changeHtml}</td>`;
+        }
+        
+        row += '</tr>';
+        return row;
+    }).join('');
+    
+    tableBody.innerHTML = rows || '<tr><td colspan="' + (data.exams.length + 3) + '" class="text-center">暂无成绩数据</td></tr>';
 } 
