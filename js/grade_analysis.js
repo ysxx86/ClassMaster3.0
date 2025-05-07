@@ -2283,56 +2283,235 @@ function renderStudentComparisonTable(data) {
         return hasScore;
     });
     
-    // 排序学生数据 (按学号)
-    validStudents.sort((a, b) => a.student_id.localeCompare(b.student_id));
-    
-    // 生成表格内容
-    const rows = validStudents.map(student => {
-        let row = `<tr><td>${student.student_id}</td><td>${student.student_name}</td>`;
-        
+    // 计算每个学生的变化趋势
+    const studentsWithChange = validStudents.map(student => {
         // 存储学生在每次考试中的成绩
         const scores = [];
         
-        // 添加每次考试的成绩
+        // 获取每次考试的成绩
         data.exams.forEach(exam => {
             const examId = exam.id;
-            let score = '';
-            
             if (student.scores[examId] && student.scores[examId][selectedSubject] !== undefined) {
-                score = student.scores[examId][selectedSubject];
-                scores.push(score);
+                scores.push(student.scores[examId][selectedSubject]);
             }
-            
-            row += `<td>${score}</td>`;
         });
         
-        // 计算最大分差和变化趋势
-        if (data.exams.length >= 2 && scores.length >= 2) {
-            // 计算最大分差
-            const maxDiff = Math.max(...scores) - Math.min(...scores);
-            row += `<td>${maxDiff.toFixed(1)}</td>`;
-            
-            // 计算相比第一次考试的变化
+        // 计算变化趋势
+        let change = 0;
+        let maxDiff = 0;
+        
+        if (scores.length >= 2) {
             const firstScore = scores[0];
             const lastScore = scores[scores.length - 1];
-            const change = lastScore - firstScore;
-            
-            // 变化趋势显示，加上颜色标记
-            let changeHtml = '';
-            if (change > 0) {
-                changeHtml = `<span class="text-success">↑ ${change.toFixed(1)}</span>`;
-            } else if (change < 0) {
-                changeHtml = `<span class="text-danger">↓ ${Math.abs(change).toFixed(1)}</span>`;
-            } else {
-                changeHtml = `<span class="text-muted">→ 0</span>`;
-            }
-            
-            row += `<td>${changeHtml}</td>`;
+            change = lastScore - firstScore;
+            maxDiff = Math.max(...scores) - Math.min(...scores);
         }
         
-        row += '</tr>';
-        return row;
-    }).join('');
+        return {
+            ...student,
+            scores,
+            change,
+            maxDiff
+        };
+    });
+    
+    // 过滤出有效分数（至少参加了2次考试）的学生
+    const validStudentsWithChange = studentsWithChange.filter(student => student.scores.length >= 2);
+    
+    // 按照变化程度排序，先展示进步最大的学生，再展示退步最明显的学生
+    validStudentsWithChange.sort((a, b) => b.change - a.change);
+    
+    // 找出进步和退步比较大的学生
+    // 使用四分位数来确定"比较大"的标准
+    const changes = validStudentsWithChange.map(student => student.change);
+    
+    // 计算进步学生中的四分位数
+    const positiveChanges = changes.filter(change => change > 0);
+    const negativeChanges = changes.filter(change => change < 0);
+    
+    // 计算Q3（进步学生第三四分位数）
+    let significantImprovement = 0;
+    if (positiveChanges.length > 0) {
+        positiveChanges.sort((a, b) => a - b);
+        const q3Index = Math.floor(positiveChanges.length * 0.75);
+        significantImprovement = positiveChanges[q3Index] || 5; // 默认值为5
+    } else {
+        significantImprovement = 5; // 如果没有进步的学生，默认值为5
+    }
+    
+    // 计算Q1（退步学生第一四分位数）
+    let significantDecline = 0;
+    if (negativeChanges.length > 0) {
+        negativeChanges.sort((a, b) => a - b);
+        const q1Index = Math.floor(negativeChanges.length * 0.25);
+        significantDecline = negativeChanges[q1Index] || -5; // 默认值为-5
+    } else {
+        significantDecline = -5; // 如果没有退步的学生，默认值为-5
+    }
+    
+    // 生成表格内容
+    let rows = '';
+    
+    // 生成分组标题 - 进步明显的学生
+    if (validStudentsWithChange.some(s => s.change > 0)) {
+        rows += `
+            <tr class="table-success">
+                <td colspan="${data.exams.length + 3}" class="text-center fw-bold">
+                    进步明显的学生 (提升 ${significantImprovement} 分以上)
+                </td>
+            </tr>
+        `;
+        
+        // 过滤出进步明显的学生
+        const improvedStudents = validStudentsWithChange.filter(student => student.change >= significantImprovement);
+        
+        // 添加进步明显的学生行
+        improvedStudents.forEach(student => {
+            rows += generateStudentRow(student, data.exams, 'success');
+        });
+        
+        // 如果没有进步明显的学生，显示提示
+        if (improvedStudents.length === 0) {
+            rows += `
+                <tr>
+                    <td colspan="${data.exams.length + 3}" class="text-center">
+                        无进步明显的学生
+                    </td>
+                </tr>
+            `;
+        }
+    }
+    
+    // 生成分组标题 - 成绩稳定的学生
+    rows += `
+        <tr class="table-light">
+            <td colspan="${data.exams.length + 3}" class="text-center fw-bold">
+                成绩稳定的学生
+            </td>
+        </tr>
+    `;
+    
+    // 过滤出成绩稳定的学生
+    const stableStudents = validStudentsWithChange.filter(student => 
+        student.change < significantImprovement && student.change > significantDecline
+    );
+    
+    // 添加稳定学生行
+    stableStudents.forEach(student => {
+        rows += generateStudentRow(student, data.exams, 'light');
+    });
+    
+    // 如果没有稳定的学生，显示提示
+    if (stableStudents.length === 0) {
+        rows += `
+            <tr>
+                <td colspan="${data.exams.length + 3}" class="text-center">
+                    无成绩稳定的学生
+                </td>
+            </tr>
+        `;
+    }
+    
+    // 生成分组标题 - 退步明显的学生
+    if (validStudentsWithChange.some(s => s.change < 0)) {
+        rows += `
+            <tr class="table-danger">
+                <td colspan="${data.exams.length + 3}" class="text-center fw-bold">
+                    退步明显的学生 (下降 ${Math.abs(significantDecline)} 分以上)
+                </td>
+            </tr>
+        `;
+        
+        // 过滤出退步明显的学生
+        const declinedStudents = validStudentsWithChange.filter(student => student.change <= significantDecline);
+        
+        // 添加退步明显的学生行
+        declinedStudents.forEach(student => {
+            rows += generateStudentRow(student, data.exams, 'danger');
+        });
+        
+        // 如果没有退步明显的学生，显示提示
+        if (declinedStudents.length === 0) {
+            rows += `
+                <tr>
+                    <td colspan="${data.exams.length + 3}" class="text-center">
+                        无退步明显的学生
+                    </td>
+                </tr>
+            `;
+        }
+    }
+    
+    // 未参加足够次数考试的学生
+    const notEnoughExams = studentsWithChange.filter(student => student.scores.length < 2);
+    
+    if (notEnoughExams.length > 0) {
+        rows += `
+            <tr class="table-secondary">
+                <td colspan="${data.exams.length + 3}" class="text-center fw-bold">
+                    未参加足够次数考试的学生
+                </td>
+            </tr>
+        `;
+        
+        // 添加未参加足够次数考试的学生行
+        notEnoughExams.forEach(student => {
+            rows += generateStudentRow(student, data.exams, 'secondary');
+        });
+    }
     
     tableBody.innerHTML = rows || '<tr><td colspan="' + (data.exams.length + 3) + '" class="text-center">暂无成绩数据</td></tr>';
+}
+
+/**
+ * 生成学生成绩行
+ * @param {Object} student 学生数据
+ * @param {Array} exams 考试数组
+ * @param {string} rowClass 行样式类
+ * @returns {string} 表格行HTML
+ */
+function generateStudentRow(student, exams, rowClass = '') {
+    let row = `<tr${rowClass ? ` class="table-${rowClass}"` : ''}>`;
+    row += `<td>${student.student_id}</td><td>${student.student_name}</td>`;
+    
+    // 添加每次考试的成绩
+    exams.forEach(exam => {
+        const examId = exam.id;
+        let score = '';
+        
+        if (student.scores && student.scores.length > 0) {
+            const examIndex = exams.findIndex(e => e.id === examId);
+            if (examIndex < student.scores.length) {
+                score = student.scores[examIndex];
+            }
+        }
+        
+        row += `<td>${score}</td>`;
+    });
+    
+    // 添加最大分差和变化趋势
+    if (exams.length >= 2 && student.scores && student.scores.length >= 2) {
+        // 最大分差
+        row += `<td>${student.maxDiff.toFixed(1)}</td>`;
+        
+        // 变化趋势
+        let changeHtml = '';
+        if (student.change > 0) {
+            changeHtml = `<span class="text-success">↑ ${student.change.toFixed(1)}</span>`;
+        } else if (student.change < 0) {
+            changeHtml = `<span class="text-danger">↓ ${Math.abs(student.change).toFixed(1)}</span>`;
+        } else {
+            changeHtml = `<span class="text-muted">→ 0</span>`;
+        }
+        
+        row += `<td>${changeHtml}</td>`;
+    } else {
+        // 对于未参加足够考试的学生，显示破折号
+        if (exams.length >= 2) {
+            row += `<td>-</td><td>-</td>`;
+        }
+    }
+    
+    row += '</tr>';
+    return row;
 } 
