@@ -1,0 +1,287 @@
+body {
+    font-family: 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+    background-color: #f5f7fa;
+    color: #333;
+    padding: 20px;
+}
+.page-title {
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #3498db;
+}
+.action-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+.grades-table {
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+.grades-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    text-align: center;
+    vertical-align: middle;
+}
+.grades-table td {
+    vertical-align: middle;
+    text-align: center;
+}
+.student-info {
+    display: flex;
+    align-items: center;
+    text-align: left;
+}
+.student-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+    overflow: hidden;
+    border: 2px solid #3498db;
+}
+.student-avatar i {
+    font-size: 1.5rem;
+    color: #3498db;
+}
+.student-name {
+    font-weight: 600;
+    margin-bottom: 0;
+    font-size: 0.95rem;
+}
+.student-id {
+    color: #666;
+    font-size: 0.8rem;
+}
+.grade-cell {
+    position: relative;
+}
+.grade-select {
+    appearance: none;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 5px 10px;
+    width: 100%;
+    text-align: center;
+    background-color: transparent;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+.grade-select:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+.grade-select option {
+    text-align: center;
+}
+/* 成绩等级样式 */
+.grade-a {
+    background-color: #d4edda;
+    color: #155724;
+    border-color: #c3e6cb;
+}
+.grade-b {
+    background-color: #fff3cd;
+    color: #856404;
+    border-color: #ffeeba;
+}
+.grade-c {
+    background-color: #d1ecf1;
+    color: #0c5460;
+    border-color: #bee5eb;
+}
+.grade-d {
+    background-color: #f8d7da;
+    color: #721c24;
+    border-color: #f5c6cb;
+}
+
+/* 使表格内容居中 */
+.grades-table th, .grades-table td {
+    text-align: center;
+    vertical-align: middle;
+}
+
+/* 调整成绩下拉框尺寸和居中 */
+.form-select.grade-select {
+    width: 80px;
+    margin: 0 auto;
+    text-align: center;
+    padding-left: 0.3rem;
+    padding-right: 1.5rem;
+}
+
+/* 固定表头样式 */
+.table-responsive.grades-table {
+    height: calc(100vh - 200px);
+    overflow-y: auto;
+    margin-bottom: 20px;
+}
+
+.grades-table thead tr th {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: #f8f9fa;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    cursor: pointer; /* 添加指针样式，表示可点击 */
+}
+
+/* 选中列的样式 */
+.grades-table .selected-column {
+    background-color: rgba(52, 152, 219, 0.1);
+}
+
+.grades-table th.selected-column {
+    background-color: rgba(52, 152, 219, 0.2);
+    box-shadow: inset 0 -2px 0 #3498db;
+}
+.table-responsive {
+    border-radius: 12px;
+    overflow: hidden;
+}
+.subject-header {
+    position: relative;
+}
+.subject-actions {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: none;
+}
+.subject-header:hover .subject-actions {
+    display: block;
+}
+.subject-actions button {
+    padding: 2px 5px;
+    font-size: 0.7rem;
+    margin-left: 2px;
+}
+.empty-state {
+    text-align: center;
+    padding: 50px 0;
+    color: #666;
+}
+.empty-state i {
+    font-size: 4rem;
+    color: #ccc;
+    margin-bottom: 20px;
+}
+.empty-state h3 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+}
+.empty-state p {
+    font-size: 1rem;
+    margin-bottom: 20px;
+}
+.notification-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    max-width: 350px;
+}
+.notification {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    margin-bottom: 10px;
+    padding: 12px;
+    display: flex;
+    align-items: flex-start;
+    animation: slide-in 0.3s ease-out;
+}
+.notification-hiding {
+    animation: slide-out 0.3s ease-out forwards;
+}
+@keyframes slide-in {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+@keyframes slide-out {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(100%); opacity: 0; }
+}
+.notification-icon {
+    margin-right: 12px;
+    font-size: 1.5rem;
+}
+.notification-content {
+    flex: 1;
+}
+.notification-message {
+    font-size: 0.9rem;
+}
+.notification-close {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: #999;
+    margin-left: 10px;
+}
+.notification-success .notification-icon {
+    color: #2ecc71;
+}
+.notification-error .notification-icon {
+    color: #e74c3c;
+}
+.notification-warning .notification-icon {
+    color: #f39c12;
+}
+.notification-info .notification-icon {
+    color: #3498db;
+}
+/* 修改底部导航栏样式，而不是完全隐藏 */
+.navbar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: #fff;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+}
+
+/* 导入区域样式 */
+.import-area {
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    padding: 2rem;
+    text-align: center;
+    background-color: #f8f9fa;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.import-area:hover, .import-area.drag-over {
+    border-color: #3498db;
+    background-color: #e3f2fd;
+}
+
+.import-area i {
+    font-size: 3rem;
+    color: #3498db;
+    margin-bottom: 1rem;
+}
+
+.import-area h3 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.import-area p {
+    color: #666;
+    margin-bottom: 1.5rem;
+}
