@@ -148,6 +148,17 @@ function setupEventListeners() {
             openStudentAnalysisModal(studentId, studentName);
         }
     });
+    
+    // 添加上传试卷按钮的事件监听器
+    document.getElementById('uploadPaperSubmitBtn')?.addEventListener('click', uploadPaperFile);
+    
+    // 添加下载分析报告按钮事件
+    document.getElementById('downloadAnalysisReportBtn')?.addEventListener('click', function() {
+        const examId = document.getElementById('paperExamId').value;
+        if (examId) {
+            downloadAnalysisReport(examId);
+        }
+    });
 }
 
 /**
@@ -586,6 +597,38 @@ function renderExamInfo(exam) {
     
     // 更新学科信息
     document.getElementById('examSubjects').textContent = exam.subjects.join('、');
+    
+    // 添加试卷分析按钮
+    const actionButtonsContainer = document.createElement('div');
+    actionButtonsContainer.className = 'mt-3 d-flex gap-2';
+    actionButtonsContainer.innerHTML = `
+        <button class="btn btn-primary" id="uploadPaperBtn">
+            <i class='bx bx-upload'></i> 上传试卷PDF
+        </button>
+        <button class="btn btn-info" id="analyzePaperBtn" ${!exam.has_paper ? 'disabled' : ''}>
+            <i class='bx bx-analyse'></i> 查看试卷分析
+        </button>
+    `;
+    
+    // 将按钮添加到考试信息区域
+    const examInfoSection = document.querySelector('#examDetailContainer .card-body .row:first-child');
+    if (examInfoSection && !document.getElementById('uploadPaperBtn')) {
+        examInfoSection.appendChild(actionButtonsContainer);
+        
+        // 添加上传试卷按钮事件
+        document.getElementById('uploadPaperBtn').addEventListener('click', function() {
+            openUploadPaperModal(exam.id, exam.exam_name);
+        });
+        
+        // 添加查看分析按钮事件
+        document.getElementById('analyzePaperBtn').addEventListener('click', function() {
+            if(exam.has_paper) {
+                openPaperAnalysisModal(exam.id, exam.exam_name);
+            } else {
+                showNotification('info', '请先上传试卷PDF');
+            }
+        });
+    }
 }
 
 /**
@@ -3671,4 +3714,378 @@ function renderStudentSubjectComparisonChart(student, exams, subjects) {
     } catch (error) {
         console.error('创建学科对比图表失败:', error);
     }
-} 
+}
+
+/**
+ * 打开上传试卷模态框
+ * @param {number} examId 考试ID
+ * @param {string} examName 考试名称
+ */
+function openUploadPaperModal(examId, examName) {
+    // 设置模态框数据
+    document.getElementById('paperExamId').value = examId;
+    document.getElementById('paperExamName').value = examName;
+    
+    // 清空文件输入
+    document.getElementById('paperFileInput').value = '';
+    
+    // 显示模态框
+    const modal = new bootstrap.Modal(document.getElementById('uploadPaperModal'));
+    modal.show();
+    
+    // 添加提交按钮事件
+    document.getElementById('uploadPaperSubmitBtn').onclick = uploadPaperFile;
+}
+
+/**
+ * 上传试卷文件
+ */
+function uploadPaperFile() {
+    const examId = document.getElementById('paperExamId').value;
+    const fileInput = document.getElementById('paperFileInput');
+    
+    if (!examId) {
+        showNotification('error', '缺少考试ID');
+        return;
+    }
+    
+    if (!fileInput.files || fileInput.files.length === 0) {
+        showNotification('error', '请选择PDF文件');
+        return;
+    }
+    
+    // 验证文件类型
+    const file = fileInput.files[0];
+    if (file.type !== 'application/pdf') {
+        showNotification('error', '请上传PDF格式的文件');
+        return;
+    }
+    
+    // 显示上传中状态
+    const submitBtn = document.getElementById('uploadPaperSubmitBtn');
+    const originalBtnText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 上传中...`;
+    
+    // 创建FormData对象
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    // 发送请求
+    fetch(`/api/exams/${examId}/paper`, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        // 恢复按钮状态
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnText;
+        
+        if (data.status === 'ok') {
+            showNotification('success', '试卷上传成功，正在进行分析');
+            
+            // 关闭上传模态框
+            bootstrap.Modal.getInstance(document.getElementById('uploadPaperModal')).hide();
+            
+            // 打开分析结果模态框
+            setTimeout(() => {
+                openPaperAnalysisModal(examId, document.getElementById('paperExamName').value);
+            }, 1000);
+        } else {
+            showNotification('error', data.message || '上传试卷失败');
+        }
+    })
+    .catch(error => {
+        console.error('上传试卷出错:', error);
+        showNotification('error', '上传试卷失败: ' + error.message);
+        
+        // 恢复按钮状态
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnText;
+    });
+}
+
+/**
+ * 打开试卷分析模态框
+ * @param {number} examId 考试ID
+ * @param {string} examName 考试名称
+ */
+function openPaperAnalysisModal(examId, examName) {
+    // 显示加载中状态
+    document.getElementById('paperAnalysisLoading').style.display = 'block';
+    document.getElementById('paperAnalysisContent').style.display = 'none';
+    
+    // 显示模态框
+    const modal = new bootstrap.Modal(document.getElementById('paperAnalysisModal'));
+    modal.show();
+    
+    // 设置考试名称
+    document.getElementById('paperExamNameDisplay').textContent = examName;
+    
+    // 获取试卷分析数据
+    fetchPaperAnalysisData(examId);
+    
+    // 添加下载报告按钮事件
+    document.getElementById('downloadAnalysisReportBtn').onclick = function() {
+        downloadAnalysisReport(examId);
+    };
+}
+
+/**
+ * 获取试卷分析数据
+ * @param {number} examId 考试ID
+ */
+function fetchPaperAnalysisData(examId) {
+    fetch(`/api/exams/${examId}/paper-analysis`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'ok') {
+                // 渲染分析结果
+                renderPaperAnalysis(data.analysis);
+                
+                // 隐藏加载中状态，显示内容
+                document.getElementById('paperAnalysisLoading').style.display = 'none';
+                document.getElementById('paperAnalysisContent').style.display = 'block';
+            } else if (data.status === 'processing') {
+                // 如果分析仍在处理中，显示提示并等待
+                showNotification('info', '试卷分析正在进行中，请稍候...');
+                
+                // 5秒后再次查询
+                setTimeout(() => {
+                    fetchPaperAnalysisData(examId);
+                }, 5000);
+            } else {
+                showNotification('error', data.message || '获取试卷分析数据失败');
+                
+                // 关闭模态框
+                bootstrap.Modal.getInstance(document.getElementById('paperAnalysisModal')).hide();
+            }
+        })
+        .catch(error => {
+            console.error('获取试卷分析数据出错:', error);
+            showNotification('error', '获取试卷分析数据失败: ' + error.message);
+            
+            // 关闭模态框
+            bootstrap.Modal.getInstance(document.getElementById('paperAnalysisModal')).hide();
+        });
+}
+
+/**
+ * 渲染试卷分析结果
+ * @param {Object} analysis 分析数据
+ */
+function renderPaperAnalysis(analysis) {
+    // 设置基本信息
+    document.getElementById('paperSubjectDisplay').textContent = analysis.subject || '';
+    document.getElementById('paperTotalScore').textContent = analysis.total_score || '100';
+    
+    // 渲染题目分析表格
+    renderQuestionAnalysisTable(analysis.questions || []);
+    
+    // 渲染错题分布图表
+    renderErrorDistributionChart(analysis.questions || []);
+    
+    // 渲染AI分析结果
+    document.getElementById('aiOverallAnalysis').innerHTML = `<p>${analysis.ai_analysis?.overall || '暂无分析'}</p>`;
+    
+    // 渲染薄弱知识点
+    if (analysis.ai_analysis?.weak_points && analysis.ai_analysis.weak_points.length > 0) {
+        const weakPointsHtml = analysis.ai_analysis.weak_points.map(point => 
+            `<div class="alert alert-warning">
+                <strong>${point.title || '知识点'}</strong>: ${point.description || ''}
+            </div>`
+        ).join('');
+        document.getElementById('aiWeakPointsAnalysis').innerHTML = weakPointsHtml;
+    } else {
+        document.getElementById('aiWeakPointsAnalysis').innerHTML = '<p>暂无薄弱知识点分析</p>';
+    }
+    
+    // 渲染教学建议
+    if (analysis.ai_analysis?.suggestions && analysis.ai_analysis.suggestions.length > 0) {
+        const suggestionsHtml = analysis.ai_analysis.suggestions.map(suggestion => 
+            `<div class="card mb-3">
+                <div class="card-header">${suggestion.title || '建议'}</div>
+                <div class="card-body">
+                    <p>${suggestion.description || ''}</p>
+                </div>
+            </div>`
+        ).join('');
+        document.getElementById('aiTeachingSuggestions').innerHTML = suggestionsHtml;
+    } else {
+        document.getElementById('aiTeachingSuggestions').innerHTML = '<p>暂无教学建议</p>';
+    }
+}
+
+/**
+ * 渲染题目分析表格
+ * @param {Array} questions 题目数据
+ */
+function renderQuestionAnalysisTable(questions) {
+    const tableBody = document.getElementById('questionAnalysisTable');
+    tableBody.innerHTML = '';
+    
+    if (questions.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="6" class="text-center">暂无题目分析数据</td></tr>';
+        return;
+    }
+    
+    questions.forEach((question, index) => {
+        const row = document.createElement('tr');
+        
+        // 根据错误率设置行样式
+        if (question.error_rate > 0.7) {
+            row.className = 'table-danger';
+        } else if (question.error_rate > 0.4) {
+            row.className = 'table-warning';
+        }
+        
+        // 计算错误人数
+        const errorCount = Math.round(question.error_rate * question.student_count) || 0;
+        
+        // 根据错误率确定难度等级
+        let difficultyLevel;
+        if (question.error_rate > 0.7) {
+            difficultyLevel = '<span class="badge bg-danger">困难</span>';
+        } else if (question.error_rate > 0.4) {
+            difficultyLevel = '<span class="badge bg-warning text-dark">中等</span>';
+        } else {
+            difficultyLevel = '<span class="badge bg-success">简单</span>';
+        }
+        
+        row.innerHTML = `
+            <td>${question.number || (index + 1)}</td>
+            <td>${question.type || '未知'}</td>
+            <td>${question.score || '-'}</td>
+            <td>${((1 - question.error_rate) * 100).toFixed(1)}%</td>
+            <td>${errorCount} / ${question.student_count || '-'}</td>
+            <td>${difficultyLevel}</td>
+        `;
+        
+        tableBody.appendChild(row);
+    });
+}
+
+/**
+ * 渲染错题分布图表
+ * @param {Array} questions 题目数据
+ */
+function renderErrorDistributionChart(questions) {
+    // 销毁现有图表
+    if (charts['errorDistributionChart']) {
+        charts['errorDistributionChart'].destroy();
+        delete charts['errorDistributionChart'];
+    }
+    
+    // 如果没有数据，不渲染图表
+    if (!questions || questions.length === 0) {
+        return;
+    }
+    
+    // 准备图表数据
+    const labels = questions.map(q => q.number || `题${questions.indexOf(q) + 1}`);
+    const errorRates = questions.map(q => (q.error_rate * 100).toFixed(1));
+    const scores = questions.map(q => q.score || 0);
+    
+    // 创建图表
+    const ctx = document.getElementById('errorDistributionChart').getContext('2d');
+    charts['errorDistributionChart'] = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: '错误率 (%)',
+                    data: errorRates,
+                    backgroundColor: 'rgba(255, 99, 132, 0.7)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 1,
+                    yAxisID: 'y'
+                },
+                {
+                    label: '分值',
+                    data: scores,
+                    type: 'line',
+                    fill: false,
+                    backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 2,
+                    yAxisID: 'y1'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: '题号'
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    title: {
+                        display: true,
+                        text: '错误率 (%)'
+                    },
+                    grid: {
+                        drawOnChartArea: true
+                    }
+                },
+                y1: {
+                    beginAtZero: true,
+                    position: 'right',
+                    title: {
+                        display: true,
+                        text: '分值'
+                    },
+                    grid: {
+                        drawOnChartArea: false
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const datasetLabel = context.dataset.label;
+                            const value = context.raw;
+                            if (datasetLabel === '错误率 (%)') {
+                                return `错误率: ${value}%`;
+                            } else {
+                                return `分值: ${value}`;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+/**
+ * 下载分析报告
+ * @param {number} examId 考试ID
+ */
+function downloadAnalysisReport(examId) {
+    window.location.href = `/api/exams/${examId}/paper-analysis-report`;
+}
+
+// 在DOM加载完成后添加事件监听
+document.addEventListener('DOMContentLoaded', function() {
+    // 原有的初始化代码...
+    
+    // 添加上传试卷按钮的事件监听器
+    document.getElementById('uploadPaperSubmitBtn')?.addEventListener('click', uploadPaperFile);
+    
+    // 添加下载分析报告按钮事件
+    document.getElementById('downloadAnalysisReportBtn')?.addEventListener('click', function() {
+        const examId = document.getElementById('paperExamId').value;
+        if (examId) {
+            downloadAnalysisReport(examId);
+        }
+    });
+}); 

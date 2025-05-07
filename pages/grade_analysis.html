@@ -765,5 +765,142 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
     <script src="/js/grade_analysis.js"></script>
+    
+    <!-- 上传试卷模态框 -->
+    <div class="modal fade" id="uploadPaperModal" tabindex="-1" aria-labelledby="uploadPaperModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="uploadPaperModalLabel">上传试卷PDF</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="uploadPaperForm">
+                        <div class="mb-3">
+                            <label for="paperExamId" class="form-label">考试</label>
+                            <input type="text" class="form-control" id="paperExamName" readonly>
+                            <input type="hidden" id="paperExamId">
+                        </div>
+                        <div class="mb-3">
+                            <label for="paperFileInput" class="form-label">试卷文件 (PDF格式)</label>
+                            <input type="file" class="form-control" id="paperFileInput" accept=".pdf" required>
+                            <div class="form-text">请上传清晰的试卷扫描件，包含所有题目和答案</div>
+                        </div>
+                    </form>
+                    <div class="alert alert-info">
+                        <i class='bx bx-info-circle'></i>
+                        系统将对试卷进行智能分析，识别每道题目及学生答案，生成详细的错题统计和教学建议
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" id="uploadPaperSubmitBtn">
+                        <i class='bx bx-upload'></i> 上传并分析
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 试卷分析结果模态框 -->
+    <div class="modal fade" id="paperAnalysisModal" tabindex="-1" aria-labelledby="paperAnalysisModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="paperAnalysisModalLabel">试卷分析</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="paperAnalysisLoading" class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">加载中...</span>
+                        </div>
+                        <p class="mt-2">正在加载分析结果...</p>
+                    </div>
+                    
+                    <div id="paperAnalysisContent" style="display: none;">
+                        <!-- 基本信息 -->
+                        <div class="card mb-4">
+                            <div class="card-header">试卷基本信息</div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <p><strong>考试名称：</strong><span id="paperExamNameDisplay"></span></p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <p><strong>学科：</strong><span id="paperSubjectDisplay"></span></p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <p><strong>试卷总分：</strong><span id="paperTotalScore">100</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 题目分析 -->
+                        <div class="card mb-4">
+                            <div class="card-header">题目分析</div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>题号</th>
+                                                <th>题型</th>
+                                                <th>分值</th>
+                                                <th>正确率</th>
+                                                <th>错误人数</th>
+                                                <th>难度等级</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="questionAnalysisTable">
+                                            <!-- 由JS填充 -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 错题分布图表 -->
+                        <div class="card mb-4">
+                            <div class="card-header">错题分布</div>
+                            <div class="card-body">
+                                <div style="height: 400px;">
+                                    <canvas id="errorDistributionChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- AI分析结果 -->
+                        <div class="card mb-4">
+                            <div class="card-header">AI教学分析</div>
+                            <div class="card-body">
+                                <h5>总体评价</h5>
+                                <div id="aiOverallAnalysis" class="mb-4">
+                                    <!-- 由JS填充 -->
+                                </div>
+                                
+                                <h5>薄弱知识点分析</h5>
+                                <div id="aiWeakPointsAnalysis" class="mb-4">
+                                    <!-- 由JS填充 -->
+                                </div>
+                                
+                                <h5>教学建议</h5>
+                                <div id="aiTeachingSuggestions">
+                                    <!-- 由JS填充 -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" id="downloadAnalysisReportBtn">
+                        <i class='bx bx-download'></i> 下载分析报告
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html> 
