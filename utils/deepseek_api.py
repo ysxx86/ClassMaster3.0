@@ -75,7 +75,7 @@ class DeepSeekAPI:
         
         # 构建一个简单的请求体
         payload = {
-            "model": "deepseek-chat",
+            "model": "deepseek-reasoner",
             "messages": [
                 {"role": "system", "content": "你是一个简单的API测试助手。"},
                 {"role": "user", "content": "返回'连接测试成功'这几个字，不要返回其他内容。"}
@@ -254,7 +254,7 @@ class DeepSeekAPI:
 
         # 构建请求体
         payload = {
-            "model": "deepseek-chat",
+            "model": "deepseek-reasoner",
             "messages": [
                 {"role": "system", "content": "你是一名专业的班主任，善于为学生撰写个性化、有启发性的评语。"},
                 {"role": "user", "content": prompt}
@@ -508,7 +508,7 @@ class DeepSeekAPI:
 
         # 构建请求体
         payload = {
-            "model": "deepseek-chat",
+            "model": "deepseek-reasoner",
             "messages": [
                 {"role": "system", "content": f"你是一名专业的{subject}教师和教学分析专家，善于分析试卷数据并提供有针对性的教学建议。"},
                 {"role": "user", "content": prompt}
