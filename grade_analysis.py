@@ -723,11 +723,25 @@ def delete_exam(exam_id):
             conn.close()
 
 # 更新考试
-@grade_analysis_bp.route('/api/exams/<int:exam_id>', methods=['PUT'])
+@grade_analysis_bp.route('/api/exams/<int:exam_id>', methods=['PUT', 'POST'])
 @login_required
 def update_exam(exam_id):
     try:
         data = request.json
+        
+        # 检查是否是POST请求但意图是PUT
+        if request.method == 'POST':
+            # 检查请求头或请求体中是否有方法覆盖的标识
+            method_override = request.headers.get('X-HTTP-Method-Override')
+            method_param = data.get('_method')
+            
+            # 如果不是PUT意图，则拒绝请求
+            if method_override != 'PUT' and method_param != 'PUT':
+                return jsonify({'status': 'error', 'message': '不支持POST方法更新考试'}), 405
+            
+            # 如果是覆盖方法，从请求数据中移除_method参数
+            if '_method' in data:
+                del data['_method']
         
         # 验证必填字段
         required_fields = ['exam_name', 'exam_date', 'subjects']
