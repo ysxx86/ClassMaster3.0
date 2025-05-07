@@ -205,6 +205,35 @@
                 padding-top: 0.5rem;
             }
         }
+        
+        /* 添加样式 */
+        .timeout-message {
+            margin-bottom: 15px;
+        }
+        
+        .alert {
+            padding: 10px 15px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .alert-warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+        }
+        
+        .alert-danger {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .alert i {
+            margin-right: 8px;
+            font-size: 1.2em;
+        }
     </style>
     <script>
         // 检查是否是由于会话超时导致的重定向
@@ -212,22 +241,8 @@
             // 从URL参数中检查是否有超时标记
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.has('timeout') && urlParams.get('timeout') === 'true') {
-                // 显示超时提示
-                const alertContainer = document.createElement('div');
-                alertContainer.className = 'alert alert-warning alert-dismissible fade show mb-4';
-                alertContainer.setAttribute('role', 'alert');
-                alertContainer.innerHTML = `
-                    <strong>会话已超时</strong> 由于长时间未操作，您已被自动登出。
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                `;
-                
-                // 将提示插入到页面中
-                const loginForm = document.querySelector('.login-form');
-                if (loginForm) {
-                    loginForm.parentNode.insertBefore(alertContainer, loginForm);
-                } else {
-                    document.body.insertBefore(alertContainer, document.body.firstChild);
-                }
+                // 不必添加额外的超时消息，模板已经处理了这个情况
+                console.log("检测到会话超时重定向");
             }  
         });
     </script>
@@ -247,10 +262,21 @@
             
             <!-- 第二行：登录表单 -->
             <form method="post" action="/login" class="login-form-section">
+                {% if timeout %}
+                <div class="timeout-message">
+                    <div class="alert alert-warning">
+                        <i class='bx bx-time'></i>
+                        <span>您的会话已超时，请重新登录</span>
+                    </div>
+                </div>
+                {% endif %}
+
                 {% if error %}
-                <div class="alert alert-danger alert-dismissible fade show" role="alert" style="position: absolute; top: -40px; left: 0; right: 0;">
-                    {{ error }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                <div class="error-message">
+                    <div class="alert alert-danger">
+                        <i class='bx bx-error'></i>
+                        <span>{{ error }}</span>
+                    </div>
                 </div>
                 {% endif %}
                 

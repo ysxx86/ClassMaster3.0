@@ -59,7 +59,7 @@ for package, version in REQUIRED_PACKAGES:
 print("依赖检查完成，开始导入模块...\n")
 
 # 原始的导入语句
-from flask import Flask, request, jsonify, send_from_directory, render_template, url_for, send_file, make_response, redirect, flash
+from flask import Flask, request, jsonify, send_from_directory, render_template, url_for, send_file, make_response, redirect, flash, session
 from flask_cors import CORS
 # 导入Flask-Login相关模块
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user, UserMixin
@@ -179,6 +179,69 @@ def serve_js(filename):
 def serve_fonts(filename):
     return send_from_directory('fonts', filename)
 
+# 添加错误处理器处理404错误
+@app.errorhandler(404)
+def page_not_found(e):
+    # 检查是否是静态资源请求
+    path = request.path
+    if path.startswith('/css/') or path.startswith('/js/') or path.startswith('/fonts/') or path.startswith('/img/'):
+        # 对于静态资源请求的404，重定向到登录页面
+        return redirect(url_for('users.login'))
+    
+    # 返回JSON响应，方便前端处理
+    if request.path.startswith('/api/'):
+        return jsonify({'status': 'error', 'message': '请求的资源不存在', 'code': 404}), 404
+    
+    # 对于普通页面请求，重定向到登录页面
+    return redirect(url_for('users.login'))
+
+# 添加405错误处理器
+@app.errorhandler(405)
+def method_not_allowed(e):
+    # 对于API请求，返回JSON响应
+    if request.path.startswith('/api/'):
+        return jsonify({
+            'status': 'error', 
+            'message': '不支持的请求方法', 
+            'code': 405
+        }), 405
+    
+    # 对于普通请求，重定向到首页
+    return redirect(url_for('index'))
+
+# 添加500错误处理器
+@app.errorhandler(500)
+def internal_server_error(e):
+    """处理服务器内部错误"""
+    # 记录错误
+    app.logger.error(f"500 错误: {str(e)}")
+    
+    # 对于API请求，返回JSON响应
+    if request.path.startswith('/api/'):
+        return jsonify({
+            'status': 'error', 
+            'message': '服务器内部错误', 
+            'code': 500
+        }), 500
+    
+    # 对于普通请求，重定向到登录页面
+    return redirect(url_for('users.login'))
+
+# 添加API方式的登出路由
+@app.route('/api/logout', methods=['POST', 'GET'])
+def api_logout():
+    """API方式的登出，用于前端AJAX调用"""
+    try:
+        if current_user.is_authenticated:
+            logout_user()
+            session.clear()
+            session.modified = True
+        
+        return jsonify({'status': 'ok', 'message': '已成功登出'})
+    except Exception as e:
+        app.logger.error(f"登出出错: {str(e)}")
+        return jsonify({'status': 'error', 'message': '登出过程中发生错误'}), 500
+
 # 初始化Flask-Login
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -210,6 +273,27 @@ app.register_blueprint(users_bp)
 
 # 注册班级蓝图
 app.register_blueprint(classes_bp)
+
+# 全局错误处理中间件
+@app.before_request
+def before_request():
+    """全局请求前处理"""
+    # 记录请求信息，便于调试
+    if app.debug:
+        app.logger.debug(f"收到请求: {request.method} {request.path}")
+
+@app.after_request
+def after_request(response):
+    """全局请求后处理"""
+    # 记录响应状态，便于调试
+    if app.debug and response.status_code >= 400:
+        app.logger.debug(f"响应状态: {response.status_code}")
+    
+    # 确保会话状态被保存
+    if hasattr(request, 'session'):
+        session.modified = True
+    
+    return response
 
 # 初始化评语模块
 init_comments(app)

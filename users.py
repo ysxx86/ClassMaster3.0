@@ -148,6 +148,9 @@ def login():
             # 登录用户
             login_user(user)
             
+            # 初始化会话活动时间
+            session['last_activity'] = datetime.datetime.now().isoformat()
+            
             # 判断是否为AJAX请求
             if request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return jsonify({'status': 'ok', 'message': '登录成功', 'redirect': '/'})
@@ -164,16 +167,20 @@ def login():
                 return render_template('login.html', error='用户名或密码错误')
     
     # GET请求返回登录页面
-    return render_template('login.html')
+    timeout = request.args.get('timeout', False)
+    return render_template('login.html', timeout=timeout)
 
 # 注销
 @users_bp.route('/logout')
 @login_required
 def logout():
+    # 先执行登出用户
     logout_user()
-    # 确保清除session
+    # 清除会话中的所有数据
     session.clear()
-    # 重定向到登录页面而不是首页
+    # 显式设置会话过期
+    session.modified = True
+    # 重定向到登录页面
     return redirect(url_for('users.login'))
 
 # 修改密码
