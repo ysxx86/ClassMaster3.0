@@ -12,8 +12,30 @@ let charts = {};
 let selectedExams = [];
 let compareData = null;
 
+/**
+ * 检查依赖库是否正确加载
+ */
+function checkDependencies() {
+    // 检查jQuery是否加载
+    if (typeof jQuery === 'undefined') {
+        console.error('jQuery is not loaded.');
+        return false;
+    }
+    
+    // 检查Chart.js是否加载
+    if (typeof Chart === 'undefined') {
+        console.error('Chart.js is not loaded.');
+        return false;
+    }
+    
+    return true;
+}
+
 // DOM加载完成后初始化
 document.addEventListener('DOMContentLoaded', function() {
+    // 检查依赖
+    const dependenciesLoaded = checkDependencies();
+    
     // 初始化表单元素
     initElements();
     
@@ -623,27 +645,52 @@ function renderSubjectTabs(subjects, stats) {
         
         if (hasStats) {
             const subjectStats = stats[subject];
+            // 计算达优人数（使用与优秀率相同的标准）
+            let excellentCount = 0;
+            const excellentThreshold = subjectStats.excellent_threshold || 90;
+            
+            // 分析分数段统计，计算达到优秀阈值的学生数量
+            Object.keys(subjectStats.score_distribution).forEach(range => {
+                const [min, max] = range.split('-').map(Number);
+                if (min >= excellentThreshold || max >= excellentThreshold) {
+                    // 对于跨越优秀分数线的区间，需要根据比例估算
+                    if (min < excellentThreshold && max >= excellentThreshold) {
+                        // 假设学生分数均匀分布，估算达到阈值的人数
+                        const ratio = (max - excellentThreshold + 1) / (max - min + 1);
+                        excellentCount += Math.round(subjectStats.score_distribution[range] * ratio);
+                    } else {
+                        // 整个区间都达到阈值
+                        excellentCount += subjectStats.score_distribution[range];
+                    }
+                }
+            });
             
             contentItem.innerHTML = `
                 <div class="row">
                     <div class="col-md-6">
                         <div class="row">
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <div class="stats-card">
                                     <div class="stats-label">平均分</div>
                                     <div class="stats-value">${subjectStats.average}</div>
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <div class="stats-card">
                                     <div class="stats-label">最高分</div>
                                     <div class="stats-value">${subjectStats.max}</div>
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <div class="stats-card">
                                     <div class="stats-label">最低分</div>
                                     <div class="stats-value">${subjectStats.min}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="stats-card">
+                                    <div class="stats-label">达优人数</div>
+                                    <div class="stats-value">${excellentCount}</div>
                                 </div>
                             </div>
                         </div>
@@ -929,8 +976,7 @@ function renderScoresTable(subjects, scores) {
         // 添加学号和姓名
         row.innerHTML = `
             <td>${student.id}</td>
-            <td>${student.name}</td>
-        `;
+            <td>${student.name}</td>`;
         
         // 添加各科成绩
         subjects.forEach(subject => {
@@ -2973,39 +3019,107 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 /**
+ * 检查元素是否存在，如果不存在则返回备用ID对应的元素
+ * @param {string} primaryId 主要元素ID
+ * @param {string} fallbackId 备用元素ID
+ * @returns {HTMLElement|null} 找到的HTML元素或null
+ */
+function getElement(primaryId, fallbackId) {
+    const primaryElement = document.getElementById(primaryId);
+    if (primaryElement) {
+        return primaryElement;
+    }
+    
+    if (fallbackId) {
+        return document.getElementById(fallbackId);
+    }
+    
+    return null;
+}
+
+/**
  * 打开学生成绩分析模态框
  * @param {string|number} studentId 学生ID
  * @param {string} studentName 学生姓名
  */
 function openStudentAnalysisModal(studentId, studentName) {
-    // 显示加载中
-    document.getElementById('studentAnalysisName').textContent = studentName;
-    document.getElementById('studentAnalysisId').textContent = studentId;
-    document.getElementById('studentAnalysisClass').textContent = '加载中...';
-    document.getElementById('studentExamCount').textContent = '加载中...';
-    document.getElementById('studentAverageScore').textContent = '加载中...';
-    document.getElementById('studentScoreTrend').textContent = '加载中...';
+    // 尝试获取不同页面的元素
+    const nameElement = getElement('studentName', 'studentAnalysisName');
+    const idElement = getElement('studentId', 'studentAnalysisId');
+    const classElement = getElement('studentAnalysisClass', null);
+    const examCountElement = getElement('studentExamCount', null);
+    const averageScoreElement = getElement('studentAverageScore', null);
+    const scoreTrendElement = getElement('studentScoreTrend', null);
     
-    // 清空图表区域
-    document.getElementById('studentDetailTableHead').innerHTML = '<tr><th>考试名称</th><th>考试日期</th></tr>';
-    document.getElementById('studentDetailTableBody').innerHTML = '<tr><td colspan="2" class="text-center">加载中...</td></tr>';
+    // 设置学生基本信息
+    if (nameElement) nameElement.textContent = studentName;
+    if (idElement) idElement.textContent = studentId;
+    
+    // 清空加载中状态
+    if (classElement) classElement.textContent = '加载中...';
+    if (examCountElement) examCountElement.textContent = '加载中...';
+    if (averageScoreElement) averageScoreElement.textContent = '加载中...';
+    if (scoreTrendElement) scoreTrendElement.textContent = '加载中...';
+    
+    // 确定使用哪个表格头和表格体
+    const tableHeadElement = getElement('studentScoresTableHead', 'studentDetailTableHead');
+    const tableBodyElement = getElement('studentScoresTableBody', 'studentDetailTableBody');
+    
+    // 清空表格
+    if (tableHeadElement) {
+        tableHeadElement.innerHTML = '<tr><th>考试名称</th><th>考试日期</th><th>成绩</th><th>班级平均分</th><th>排名</th><th>与平均分差距</th></tr>';
+    }
+    if (tableBodyElement) {
+        const colSpan = document.getElementById('studentScoresTableHead') ? 6 : 2;
+        tableBodyElement.innerHTML = `<tr><td colspan="${colSpan}" class="text-center">加载中...</td></tr>`;
+    }
     
     // 销毁现有图表
     if (charts['studentScoreTrendChart']) {
         charts['studentScoreTrendChart'].destroy();
         delete charts['studentScoreTrendChart'];
     }
-    if (charts['studentSubjectComparisonChart']) {
-        charts['studentSubjectComparisonChart'].destroy();
-        delete charts['studentSubjectComparisonChart'];
+    
+    // 根据当前页面决定使用哪个对比图表ID
+    const comparisonChartId = document.getElementById('studentSubjectsComparisonChart') ? 
+        'studentSubjectsComparisonChart' : 'studentSubjectComparisonChart';
+    
+    if (charts[comparisonChartId]) {
+        charts[comparisonChartId].destroy();
+        delete charts[comparisonChartId];
     }
     
+    // 获取模态框元素
+    const modalElement = document.getElementById('studentAnalysisModal');
+    
+    // 确保移除之前的事件监听器
+    modalElement.removeEventListener('hidden.bs.modal', handleModalHidden);
+    
+    // 添加模态框隐藏后的事件处理
+    modalElement.addEventListener('hidden.bs.modal', handleModalHidden);
+    
     // 显示模态框
-    const modal = new bootstrap.Modal(document.getElementById('studentAnalysisModal'));
+    const modal = new bootstrap.Modal(modalElement);
     modal.show();
     
     // 获取学生所有考试数据
     fetchStudentExamData(studentId);
+}
+
+/**
+ * 处理模态框隐藏后的事件
+ */
+function handleModalHidden() {
+    // 移除模态框背景
+    const modalBackdrops = document.querySelectorAll('.modal-backdrop');
+    modalBackdrops.forEach(backdrop => {
+        backdrop.remove();
+    });
+    
+    // 移除body上的modal-open类
+    document.body.classList.remove('modal-open');
+    document.body.style.overflow = '';
+    document.body.style.paddingRight = '';
 }
 
 /**
@@ -3044,7 +3158,7 @@ function fetchStudentExamData(studentId) {
                     showNotification('error', '获取学生成绩数据失败: ' + error.message);
                 });
             } else {
-                document.getElementById('studentDetailTableBody').innerHTML = '<tr><td colspan="2" class="text-center">没有找到考试数据</td></tr>';
+                document.getElementById('studentScoresTableBody').innerHTML = '<tr><td colspan="6" class="text-center">没有找到考试数据</td></tr>';
             }
         })
         .catch(error => {
@@ -3062,13 +3176,23 @@ function analyzeStudentData(studentId, data) {
     // 找到指定学生的数据
     const student = data.students.find(s => s.student_id == studentId);
     
+    // 获取元素引用
+    const classElement = getElement('studentAnalysisClass', null);
+    const examCountElement = getElement('studentExamCount', null);
+    const averageScoreElement = getElement('studentAverageScore', null);
+    const scoreTrendElement = getElement('studentScoreTrend', null);
+    const tableBodyElement = getElement('studentScoresTableBody', 'studentDetailTableBody');
+    
     if (!student) {
-        document.getElementById('studentDetailTableBody').innerHTML = '<tr><td colspan="2" class="text-center">未找到该学生的成绩数据</td></tr>';
+        if (tableBodyElement) {
+            const colSpan = document.getElementById('studentScoresTableHead') ? 6 : 2;
+            tableBodyElement.innerHTML = `<tr><td colspan="${colSpan}" class="text-center">未找到该学生的成绩数据</td></tr>`;
+        }
         return;
     }
     
     // 设置学生基本信息
-    document.getElementById('studentAnalysisClass').textContent = student.class_name || '未知';
+    if (classElement) classElement.textContent = student.class_name || '未知';
     
     // 提取学生的考试记录
     const examScores = {}; // 按考试ID存储学生的成绩
@@ -3094,13 +3218,16 @@ function analyzeStudentData(studentId, data) {
     
     // 设置考试次数
     const examCount = Object.keys(examScores).length;
-    document.getElementById('studentExamCount').textContent = examCount;
+    if (examCountElement) examCountElement.textContent = examCount;
     
     // 如果没有考试记录
     if (examCount === 0) {
-        document.getElementById('studentAverageScore').textContent = '无数据';
-        document.getElementById('studentScoreTrend').textContent = '无数据';
-        document.getElementById('studentDetailTableBody').innerHTML = '<tr><td colspan="2" class="text-center">未找到该学生的考试记录</td></tr>';
+        if (tableBodyElement) {
+            const colSpan = document.getElementById('studentScoresTableHead') ? 6 : 2;
+            tableBodyElement.innerHTML = `<tr><td colspan="${colSpan}" class="text-center">未找到该学生的考试记录</td></tr>`;
+        }
+        if (averageScoreElement) averageScoreElement.textContent = '无数据';
+        if (scoreTrendElement) scoreTrendElement.textContent = '无数据';
         return;
     }
     
@@ -3117,18 +3244,23 @@ function analyzeStudentData(studentId, data) {
         });
     });
     
+    // 设置平均分
     const averageScore = scoreCount > 0 ? (totalScore / scoreCount).toFixed(1) : '无数据';
-    document.getElementById('studentAverageScore').textContent = averageScore;
+    if (averageScoreElement) averageScoreElement.textContent = averageScore;
     
     // 计算成绩趋势
     const scoreTrend = calculateScoreTrend(examScores, data.exams);
-    document.getElementById('studentScoreTrend').textContent = scoreTrend.text;
+    if (scoreTrendElement) scoreTrendElement.textContent = scoreTrend.text;
     
     // 渲染成绩趋势图
     renderStudentScoreTrendChart(student, data.exams, subjects);
     
-    // 渲染学科对比图
-    renderStudentSubjectComparisonChart(student, data.exams, subjects);
+    // 渲染学科对比图 - 根据当前页面确定使用哪个函数
+    if (document.getElementById('studentSubjectsComparisonChart')) {
+        renderStudentSubjectsComparisonChart(student, data.exams, subjects);
+    } else if (document.getElementById('studentSubjectComparisonChart')) {
+        renderStudentSubjectComparisonChart(student, data.exams, subjects);
+    }
     
     // 渲染成绩明细表格
     renderStudentDetailTable(student, data.exams, subjects);
@@ -3189,102 +3321,93 @@ function calculateScoreTrend(examScores, exams) {
  * @param {Set} subjects 学科集合
  */
 function renderStudentScoreTrendChart(student, exams, subjects) {
-    // 提取有序的考试ID和日期
-    const sortedExams = [...exams].sort((a, b) => new Date(a.date) - new Date(b.date));
-    const examIds = sortedExams.map(exam => exam.id);
-    const examLabels = sortedExams.map(exam => exam.name);
+    const canvasElement = document.getElementById('studentScoreTrendChart');
     
-    // 准备每科成绩数据
-    const datasets = [];
-    const subjectArray = Array.from(subjects);
-    
-    // 创建所有学科的数据集
-    subjectArray.forEach((subject, index) => {
-        const scores = examIds.map(examId => {
-            if (student.scores[examId] && typeof student.scores[examId][subject] === 'number') {
-                return student.scores[examId][subject];
-            }
-            return null;
-        });
-        
-        // 只添加有数据的学科
-        if (scores.some(score => score !== null)) {
-            datasets.push({
-                label: subject,
-                data: scores,
-                borderColor: getChartColor(index, 1),
-                backgroundColor: getChartColor(index, 0.2),
-                borderWidth: 2,
-                tension: 0.1,
-                pointRadius: 4,
-                pointHoverRadius: 6,
-                fill: false
-            });
-        }
-    });
-    
-    // 创建平均分数据集
-    const averageScores = examIds.map(examId => {
-        if (!student.scores[examId]) return null;
-        
-        const scores = Object.values(student.scores[examId]).filter(score => typeof score === 'number' && !isNaN(score));
-        return scores.length > 0 ? scores.reduce((sum, score) => sum + score, 0) / scores.length : null;
-    });
-    
-    if (averageScores.some(score => score !== null)) {
-        datasets.push({
-            label: '平均分',
-            data: averageScores,
-            borderColor: 'rgba(0, 0, 0, 0.8)',
-            backgroundColor: 'rgba(0, 0, 0, 0.2)',
-            borderWidth: 3,
-            borderDash: [5, 5],
-            tension: 0.1,
-            pointRadius: 5,
-            pointHoverRadius: 7,
-            fill: false
-        });
+    // 如果找不到画布元素，返回
+    if (!canvasElement) {
+        console.error('找不到studentScoreTrendChart画布元素');
+        return;
     }
     
-    // 创建图表
-    const ctx = document.getElementById('studentScoreTrendChart').getContext('2d');
-    charts['studentScoreTrendChart'] = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: examLabels,
-            datasets: datasets
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: false,
-                    min: 0,
-                    max: 100,
-                    title: {
-                        display: true,
-                        text: '分数'
-                    }
-                },
-                x: {
-                    title: {
-                        display: true,
-                        text: '考试'
-                    }
-                }
+    // 确保先销毁已有图表
+    if (charts['studentScoreTrendChart']) {
+        charts['studentScoreTrendChart'].destroy();
+        delete charts['studentScoreTrendChart'];
+    }
+    
+    const ctx = canvasElement.getContext('2d');
+    
+    // 按日期排序的考试
+    const sortedExams = [...exams].sort((a, b) => new Date(a.date) - new Date(b.date));
+    
+    // 获取科目列表
+    const subjectArray = [...subjects];
+    
+    // 为每个科目创建一个数据集
+    const datasets = [];
+    subjectArray.forEach((subject, index) => {
+        const data = [];
+        sortedExams.forEach(exam => {
+            if (student.scores[exam.id] && typeof student.scores[exam.id][subject] === 'number') {
+                data.push(student.scores[exam.id][subject]);
+            } else {
+                data.push(null); // 无数据用null表示，Chart.js会处理为断点
+            }
+        });
+        
+        datasets.push({
+            label: subject,
+            data: data,
+            borderColor: getChartColor(index, 1),
+            backgroundColor: getChartColor(index, 0.1),
+            borderWidth: 2,
+            fill: false,
+            tension: 0.1
+        });
+    });
+    
+    try {
+        // 创建图表
+        charts['studentScoreTrendChart'] = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: sortedExams.map(exam => exam.name),
+                datasets: datasets
             },
-            plugins: {
-                legend: {
-                    position: 'top',
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        min: 0,
+                        max: 100,
+                        title: {
+                            display: true,
+                            text: '分数'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: '考试'
+                        }
+                    }
                 },
-                tooltip: {
-                    mode: 'index',
-                    intersect: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: '学生成绩趋势'
+                    }
                 }
             }
-        }
-    });
+        });
+    } catch (error) {
+        console.error('创建成绩趋势图表失败:', error);
+    }
 }
 
 /**
@@ -3293,7 +3416,192 @@ function renderStudentScoreTrendChart(student, exams, subjects) {
  * @param {Array} exams 考试数组
  * @param {Set} subjects 学科集合
  */
+function renderStudentSubjectsComparisonChart(student, exams, subjects) {
+    const canvasElement = document.getElementById('studentSubjectsComparisonChart');
+    
+    // 如果找不到画布元素，退出
+    if (!canvasElement) {
+        console.error('找不到studentSubjectsComparisonChart画布元素');
+        return;
+    }
+    
+    // 确保先销毁已有图表
+    if (charts['studentSubjectsComparisonChart']) {
+        charts['studentSubjectsComparisonChart'].destroy();
+        delete charts['studentSubjectsComparisonChart'];
+    }
+    
+    const ctx = canvasElement.getContext('2d');
+    
+    // 准备最近两次考试的数据
+    const sortedExams = [...exams].sort((a, b) => new Date(a.date) - new Date(b.date));
+    const recentExams = sortedExams.slice(-2); // 获取最近的两次考试
+    
+    if (recentExams.length < 1) {
+        return; // 考试数据不足，无法渲染
+    }
+    
+    // 准备图表数据
+    const subjectArray = [...subjects];
+    const datasets = [];
+    
+    recentExams.forEach((exam, index) => {
+        const scores = [];
+        subjectArray.forEach(subject => {
+            if (student.scores[exam.id] && typeof student.scores[exam.id][subject] === 'number') {
+                scores.push(student.scores[exam.id][subject]);
+            } else {
+                scores.push(null); // 无数据
+            }
+        });
+        
+        datasets.push({
+            label: exam.name,
+            data: scores,
+            backgroundColor: getChartColor(index, 0.2),
+            borderColor: getChartColor(index, 1),
+            borderWidth: 1
+        });
+    });
+    
+    try {
+        // 创建图表
+        charts['studentSubjectsComparisonChart'] = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: subjectArray,
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: '各学科成绩对比'
+                    }
+                }
+            }
+        });
+    } catch (error) {
+        console.error('创建学科对比图表失败:', error);
+    }
+}
+
+/**
+ * 渲染学生详细成绩表格
+ * @param {Object} student 学生数据
+ * @param {Array} exams 考试数组
+ * @param {Set} subjects 学科集合
+ */
+function renderStudentDetailTable(student, exams, subjects) {
+    // 按日期排序的考试
+    const sortedExams = [...exams].sort((a, b) => new Date(a.date) - new Date(b.date));
+    const subjectArray = [...subjects];
+    
+    // 获取表格元素
+    const tableHeadElement = getElement('studentScoresTableHead', 'studentDetailTableHead');
+    const tableBodyElement = getElement('studentScoresTableBody', 'studentDetailTableBody');
+    
+    if (!tableHeadElement || !tableBodyElement) {
+        console.error('未找到表格元素');
+        return;
+    }
+    
+    // 设置表头
+    let headerRow = '<tr><th>考试名称</th><th>考试日期</th>';
+    subjectArray.forEach(subject => {
+        headerRow += `<th>${subject}</th>`;
+    });
+    headerRow += '<th>平均分</th></tr>';
+    
+    tableHeadElement.innerHTML = headerRow;
+    
+    // 生成表格行
+    let tableRows = '';
+    
+    // 处理每次考试
+    sortedExams.forEach(exam => {
+        if (student.scores[exam.id]) {
+            const examScores = student.scores[exam.id];
+            let row = `<tr>
+                <td>${exam.name}</td>
+                <td>${exam.date || '未知'}</td>`;
+            
+            // 遍历每个科目的成绩
+            let totalExamScore = 0;
+            let validScoreCount = 0;
+            
+            subjectArray.forEach(subject => {
+                const score = examScores[subject];
+                if (typeof score === 'number' && !isNaN(score)) {
+                    totalExamScore += score;
+                    validScoreCount++;
+                    
+                    // 根据分数决定单元格样式
+                    let cellClass = '';
+                    if (score >= 90) cellClass = 'table-success';
+                    else if (score >= 80) cellClass = 'table-info';
+                    else if (score >= 60) cellClass = 'table-warning';
+                    else cellClass = 'table-danger';
+                    
+                    row += `<td class="${cellClass}">${score}</td>`;
+                } else {
+                    row += '<td>-</td>';
+                }
+            });
+            
+            // 添加总分/平均分
+            if (validScoreCount > 0) {
+                const average = (totalExamScore / validScoreCount).toFixed(1);
+                row += `<td>${average}</td>`;
+            } else {
+                row += '<td>-</td>';
+            }
+            
+            row += '</tr>';
+            tableRows += row;
+        }
+    });
+    
+    // 显示表格内容
+    if (tableRows) {
+        tableBodyElement.innerHTML = tableRows;
+    } else {
+        const colSpan = 2 + subjectArray.length + 1;
+        tableBodyElement.innerHTML = `<tr><td colspan="${colSpan}" class="text-center">暂无考试记录</td></tr>`;
+    }
+}
+
+/**
+ * 渲染学生学科对比图(主页面版)
+ * @param {Object} student 学生数据
+ * @param {Array} exams 考试数组
+ * @param {Set} subjects 学科集合
+ */
 function renderStudentSubjectComparisonChart(student, exams, subjects) {
+    const canvasElement = document.getElementById('studentSubjectComparisonChart');
+    
+    // 如果找不到画布元素，退出
+    if (!canvasElement) {
+        console.error('无法找到studentSubjectComparisonChart画布元素');
+        return;
+    }
+    
+    // 确保先销毁已有图表
+    if (charts['studentSubjectComparisonChart']) {
+        charts['studentSubjectComparisonChart'].destroy();
+        delete charts['studentSubjectComparisonChart'];
+    }
+    
+    const ctx = canvasElement.getContext('2d');
+    
     const subjectArray = Array.from(subjects);
     
     // 计算每个学科的平均分
@@ -3322,102 +3630,45 @@ function renderStudentSubjectComparisonChart(student, exams, subjects) {
     const data = sortedSubjects.map(subject => subjectAverages[subject]);
     const backgroundColors = sortedSubjects.map((_, index) => getChartColor(index, 0.6));
     
-    // 创建图表
-    const ctx = document.getElementById('studentSubjectComparisonChart').getContext('2d');
-    charts['studentSubjectComparisonChart'] = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: '学科平均分',
-                data: data,
-                backgroundColor: backgroundColors,
-                borderColor: backgroundColors.map(color => color.replace('0.6', '1')),
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: false,
-                    min: 0,
-                    max: 100
-                }
+    try {
+        // 创建图表
+        charts['studentSubjectComparisonChart'] = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '学科平均分',
+                    data: data,
+                    backgroundColor: backgroundColors,
+                    borderColor: backgroundColors.map(color => color.replace('0.6', '1')),
+                    borderWidth: 1
+                }]
             },
-            plugins: {
-                legend: {
-                    display: false
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        min: 0,
+                        max: 100
+                    }
                 },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return `${context.label}: ${context.raw.toFixed(1)}分`;
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.label}: ${context.raw.toFixed(1)}分`;
+                            }
                         }
                     }
                 }
             }
-        }
-    });
-}
-
-/**
- * 渲染学生成绩明细表格
- * @param {Object} student 学生数据
- * @param {Array} exams 考试数组
- * @param {Set} subjects 学科集合
- */
-function renderStudentDetailTable(student, exams, subjects) {
-    const subjectArray = Array.from(subjects);
-    
-    // 按日期排序的考试列表
-    const sortedExams = [...exams].sort((a, b) => new Date(a.date) - new Date(b.date));
-    
-    // 生成表头
-    let headerRow = '<tr><th>考试名称</th><th>考试日期</th>';
-    subjectArray.forEach(subject => {
-        headerRow += `<th>${subject}</th>`;
-    });
-    headerRow += '<th>平均分</th></tr>';
-    
-    document.getElementById('studentDetailTableHead').innerHTML = headerRow;
-    
-    // 生成表格行
-    let tableRows = '';
-    
-    sortedExams.forEach(exam => {
-        let examScores = student.scores[exam.id] || {};
-        
-        // 计算该次考试的平均分
-        let sum = 0;
-        let count = 0;
-        Object.values(examScores).forEach(score => {
-            if (typeof score === 'number' && !isNaN(score)) {
-                sum += score;
-                count++;
-            }
         });
-        const average = count > 0 ? (sum / count).toFixed(1) : '-';
-        
-        // 格式化日期
-        const examDate = new Date(exam.date).toLocaleDateString('zh-CN');
-        
-        let row = `<tr><td>${exam.name}</td><td>${examDate}</td>`;
-        
-        // 添加各科成绩
-        subjectArray.forEach(subject => {
-            const score = examScores[subject];
-            row += `<td>${score !== undefined ? score : '-'}</td>`;
-        });
-        
-        row += `<td>${average}</td></tr>`;
-        tableRows += row;
-    });
-    
-    if (tableRows) {
-        document.getElementById('studentDetailTableBody').innerHTML = tableRows;
-    } else {
-        document.getElementById('studentDetailTableBody').innerHTML = `<tr><td colspan="${2 + subjectArray.length + 1}" class="text-center">暂无考试记录</td></tr>`;
+    } catch (error) {
+        console.error('创建学科对比图表失败:', error);
     }
 } 

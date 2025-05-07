@@ -227,6 +227,92 @@
         </div>
     </div>
 
+    <!-- 学生成绩分析模态框 -->
+    <div class="modal fade" id="studentAnalysisModal" tabindex="-1" aria-labelledby="studentAnalysisModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="studentAnalysisModalLabel">学生成绩分析</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- 学生基本信息 -->
+                    <div class="student-info mb-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6 class="card-subtitle mb-2 text-muted">学生信息</h6>
+                                        <p class="mb-1"><strong>姓名：</strong><span id="studentAnalysisName"></span></p>
+                                        <p class="mb-1"><strong>学号：</strong><span id="studentAnalysisId"></span></p>
+                                        <p class="mb-0"><strong>班级：</strong><span id="studentAnalysisClass"></span></p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6 class="card-subtitle mb-2 text-muted">考试数据</h6>
+                                        <p class="mb-1"><strong>参加考试次数：</strong><span id="studentExamCount"></span></p>
+                                        <p class="mb-1"><strong>平均分：</strong><span id="studentAverageScore"></span></p>
+                                        <p class="mb-0"><strong>分数趋势：</strong><span id="studentScoreTrend"></span></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 成绩图表 -->
+                    <div class="row mb-4">
+                        <!-- 成绩趋势图 -->
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">成绩趋势</div>
+                                <div class="card-body">
+                                    <div style="height: 300px;">
+                                        <canvas id="studentScoreTrendChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 学科对比图 -->
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">学科对比</div>
+                                <div class="card-body">
+                                    <div style="height: 300px;">
+                                        <canvas id="studentSubjectComparisonChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 成绩明细表格 -->
+                    <div class="card">
+                        <div class="card-header">成绩明细</div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-hover">
+                                    <thead id="studentDetailTableHead">
+                                        <tr>
+                                            <th>考试名称</th>
+                                            <th>考试日期</th>
+                                            <!-- 学科列将动态生成 -->
+                                        </tr>
+                                    </thead>
+                                    <tbody id="studentDetailTableBody">
+                                        <!-- 成绩行将动态生成 -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/data.js"></script>
     <script src="js/main.js"></script>
