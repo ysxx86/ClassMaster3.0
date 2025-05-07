@@ -114,6 +114,18 @@ function setupEventListeners() {
             renderComparisonCharts(compareData);
         }
     });
+    
+    // 学生姓名点击事件（使用事件委托）
+    document.body.addEventListener('click', function(e) {
+        if (e.target.classList.contains('student-name-link') || e.target.closest('.student-name-link')) {
+            const link = e.target.classList.contains('student-name-link') ? e.target : e.target.closest('.student-name-link');
+            const studentId = link.dataset.studentId;
+            const studentName = link.dataset.studentName;
+            
+            // 打开学生分析模态框
+            openStudentAnalysisModal(studentId, studentName);
+        }
+    });
 }
 
 /**
@@ -1974,21 +1986,33 @@ function setupCompareSubjectSelect(data) {
     select.innerHTML = '';
     
     // 添加公共学科选项
-    data.common_subjects.forEach(subject => {
-        const option = document.createElement('option');
-        option.value = subject;
-        option.textContent = subject;
-        select.appendChild(option);
-    });
-    
-    // 如果没有公共学科，添加所有学科
-    if (data.common_subjects.length === 0 && data.all_subjects) {
+    if (data.common_subjects && data.common_subjects.length > 0) {
+        // 优先使用所有考试共有的学科
+        data.common_subjects.forEach(subject => {
+            const option = document.createElement('option');
+            option.value = subject;
+            option.textContent = subject;
+            select.appendChild(option);
+        });
+    } else if (data.all_subjects && data.all_subjects.length > 0) {
+        // 如果没有共有学科，列出所有学科
         data.all_subjects.forEach(subject => {
             const option = document.createElement('option');
             option.value = subject;
             option.textContent = subject;
             select.appendChild(option);
         });
+    } else {
+        // 如果没有任何学科数据，显示空选项
+        const option = document.createElement('option');
+        option.value = '';
+        option.textContent = '没有可用的学科';
+        select.appendChild(option);
+    }
+    
+    // 触发change事件，更新图表和表格
+    if (select.options.length > 0) {
+        select.dispatchEvent(new Event('change'));
     }
 }
 
@@ -1998,7 +2022,8 @@ function setupCompareSubjectSelect(data) {
  */
 function renderComparisonCharts(data) {
     // 销毁现有图表
-    ['averageScoreComparisonChart', 'passRateComparisonChart', 'excellentRateComparisonChart', 'scoreDistributionComparisonChart'].forEach(chartId => {
+    ['averageScoreComparisonChart', 'passRateComparisonChart', 'excellentRateComparisonChart', 
+     'scoreDistributionComparisonChart', 'radarComparisonChart', 'scoreChangesDistributionChart'].forEach(chartId => {
         if (charts[chartId]) {
             charts[chartId].destroy();
             delete charts[chartId];
@@ -2212,6 +2237,274 @@ function renderComparisonCharts(data) {
             }
         }
     });
+    
+    // 5. 渲染雷达图
+    renderRadarComparisonChart(data, selectedSubject);
+    
+    // 6. 渲染成绩变化分布图
+    renderScoreChangesDistributionChart(data, selectedSubject);
+}
+
+/**
+ * 渲染雷达图对比
+ * @param {Object} data 对比数据
+ * @param {string} subject 学科
+ */
+function renderRadarComparisonChart(data, subject) {
+    // 准备雷达图数据
+    const radarDatasets = [];
+    
+    // 定义雷达图指标（平均分、及格率、优秀率、最高分、最低分）
+    const indicators = ['平均分', '及格率', '优秀率', '最高分', '最低分'];
+    
+    // 为指标准备数据
+    data.exams.forEach((exam, index) => {
+        if (exam.stats[subject]) {
+            // 标准化数据，使其在雷达图上显示合理
+            const stats = exam.stats[subject];
+            const radarData = [
+                // 平均分值域为 0-100，将平均分除以100，使得取值范围为0-1
+                stats.average / 100,
+                // 及格率值域为 0-100%，将及格率除以100，使得取值范围为0-1
+                stats.pass_rate / 100,
+                // 优秀率值域为 0-100%，将优秀率除以100，使得取值范围为0-1
+                stats.excellent_rate / 100,
+                // 最高分值域为 0-100，将最高分除以100，使得取值范围为0-1
+                stats.max / 100,
+                // 最低分可能较低，将最低分除以100，使得取值范围为0-1
+                stats.min / 100
+            ];
+            
+            radarDatasets.push({
+                label: exam.name,
+                data: radarData,
+                fill: true,
+                backgroundColor: getChartColor(index, 0.2),
+                borderColor: getChartColor(index, 1),
+                pointBackgroundColor: getChartColor(index, 1),
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: getChartColor(index, 1)
+            });
+        }
+    });
+    
+    // 创建雷达图
+    const radarCtx = document.getElementById('radarComparisonChart').getContext('2d');
+    charts['radarComparisonChart'] = new Chart(radarCtx, {
+        type: 'radar',
+        data: {
+            labels: indicators,
+            datasets: radarDatasets
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            elements: {
+                line: {
+                    borderWidth: 2
+                }
+            },
+            scales: {
+                r: {
+                    angleLines: {
+                        display: true
+                    },
+                    suggestedMin: 0,
+                    suggestedMax: 1,
+                    ticks: {
+                        // 将0-1的比例值转换为百分比显示
+                        callback: function(value) {
+                            return (value * 100) + '%';
+                        }
+                    }
+                }
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: `${subject}学科各项指标对比`
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const dataIndex = context.dataIndex;
+                            const value = context.raw;
+                            const indicator = indicators[dataIndex];
+                            
+                            // 根据不同指标使用不同的显示格式
+                            if (dataIndex === 0) { // 平均分
+                                return `${indicator}: ${(value * 100).toFixed(1)}分`;
+                            } else if (dataIndex === 1 || dataIndex === 2) { // 及格率/优秀率
+                                return `${indicator}: ${(value * 100).toFixed(1)}%`;
+                            } else { // 最高分/最低分
+                                return `${indicator}: ${(value * 100).toFixed(1)}分`;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+/**
+ * 渲染学生成绩变化分布图
+ * @param {Object} data 对比数据
+ * @param {string} subject 学科
+ */
+function renderScoreChangesDistributionChart(data, subject) {
+    // 如果只有一次考试，无法分析变化
+    if (data.exams.length < 2) {
+        const ctx = document.getElementById('scoreChangesDistributionChart').getContext('2d');
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        ctx.font = '16px Arial';
+        ctx.fillStyle = '#666';
+        ctx.textAlign = 'center';
+        ctx.fillText('需要至少两次考试才能分析成绩变化', ctx.canvas.width / 2, ctx.canvas.height / 2);
+        return;
+    }
+    
+    // 计算学生成绩变化
+    const studentChanges = [];
+    
+    // 获取第一次和最后一次考试的ID
+    const firstExamId = data.exams[0].id;
+    const lastExamId = data.exams[data.exams.length - 1].id;
+    
+    // 遍历学生数据，计算变化
+    data.students.forEach(student => {
+        // 检查是否有该学科的成绩
+        if (student.scores[firstExamId] && 
+            student.scores[firstExamId][subject] !== undefined &&
+            student.scores[lastExamId] && 
+            student.scores[lastExamId][subject] !== undefined) {
+            
+            const firstScore = student.scores[firstExamId][subject];
+            const lastScore = student.scores[lastExamId][subject];
+            const change = lastScore - firstScore;
+            
+            studentChanges.push(change);
+        }
+    });
+    
+    // 如果没有变化数据，显示提示
+    if (studentChanges.length === 0) {
+        const ctx = document.getElementById('scoreChangesDistributionChart').getContext('2d');
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        ctx.font = '16px Arial';
+        ctx.fillStyle = '#666';
+        ctx.textAlign = 'center';
+        ctx.fillText('没有足够的学生数据来分析成绩变化', ctx.canvas.width / 2, ctx.canvas.height / 2);
+        return;
+    }
+    
+    // 定义变化区间
+    const intervals = [
+        '下降10分以上',
+        '下降5-10分',
+        '下降0-5分',
+        '提高0-5分',
+        '提高5-10分',
+        '提高10分以上'
+    ];
+    
+    // 统计各区间的学生数量
+    const counts = [0, 0, 0, 0, 0, 0];
+    
+    studentChanges.forEach(change => {
+        if (change <= -10) {
+            counts[0]++;
+        } else if (change <= -5) {
+            counts[1]++;
+        } else if (change < 0) {
+            counts[2]++;
+        } else if (change <= 5) {
+            counts[3]++;
+        } else if (change <= 10) {
+            counts[4]++;
+        } else {
+            counts[5]++;
+        }
+    });
+    
+    // 准备堆叠柱状图数据
+    const datasets = [
+        {
+            label: '下降',
+            data: [counts[0], counts[1], counts[2], 0, 0, 0],
+            backgroundColor: 'rgba(231, 76, 60, 0.7)'
+        },
+        {
+            label: '提高',
+            data: [0, 0, 0, counts[3], counts[4], counts[5]],
+            backgroundColor: 'rgba(46, 204, 113, 0.7)'
+        }
+    ];
+    
+    // 创建图表
+    const ctx = document.getElementById('scoreChangesDistributionChart').getContext('2d');
+    charts['scoreChangesDistributionChart'] = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: intervals,
+            datasets: datasets
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    stacked: true,
+                    title: {
+                        display: true,
+                        text: '变化区间'
+                    }
+                },
+                y: {
+                    stacked: true,
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: '学生人数'
+                    },
+                    ticks: {
+                        precision: 0
+                    }
+                }
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: `${subject}学科学生成绩变化分布`
+                },
+                subtitle: {
+                    display: true,
+                    text: `从"${data.exams[0].name}"到"${data.exams[data.exams.length-1].name}"的变化`,
+                    padding: {
+                        bottom: 10
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        title: function(tooltipItems) {
+                            return tooltipItems[0].label;
+                        },
+                        label: function(context) {
+                            return `${context.dataset.label}: ${context.raw}人`;
+                        },
+                        footer: function(tooltipItems) {
+                            const dataIndex = tooltipItems[0].dataIndex;
+                            const value = tooltipItems[0].raw;
+                            const total = studentChanges.length;
+                            const percentage = ((value / total) * 100).toFixed(1);
+                            return `占比: ${percentage}%`;
+                        }
+                    }
+                }
+            }
+        }
+    });
 }
 
 /**
@@ -2235,6 +2528,129 @@ function getChartColor(index, alpha) {
     ];
     
     return colors[index % colors.length];
+}
+
+/**
+ * 计算学生排名
+ * @param {Array} students 学生数组
+ * @param {string} subject 学科
+ * @param {number} examId 考试ID
+ * @returns {Object} 排名映射对象 {学生ID: 排名}
+ */
+function calculateRanking(students, subject, examId) {
+    // 筛选出有该科目成绩的学生
+    const studentsWithScores = students.filter(student => 
+        student.scores[examId] && 
+        student.scores[examId][subject] !== undefined &&
+        student.scores[examId][subject] !== null
+    );
+    
+    // 按分数从高到低排序
+    studentsWithScores.sort((a, b) => 
+        b.scores[examId][subject] - a.scores[examId][subject]
+    );
+    
+    // 创建排名映射
+    const rankings = {};
+    let currentRank = 1;
+    let previousScore = null;
+    let sameRankCount = 0;
+    
+    studentsWithScores.forEach((student, index) => {
+        const score = student.scores[examId][subject];
+        
+        // 如果分数与前一个相同，使用相同排名
+        if (previousScore !== null && score === previousScore) {
+            sameRankCount++;
+        } else {
+            // 新的分数，排名更新为当前位置
+            currentRank = index + 1;
+            sameRankCount = 0;
+        }
+        
+        // 保存当前学生排名
+        rankings[student.student_id] = currentRank;
+        previousScore = score;
+    });
+    
+    return rankings;
+}
+
+/**
+ * 计算学生的排名变化和分数变化率
+ * @param {Array} students 学生数组
+ * @param {Array} exams 考试数组
+ * @param {string} subject 学科
+ * @returns {Object} 增强的学生数据
+ */
+function calculateStudentChanges(students, exams, subject) {
+    // 计算每次考试的排名
+    const examRankings = {};
+    exams.forEach(exam => {
+        examRankings[exam.id] = calculateRanking(students, subject, exam.id);
+    });
+    
+    // 增强学生数据
+    return students.map(student => {
+        // 复制基本信息
+        const enhancedStudent = {
+            ...student,
+            scores: [], // 将重新填充
+            rankings: [], // 添加排名信息
+            rankChange: null, // 排名变化
+            scoreChange: null, // 分数变化
+            changeRate: null // 变化率
+        };
+        
+        // 获取每次考试的成绩和排名
+        exams.forEach(exam => {
+            const examId = exam.id;
+            let score = null;
+            let ranking = null;
+            
+            // 获取成绩
+            if (student.scores[examId] && student.scores[examId][subject] !== undefined) {
+                score = student.scores[examId][subject];
+            }
+            
+            // 获取排名
+            if (score !== null && examRankings[examId] && examRankings[examId][student.student_id]) {
+                ranking = examRankings[examId][student.student_id];
+            }
+            
+            enhancedStudent.scores.push(score);
+            enhancedStudent.rankings.push(ranking);
+        });
+        
+        // 计算分数变化和排名变化
+        const validScores = enhancedStudent.scores.filter(s => s !== null);
+        const validRankings = enhancedStudent.rankings.filter(r => r !== null);
+        
+        if (validScores.length >= 2) {
+            // 分数变化
+            const firstScore = validScores[0];
+            const lastScore = validScores[validScores.length - 1];
+            enhancedStudent.scoreChange = lastScore - firstScore;
+            
+            // 变化率
+            if (firstScore > 0) {
+                enhancedStudent.changeRate = (enhancedStudent.scoreChange / firstScore * 100).toFixed(1);
+            }
+            
+            // 最大分差
+            enhancedStudent.maxDiff = Math.max(...validScores) - Math.min(...validScores);
+        }
+        
+        // 计算排名变化
+        if (validRankings.length >= 2) {
+            const firstRank = validRankings[0];
+            const lastRank = validRankings[validRankings.length - 1];
+            // 注意：排名下降是正向变化，所以用第一次减去最后一次
+            enhancedStudent.rankChange = firstRank - lastRank;
+        }
+        
+        return enhancedStudent;
+    });
 }
 
 /**
@@ -2265,7 +2681,7 @@ function renderStudentComparisonTable(data) {
     
     // 添加分差列，如果有两次以上考试
     if (data.exams.length >= 2) {
-        headerRow += '<th>最大分差</th><th>相比首考变化</th>';
+        headerRow += '<th>最大分差</th><th>排名变化</th><th>分数变化</th><th>变化率</th>';
     }
     
     headerRow += '</tr>';
@@ -2283,98 +2699,65 @@ function renderStudentComparisonTable(data) {
         return hasScore;
     });
     
-    // 计算每个学生的变化趋势
-    const studentsWithChange = validStudents.map(student => {
-        // 存储学生在每次考试中的成绩
-        const scores = [];
-        
-        // 获取每次考试的成绩
-        data.exams.forEach(exam => {
-            const examId = exam.id;
-            if (student.scores[examId] && student.scores[examId][selectedSubject] !== undefined) {
-                scores.push(student.scores[examId][selectedSubject]);
-            }
-        });
-        
-        // 计算变化趋势
-        let change = 0;
-        let maxDiff = 0;
-        
-        if (scores.length >= 2) {
-            const firstScore = scores[0];
-            const lastScore = scores[scores.length - 1];
-            change = lastScore - firstScore;
-            maxDiff = Math.max(...scores) - Math.min(...scores);
-        }
-        
-        return {
-            ...student,
-            scores,
-            change,
-            maxDiff
-        };
-    });
+    // 计算学生的排名变化和分数变化率
+    const enhancedStudents = calculateStudentChanges(validStudents, data.exams, selectedSubject);
     
     // 过滤出有效分数（至少参加了2次考试）的学生
-    const validStudentsWithChange = studentsWithChange.filter(student => student.scores.length >= 2);
+    const validStudentsWithChange = enhancedStudents.filter(student => 
+        student.scores.filter(score => score !== null).length >= 2
+    );
     
     // 按照变化程度排序，先展示进步最大的学生，再展示退步最明显的学生
-    validStudentsWithChange.sort((a, b) => b.change - a.change);
+    validStudentsWithChange.sort((a, b) => b.scoreChange - a.scoreChange);
     
     // 找出进步和退步比较大的学生
     // 使用四分位数来确定"比较大"的标准
-    const changes = validStudentsWithChange.map(student => student.change);
-    
-    // 计算进步学生中的四分位数
-    const positiveChanges = changes.filter(change => change > 0);
-    const negativeChanges = changes.filter(change => change < 0);
+    const changes = validStudentsWithChange.map(student => student.scoreChange);
     
     // 计算Q3（进步学生第三四分位数）
-    let significantImprovement = 0;
+    const positiveChanges = changes.filter(change => change > 0);
+    let significantImprovement = 5; // 默认值
     if (positiveChanges.length > 0) {
         positiveChanges.sort((a, b) => a - b);
         const q3Index = Math.floor(positiveChanges.length * 0.75);
-        significantImprovement = positiveChanges[q3Index] || 5; // 默认值为5
-    } else {
-        significantImprovement = 5; // 如果没有进步的学生，默认值为5
+        significantImprovement = positiveChanges[q3Index] || 5;
     }
     
     // 计算Q1（退步学生第一四分位数）
-    let significantDecline = 0;
+    const negativeChanges = changes.filter(change => change < 0);
+    let significantDecline = -5; // 默认值
     if (negativeChanges.length > 0) {
         negativeChanges.sort((a, b) => a - b);
         const q1Index = Math.floor(negativeChanges.length * 0.25);
-        significantDecline = negativeChanges[q1Index] || -5; // 默认值为-5
-    } else {
-        significantDecline = -5; // 如果没有退步的学生，默认值为-5
+        significantDecline = negativeChanges[q1Index] || -5;
     }
     
     // 生成表格内容
     let rows = '';
     
     // 生成分组标题 - 进步明显的学生
-    if (validStudentsWithChange.some(s => s.change > 0)) {
+    if (validStudentsWithChange.some(s => s.scoreChange > 0)) {
         rows += `
             <tr class="table-success">
-                <td colspan="${data.exams.length + 3}" class="text-center fw-bold">
-                    进步明显的学生 (提升 ${significantImprovement} 分以上)
+                <td colspan="${data.exams.length + 6}" class="text-center fw-bold">
+                    进步明显的学生 (提升 ${significantImprovement.toFixed(1)} 分以上)
                 </td>
             </tr>
         `;
         
         // 过滤出进步明显的学生
-        const improvedStudents = validStudentsWithChange.filter(student => student.change >= significantImprovement);
+        const improvedStudents = validStudentsWithChange.filter(student => student.scoreChange >= significantImprovement);
         
         // 添加进步明显的学生行
         improvedStudents.forEach(student => {
-            rows += generateStudentRow(student, data.exams, 'success');
+            rows += generateEnhancedStudentRow(student, data.exams, selectedSubject, 'success');
         });
         
         // 如果没有进步明显的学生，显示提示
         if (improvedStudents.length === 0) {
             rows += `
                 <tr>
-                    <td colspan="${data.exams.length + 3}" class="text-center">
+                    <td colspan="${data.exams.length + 6}" class="text-center">
                         无进步明显的学生
                     </td>
                 </tr>
@@ -2385,7 +2768,7 @@ function renderStudentComparisonTable(data) {
     // 生成分组标题 - 成绩稳定的学生
     rows += `
         <tr class="table-light">
-            <td colspan="${data.exams.length + 3}" class="text-center fw-bold">
+            <td colspan="${data.exams.length + 6}" class="text-center fw-bold">
                 成绩稳定的学生
             </td>
         </tr>
@@ -2393,19 +2776,19 @@ function renderStudentComparisonTable(data) {
     
     // 过滤出成绩稳定的学生
     const stableStudents = validStudentsWithChange.filter(student => 
-        student.change < significantImprovement && student.change > significantDecline
+        student.scoreChange < significantImprovement && student.scoreChange > significantDecline
     );
     
     // 添加稳定学生行
     stableStudents.forEach(student => {
-        rows += generateStudentRow(student, data.exams, 'light');
+        rows += generateEnhancedStudentRow(student, data.exams, selectedSubject, 'light');
     });
     
     // 如果没有稳定的学生，显示提示
     if (stableStudents.length === 0) {
         rows += `
             <tr>
-                <td colspan="${data.exams.length + 3}" class="text-center">
+                <td colspan="${data.exams.length + 6}" class="text-center">
                     无成绩稳定的学生
                 </td>
             </tr>
@@ -2413,28 +2796,28 @@ function renderStudentComparisonTable(data) {
     }
     
     // 生成分组标题 - 退步明显的学生
-    if (validStudentsWithChange.some(s => s.change < 0)) {
+    if (validStudentsWithChange.some(s => s.scoreChange < 0)) {
         rows += `
             <tr class="table-danger">
-                <td colspan="${data.exams.length + 3}" class="text-center fw-bold">
-                    退步明显的学生 (下降 ${Math.abs(significantDecline)} 分以上)
+                <td colspan="${data.exams.length + 6}" class="text-center fw-bold">
+                    退步明显的学生 (下降 ${Math.abs(significantDecline).toFixed(1)} 分以上)
                 </td>
             </tr>
         `;
         
         // 过滤出退步明显的学生
-        const declinedStudents = validStudentsWithChange.filter(student => student.change <= significantDecline);
+        const declinedStudents = validStudentsWithChange.filter(student => student.scoreChange <= significantDecline);
         
         // 添加退步明显的学生行
         declinedStudents.forEach(student => {
-            rows += generateStudentRow(student, data.exams, 'danger');
+            rows += generateEnhancedStudentRow(student, data.exams, selectedSubject, 'danger');
         });
         
         // 如果没有退步明显的学生，显示提示
         if (declinedStudents.length === 0) {
             rows += `
                 <tr>
-                    <td colspan="${data.exams.length + 3}" class="text-center">
+                    <td colspan="${data.exams.length + 6}" class="text-center">
                         无退步明显的学生
                     </td>
                 </tr>
@@ -2443,12 +2826,14 @@ function renderStudentComparisonTable(data) {
     }
     
     // 未参加足够次数考试的学生
-    const notEnoughExams = studentsWithChange.filter(student => student.scores.length < 2);
+    const notEnoughExams = enhancedStudents.filter(student => 
+        student.scores.filter(score => score !== null).length < 2
+    );
     
     if (notEnoughExams.length > 0) {
         rows += `
             <tr class="table-secondary">
-                <td colspan="${data.exams.length + 3}" class="text-center fw-bold">
+                <td colspan="${data.exams.length + 6}" class="text-center fw-bold">
                     未参加足够次数考试的学生
                 </td>
             </tr>
@@ -2456,62 +2841,583 @@ function renderStudentComparisonTable(data) {
         
         // 添加未参加足够次数考试的学生行
         notEnoughExams.forEach(student => {
-            rows += generateStudentRow(student, data.exams, 'secondary');
+            rows += generateEnhancedStudentRow(student, data.exams, selectedSubject, 'secondary');
         });
     }
     
-    tableBody.innerHTML = rows || '<tr><td colspan="' + (data.exams.length + 3) + '" class="text-center">暂无成绩数据</td></tr>';
+    tableBody.innerHTML = rows || '<tr><td colspan="' + (data.exams.length + 6) + '" class="text-center">暂无成绩数据</td></tr>';
 }
 
 /**
- * 生成学生成绩行
- * @param {Object} student 学生数据
+ * 生成增强的学生成绩行
+ * @param {Object} student 增强后的学生数据
  * @param {Array} exams 考试数组
+ * @param {string} subject 学科
  * @param {string} rowClass 行样式类
  * @returns {string} 表格行HTML
  */
-function generateStudentRow(student, exams, rowClass = '') {
+function generateEnhancedStudentRow(student, exams, subject, rowClass = '') {
     let row = `<tr${rowClass ? ` class="table-${rowClass}"` : ''}>`;
-    row += `<td>${student.student_id}</td><td>${student.student_name}</td>`;
     
-    // 添加每次考试的成绩
-    exams.forEach(exam => {
-        const examId = exam.id;
-        let score = '';
+    // 学号
+    row += `<td>${student.student_id}</td>`;
+    
+    // 添加可点击的学生姓名
+    row += `<td>
+        <a href="javascript:void(0);" class="student-name-link" 
+           data-student-id="${student.student_id}" 
+           data-student-name="${student.student_name}">
+            ${student.student_name}
+        </a>
+    </td>`;
+    
+    // 添加每次考试的成绩和排名
+    student.scores.forEach((score, index) => {
+        // 为基于索引获取的成绩应用颜色样式
+        let cellClass = '';
+        let rankDisplay = '';
         
-        if (student.scores && student.scores.length > 0) {
-            const examIndex = exams.findIndex(e => e.id === examId);
-            if (examIndex < student.scores.length) {
-                score = student.scores[examIndex];
+        if (score !== null) {
+            if (score >= 90) cellClass = 'table-success';
+            else if (score >= 80) cellClass = 'table-info';
+            else if (score >= 60) cellClass = 'table-warning';
+            else cellClass = 'table-danger';
+            
+            // 显示排名（如果有）
+            if (student.rankings && student.rankings[index] !== null) {
+                rankDisplay = ` <small class="text-muted">(第${student.rankings[index]}名)</small>`;
             }
         }
         
-        row += `<td>${score}</td>`;
+        row += `<td${cellClass ? ` class="${cellClass}"` : ''}>${score !== null ? score + rankDisplay : '-'}</td>`;
     });
     
-    // 添加最大分差和变化趋势
-    if (exams.length >= 2 && student.scores && student.scores.length >= 2) {
-        // 最大分差
-        row += `<td>${student.maxDiff.toFixed(1)}</td>`;
+    // 添加最大分差和变化指标
+    if (exams.length >= 2) {
+        // 获取有效分数
+        const validScores = student.scores.filter(score => score !== null);
         
-        // 变化趋势
-        let changeHtml = '';
-        if (student.change > 0) {
-            changeHtml = `<span class="text-success">↑ ${student.change.toFixed(1)}</span>`;
-        } else if (student.change < 0) {
-            changeHtml = `<span class="text-danger">↓ ${Math.abs(student.change).toFixed(1)}</span>`;
+        if (validScores.length >= 2) {
+            // 最大分差
+            row += `<td>${student.maxDiff.toFixed(1)}</td>`;
+            
+            // 排名变化
+            let rankChangeHtml = '';
+            if (student.rankChange !== null) {
+                if (student.rankChange > 0) {
+                    rankChangeHtml = `<span class="text-success">↑ ${student.rankChange} 名</span>`;
+                } else if (student.rankChange < 0) {
+                    rankChangeHtml = `<span class="text-danger">↓ ${Math.abs(student.rankChange)} 名</span>`;
+                } else {
+                    rankChangeHtml = `<span class="text-muted">→ 0</span>`;
+                }
+            } else {
+                rankChangeHtml = '-';
+            }
+            row += `<td>${rankChangeHtml}</td>`;
+            
+            // 分数变化
+            let scoreChangeHtml = '';
+            if (student.scoreChange !== null) {
+                if (student.scoreChange > 0) {
+                    scoreChangeHtml = `<span class="text-success">↑ ${student.scoreChange.toFixed(1)}</span>`;
+                } else if (student.scoreChange < 0) {
+                    scoreChangeHtml = `<span class="text-danger">↓ ${Math.abs(student.scoreChange).toFixed(1)}</span>`;
+                } else {
+                    scoreChangeHtml = `<span class="text-muted">→ 0</span>`;
+                }
+            } else {
+                scoreChangeHtml = '-';
+            }
+            row += `<td>${scoreChangeHtml}</td>`;
+            
+            // 变化率
+            let changeRateHtml = '';
+            if (student.changeRate !== null) {
+                if (parseFloat(student.changeRate) > 0) {
+                    changeRateHtml = `<span class="text-success">↑ ${student.changeRate}%</span>`;
+                } else if (parseFloat(student.changeRate) < 0) {
+                    changeRateHtml = `<span class="text-danger">↓ ${Math.abs(parseFloat(student.changeRate))}%</span>`;
+                } else {
+                    changeRateHtml = `<span class="text-muted">→ 0%</span>`;
+                }
+            } else {
+                changeRateHtml = '-';
+            }
+            row += `<td>${changeRateHtml}</td>`;
         } else {
-            changeHtml = `<span class="text-muted">→ 0</span>`;
-        }
-        
-        row += `<td>${changeHtml}</td>`;
-    } else {
-        // 对于未参加足够考试的学生，显示破折号
-        if (exams.length >= 2) {
-            row += `<td>-</td><td>-</td>`;
+            // 对于未参加足够考试的学生，显示破折号
+            row += `<td>-</td><td>-</td><td>-</td><td>-</td>`;
         }
     }
     
     row += '</tr>';
     return row;
+}
+
+/**
+ * 学生个人成绩分析
+ */
+document.addEventListener('DOMContentLoaded', function() {
+    // 监听学生姓名点击事件（使用事件委托）
+    document.body.addEventListener('click', function(e) {
+        if (e.target.classList.contains('student-name-link') || e.target.closest('.student-name-link')) {
+            const link = e.target.classList.contains('student-name-link') ? e.target : e.target.closest('.student-name-link');
+            const studentId = link.dataset.studentId;
+            const studentName = link.dataset.studentName;
+            
+            // 打开学生分析模态框
+            openStudentAnalysisModal(studentId, studentName);
+        }
+    });
+});
+
+/**
+ * 打开学生成绩分析模态框
+ * @param {string|number} studentId 学生ID
+ * @param {string} studentName 学生姓名
+ */
+function openStudentAnalysisModal(studentId, studentName) {
+    // 显示加载中
+    document.getElementById('studentAnalysisName').textContent = studentName;
+    document.getElementById('studentAnalysisId').textContent = studentId;
+    document.getElementById('studentAnalysisClass').textContent = '加载中...';
+    document.getElementById('studentExamCount').textContent = '加载中...';
+    document.getElementById('studentAverageScore').textContent = '加载中...';
+    document.getElementById('studentScoreTrend').textContent = '加载中...';
+    
+    // 清空图表区域
+    document.getElementById('studentDetailTableHead').innerHTML = '<tr><th>考试名称</th><th>考试日期</th></tr>';
+    document.getElementById('studentDetailTableBody').innerHTML = '<tr><td colspan="2" class="text-center">加载中...</td></tr>';
+    
+    // 销毁现有图表
+    if (charts['studentScoreTrendChart']) {
+        charts['studentScoreTrendChart'].destroy();
+        delete charts['studentScoreTrendChart'];
+    }
+    if (charts['studentSubjectComparisonChart']) {
+        charts['studentSubjectComparisonChart'].destroy();
+        delete charts['studentSubjectComparisonChart'];
+    }
+    
+    // 显示模态框
+    const modal = new bootstrap.Modal(document.getElementById('studentAnalysisModal'));
+    modal.show();
+    
+    // 获取学生所有考试数据
+    fetchStudentExamData(studentId);
+}
+
+/**
+ * 获取学生所有考试数据
+ * @param {string|number} studentId 学生ID
+ */
+function fetchStudentExamData(studentId) {
+    // 获取当前班级的所有考试
+    fetch(`/api/exams?class_id=${currentClassId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'ok' && data.exams && data.exams.length > 0) {
+                const examIds = data.exams.map(exam => exam.id);
+                
+                // 获取考试对比数据（包含所有学生的所有考试成绩）
+                fetch('/api/exams/compare', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        exam_ids: examIds
+                    })
+                })
+                .then(response => response.json())
+                .then(compareData => {
+                    if (compareData.status === 'ok') {
+                        // 分析学生成绩数据
+                        analyzeStudentData(studentId, compareData.results);
+                    } else {
+                        showNotification('error', compareData.message || '获取学生成绩数据失败');
+                    }
+                })
+                .catch(error => {
+                    console.error('获取考试对比数据失败:', error);
+                    showNotification('error', '获取学生成绩数据失败: ' + error.message);
+                });
+            } else {
+                document.getElementById('studentDetailTableBody').innerHTML = '<tr><td colspan="2" class="text-center">没有找到考试数据</td></tr>';
+            }
+        })
+        .catch(error => {
+            console.error('获取考试列表失败:', error);
+            showNotification('error', '获取考试列表失败: ' + error.message);
+        });
+}
+
+/**
+ * 分析学生成绩数据
+ * @param {string|number} studentId 学生ID
+ * @param {Object} data 考试对比数据
+ */
+function analyzeStudentData(studentId, data) {
+    // 找到指定学生的数据
+    const student = data.students.find(s => s.student_id == studentId);
+    
+    if (!student) {
+        document.getElementById('studentDetailTableBody').innerHTML = '<tr><td colspan="2" class="text-center">未找到该学生的成绩数据</td></tr>';
+        return;
+    }
+    
+    // 设置学生基本信息
+    document.getElementById('studentAnalysisClass').textContent = student.class_name || '未知';
+    
+    // 提取学生的考试记录
+    const examScores = {}; // 按考试ID存储学生的成绩
+    const examDates = {}; // 存储考试日期
+    const examNames = {}; // 存储考试名称
+    const subjects = new Set(); // 存储所有学科
+    
+    // 处理考试信息
+    data.exams.forEach(exam => {
+        examDates[exam.id] = exam.date;
+        examNames[exam.id] = exam.name;
+        
+        // 如果学生参加了这次考试，提取成绩
+        if (student.scores[exam.id]) {
+            examScores[exam.id] = student.scores[exam.id];
+            
+            // 收集学科
+            Object.keys(student.scores[exam.id]).forEach(subject => {
+                subjects.add(subject);
+            });
+        }
+    });
+    
+    // 设置考试次数
+    const examCount = Object.keys(examScores).length;
+    document.getElementById('studentExamCount').textContent = examCount;
+    
+    // 如果没有考试记录
+    if (examCount === 0) {
+        document.getElementById('studentAverageScore').textContent = '无数据';
+        document.getElementById('studentScoreTrend').textContent = '无数据';
+        document.getElementById('studentDetailTableBody').innerHTML = '<tr><td colspan="2" class="text-center">未找到该学生的考试记录</td></tr>';
+        return;
+    }
+    
+    // 计算所有科目的平均分
+    let totalScore = 0;
+    let scoreCount = 0;
+    
+    Object.values(examScores).forEach(subjectScores => {
+        Object.values(subjectScores).forEach(score => {
+            if (typeof score === 'number' && !isNaN(score)) {
+                totalScore += score;
+                scoreCount++;
+            }
+        });
+    });
+    
+    const averageScore = scoreCount > 0 ? (totalScore / scoreCount).toFixed(1) : '无数据';
+    document.getElementById('studentAverageScore').textContent = averageScore;
+    
+    // 计算成绩趋势
+    const scoreTrend = calculateScoreTrend(examScores, data.exams);
+    document.getElementById('studentScoreTrend').textContent = scoreTrend.text;
+    
+    // 渲染成绩趋势图
+    renderStudentScoreTrendChart(student, data.exams, subjects);
+    
+    // 渲染学科对比图
+    renderStudentSubjectComparisonChart(student, data.exams, subjects);
+    
+    // 渲染成绩明细表格
+    renderStudentDetailTable(student, data.exams, subjects);
+}
+
+/**
+ * 计算学生成绩趋势
+ * @param {Object} examScores 考试成绩
+ * @param {Array} exams 考试数组
+ * @returns {Object} 趋势信息
+ */
+function calculateScoreTrend(examScores, exams) {
+    // 按照考试日期排序的考试ID
+    const sortedExamIds = exams
+        .map(exam => exam.id)
+        .filter(examId => examScores[examId]); // 只保留学生参加了的考试
+    
+    if (sortedExamIds.length < 2) {
+        return { trend: 'stable', text: '考试次数不足，无法分析趋势' };
+    }
+    
+    // 计算每次考试的所有科目平均分
+    const examAverages = sortedExamIds.map(examId => {
+        const scores = Object.values(examScores[examId]).filter(score => typeof score === 'number' && !isNaN(score));
+        return scores.length > 0 ? scores.reduce((sum, score) => sum + score, 0) / scores.length : 0;
+    });
+    
+    // 计算最后一次和第一次的差值
+    const firstAverage = examAverages[0];
+    const lastAverage = examAverages[examAverages.length - 1];
+    const difference = lastAverage - firstAverage;
+    
+    let trend, text;
+    if (difference > 5) {
+        trend = 'improving';
+        text = `显著进步（↑ ${difference.toFixed(1)}分）`;
+    } else if (difference > 0) {
+        trend = 'slightly_improving';
+        text = `略有进步（↑ ${difference.toFixed(1)}分）`;
+    } else if (difference < -5) {
+        trend = 'declining';
+        text = `明显下降（↓ ${Math.abs(difference).toFixed(1)}分）`;
+    } else if (difference < 0) {
+        trend = 'slightly_declining';
+        text = `略有下降（↓ ${Math.abs(difference).toFixed(1)}分）`;
+    } else {
+        trend = 'stable';
+        text = '成绩稳定';
+    }
+    
+    return { trend, text, difference };
+}
+
+/**
+ * 渲染学生成绩趋势图
+ * @param {Object} student 学生数据
+ * @param {Array} exams 考试数组
+ * @param {Set} subjects 学科集合
+ */
+function renderStudentScoreTrendChart(student, exams, subjects) {
+    // 提取有序的考试ID和日期
+    const sortedExams = [...exams].sort((a, b) => new Date(a.date) - new Date(b.date));
+    const examIds = sortedExams.map(exam => exam.id);
+    const examLabels = sortedExams.map(exam => exam.name);
+    
+    // 准备每科成绩数据
+    const datasets = [];
+    const subjectArray = Array.from(subjects);
+    
+    // 创建所有学科的数据集
+    subjectArray.forEach((subject, index) => {
+        const scores = examIds.map(examId => {
+            if (student.scores[examId] && typeof student.scores[examId][subject] === 'number') {
+                return student.scores[examId][subject];
+            }
+            return null;
+        });
+        
+        // 只添加有数据的学科
+        if (scores.some(score => score !== null)) {
+            datasets.push({
+                label: subject,
+                data: scores,
+                borderColor: getChartColor(index, 1),
+                backgroundColor: getChartColor(index, 0.2),
+                borderWidth: 2,
+                tension: 0.1,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                fill: false
+            });
+        }
+    });
+    
+    // 创建平均分数据集
+    const averageScores = examIds.map(examId => {
+        if (!student.scores[examId]) return null;
+        
+        const scores = Object.values(student.scores[examId]).filter(score => typeof score === 'number' && !isNaN(score));
+        return scores.length > 0 ? scores.reduce((sum, score) => sum + score, 0) / scores.length : null;
+    });
+    
+    if (averageScores.some(score => score !== null)) {
+        datasets.push({
+            label: '平均分',
+            data: averageScores,
+            borderColor: 'rgba(0, 0, 0, 0.8)',
+            backgroundColor: 'rgba(0, 0, 0, 0.2)',
+            borderWidth: 3,
+            borderDash: [5, 5],
+            tension: 0.1,
+            pointRadius: 5,
+            pointHoverRadius: 7,
+            fill: false
+        });
+    }
+    
+    // 创建图表
+    const ctx = document.getElementById('studentScoreTrendChart').getContext('2d');
+    charts['studentScoreTrendChart'] = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: examLabels,
+            datasets: datasets
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    min: 0,
+                    max: 100,
+                    title: {
+                        display: true,
+                        text: '分数'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: '考试'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                }
+            }
+        }
+    });
+}
+
+/**
+ * 渲染学生学科对比图
+ * @param {Object} student 学生数据
+ * @param {Array} exams 考试数组
+ * @param {Set} subjects 学科集合
+ */
+function renderStudentSubjectComparisonChart(student, exams, subjects) {
+    const subjectArray = Array.from(subjects);
+    
+    // 计算每个学科的平均分
+    const subjectAverages = {};
+    subjectArray.forEach(subject => {
+        let sum = 0;
+        let count = 0;
+        
+        exams.forEach(exam => {
+            if (student.scores[exam.id] && typeof student.scores[exam.id][subject] === 'number') {
+                sum += student.scores[exam.id][subject];
+                count++;
+            }
+        });
+        
+        if (count > 0) {
+            subjectAverages[subject] = sum / count;
+        }
+    });
+    
+    // 按平均分排序的学科列表
+    const sortedSubjects = Object.keys(subjectAverages).sort((a, b) => subjectAverages[b] - subjectAverages[a]);
+    
+    // 准备图表数据
+    const labels = sortedSubjects;
+    const data = sortedSubjects.map(subject => subjectAverages[subject]);
+    const backgroundColors = sortedSubjects.map((_, index) => getChartColor(index, 0.6));
+    
+    // 创建图表
+    const ctx = document.getElementById('studentSubjectComparisonChart').getContext('2d');
+    charts['studentSubjectComparisonChart'] = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: '学科平均分',
+                data: data,
+                backgroundColor: backgroundColors,
+                borderColor: backgroundColors.map(color => color.replace('0.6', '1')),
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    min: 0,
+                    max: 100
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `${context.label}: ${context.raw.toFixed(1)}分`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+/**
+ * 渲染学生成绩明细表格
+ * @param {Object} student 学生数据
+ * @param {Array} exams 考试数组
+ * @param {Set} subjects 学科集合
+ */
+function renderStudentDetailTable(student, exams, subjects) {
+    const subjectArray = Array.from(subjects);
+    
+    // 按日期排序的考试列表
+    const sortedExams = [...exams].sort((a, b) => new Date(a.date) - new Date(b.date));
+    
+    // 生成表头
+    let headerRow = '<tr><th>考试名称</th><th>考试日期</th>';
+    subjectArray.forEach(subject => {
+        headerRow += `<th>${subject}</th>`;
+    });
+    headerRow += '<th>平均分</th></tr>';
+    
+    document.getElementById('studentDetailTableHead').innerHTML = headerRow;
+    
+    // 生成表格行
+    let tableRows = '';
+    
+    sortedExams.forEach(exam => {
+        let examScores = student.scores[exam.id] || {};
+        
+        // 计算该次考试的平均分
+        let sum = 0;
+        let count = 0;
+        Object.values(examScores).forEach(score => {
+            if (typeof score === 'number' && !isNaN(score)) {
+                sum += score;
+                count++;
+            }
+        });
+        const average = count > 0 ? (sum / count).toFixed(1) : '-';
+        
+        // 格式化日期
+        const examDate = new Date(exam.date).toLocaleDateString('zh-CN');
+        
+        let row = `<tr><td>${exam.name}</td><td>${examDate}</td>`;
+        
+        // 添加各科成绩
+        subjectArray.forEach(subject => {
+            const score = examScores[subject];
+            row += `<td>${score !== undefined ? score : '-'}</td>`;
+        });
+        
+        row += `<td>${average}</td></tr>`;
+        tableRows += row;
+    });
+    
+    if (tableRows) {
+        document.getElementById('studentDetailTableBody').innerHTML = tableRows;
+    } else {
+        document.getElementById('studentDetailTableBody').innerHTML = `<tr><td colspan="${2 + subjectArray.length + 1}" class="text-center">暂无考试记录</td></tr>`;
+    }
 } 
