@@ -5,8 +5,8 @@
 
 // 会话超时监控
 (function() {
-    // 超时时间，与服务器保持一致（30分钟）
-    const timeoutMinutes = 30;
+    // 超时时间设置为30分钟
+    const timeoutMinutes = 30; 
     const warningMinutes = 1; // 提前1分钟警告
     
     let timeoutTimer;
@@ -40,7 +40,7 @@
         warningModal.innerHTML = `
             <div class="warning-content">
                 <h3>会话即将过期</h3>
-                <p>您的会话将在 <span id="countdown">${warningMinutes}:00</span> 分钟后过期。</p>
+                <p>您的会话将在 <span id="countdown">30</span> 秒后过期。</p>
                 <div class="warning-actions">
                     <button id="extend-session" class="btn-extend">继续操作</button>
                     <button id="logout-now" class="btn-logout">立即退出</button>
@@ -111,13 +111,11 @@
         });
         
         // 倒计时
-        let secondsLeft = warningMinutes * 60;
+        let secondsLeft = Math.floor(warningMinutes * 60);
         const countdownEl = document.getElementById('countdown');
         const countdownInterval = setInterval(function() {
             secondsLeft--;
-            const minutes = Math.floor(secondsLeft / 60);
-            const seconds = secondsLeft % 60;
-            countdownEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            countdownEl.textContent = secondsLeft;
             
             if (secondsLeft <= 0) {
                 clearInterval(countdownInterval);
