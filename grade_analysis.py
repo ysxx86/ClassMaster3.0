@@ -53,7 +53,9 @@ def init_grade_analysis(app):
         class_id INTEGER NOT NULL,
         subjects TEXT NOT NULL,
         created_at TEXT NOT NULL,
-        updated_at TEXT NOT NULL
+        updated_at TEXT NOT NULL,
+        has_paper INTEGER DEFAULT 0,
+        paper_path TEXT
     )
     ''')
     

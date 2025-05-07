@@ -22,18 +22,38 @@ class DeepSeekAPI:
         Args:
             api_key: DeepSeek API密钥，如果不提供则从环境变量获取，如果环境变量也没有则使用默认值
         """
-        # 默认API密钥
+        # 默认API密钥 - 已更新为用户提供的密钥
         default_api_key = "sk-04f7d75638d044ed8a707d7aadf46782"
         
-        # 优先级：1.传入的参数 2.环境变量 3.默认值
-        self.api_key = api_key or os.environ.get("DEEPSEEK_API_KEY") or default_api_key
-        
-        if self.api_key == default_api_key:
-            logger.info("使用默认DeepSeek API密钥")
-        elif api_key:
+        # 检查传入的API密钥是否有效
+        if api_key and api_key.strip():
+            # 传入的API密钥有效
+            self.api_key = api_key.strip()
             logger.info("使用自定义DeepSeek API密钥")
-        elif os.environ.get("DEEPSEEK_API_KEY"):
+        elif os.environ.get("DEEPSEEK_API_KEY", "").strip():
+            # 环境变量中的API密钥有效
+            self.api_key = os.environ.get("DEEPSEEK_API_KEY").strip()
             logger.info("使用环境变量中的DeepSeek API密钥")
+        else:
+            # 使用默认API密钥
+            self.api_key = default_api_key
+            logger.info("使用默认DeepSeek API密钥")
+            
+        # 验证API密钥格式
+        if not self.api_key.startswith("sk-"):
+            logger.warning(f"DeepSeek API密钥格式可能不正确: {self.api_key[:5]}...")
+    
+    def update_api_key(self, api_key: str) -> None:
+        """更新API密钥
+        
+        Args:
+            api_key: 新的API密钥
+        """
+        if api_key and api_key.strip():
+            self.api_key = api_key.strip()
+            logger.info("DeepSeek API密钥已更新")
+            return True
+        return False
     
     def test_connection(self) -> Dict[str, Any]:
         """测试API连接是否正常
@@ -248,14 +268,13 @@ class DeepSeekAPI:
         
         # 诗意风格调整参数，降低temperature以保证更好地遵循指令
         if style == "诗意的":
-            payload["temperature"] = 0.7  # 降低温度，增加对指令的遵循度
-            payload["presence_penalty"] = 0.3  # 减小存在惩罚
-
+            payload["temperature"] = 0.8
+        
         try:
             # 发送请求
             logger.info(f"正在为学生 {student_info.get('name')} 发送API请求...")
             
-            response = requests.post(self.API_URL, headers=headers, json=payload, timeout=30)
+            response = requests.post(self.API_URL, headers=headers, json=payload, timeout=25)
             logger.info(f"API响应状态码: {response.status_code}")
             
             # 检查HTTP错误
@@ -274,12 +293,21 @@ class DeepSeekAPI:
                 comment = result["choices"][0]["message"]["content"].strip()
                 logger.info(f"成功提取评语: {comment[:50]}...")
                 
-                # 检查评语字数
+                # 检查评语长度
                 if len(comment) > max_length:
-                    logger.warning(f"生成的评语超过{max_length}字，长度为{len(comment)}字。这表明API没有严格遵循字数限制要求。")
+                    logger.warning(f"生成的评语长度超出限制: {len(comment)}/{max_length} 字")
+                    # 优化截断过程，尽量保持完整句子
+                    truncated = self._truncate_to_complete_sentence(comment, max_length)
+                    
+                    return {
+                        "status": "ok", 
+                        "comment": truncated,
+                        "message": f"评语已生成，原文超出字数限制，已截断至 {len(truncated)} 字"
+                    }
                 
+                logger.info(f"已成功生成评语，长度为 {len(comment)} 字")
                 return {
-                    "status": "ok",
+                    "status": "ok", 
                     "comment": comment,
                     "message": "评语生成成功"
                 }
@@ -292,10 +320,10 @@ class DeepSeekAPI:
                 }
                 
         except requests.exceptions.RequestException as e:
-            logger.error(f"API请求错误: {str(e)}")
+            logger.error(f"API请求失败: {str(e)}")
             return {
                 "status": "error",
-                "message": f"评语生成失败: API请求错误: {str(e)}",
+                "message": f"评语生成失败: API请求失败: {str(e)}",
                 "comment": ""
             }
         except json.JSONDecodeError as e:
@@ -313,4 +341,239 @@ class DeepSeekAPI:
                 "status": "error",
                 "message": f"评语生成失败: {str(e)}",
                 "comment": ""
+            }
+    
+    def _truncate_to_complete_sentence(self, text, max_length):
+        """将文本截断到指定长度，尽量保持句子完整
+        
+        Args:
+            text: 原始文本
+            max_length: 最大长度
+            
+        Returns:
+            截断后的文本
+        """
+        if len(text) <= max_length:
+            return text
+            
+        # 尝试在标点符号处截断
+        end_marks = ["。", "！", "？", "：", "；", "……", "，"]
+        
+        truncated = text[:max_length]
+        for mark in end_marks:
+            last_mark_pos = truncated.rfind(mark)
+            if last_mark_pos > max_length * 0.75:  # 确保截断的文本不会太短
+                return text[:last_mark_pos + 1]
+                
+        # 如果没有找到合适的标点符号，直接截断
+        return truncated
+            
+    def analyze_exam_paper(self, questions_data, student_scores, subject, exam_name, class_name):
+        """分析试卷数据，提供教学建议
+        
+        Args:
+            questions_data: 题目数据，包含每道题的错误率、分值等
+            student_scores: 学生成绩数据
+            subject: 学科名称
+            exam_name: 考试名称
+            class_name: 班级名称
+            
+        Returns:
+            包含分析结果的字典，格式为 {"status": "ok|error", "analysis": {...}, "message": "..."}
+        """
+        logger.info(f"开始分析{subject}试卷: {exam_name}")
+        
+        if not self.api_key:
+            logger.error("API密钥未设置，无法调用API")
+            return {
+                "status": "error", 
+                "message": "未设置DeepSeek API密钥，无法调用API",
+                "analysis": {}
+            }
+
+        # 构建请求头
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {self.api_key}"
+        }
+        
+        # 分析错误率较高的题目
+        high_error_questions = []
+        medium_error_questions = []
+        for q in questions_data:
+            if q['error_rate'] > 0.7:
+                high_error_questions.append(q)
+            elif q['error_rate'] > 0.4:
+                medium_error_questions.append(q)
+        
+        # 计算全班平均分和分数段分布
+        scores = student_scores
+        total_students = len(scores)
+        if total_students == 0:
+            average_score = 0
+            pass_rate = 0
+            excellent_rate = 0
+            score_distribution = {
+                "0-59": 0,
+                "60-69": 0,
+                "70-79": 0,
+                "80-89": 0,
+                "90-100": 0
+            }
+        else:
+            average_score = sum(scores) / total_students
+            pass_count = sum(1 for score in scores if score >= 60)
+            excellent_count = sum(1 for score in scores if score >= 90)
+            pass_rate = (pass_count / total_students) * 100
+            excellent_rate = (excellent_count / total_students) * 100
+            
+            # 计算分数段分布
+            score_distribution = {
+                "0-59": sum(1 for score in scores if score < 60),
+                "60-69": sum(1 for score in scores if 60 <= score < 70),
+                "70-79": sum(1 for score in scores if 70 <= score < 80),
+                "80-89": sum(1 for score in scores if 80 <= score < 90),
+                "90-100": sum(1 for score in scores if score >= 90)
+            }
+        
+        # 构建提示词
+        prompt = f"""
+你是一位经验丰富的{subject}教师，请对下面的考试数据进行深入分析，提供详细的教学建议。
+
+考试信息:
+- 考试名称: {exam_name}
+- 班级: {class_name}
+- 学科: {subject}
+- 学生人数: {total_students}
+- 平均分: {average_score:.2f}
+- 及格率: {pass_rate:.2f}%
+- 优秀率: {excellent_rate:.2f}%
+
+分数段分布:
+- 90-100分: {score_distribution['90-100']}人 ({(score_distribution['90-100']/total_students*100 if total_students > 0 else 0):.2f}%)
+- 80-89分: {score_distribution['80-89']}人 ({(score_distribution['80-89']/total_students*100 if total_students > 0 else 0):.2f}%)
+- 70-79分: {score_distribution['70-79']}人 ({(score_distribution['70-79']/total_students*100 if total_students > 0 else 0):.2f}%)
+- 60-69分: {score_distribution['60-69']}人 ({(score_distribution['60-69']/total_students*100 if total_students > 0 else 0):.2f}%)
+- 0-59分: {score_distribution['0-59']}人 ({(score_distribution['0-59']/total_students*100 if total_students > 0 else 0):.2f}%)
+
+高错误率题目 (错误率>70%):
+"""
+
+        # 添加高错误率题目信息
+        if high_error_questions:
+            for q in high_error_questions:
+                prompt += f"- 题号{q.get('number', '未知')}, 题型:{q.get('type', '未知')}, 分值:{q.get('score', '未知')}, 错误率:{q.get('error_rate', 0)*100:.2f}%\n"
+        else:
+            prompt += "- 无高错误率题目\n"
+            
+        # 添加中等错误率题目信息
+        prompt += "\n中等错误率题目 (错误率40%-70%):\n"
+        if medium_error_questions:
+            for q in medium_error_questions:
+                prompt += f"- 题号{q.get('number', '未知')}, 题型:{q.get('type', '未知')}, 分值:{q.get('score', '未知')}, 错误率:{q.get('error_rate', 0)*100:.2f}%\n"
+        else:
+            prompt += "- 无中等错误率题目\n"
+        
+        # 完成提示词
+        prompt += """
+根据以上数据，请提供详细的分析和教学建议，回答需要包含以下几个部分：
+
+1. 总体评价：总结全班考试表现，包括优势和不足
+2. 薄弱知识点分析：基于错误率高的题目，分析出学生可能存在的知识漏洞，逐一列出3-5个主要薄弱点
+3. 教学建议：针对每个薄弱知识点，提供具体的教学改进方法和课堂活动建议
+4. 重难点教学：推荐2-3个针对性的教学方法/活动，帮助学生克服学习困难
+
+请以JSON格式返回分析结果，格式如下：
+{
+  "overall": "总体评价文本...",
+  "weak_points": [
+    {
+      "title": "薄弱点1标题",
+      "description": "薄弱点1详细描述..."
+    },
+    // 更多薄弱点...
+  ],
+  "suggestions": [
+    {
+      "title": "建议1标题",
+      "description": "建议1详细描述..."
+    },
+    // 更多建议...
+  ]
+}
+
+你的分析必须基于提供的数据，同时结合{subject}学科的特点和教学经验，提供真正有价值的教学指导。
+请确保你的JSON格式完全正确，不要包含任何其他文本或说明。
+"""
+
+        # 构建请求体
+        payload = {
+            "model": "deepseek-chat",
+            "messages": [
+                {"role": "system", "content": f"你是一名专业的{subject}教师和教学分析专家，善于分析试卷数据并提供有针对性的教学建议。"},
+                {"role": "user", "content": prompt}
+            ],
+            "temperature": 0.7,
+            "response_format": {"type": "json_object"},
+            "max_tokens": 2000
+        }
+        
+        try:
+            # 发送请求
+            response = requests.post(self.API_URL, headers=headers, json=payload, timeout=30)
+            response.raise_for_status()  # 检查HTTP错误
+            
+            # 解析响应
+            result = response.json()
+            
+            # 检查响应是否包含预期字段
+            if "choices" in result and len(result["choices"]) > 0:
+                analysis_content = result["choices"][0]["message"]["content"].strip()
+                
+                try:
+                    # 解析JSON内容
+                    analysis_json = json.loads(analysis_content)
+                    
+                    logger.info(f"成功分析试卷")
+                    return {
+                        "status": "ok", 
+                        "analysis": analysis_json,
+                        "message": "试卷分析成功"
+                    }
+                except json.JSONDecodeError as e:
+                    logger.error(f"无法解析API返回的JSON: {str(e)}")
+                    return {
+                        "status": "error", 
+                        "analysis": {},
+                        "message": "API返回数据格式错误，无法解析JSON"
+                    }
+            else:
+                logger.warning(f"API响应格式异常: {result}")
+                return {
+                    "status": "error", 
+                    "analysis": {},
+                    "message": "API响应格式异常，无法获取分析结果"
+                }
+                
+        except requests.exceptions.RequestException as e:
+            logger.error(f"API请求失败: {str(e)}")
+            return {
+                "status": "error", 
+                "analysis": {},
+                "message": f"API请求失败: {str(e)}"
+            }
+        except json.JSONDecodeError:
+            logger.error("API返回的不是有效的JSON格式")
+            return {
+                "status": "error", 
+                "analysis": {},
+                "message": "API返回格式错误"
+            }
+        except Exception as e:
+            logger.error(f"分析试卷时发生未知错误: {str(e)}")
+            traceback.print_exc()
+            return {
+                "status": "error", 
+                "analysis": {},
+                "message": f"试卷分析失败: {str(e)}"
             } 
