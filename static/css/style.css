@@ -1,0 +1,52 @@
+/* 强制显示垂直滚动条，防止页面跳动 */
+html {
+    overflow-y: scroll !important; /* 使用!important确保规则不被覆盖 */
+    height: 100%;
+    margin-bottom: 0.1px; /* 小技巧：确保始终有一点滚动空间 */
+}
+
+body {
+    min-height: 101vh; /* 稍微超出视口高度，确保始终有滚动条 */
+    overflow-x: hidden; /* 防止水平滚动条 */
+    padding-bottom: 1px; /* 增加底部内边距，确保内容足够长 */
+    overflow-y: scroll !important; /* 在body上也强制显示滚动条 */
+}
+
+/* 确保内容区域有足够的底部间距 */
+.content-wrapper, .main-content {
+    padding-bottom: 3rem;
+    min-height: calc(100vh - 60px); /* 减去头部高度 */
+}
+
+/* 特别针对导出报告页面 */
+.export-container, .report-export-section {
+    min-height: 600px;
+    margin-bottom: 2rem;
+}
+
+/* 首页特定样式，确保始终有滚动条 */
+.home-page, .dashboard-container {
+    min-height: calc(100vh - 50px);
+    padding-bottom: 2rem;
+}
+
+/* 添加一个不可见的元素在页面底部，确保有滚动空间 */
+body::after {
+    content: '';
+    display: block;
+    height: 1px; /* 只需要1px的高度 */
+    margin-top: 50px; /* 与页面底部的距离 */
+}
+
+/* 滚动条占位元素 */
+.scroll-spacer {
+    display: block;
+    width: 100%;
+    height: 150px; /* 固定高度，确保页面有足够滚动空间 */
+    clear: both;
+}
+
+/* 强制所有页面容器溢出 */
+main, .container, .container-fluid, .content, #app, #root {
+    min-height: calc(100vh + 50px) !important; /* 强制内容超出视口 */
+} 
