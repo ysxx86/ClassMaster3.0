@@ -102,6 +102,9 @@ from grades import grades_bp, init_grades
 # 导入德育模块
 from deyu import deyu_bp, init_deyu
 
+# 导入成绩分析模块
+from grade_analysis import grade_analysis_bp, init_grade_analysis
+
 # 导入用户模块
 from users import users_bp, init_users
 
@@ -268,6 +271,9 @@ app.register_blueprint(grades_bp)
 # 注册德育蓝图
 app.register_blueprint(deyu_bp)
 
+# 注册成绩分析蓝图
+app.register_blueprint(grade_analysis_bp)
+
 # 注册用户蓝图
 app.register_blueprint(users_bp)
 
@@ -303,6 +309,9 @@ init_grades(app)
 
 # 初始化德育模块
 init_deyu(app)
+
+# 初始化成绩分析模块
+init_grade_analysis(app)
 
 # 初始化仪表盘模块
 if dashboard_enabled:
