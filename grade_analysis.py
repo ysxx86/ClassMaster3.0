@@ -53,7 +53,9 @@ def init_grade_analysis(app):
         class_id INTEGER NOT NULL,
         subjects TEXT NOT NULL,
         created_at TEXT NOT NULL,
-        updated_at TEXT NOT NULL
+        updated_at TEXT NOT NULL,
+        has_paper INTEGER DEFAULT 0,
+        paper_path TEXT
     )
     ''')
     
@@ -717,6 +719,429 @@ def delete_exam(exam_id):
         return jsonify({
             'status': 'error',
             'message': f'删除考试失败: {str(e)}'
+        }), 500
+    finally:
+        if 'conn' in locals():
+            conn.close()
+
+# 更新考试
+@grade_analysis_bp.route('/api/exams/<int:exam_id>', methods=['PUT', 'POST'])
+@login_required
+def update_exam(exam_id):
+    try:
+        data = request.json
+        
+        # 检查是否是POST请求但意图是PUT
+        if request.method == 'POST':
+            # 检查请求头或请求体中是否有方法覆盖的标识
+            method_override = request.headers.get('X-HTTP-Method-Override')
+            method_param = data.get('_method')
+            
+            # 如果不是PUT意图，则拒绝请求
+            if method_override != 'PUT' and method_param != 'PUT':
+                return jsonify({'status': 'error', 'message': '不支持POST方法更新考试'}), 405
+            
+            # 如果是覆盖方法，从请求数据中移除_method参数
+            if '_method' in data:
+                del data['_method']
+        
+        # 验证必填字段
+        required_fields = ['exam_name', 'exam_date', 'subjects']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({'status': 'error', 'message': f'缺少字段: {field}'}), 400
+        
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # 获取考试信息
+        cursor.execute("SELECT * FROM exams WHERE id = ?", (exam_id,))
+        exam = cursor.fetchone()
+        
+        if not exam:
+            return jsonify({'status': 'error', 'message': '考试不存在'}), 404
+        
+        # 检查权限
+        if not current_user.is_admin and current_user.class_id != exam['class_id']:
+            return jsonify({'status': 'error', 'message': '您无权修改此考试'}), 403
+        
+        # 准备更新数据
+        now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
+        # 序列化subjects字段
+        subjects_json = json.dumps(data['subjects'], ensure_ascii=False)
+        
+        # 更新考试数据
+        cursor.execute('''
+        UPDATE exams 
+        SET exam_name = ?, exam_date = ?, subjects = ?, updated_at = ?
+        WHERE id = ?
+        ''', (data['exam_name'], data['exam_date'], subjects_json, now, exam_id))
+        
+        conn.commit()
+        
+        return jsonify({
+            'status': 'ok',
+            'message': '考试更新成功'
+        })
+    except Exception as e:
+        logger.error(f"更新考试时出错: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': f'更新考试失败: {str(e)}'
+        }), 500
+    finally:
+        if 'conn' in locals():
+            conn.close()
+
+# 更新学生成绩
+@grade_analysis_bp.route('/api/exams/<int:exam_id>/scores/update', methods=['POST'])
+@login_required
+def update_student_score(exam_id):
+    try:
+        data = request.json
+        
+        # 验证必填字段
+        required_fields = ['student_id', 'subject', 'score']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({'status': 'error', 'message': f'缺少字段: {field}'}), 400
+        
+        # 获取考试信息
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute("SELECT * FROM exams WHERE id = ?", (exam_id,))
+        exam = cursor.fetchone()
+        
+        if not exam:
+            return jsonify({'status': 'error', 'message': '考试不存在'}), 404
+        
+        # 检查权限
+        if not current_user.is_admin and current_user.class_id != exam['class_id']:
+            return jsonify({'status': 'error', 'message': '您无权修改此考试成绩'}), 403
+        
+        # 验证学科是否属于考试
+        subjects = json.loads(exam['subjects'])
+        if data['subject'] not in subjects:
+            return jsonify({'status': 'error', 'message': f'学科 {data["subject"]} 不属于此次考试'}), 400
+        
+        # 验证学生是否存在且属于该班级
+        cursor.execute("SELECT * FROM students WHERE id = ? AND class_id = ?", 
+                      (data['student_id'], exam['class_id']))
+        student = cursor.fetchone()
+        
+        if not student:
+            return jsonify({'status': 'error', 'message': '学生不存在或不属于该班级'}), 400
+        
+        # 验证分数范围
+        score = float(data['score'])
+        if score < 0 or score > 100:
+            return jsonify({'status': 'error', 'message': '分数必须在0-100之间'}), 400
+        
+        # 准备更新数据
+        now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
+        # 检查成绩记录是否已存在
+        cursor.execute('''
+        SELECT * FROM exam_scores 
+        WHERE exam_id = ? AND student_id = ? AND subject = ?
+        ''', (exam_id, data['student_id'], data['subject']))
+        
+        existing_score = cursor.fetchone()
+        
+        if existing_score:
+            # 更新现有成绩
+            cursor.execute('''
+            UPDATE exam_scores 
+            SET score = ?, updated_at = ?
+            WHERE exam_id = ? AND student_id = ? AND subject = ?
+            ''', (score, now, exam_id, data['student_id'], data['subject']))
+        else:
+            # 插入新成绩
+            cursor.execute('''
+            INSERT INTO exam_scores 
+            (exam_id, student_id, student_name, class_id, subject, score, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (exam_id, data['student_id'], student['name'], exam['class_id'], 
+                 data['subject'], score, now, now))
+        
+        conn.commit()
+        
+        return jsonify({
+            'status': 'ok',
+            'message': '成绩更新成功'
+        })
+    except Exception as e:
+        logger.error(f"更新学生成绩时出错: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': f'更新学生成绩失败: {str(e)}'
+        }), 500
+    finally:
+        if 'conn' in locals():
+            conn.close()
+
+# 删除学生成绩
+@grade_analysis_bp.route('/api/exams/<int:exam_id>/scores/delete', methods=['POST'])
+@login_required
+def delete_student_scores(exam_id):
+    try:
+        data = request.json
+        
+        # 验证必填字段
+        if 'student_id' not in data:
+            return jsonify({'status': 'error', 'message': '缺少学生ID字段'}), 400
+        
+        # 获取考试信息
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute("SELECT * FROM exams WHERE id = ?", (exam_id,))
+        exam = cursor.fetchone()
+        
+        if not exam:
+            return jsonify({'status': 'error', 'message': '考试不存在'}), 404
+        
+        # 检查权限
+        if not current_user.is_admin and current_user.class_id != exam['class_id']:
+            return jsonify({'status': 'error', 'message': '您无权删除此考试成绩'}), 403
+        
+        # 删除学生的所有成绩记录
+        cursor.execute('''
+        DELETE FROM exam_scores 
+        WHERE exam_id = ? AND student_id = ?
+        ''', (exam_id, data['student_id']))
+        
+        # 获取影响的行数
+        row_count = cursor.rowcount
+        
+        conn.commit()
+        
+        if row_count == 0:
+            return jsonify({
+                'status': 'warning',
+                'message': '未找到需要删除的成绩记录'
+            })
+        
+        return jsonify({
+            'status': 'ok',
+            'message': f'成功删除 {row_count} 条成绩记录'
+        })
+    except Exception as e:
+        logger.error(f"删除学生成绩时出错: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': f'删除学生成绩失败: {str(e)}'
+        }), 500
+    finally:
+        if 'conn' in locals():
+            conn.close()
+
+# 获取多个考试详情，用于对比分析
+@grade_analysis_bp.route('/api/exams/compare', methods=['POST'])
+@login_required
+def get_exams_for_comparison():
+    try:
+        data = request.json
+        
+        # 检查考试ID列表
+        if not data or 'exam_ids' not in data or not data['exam_ids']:
+            return jsonify({'status': 'error', 'message': '请选择要对比的考试'}), 400
+        
+        exam_ids = data['exam_ids']
+        
+        # 准备结果容器
+        results = {
+            'exams': [],
+            'subjects': [],
+            'students': {},
+            'common_subjects': []
+        }
+        
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # 获取班级ID (如果是管理员，以第一个考试的班级为准)
+        class_id = None
+        if not current_user.is_admin:
+            class_id = current_user.class_id
+        
+        # 获取考试详情
+        all_subjects = set()
+        valid_exam_ids = []
+        
+        for exam_id in exam_ids:
+            # 获取考试信息
+            cursor.execute("SELECT * FROM exams WHERE id = ?", (exam_id,))
+            exam = cursor.fetchone()
+            
+            if not exam:
+                continue
+                
+            exam_dict = dict(exam)
+            exam_dict['subjects'] = json.loads(exam_dict['subjects'])
+            
+            # 如果是第一个考试并且是管理员，设置班级ID
+            if not class_id and current_user.is_admin:
+                class_id = exam_dict['class_id']
+            
+            # 检查权限
+            if exam_dict['class_id'] != class_id:
+                continue
+                
+            # 获取成绩统计
+            cursor.execute('''
+            SELECT s.*, students.name as student_name, students.class as class_name
+            FROM exam_scores s
+            LEFT JOIN students ON s.student_id = students.id
+            WHERE s.exam_id = ? AND s.class_id = ?
+            ORDER BY s.student_id, s.subject
+            ''', (exam_id, class_id))
+            
+            all_scores = [dict(row) for row in cursor.fetchall()]
+            
+            # 按学科组织成绩数据
+            scores_by_subject = {}
+            for score in all_scores:
+                subject = score['subject']
+                if subject not in scores_by_subject:
+                    scores_by_subject[subject] = []
+                scores_by_subject[subject].append(score)
+                
+                # 添加到全局学科集合
+                all_subjects.add(subject)
+            
+            # 计算统计信息
+            stats = {}
+            for subject, subject_scores in scores_by_subject.items():
+                # 提取分数列表
+                subject_student_ids = set()
+                valid_scores = []
+                
+                # 存储学生ID和分数的映射
+                student_scores = {}
+                
+                for score in subject_scores:
+                    student_id = score['student_id']
+                    if student_id in subject_student_ids:
+                        continue  # 跳过已经计算过的学生
+                    
+                    subject_student_ids.add(student_id)
+                    score_value = score['score']
+                    
+                    # 添加到学生成绩映射
+                    student_scores[student_id] = {
+                        'student_id': student_id,
+                        'student_name': score['student_name'],
+                        'score': score_value
+                    }
+                    
+                    # 验证分数是否有效
+                    if 0 <= score_value <= 100:
+                        valid_scores.append(score_value)
+                
+                # 添加学生成绩到结果中
+                for student_id, score_info in student_scores.items():
+                    if student_id not in results['students']:
+                        results['students'][student_id] = {
+                            'student_id': student_id,
+                            'student_name': score_info['student_name'],
+                            'scores': {}
+                        }
+                    
+                    if 'scores' not in results['students'][student_id]:
+                        results['students'][student_id]['scores'] = {}
+                        
+                    if exam_id not in results['students'][student_id]['scores']:
+                        results['students'][student_id]['scores'][exam_id] = {}
+                    
+                    results['students'][student_id]['scores'][exam_id][subject] = score_info['score']
+                
+                # 获取该科目的学生总数 (去重后)
+                total_students = len(valid_scores)
+                
+                if total_students == 0:
+                    stats[subject] = {
+                        'average': 0,
+                        'max': 0,
+                        'min': 0,
+                        'excellent_rate': 0,
+                        'pass_rate': 0,
+                        'excellent_threshold': 90,
+                        'score_distribution': {'0-59': 0, '60-69': 0, '70-79': 0, '80-89': 0, '90-100': 0}
+                    }
+                    continue
+                
+                # 计算基本统计信息
+                avg_score = round(sum(valid_scores) / total_students, 1)
+                max_score = max(valid_scores)
+                min_score = min(valid_scores)
+                
+                # 计算及格率和优秀率
+                pass_count = sum(1 for s in valid_scores if s >= 60)
+                excellent_threshold = 90  # 默认优秀标准
+                excellent_count = sum(1 for s in valid_scores if s >= excellent_threshold)
+                
+                pass_rate = round((pass_count / total_students) * 100, 1)
+                excellent_rate = round((excellent_count / total_students) * 100, 1)
+                
+                # 计算各分数段人数
+                below_60 = sum(1 for s in valid_scores if s < 60)
+                from_60_to_69 = sum(1 for s in valid_scores if 60 <= s < 70)
+                from_70_to_79 = sum(1 for s in valid_scores if 70 <= s < 80)
+                from_80_to_89 = sum(1 for s in valid_scores if 80 <= s < 90)
+                from_90_to_100 = sum(1 for s in valid_scores if s >= 90)
+                
+                # 保存统计数据
+                stats[subject] = {
+                    'average': avg_score,
+                    'max': max_score,
+                    'min': min_score,
+                    'pass_rate': pass_rate,
+                    'excellent_rate': excellent_rate,
+                    'excellent_threshold': excellent_threshold,
+                    'score_distribution': {
+                        '0-59': below_60,
+                        '60-69': from_60_to_69,
+                        '70-79': from_70_to_79,
+                        '80-89': from_80_to_89,
+                        '90-100': from_90_to_100
+                    }
+                }
+            
+            # 添加考试和统计信息到结果
+            valid_exam_ids.append(exam_id)
+            results['exams'].append({
+                'id': exam_id,
+                'name': exam_dict['exam_name'],
+                'date': exam_dict['exam_date'],
+                'subjects': exam_dict['subjects'],
+                'stats': stats
+            })
+        
+        # 转换学生数据为列表
+        results['students'] = list(results['students'].values())
+        
+        # 获取共有学科
+        common_subjects = set()
+        if results['exams']:
+            common_subjects = set(results['exams'][0]['stats'].keys())
+            for exam in results['exams'][1:]:
+                common_subjects = common_subjects.intersection(set(exam['stats'].keys()))
+        
+        results['common_subjects'] = list(common_subjects)
+        results['all_subjects'] = list(all_subjects)
+        
+        return jsonify({
+            'status': 'ok',
+            'results': results
+        })
+    except Exception as e:
+        logger.error(f"获取对比分析数据时出错: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': f'获取对比分析数据失败: {str(e)}'
         }), 500
     finally:
         if 'conn' in locals():
