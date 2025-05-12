@@ -4,3 +4,9 @@ _pycache_/
 *.db
 *.log
 *.log.*
+*.xlsx
+*.csv
+*.json
+*.jsonl
+*.jsonl.gz
+*.jsonl.gz.part
