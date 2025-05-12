@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>导出报告 - 班主任管理系统</title>
     <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="../css/boxicons-local.css" rel="stylesheet">
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
     <link href="../css/main.css" rel="stylesheet">
+    <link href="../css/export.css" rel="stylesheet">
     <!-- Document libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pizzip/3.1.4/pizzip.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/docxtemplater/3.37.11/docxtemplater.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="../libs/pizzip.min.js"></script>
+    <script src="../libs/docxtemplater.js"></script>
+    <script src="../libs/jszip.min.js"></script>
     <style>
         body {
             font-family: 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
@@ -413,16 +413,16 @@
         </div>
     </div>
     
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/libs/bootstrap.bundle.min.js"></script>
     <script src="../js/data.js"></script>
     <script src="../js/export.js"></script>
     <script src="../js/template-upload.js"></script>
     <script>
-        // 加载docx库
+        // 动态加载文档库
         async function loadDocxLibraries() {
             if (typeof PizZip === 'undefined') {
                 const pizzipScript = document.createElement('script');
-                pizzipScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/pizzip/3.1.4/pizzip.min.js';
+                pizzipScript.src = '../libs/pizzip.min.js';
                 document.head.appendChild(pizzipScript);
                 
                 await new Promise(resolve => pizzipScript.onload = resolve);
@@ -430,7 +430,7 @@
             
             if (typeof Docxtemplater === 'undefined') {
                 const docxtemplaterScript = document.createElement('script');
-                docxtemplaterScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/docxtemplater/3.37.11/docxtemplater.js';
+                docxtemplaterScript.src = '../libs/docxtemplater.js';
                 document.head.appendChild(docxtemplaterScript);
                 
                 await new Promise(resolve => docxtemplaterScript.onload = resolve);

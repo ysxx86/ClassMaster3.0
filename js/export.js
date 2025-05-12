@@ -1459,10 +1459,10 @@ async function loadDocxTemplaterLibraries() {
                     resolve();
                 };
                 script.onerror = () => {
-                    console.error('本地PizZip库加载失败，尝试CDN');
-                    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pizzip/3.1.4/pizzip.min.js';
+                    console.error('本地PizZip库加载失败，尝试备用路径');
+                    script.src = '../libs/pizzip.min.js';
                     script.onload = () => {
-                        console.log('CDN PizZip库加载成功');
+                        console.log('备用PizZip库加载成功');
                         window.PizZip = typeof PizZip !== 'undefined' ? PizZip : null;
                         resolve();
                     };
@@ -1493,10 +1493,10 @@ async function loadDocxTemplaterLibraries() {
                     resolve();
                 };
                 script.onerror = () => {
-                    console.error('本地Docxtemplater库加载失败，尝试CDN');
-                    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/docxtemplater/3.37.11/docxtemplater.js';
+                    console.error('本地Docxtemplater库加载失败，尝试备用路径');
+                    script.src = '../libs/docxtemplater.js';
                     script.onload = () => {
-                        console.log('CDN Docxtemplater库加载成功');
+                        console.log('备用Docxtemplater库加载成功');
                         if (typeof window.docxtemplater !== 'undefined') {
                             window.Docxtemplater = window.docxtemplater;
                         } else if (typeof docxtemplater !== 'undefined') {
