@@ -1544,91 +1544,149 @@ async function generateAIComment(studentId, classId) {
         console.log('使用传入的班级ID进行AI生成:', classId);
 
         // 发送请求
-        const response = await fetch('/api/generate-comment', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                student_id: studentId,
-                class_id: classId, // 使用传入的班级ID，而不是当前用户的班级ID
-                style: style,
-                tone: tone,
-                max_length: maxLength,
-                personality: personality,
-                study_performance: studyPerformance,
-                hobbies: hobbies,
-                improvement: improvement,
-                additional_instructions: additionalInstructions
-            })
-        });
-
-        // 检查是否是会话超时或权限错误
-        if (response.status === 401 || response.status === 405) {
-            console.error('会话已过期，需要重新登录');
+        let timeoutId = null;
+        try {
+            // 设置60秒超时提示
+            timeoutId = setTimeout(() => {
+                // 如果请求仍在进行，显示提示但不取消请求
+                if (generateBtn.disabled) {
+                    showNotification('评语生成可能需要较长时间，请耐心等待...', 'info', 5000);
+                }
+            }, 15000);
             
-            // 显示会话超时提示
-            await showCustomConfirm('您的会话已超时，需要重新登录。点击确定将跳转到登录页面。');
+            const response = await fetch('/api/generate-comment', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    student_id: studentId,
+                    class_id: classId, // 使用传入的班级ID，而不是当前用户的班级ID
+                    style: style,
+                    tone: tone,
+                    max_length: maxLength,
+                    personality: personality,
+                    study_performance: studyPerformance,
+                    hobbies: hobbies,
+                    improvement: improvement,
+                    additional_instructions: additionalInstructions
+                })
+            });
             
-            // 重定向到登录页面
-            window.location.href = '/login?timeout=true';
-            return;
-        }
+            // 清除超时提示
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+                timeoutId = null;
+            }
 
-        if (!response.ok) {
-            throw new Error(`HTTP错误! 状态: ${response.status}`);
-        }
+            // 检查是否是会话超时或权限错误
+            if (response.status === 401 || response.status === 405) {
+                console.error('会话已过期，需要重新登录');
+                
+                // 显示会话超时提示
+                await showCustomConfirm('您的会话已超时，需要重新登录。点击确定将跳转到登录页面。');
+                
+                // 重定向到登录页面
+                window.location.href = '/login?timeout=true';
+                return;
+            }
 
-        const data = await response.json();
-        console.log('评语生成结果:', data);
+            if (!response.ok) {
+                throw new Error(`HTTP错误! 状态: ${response.status}`);
+            }
 
-        if (data.status === 'ok') {
-            // 显示生成的评语
-            const aiCommentContent = modal.querySelector('#aiCommentContent');
-            const aiCommentLength = modal.querySelector('#aiCommentLength');
-            
-            if (aiCommentContent) {
-                aiCommentContent.textContent = data.comment;
+            const data = await response.json();
+            console.log('评语生成结果:', data);
+
+            if (data.status === 'ok') {
+                // 显示生成的评语
+                const aiCommentContent = modal.querySelector('#aiCommentContent');
+                const aiCommentLength = modal.querySelector('#aiCommentLength');
+                
+                // 获取评语内容
+                let commentText = data.comment;
+                
+                // 检查并截断超过字数限制的评语
+                const maxLength = parseInt(modal.querySelector('#aiMaxLengthInput').value) || 260;
+                if (commentText.length > maxLength) {
+                    console.warn(`评语超过字数限制: ${commentText.length}/${maxLength}，截断至${maxLength}字`);
+                    commentText = commentText.substring(0, maxLength);
+                    // 显示截断提示
+                    showNotification(`评语已自动截断至${maxLength}字`, 'warning');
+                } else {
+                    console.log(`评语字数符合要求: ${commentText.length}/${maxLength}字`);
+                }
+                
+                if (aiCommentContent) {
+                    aiCommentContent.textContent = commentText;
+                }
+                
+                if (aiCommentLength) {
+                    aiCommentLength.textContent = `${commentText.length}/${maxLength}`;
+                    // 根据字数比例设置颜色
+                    const percentage = commentText.length / maxLength;
+                    if (percentage > 0.9) {
+                        aiCommentLength.style.color = '#dc3545'; // 红色
+                    } else if (percentage > 0.75) {
+                        aiCommentLength.style.color = '#fd7e14'; // 橙色
+                    } else {
+                        aiCommentLength.style.color = '#28a745'; // 绿色
+                    }
+                }
+                
+                if (aiCommentPreview) {
+                    aiCommentPreview.style.display = 'block';
+                }
+                
+                if (aiGeneratingIndicator) {
+                    aiGeneratingIndicator.style.display = 'none';
+                }
+
+                showNotification('评语生成成功', 'success');
+            } else {
+                throw new Error(data.message || '生成评语失败');
+            }
+        } catch (error) {
+            // 清除可能存在的超时提示
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+                timeoutId = null;
             }
             
-            if (aiCommentLength) {
-                aiCommentLength.textContent = `${data.comment.length}/${maxLength}`;
-            }
+            console.error('生成AI评语时出错:', error);
             
-            if (aiCommentPreview) {
-                aiCommentPreview.style.display = 'block';
-            }
+            // 获取模态框和元素
+            const modal = document.getElementById('aiCommentAssistantModal');
+            const aiGeneratingIndicator = modal?.querySelector('#aiGeneratingIndicator');
             
+            // 隐藏加载指示器
             if (aiGeneratingIndicator) {
                 aiGeneratingIndicator.style.display = 'none';
             }
-
-            showNotification('评语生成成功', 'success');
-        } else {
-            throw new Error(data.message || '生成评语失败');
+            
+            // 提供更友好的错误提示信息
+            let errorMessage = error.message || '未知错误';
+            
+            if (errorMessage.includes('Read timed out') || errorMessage.includes('timeout')) {
+                errorMessage = 'DeepSeek API请求超时，这可能是网络问题或服务器繁忙。请稍后再试。';
+            } else if (errorMessage.includes('Network Error') || errorMessage.includes('Failed to fetch')) {
+                errorMessage = '网络连接问题，请检查您的网络并稍后再试。';
+            }
+            
+            showNotification('生成AI评语失败: ' + errorMessage, 'error');
+        } finally {
+            // 恢复生成按钮状态
+            const modal = document.getElementById('aiCommentAssistantModal');
+            const generateBtn = modal?.querySelector('#generateAICommentBtn');
+            
+            if (generateBtn) {
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = '<i class="bx bx-magic"></i> 生成AI评语';
+            }
         }
     } catch (error) {
         console.error('生成AI评语时出错:', error);
-        
-        // 获取模态框和元素
-        const modal = document.getElementById('aiCommentAssistantModal');
-        const aiGeneratingIndicator = modal?.querySelector('#aiGeneratingIndicator');
-        
-        // 隐藏加载指示器
-        if (aiGeneratingIndicator) {
-            aiGeneratingIndicator.style.display = 'none';
-        }
-        
         showNotification('生成AI评语失败: ' + error.message, 'error');
-    } finally {
-        // 恢复生成按钮状态
-        const modal = document.getElementById('aiCommentAssistantModal');
-        const generateBtn = modal?.querySelector('#generateAICommentBtn');
-        
-        if (generateBtn) {
-            generateBtn.disabled = false;
-            generateBtn.innerHTML = '<i class="bx bx-magic"></i> 生成AI评语';
-        }
     }
 }
 
@@ -1640,6 +1698,13 @@ function useAIComment(studentId, classId) {
     const aiCommentContent = document.getElementById('aiCommentContent').textContent;
     if (!aiCommentContent) {
         showNotification('评语内容为空', 'error');
+        return;
+    }
+    
+    // 检查评语字数是否超过限制
+    const maxLength = 260;
+    if (aiCommentContent.length > maxLength) {
+        showNotification(`评语超过${maxLength}字限制，请重新生成`, 'error');
         return;
     }
     
