@@ -10,3 +10,7 @@ _pycache_/
 *.jsonl
 *.jsonl.gz
 *.jsonl.gz.part
+# 追加到.gitignore
+.DS_Store
+*~
+~$*.xlsx  # 忽略Excel临时文件
