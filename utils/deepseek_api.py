@@ -3,6 +3,8 @@ import os
 import json
 import requests
 import logging
+import time
+import random
 from typing import Dict, Any, Optional
 import traceback
 
@@ -87,7 +89,7 @@ class DeepSeekAPI:
         try:
             # 发送请求
             logger.info("正在测试DeepSeek API连接...")
-            response = requests.post(self.API_URL, headers=headers, json=payload, timeout=10)
+            response = requests.post(self.API_URL, headers=headers, json=payload, timeout=15)
             response.raise_for_status()  # 检查HTTP错误
             
             # 解析响应
@@ -186,8 +188,8 @@ class DeepSeekAPI:
 请根据以上信息，生成一段全面、具体且有针对性的评语，突出{gender}的优点，同时也提出建设性的改进建议。
 
 重要要求：
-1. 评语的字数必须精确控制在不超过{max_length}个字，请在生成前仔细计算字数，确保不会超出限制
-2. 不要生成超过{max_length}个字的评语然后截断，而是从一开始就精确控制好字数
+1. 【这是最核心的要求】评语的字数必须严格控制在{max_length}字以内，即不能超过{max_length}个字符
+2. 请在构思前就计算好字数，直接生成不超过{max_length}字的完整评语，切勿超出后再截断
 3. 评语内容必须完整，不能因字数限制而出现不完整的句子
 4. 确保评语内容积极向上且有指导意义
 5. 必须高度个性化，根据提供的学生具体特点生成评语，避免千篇一律的模板化表达
@@ -247,101 +249,148 @@ class DeepSeekAPI:
         prompt += f"""
 {additional_instructions}
 不要在回复中写除了评语之外的任何内容。
+请记住，评语字数必须是{max_length}字以内，这是最核心的要求。
+请先构思内容，确保评语完整、有深度的同时，严格控制在{max_length}字以内。
 """
-
-        # 记录最终生成的提示词
-        logger.info(f"最终提示词: {prompt}")
 
         # 构建请求体
         payload = {
             "model": "deepseek-reasoner",
             "messages": [
-                {"role": "system", "content": "你是一名专业的班主任，善于为学生撰写个性化、有启发性的评语。"},
+                {"role": "system", "content": "你是一位专业的班主任评语撰写专家。你最重要的任务是严格控制评语字数在要求范围内，不得超过上限。"},
                 {"role": "user", "content": prompt}
             ],
-            "temperature": 0.9,  # 增加温度，提高创造性
-            "top_p": 0.98,       # 使用更高的top_p采样，增加多样性
-            "presence_penalty": 0.6,  # 增加存在惩罚，减少重复
-            "frequency_penalty": 0.6,  # 增加频率惩罚，减少常见表达的使用
-            "max_tokens": max_length * 2  # 确保有足够的token来生成评语
+            "temperature": 0.7,
+            "max_tokens": min(800, max_length * 2),  # 控制生成字数，限制最大token
+            "top_p": 0.95,
+            "frequency_penalty": 0.1,
+            "presence_penalty": 0.1
         }
         
-        # 诗意风格调整参数，降低temperature以保证更好地遵循指令
-        if style == "诗意的":
-            payload["temperature"] = 0.8
+        # 初始化重试计数
+        attempts = 0
+        max_attempts = 3
+        base_timeout = 45  # 基础超时时间，单位为秒
         
-        try:
-            # 发送请求
-            logger.info(f"正在为学生 {student_info.get('name')} 发送API请求...")
-            
-            response = requests.post(self.API_URL, headers=headers, json=payload, timeout=25)
-            logger.info(f"API响应状态码: {response.status_code}")
-            
-            # 检查HTTP错误
-            response.raise_for_status()
-            
-            # 记录原始响应
-            response_text = response.text
-            logger.info(f"API原始响应: {response_text[:200]}...")
-            
-            # 解析响应
-            result = response.json()
-            logger.info(f"API响应解析为JSON: {str(result)[:200]}...")
-            
-            # 提取生成的评语
-            if "choices" in result and len(result["choices"]) > 0:
-                comment = result["choices"][0]["message"]["content"].strip()
-                logger.info(f"成功提取评语: {comment[:50]}...")
+        while attempts < max_attempts:
+            try:
+                attempts += 1
+                current_timeout = base_timeout * (1 + attempts * 0.5)  # 逐渐增加超时时间
                 
-                # 检查评语长度
-                if len(comment) > max_length:
-                    logger.warning(f"生成的评语长度超出限制: {len(comment)}/{max_length} 字")
-                    # 优化截断过程，尽量保持完整句子
-                    truncated = self._truncate_to_complete_sentence(comment, max_length)
+                logger.info(f"正在调用DeepSeek API生成评语（尝试 {attempts}/{max_attempts}，超时设置: {current_timeout}秒）...")
+                
+                # 发送请求
+                response = requests.post(
+                    self.API_URL, 
+                    headers=headers, 
+                    json=payload, 
+                    timeout=current_timeout  # 设置更长的超时时间，避免超时问题
+                )
+                
+                # 检查HTTP错误
+                response.raise_for_status()
+                
+                # 解析响应
+                result = response.json()
+                
+                # 检查是否有有效内容
+                if "choices" in result and len(result["choices"]) > 0:
+                    content = result["choices"][0]["message"]["content"]
                     
+                    # 清理内容，去除多余的引号和空格
+                    content = content.strip()
+                    
+                    logger.info(f"成功获取评语，评语长度: {len(content)}字")
+                    
+                    # 检查评语长度，严格限制不超过最大字数
+                    if len(content) > max_length:
+                        logger.warning(f"评语超出最大长度限制，当前长度: {len(content)}，最大允许: {max_length}")
+                        content = self._truncate_to_complete_sentence(content, max_length)
+                        logger.info(f"截断后评语长度: {len(content)}字")
+                    
+                    # 返回结果
                     return {
-                        "status": "ok", 
-                        "comment": truncated,
-                        "message": f"评语已生成，原文超出字数限制，已截断至 {len(truncated)} 字"
+                        "status": "ok",
+                        "comment": content,
+                        "message": "评语生成成功"
+                    }
+                else:
+                    logger.warning(f"API响应缺少有效内容: {result}")
+                    
+                    # 最后一次尝试失败时返回错误
+                    if attempts >= max_attempts:
+                        return {
+                            "status": "error",
+                            "comment": "",
+                            "message": "API返回内容无效"
+                        }
+                    
+                    # 否则准备重试
+                    logger.info(f"准备进行第 {attempts+1}/{max_attempts} 次尝试...")
+                    time.sleep(min(2 * attempts, 5))  # 重试前等待，时间随尝试次数增加
+                    
+            except requests.exceptions.Timeout as e:
+                logger.warning(f"API请求超时 (尝试 {attempts}/{max_attempts}): {str(e)}")
+                
+                # 最后一次尝试失败时返回错误
+                if attempts >= max_attempts:
+                    return {
+                        "status": "error",
+                        "comment": "",
+                        "message": f"API请求失败: {str(e)}"
                     }
                 
-                logger.info(f"已成功生成评语，长度为 {len(comment)} 字")
-                return {
-                    "status": "ok", 
-                    "comment": comment,
-                    "message": "评语生成成功"
-                }
-            else:
-                logger.error(f"API返回格式异常，无choices字段: {result}")
+                # 否则准备重试
+                retry_wait = min(5 * attempts + random.uniform(0.5, 2.0), 15)  # 增加随机性避免同时重试
+                logger.info(f"等待 {retry_wait:.1f} 秒后进行第 {attempts+1}/{max_attempts} 次尝试...")
+                time.sleep(retry_wait)
+                
+            except requests.exceptions.RequestException as e:
+                logger.error(f"API请求错误 (尝试 {attempts}/{max_attempts}): {str(e)}")
+                
+                # 最后一次尝试失败时返回错误
+                if attempts >= max_attempts:
+                    return {
+                        "status": "error",
+                        "comment": "",
+                        "message": f"API请求失败: {str(e)}"
+                    }
+                
+                # 否则准备重试
+                retry_wait = min(3 * attempts, 10)
+                logger.info(f"等待 {retry_wait} 秒后进行第 {attempts+1}/{max_attempts} 次尝试...")
+                time.sleep(retry_wait)
+                
+            except json.JSONDecodeError as e:
+                logger.error(f"API返回的不是有效的JSON格式 (尝试 {attempts}/{max_attempts}): {str(e)}")
+                
+                # 这种错误可能是服务器问题，尝试重试
+                if attempts >= max_attempts:
+                    return {
+                        "status": "error",
+                        "comment": "",
+                        "message": "API返回格式错误"
+                    }
+                
+                time.sleep(min(2 * attempts, 8))
+                
+            except Exception as e:
+                logger.error(f"评语生成时发生未知错误 (尝试 {attempts}/{max_attempts}): {str(e)}")
+                logger.error(traceback.format_exc())
+                
+                # 未知错误，返回详细信息
                 return {
                     "status": "error",
-                    "message": "评语生成失败: API返回格式异常，无法提取评语内容",
-                    "comment": ""
+                    "comment": "",
+                    "message": f"生成评语时发生错误: {str(e)}"
                 }
-                
-        except requests.exceptions.RequestException as e:
-            logger.error(f"API请求失败: {str(e)}")
-            return {
-                "status": "error",
-                "message": f"评语生成失败: API请求失败: {str(e)}",
-                "comment": ""
-            }
-        except json.JSONDecodeError as e:
-            logger.error(f"API返回的不是有效的JSON格式: {str(e)}")
-            logger.error(f"原始响应: {response.text[:200]}...")
-            return {
-                "status": "error",
-                "message": "评语生成失败: API返回格式错误，无法解析为JSON",
-                "comment": ""
-            }
-        except Exception as e:
-            logger.error(f"生成评语时发生未知错误: {str(e)}")
-            logger.error(f"错误堆栈: {traceback.format_exc()}")
-            return {
-                "status": "error",
-                "message": f"评语生成失败: {str(e)}",
-                "comment": ""
-            }
+        
+        # 如果所有尝试都失败，返回错误信息
+        return {
+            "status": "error",
+            "comment": "",
+            "message": "多次尝试后仍无法获取评语"
+        }
     
     def _truncate_to_complete_sentence(self, text, max_length):
         """将文本截断到指定长度，尽量保持句子完整
@@ -364,8 +413,8 @@ class DeepSeekAPI:
             last_mark_pos = truncated.rfind(mark)
             if last_mark_pos > max_length * 0.75:  # 确保截断的文本不会太短
                 return text[:last_mark_pos + 1]
-                
-        # 如果没有找到合适的标点符号，直接截断
+        
+        # 如果没有找到合适的标点符号，直接截断并确保不超过最大长度
         return truncated
             
     def analyze_exam_paper(self, questions_data, student_scores, subject, exam_name, class_name):
