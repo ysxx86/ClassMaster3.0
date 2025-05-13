@@ -1129,6 +1129,86 @@ function initClassCheckboxes() {
                 classesContainer.appendChild(colDiv);
             }
             
+            // 创建添加班级的加号按钮
+            const addBtnColDiv = document.createElement('div');
+            addBtnColDiv.className = 'col-sm-4';
+            
+            const addBtnFormCheck = document.createElement('div');
+            addBtnFormCheck.className = 'form-check';
+            
+            const addClassBtn = document.createElement('button');
+            addClassBtn.type = 'button';
+            addClassBtn.className = 'btn btn-sm btn-outline-primary add-class-btn';
+            addClassBtn.innerHTML = '<i class="bx bx-plus"></i>';
+            addClassBtn.title = '添加班级';
+            addClassBtn.dataset.grade = grade;
+            addClassBtn.dataset.currentCount = classCount;
+            
+            // 为添加按钮添加事件监听
+            addClassBtn.addEventListener('click', function() {
+                const grade = this.dataset.grade;
+                let currentCount = parseInt(this.dataset.currentCount);
+                currentCount++; // 增加班级数
+                
+                // 更新按钮的当前班级数量属性
+                this.dataset.currentCount = currentCount;
+                
+                // 创建新班级选项
+                const classesContainer = document.getElementById(`classes_${grade}`);
+                const colDiv = document.createElement('div');
+                colDiv.className = 'col-sm-4';
+                
+                const formCheck = document.createElement('div');
+                formCheck.className = 'form-check';
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.className = `form-check-input class-option ${grade}-class`;
+                checkbox.id = `class_${grade}_${currentCount}`;
+                checkbox.dataset.grade = grade;
+                checkbox.dataset.class = currentCount + '班';
+                checkbox.checked = true; // 默认选中新添加的班级
+                
+                const label = document.createElement('label');
+                label.className = 'form-check-label';
+                label.htmlFor = `class_${grade}_${currentCount}`;
+                label.textContent = currentCount + '班';
+                
+                formCheck.appendChild(checkbox);
+                formCheck.appendChild(label);
+                colDiv.appendChild(formCheck);
+                
+                // 将新班级选项插入到加号按钮前面
+                classesContainer.insertBefore(colDiv, addBtnColDiv);
+                
+                // 更新年级的班级总数
+                gradeClassCounts[grade] = currentCount;
+                
+                // 为新添加的班级选项添加事件监听
+                checkbox.addEventListener('change', function() {
+                    updateClassNamePreview();
+                    updateSelectedClassCount();
+                    
+                    // 更新该年级的全选按钮状态
+                    const grade = this.dataset.grade;
+                    const gradeClasses = document.querySelectorAll(`.${grade}-class`);
+                    const checkedGradeClasses = document.querySelectorAll(`.${grade}-class:checked`);
+                    
+                    const gradeSelectAll = document.getElementById(`selectAll_${grade}`);
+                    if (gradeSelectAll) {
+                        gradeSelectAll.checked = gradeClasses.length === checkedGradeClasses.length && gradeClasses.length > 0;
+                    }
+                });
+                
+                // 更新班级名称预览和选择数量
+                updateClassNamePreview();
+                updateSelectedClassCount();
+            });
+            
+            addBtnFormCheck.appendChild(addClassBtn);
+            addBtnColDiv.appendChild(addBtnFormCheck);
+            classesContainer.appendChild(addBtnColDiv);
+            
             // 为年级全选/全不选添加事件监听
             selectAllCheckbox.addEventListener('change', function() {
                 const isChecked = this.checked;
