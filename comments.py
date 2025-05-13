@@ -1119,7 +1119,7 @@ def api_export_reports():
                     grades_dict[student_id] = {'grades': grades}
                 else:
                     # 尝试从students表获取成绩字段
-                    cursor.execute('SELECT yuwen, shuxue, yingyu, daof, kexue, tiyu, yinyue, meishu, laodong, xinxi, zonghe, shufa FROM students WHERE id = ? AND class_id = ?', (student_id, student.get('class_id')))
+                    cursor.execute('SELECT yuwen, shuxue, yingyu, daof, kexue, tiyu, yinyue, meishu, laodong, xinxi, zonghe, shufa, xinli FROM students WHERE id = ? AND class_id = ?', (student_id, student.get('class_id')))
                     grades_row = cursor.fetchone()
                     
                     if grades_row:
