@@ -66,6 +66,14 @@ document.addEventListener('DOMContentLoaded', function() {
             downloadTemplate();
         });
     }
+    
+    // 绑定清除学生名单确认按钮事件
+    const confirmClearStudents = document.getElementById('confirmClearStudents');
+    if (confirmClearStudents) {
+        confirmClearStudents.addEventListener('click', function() {
+            clearAllStudents();
+        });
+    }
         
     // 绑定拖放区域事件
     const importArea = document.querySelector('.import-area');
@@ -2087,4 +2095,52 @@ function formatDate(date) {
     const day = String(date.getDate()).padStart(2, '0');
     
     return `${year}-${month}-${day}`;
+}
+
+// 清除所有学生名单
+function clearAllStudents() {
+    // 获取班级ID（如果存在）
+    let classId = currentUserClassId;
+    
+    // 显示加载中状态
+    const confirmButton = document.getElementById('confirmClearStudents');
+    const originalButtonContent = confirmButton.innerHTML;
+    confirmButton.disabled = true;
+    confirmButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 处理中...';
+    
+    // 关闭模态框
+    const clearStudentsModal = bootstrap.Modal.getInstance(document.getElementById('clearStudentsModal'));
+    
+    // 调用清除学生的API
+    fetch('/api/clear-students', {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ class_id: classId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        clearStudentsModal.hide();
+        
+        if (data.status === 'ok') {
+            // 显示成功通知
+            showNotification('所有学生数据已成功清除', 'success');
+            
+            // 重新加载学生列表（应该是空的了）
+            loadStudentsFromServer();
+        } else {
+            // 显示错误消息
+            showNotification(`清除失败: ${data.message}`, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('清除学生名单时出错:', error);
+        showNotification('操作失败，请稍后再试', 'error');
+    })
+    .finally(() => {
+        // 恢复按钮状态
+        confirmButton.disabled = false;
+        confirmButton.innerHTML = originalButtonContent;
+    });
 }

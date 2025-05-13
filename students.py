@@ -910,4 +910,78 @@ def get_students():
         
     except Exception as e:
         logger.error(f"获取学生列表时出错: {str(e)}", exc_info=True)
-        return jsonify({'status': 'error', 'message': f'获取学生列表失败: {str(e)}'}) 
+        return jsonify({'status': 'error', 'message': f'获取学生列表失败: {str(e)}'})
+
+# 清除学生名单API
+@students_bp.route('/api/clear-students', methods=['DELETE'], strict_slashes=False)
+@login_required
+def clear_all_students():
+    """清除班级所有学生数据"""
+    try:
+        # 从请求中获取班级ID
+        data = request.json
+        class_id = data.get('class_id') if data else None
+        
+        # 班主任只能清除自己班级的学生
+        if not current_user.is_admin:
+            # 如果班主任没有被分配班级，则返回错误
+            if not current_user.class_id:
+                logger.warning(f"班主任 {current_user.username} 未分配班级，无法清除学生名单")
+                return jsonify({
+                    'status': 'error',
+                    'message': '您尚未被分配班级，无法清除学生名单'
+                }), 403
+            
+            # 使用班主任的班级ID，忽略请求中的班级ID
+            class_id = current_user.class_id
+        
+        # 如果是管理员且没有提供班级ID，则返回错误
+        if current_user.is_admin and not class_id:
+            return jsonify({
+                'status': 'error',
+                'message': '管理员必须指定要清除的班级ID'
+            }), 400
+        
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        try:
+            # 开始事务
+            conn.execute('BEGIN TRANSACTION')
+            
+            # 记录操作前的学生数量
+            cursor.execute('SELECT COUNT(*) FROM students WHERE class_id = ?', (class_id,))
+            student_count_before = cursor.fetchone()[0]
+            
+            if student_count_before == 0:
+                return jsonify({
+                    'status': 'ok',
+                    'message': '班级中没有学生，无需清除',
+                    'count': 0
+                })
+            
+            # 删除指定班级的所有学生
+            cursor.execute('DELETE FROM students WHERE class_id = ?', (class_id,))
+            
+            # 提交事务
+            conn.commit()
+            
+            logger.info(f"成功清除班级 {class_id} 的所有学生数据，共删除 {student_count_before} 条记录")
+            
+            return jsonify({
+                'status': 'ok',
+                'message': f'成功清除班级所有学生数据，共删除 {student_count_before} 条记录',
+                'count': student_count_before
+            })
+            
+        except Exception as e:
+            # 回滚事务
+            conn.rollback()
+            logger.error(f"清除学生名单时出错: {str(e)}")
+            return jsonify({'status': 'error', 'message': f'清除学生名单失败: {str(e)}'}), 500
+        finally:
+            conn.close()
+            
+    except Exception as e:
+        logger.error(f"清除学生名单API出错: {str(e)}")
+        return jsonify({'status': 'error', 'message': f'清除学生名单失败: {str(e)}'}), 500 
