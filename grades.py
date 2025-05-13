@@ -92,26 +92,79 @@ def get_all_grades():
         return jsonify({'status': 'error', 'message': f'获取学生成绩失败: {str(e)}'})
 
 # 获取单个学生成绩
-@grades_bp.route('/api/grades/<student_id>', methods=['GET'])
-@login_required
-def get_student_grades(student_id):
+@grades_bp.route('/api/student-grade/<student_id>', methods=['GET'])
+def get_student_grade(student_id):
     try:
-        semester = request.args.get('semester', None)
-        class_id = request.args.get('class_id', None)
-        
-        # 班主任自动使用自己的班级ID
-        if not current_user.is_admin:
-            if not current_user.class_id:
-                return jsonify({'status': 'error', 'message': '您尚未被分配班级，无法查看学生成绩'}), 403
+        # 获取班级ID，优先使用请求参数中的class_id
+        class_id = request.args.get('class_id')
+        if not class_id and hasattr(current_user, 'class_id'):
             class_id = current_user.class_id
-        elif not class_id:
-            return jsonify({'status': 'error', 'message': '管理员需提供班级ID参数'}), 400
             
-        grades = grades_manager.get_student_grades(student_id, class_id, semester)
-        return jsonify({'status': 'ok', 'grades': grades})
+        # 获取学期参数
+        semester = request.args.get('semester', '')
+        
+        # 查询学生信息和成绩
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # 查询学生基本信息
+        cursor.execute('SELECT id, name, gender, class FROM students WHERE id = ? AND class_id = ?', 
+                      (student_id, class_id))
+        
+        student = cursor.fetchone()
+        
+        if not student:
+            return jsonify({
+                'status': 'error',
+                'message': '未找到学生'
+            }), 404
+        
+        # 查询成绩，尝试从students表直接读取成绩字段
+        cursor.execute('''
+            SELECT 
+                yuwen, shuxue, yingyu, daof, kexue, zonghe, 
+                tiyu, yinyue, meishu, laodong, xinxi, shufa, xinli
+            FROM students 
+            WHERE id = ? AND class_id = ?
+        ''', (student_id, class_id))
+        
+        grades_row = cursor.fetchone()
+        
+        # 如果没有成绩数据，使用空字典
+        grades = {}
+        
+        if grades_row:
+            # 构建成绩数据字典
+            for key in ['yuwen', 'shuxue', 'yingyu', 'daof', 'kexue', 'zonghe', 
+                        'tiyu', 'yinyue', 'meishu', 'laodong', 'xinxi', 'shufa', 'xinli']:
+                if key in grades_row.keys():
+                    grades[key] = grades_row[key] or ''
+                else:
+                    grades[key] = ''
+        
+        # 构建返回的数据结构
+        student_data = {
+            'id': student['id'],
+            'name': student['name'],
+            'gender': student['gender'],
+            'class': student['class'],
+            'grades': grades,
+            'semester': semester
+        }
+        
+        conn.close()
+        
+        return jsonify({
+            'status': 'ok',
+            'student': student_data
+        })
     except Exception as e:
-        logger.error(f'获取学生成绩时出错: {str(e)}')
-        return jsonify({'status': 'error', 'message': f'获取学生成绩失败: {str(e)}'})
+        print(f"获取学生成绩时出错: {str(e)}")
+        traceback.print_exc()
+        return jsonify({
+            'status': 'error',
+            'message': f'获取学生成绩时出错: {str(e)}'
+        }), 500
 
 # 保存学生成绩
 @grades_bp.route('/api/grades/<student_id>', methods=['POST'])
@@ -141,7 +194,7 @@ def save_student_grade(student_id):
         grade_data = {}
         for field in data:
             if field not in ['semester', 'class_id'] and field in ['daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 
-                     'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa']:
+                     'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'xinli']:
                 grade_data[field] = data.get(field, '')
         
         logger.info(f"提取的成绩数据: {grade_data}")
@@ -156,6 +209,7 @@ def save_student_grade(student_id):
     except Exception as e:
         logger.error(f"出错: {str(e)}")
         return jsonify({"status": "error", "message": f"操作失败: {str(e)}"}), 500
+
 @grades_bp.route('/api/grades/<student_id>', methods=['DELETE'])
 @login_required
 def delete_student_grade(student_id):
