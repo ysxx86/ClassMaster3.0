@@ -24,7 +24,7 @@ class GradesManager:
         grade_fields = [
             'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 
             'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 
-            'xinxi', 'shufa'
+            'xinxi', 'shufa', 'xinli'
         ]
         
         # 添加缺失的字段
@@ -55,7 +55,7 @@ class GradesManager:
                     class, 
                     daof, yuwen, shuxue, yingyu, laodong, 
                     tiyu, yinyue, meishu, kexue, zonghe, 
-                    xinxi, shufa
+                    xinxi, shufa, xinli
                 FROM students
             '''
             
@@ -102,7 +102,7 @@ class GradesManager:
             SELECT id, name, class, 
                    daof, yuwen, shuxue, yingyu, laodong, 
                    tiyu, yinyue, meishu, kexue, zonghe, 
-                   xinxi, shufa, 
+                   xinxi, shufa, xinli, 
                    COALESCE(semester, ?) AS semester
             FROM students 
             WHERE id = ? AND class_id = ? AND (semester = ? OR semester IS NULL OR semester = '')
@@ -130,7 +130,8 @@ class GradesManager:
                 'zonghe': row[12] or '',
                 'xinxi': row[13] or '',
                 'shufa': row[14] or '',
-                'semester': row[15]
+                'xinli': row[15] or '',
+                'semester': row[16]
             }
         else:
             # 查找学生基本信息
@@ -155,7 +156,8 @@ class GradesManager:
                     'kexue': '',
                     'zonghe': '',
                     'xinxi': '',
-                    'shufa': ''
+                    'shufa': '',
+                    'xinli': '',
                 }
             return None  # 学生不存在
     
@@ -169,7 +171,7 @@ class GradesManager:
             SELECT id, name, class, 
                    daof, yuwen, shuxue, yingyu, laodong, 
                    tiyu, yinyue, meishu, kexue, zonghe, 
-                   xinxi, shufa, 
+                   xinxi, shufa, xinli, 
                    COALESCE(semester, ?) AS semester
             FROM students 
             WHERE id = ? AND class_id = ? AND (semester = ? OR semester IS NULL OR semester = '')
@@ -197,7 +199,8 @@ class GradesManager:
                 'zonghe': row[12] or '',
                 'xinxi': row[13] or '',
                 'shufa': row[14] or '',
-                'semester': row[15]
+                'xinli': row[15] or '',
+                'semester': row[16]
             }
         else:
             # 查找学生基本信息
@@ -222,7 +225,8 @@ class GradesManager:
                     'kexue': '',
                     'zonghe': '',
                     'xinxi': '',
-                    'shufa': ''
+                    'shufa': '',
+                    'xinli': '',
                 }
             return None  # 学生不存在
     
@@ -249,7 +253,7 @@ class GradesManager:
             
             for field in ['daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 
                         'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 
-                        'xinxi', 'shufa']:
+                        'xinxi', 'shufa', 'xinli']:
                 if field in grade_data:
                     value = grade_data.get(field, '')
                     
@@ -926,7 +930,8 @@ class GradesManager:
             '科学': 'kexue',
             '综合': 'zonghe',
             '信息': 'xinxi',
-            '书法': 'shufa'
+            '书法': 'shufa',
+            '心理': 'xinli'
         }
     
     def get_subject_names(self):
@@ -943,7 +948,8 @@ class GradesManager:
             'kexue': '科学',
             'zonghe': '综合',
             'xinxi': '信息',
-            'shufa': '书法'
+            'shufa': '书法',
+            'xinli': '心理'
         }
         
     def create_empty_template(self, output_path=None, class_id=None):
@@ -1052,4 +1058,44 @@ class GradesManager:
                 return backup_path
             except Exception as e2:
                 print(f"保存到备用位置也失败: {e2}")
-                return None 
+                return None
+    
+    def update_student_grade(self, student_id, class_id, grades_data):
+        """更新学生成绩"""
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            
+            # 构建更新字段和参数
+            update_fields = []
+            parameters = []
+            
+            # 成绩字段
+            grade_fields = ['yuwen', 'shuxue', 'yingyu', 'daof', 'kexue', 'zonghe', 
+                            'tiyu', 'yinyue', 'meishu', 'laodong', 'xinxi', 'shufa', 'xinli']
+            
+            for field in grade_fields:
+                if field in grades_data and grades_data[field] is not None:
+                    update_fields.append(f"{field} = ?")
+                    parameters.append(grades_data[field])
+            
+            # 学期字段
+            if 'semester' in grades_data and grades_data['semester']:
+                update_fields.append("semester = ?")
+                parameters.append(grades_data['semester'])
+            
+            # 只有在有字段需要更新时才执行
+            if update_fields:
+                parameters.extend([student_id, class_id])
+                update_sql = f"UPDATE students SET {', '.join(update_fields)} WHERE id = ? AND class_id = ?"
+                
+                cursor.execute(update_sql, parameters)
+                conn.commit()
+            
+            conn.close()
+            return True
+        except Exception as e:
+            logger.error(f"更新学生成绩时出错: {str(e)}")
+            if conn:
+                conn.close()
+            return False 

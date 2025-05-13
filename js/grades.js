@@ -14,7 +14,8 @@ const subjectNames = {
     'kexue': '科学',
     'zonghe': '综合',
     'xinxi': '信息',
-    'shufa': '书法'
+    'shufa': '书法',
+    'xinli': '心理'
 };
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -118,7 +119,7 @@ function loadGrades() {
     // 显示加载状态
     gradesTable.innerHTML = `
         <tr>
-            <td colspan="14" class="text-center py-5">
+            <td colspan="15" class="text-center py-5">
                 <div class="spinner-border text-primary" role="status">
                     <span class="visually-hidden">加载中...</span>
                 </div>
@@ -140,7 +141,7 @@ function loadGrades() {
                 showNotification(data.message || '加载成绩失败', 'error');
                 gradesTable.innerHTML = `
                     <tr>
-                        <td colspan="13" class="text-center py-5">
+                        <td colspan="15" class="text-center py-5">
                             <div class="empty-state">
                                 <i class='bx bx-error-circle'></i>
                                 <h3>加载失败</h3>
@@ -155,7 +156,7 @@ function loadGrades() {
             console.error('获取成绩数据时出错:', error);
             gradesTable.innerHTML = `
                 <tr>
-                    <td colspan="14" class="text-center py-5">
+                    <td colspan="15" class="text-center py-5">
                         <div class="empty-state">
                             <i class='bx bx-error-circle'></i>
                             <h3>加载失败</h3>
@@ -181,7 +182,7 @@ function renderGradesTable(grades) {
         console.log('没有成绩数据可显示');
         gradesTable.innerHTML = `
             <tr>
-                <td colspan="14" class="text-center py-5">
+                <td colspan="15" class="text-center py-5">
                     <div class="empty-state">
                         <i class='bx bx-file-blank'></i>
                         <h3>暂无成绩数据</h3>
@@ -213,7 +214,7 @@ function renderGradesTable(grades) {
     let currentClass = null;
     const subjectsToRender = [
         'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 
-        'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa'
+        'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'xinli'
     ];
     
     grades.forEach(studentGrade => {
@@ -223,7 +224,7 @@ function renderGradesTable(grades) {
             
             const classRow = document.createElement('tr');
             classRow.className = 'table-light';
-            classRow.innerHTML = `<td colspan="14"><strong>${currentClass}</strong></td>`;
+            classRow.innerHTML = `<td colspan="15"><strong>${currentClass}</strong></td>`;
             gradesTable.appendChild(classRow);
         }
         
