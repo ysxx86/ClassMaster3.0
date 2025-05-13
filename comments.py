@@ -1057,77 +1057,54 @@ def api_export_reports():
         
         # 准备SQL查询
         placeholders = ','.join(['?' for _ in student_ids])
+        student_sql = f'''
+            SELECT * FROM students 
+            WHERE id IN ({placeholders})
+        '''
         
-        # 添加班级ID筛选，确保班主任只能导出本班级的学生
-        if current_user.is_admin:
-            # 管理员可以导出所有学生
-            query = f'SELECT * FROM students WHERE id IN ({placeholders}) ORDER BY CAST(id AS INTEGER)'
-            params = student_ids
-        else:
-            # 班主任只能导出本班级学生
-            query = f'SELECT * FROM students WHERE id IN ({placeholders}) AND class_id = ? ORDER BY CAST(id AS INTEGER)'
-            params = student_ids + [current_user.class_id]
-            logger.info(f"班主任模式：只导出班级ID为 {current_user.class_id} 的学生")
+        cursor.execute(student_sql, student_ids)
+        students = [dict(row) for row in cursor.fetchall()]
         
-        # 执行查询
-        cursor.execute(query, params)
-        students_rows = cursor.fetchall()
-        
-        # 转换成字典列表，确保字段非空
-        students = []
-        for row in students_rows:
-            student_dict = dict(row)
-            # 确保关键字段非空 - 这里补充空字符串而不是None
-            for key in ['id', 'name', 'gender', 'class']:
-                if key not in student_dict or student_dict[key] is None:
-                    student_dict[key] = ''
-            students.append(student_dict)
-            
-        # 如果没有找到任何学生，返回错误
+        logger.info(f"找到 {len(students)} 名学生的数据")
         if not students:
-            logger.error(f"未找到任何符合条件的学生: {student_ids}")
-            return jsonify({'status': 'error', 'message': '未找到所选学生数据，或者您没有权限导出这些学生的报告'})
+            return jsonify({'status': 'error', 'message': '未找到任何学生数据'})
             
-        # 获取评语数据
+        # 查询学生评语
         comments_dict = {}
-        for student in students:
-            student_id = str(student['id'])  # 确保是字符串
-            # 评语直接从学生表中获取
-            cursor.execute('SELECT comments FROM students WHERE id = ? AND class_id = ?', 
-                          (student_id, student.get('class_id')))
-            row = cursor.fetchone()
-            if row and row['comments']:
-                comments_dict[student_id] = {'content': row['comments']}
+        for student_id in student_ids:
+            cursor.execute('SELECT id, name, comments FROM students WHERE id = ?', (student_id,))
+            student = cursor.fetchone()
+            if student and student['comments']:
+                comments_dict[student_id] = {
+                    'studentId': student_id,
+                    'studentName': student['name'],
+                    'content': student['comments']
+                }
             else:
-                comments_dict[student_id] = {'content': ''}
+                comments_dict[student_id] = {
+                    'studentId': student_id,
+                    'studentName': student['name'] if student else 'Unknown',
+                    'content': ''  # 空评语
+                }
         
-        # 获取成绩数据
+        # 查询学生成绩
         grades_dict = {}
-        for student in students:
-            student_id = str(student['id'])  # 确保是字符串
-            
+        for student_id in student_ids:
             try:
-                # 尝试从grades表获取成绩
-                cursor.execute('SELECT * FROM grades WHERE student_id = ?', (student_id,))
-                grades_row = cursor.fetchone()
+                cursor.execute('''
+                    SELECT daof, yuwen, shuxue, yingyu, laodong, tiyu, yinyue, 
+                           meishu, kexue, zonghe, xinxi, shufa
+                    FROM students WHERE id = ?
+                ''', (student_id,))
+                grade = cursor.fetchone()
                 
-                if grades_row:
-                    grades = dict(grades_row)
-                    # 移除不需要的字段
-                    if 'id' in grades: del grades['id']
-                    if 'student_id' in grades: del grades['student_id']
-                    grades_dict[student_id] = {'grades': grades}
+                if grade:
+                    grade_dict = dict(grade)
+                    grades_dict[student_id] = {
+                        'grades': grade_dict
+                    }
                 else:
-                    # 尝试从students表获取成绩字段
-                    cursor.execute('SELECT yuwen, shuxue, yingyu, daof, kexue, tiyu, yinyue, meishu, laodong, xinxi, zonghe, shufa, xinli FROM students WHERE id = ? AND class_id = ?', (student_id, student.get('class_id')))
-                    grades_row = cursor.fetchone()
-                    
-                    if grades_row:
-                        grades = dict(grades_row)
-                        grades_dict[student_id] = {'grades': grades}
-                    else:
-                        # 都没有成绩数据，使用空成绩
-                        grades_dict[student_id] = {'grades': {}}
+                    grades_dict[student_id] = {'grades': {}}
             except sqlite3.OperationalError as e:
                 # 处理表不存在或列不存在的情况
                 logger.warning(f"获取成绩时出错: {str(e)}, 将使用空成绩数据")
@@ -1136,6 +1113,45 @@ def api_export_reports():
         # 关闭数据库连接
         conn.close()
         
+        # 执行数据完整性验证
+        try:
+            from utils.data_validator import DataValidator
+            logger.info("导出前进行数据完整性验证...")
+            
+            is_valid, error_message, problem_students = DataValidator.validate_export_data(
+                students=students,
+                comments=comments_dict,
+                grades=grades_dict
+            )
+            
+            if not is_valid:
+                logger.error(f"数据验证失败: {error_message}")
+                
+                # 构建更详细的错误信息
+                details = ""
+                if problem_students:
+                    details = "\n\n问题学生列表:\n"
+                    for i, student in enumerate(problem_students[:10], 1):  # 限制显示前10个
+                        problems_text = ", ".join(student['problems'])
+                        details += f"{i}. {student['name']} (学号: {student['id']}): {problems_text}\n"
+                    
+                    if len(problem_students) > 10:
+                        details += f"... 以及其他 {len(problem_students) - 10} 名学生"
+                
+                return jsonify({
+                    'status': 'error', 
+                    'message': error_message,
+                    'details': details,
+                    'validation_failed': True,
+                    'problem_students': [s['id'] for s in problem_students]
+                })
+            
+            logger.info("数据验证通过，继续导出报告...")
+        except Exception as e:
+            logger.error(f"执行数据验证时出错: {str(e)}")
+            logger.error(traceback.format_exc())
+            # 出错时不阻止导出，继续执行
+            
         # 生成报告
         try:
             from utils.report_exporter import ReportExporter

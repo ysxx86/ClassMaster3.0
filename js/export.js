@@ -1051,10 +1051,65 @@ async function exportReports(exportType = 'word') {
                 console.log('服务器JSON响应:', result);
                 
                 if (result.status === 'error') {
+                    // 如果是数据验证失败，则显示更详细的错误信息
+                    if (result.validation_failed) {
+                        resetExportButton(exportType);
+                        
+                        if (progressModal) {
+                            progressModal.hide();
+                        }
+                        
+                        // 创建自定义的错误模态框，显示详细问题
+                        let modalHTML = `
+                            <div class="modal fade" id="validationErrorModal" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header bg-danger text-white">
+                                            <h5 class="modal-title">
+                                                <i class="bx bx-error-circle me-1"></i>
+                                                数据验证失败
+                                            </h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="alert alert-warning">
+                                                <p><strong>${result.message}</strong></p>
+                                                ${result.details ? `<pre style="margin-top:10px;white-space:pre-wrap;max-height:300px;overflow-y:auto">${result.details}</pre>` : ''}
+                                            </div>
+                                            <p class="mb-0">请修复以上问题后再尝试导出报告。</p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        
+                        // 移除之前的错误模态框（如果存在）
+                        const existingModal = document.getElementById('validationErrorModal');
+                        if (existingModal) {
+                            existingModal.remove();
+                        }
+                        
+                        // 添加模态框到页面并显示
+                        document.body.insertAdjacentHTML('beforeend', modalHTML);
+                        const validationErrorModal = new bootstrap.Modal(document.getElementById('validationErrorModal'));
+                        validationErrorModal.show();
+                        
+                        // 如果有问题学生的ID列表，高亮显示这些学生
+                        if (result.problem_students && result.problem_students.length > 0) {
+                            setTimeout(() => {
+                                highlightProblemStudents(result.problem_students);
+                            }, 500);
+                        }
+                        
+                        return;
+                    }
+                    
                     throw new Error(result.message || '导出报告失败');
                 }
                 
-                // 处理警告状态 - 当PDF转换失败但提供了Word版本时
                 if (result.status === 'warning') {
                     // 从服务器下载生成的文件
                     updateProgress(90, '正在下载文件...');
@@ -2432,4 +2487,58 @@ function stopPollingProgress() {
         progressPoller = null;
         console.log('已停止轮询导出进度');
     }
+}
+
+// 高亮有问题的学生
+function highlightProblemStudents(problemStudentIds) {
+    // 先移除所有已有的高亮
+    document.querySelectorAll('.student-item').forEach(item => {
+        item.classList.remove('problem-student');
+    });
+    
+    // 添加高亮样式到页面
+    const style = document.createElement('style');
+    style.innerHTML = `
+        .student-item.problem-student {
+            animation: problem-student-pulse 2s infinite;
+            background-color: rgba(255, 82, 82, 0.1);
+            border: 1px solid #ff5252;
+            border-radius: 5px;
+        }
+        @keyframes problem-student-pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 82, 82, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 82, 82, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 82, 82, 0); }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // 高亮有问题的学生
+    problemStudentIds.forEach(studentId => {
+        const studentItem = document.querySelector(`.student-item[data-student-id="${studentId}"]`);
+        if (studentItem) {
+            studentItem.classList.add('problem-student');
+            
+            // 确保学生被选中
+            const checkbox = studentItem.querySelector('.student-checkbox');
+            if (checkbox) {
+                checkbox.checked = true;
+            }
+            
+            // 如果学生不在可视区域，滚动到学生位置
+            const studentList = document.querySelector('.student-list');
+            if (studentList) {
+                const itemTop = studentItem.offsetTop;
+                const listHeight = studentList.offsetHeight;
+                const scrollTop = studentList.scrollTop;
+                
+                if (itemTop < scrollTop || itemTop > scrollTop + listHeight) {
+                    studentList.scrollTop = itemTop - (listHeight / 2);
+                }
+            }
+        }
+    });
+    
+    // 显示提示消息
+    showNotification(`已高亮显示 ${problemStudentIds.length} 名有数据问题的学生`, 'info');
 }
