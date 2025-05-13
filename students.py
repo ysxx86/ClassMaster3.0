@@ -78,9 +78,10 @@ def create_student_template():
     ws.cell(row=6, column=1, value='2. 性别请填写"男"或"女"')
     ws.cell(row=7, column=1, value="3. 班级格式: 三年级一班")
     ws.cell(row=8, column=1, value="4. 视力格式: 5.0 或 4.8 等")
+    ws.cell(row=9, column=1, value="5. 班主任导入学生数据时，班级必须与当前所管理的班级一致，否则无法导入")
     
     # 合并说明文字的单元格
-    for i in range(4, 9):
+    for i in range(4, 10):
         ws.merge_cells(start_row=i, start_column=1, end_row=i, end_column=5)
     
     wb.save(template_path)
@@ -435,6 +436,20 @@ def import_students_preview():
             
         if not file.filename.endswith(('.xlsx', '.xls')):
             return jsonify({'error': '请上传Excel文件'}), 400
+        
+        # 获取数据库连接
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # 如果是班主任，获取对应的班级信息用于验证
+        teacher_class_name = None
+        if not current_user.is_admin and current_user.class_id:
+            cursor.execute('SELECT class_name FROM classes WHERE id = ?', (current_user.class_id,))
+            teacher_class_result = cursor.fetchone()
+            teacher_class_name = teacher_class_result['class_name'] if teacher_class_result else None
+            
+            if not teacher_class_name:
+                return jsonify({'error': '无法获取您负责的班级信息，请联系管理员'}), 400
             
         # 保存文件
         filename = secure_filename(file.filename)
@@ -462,16 +477,14 @@ def import_students_preview():
         # 获取表头
         headers = [cell.value for cell in ws[1]]
         
-        # 获取数据库连接
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        
         # 准备数据
         students_data = []
         error_records = []
         skipped_count = 0
         updated_count = 0
         added_count = 0
+        class_mismatch_count = 0
+        all_classes_match = True  # 标记是否所有班级都匹配
         
         # 字段映射表，Excel列名 -> 数据库字段名
         field_mapping = {
@@ -531,8 +544,25 @@ def import_students_preview():
                 skipped_count += 1
                 continue
             
-            # 如果是班主任，设置班级ID
+            # 如果是班主任，检查Excel中的班级字段是否与班主任的班级匹配
             if not current_user.is_admin and current_user.class_id:
+                # 检查Excel中的班级字段是否与班主任的班级一致
+                excel_class_name = student.get('class')
+                if excel_class_name and teacher_class_name and excel_class_name != teacher_class_name:
+                    # 添加错误标记，但仍然添加到预览数据中
+                    student['class_mismatch'] = True
+                    student['teacher_class'] = teacher_class_name
+                    student['error_reason'] = f'班级不匹配: Excel中为"{excel_class_name}", 您的班级是"{teacher_class_name}"'
+                    # 记录错误信息
+                    error_records.append({
+                        'row': row_idx,
+                        'reason': f'班级不匹配: Excel中为"{excel_class_name}", 您的班级是"{teacher_class_name}"'
+                    })
+                    # 增加不匹配计数
+                    class_mismatch_count += 1
+                    # 标记整体状态为不匹配
+                    all_classes_match = False
+                
                 student['class_id'] = current_user.class_id
             else:
                 # 管理员模式：根据班级名称查找班级ID
@@ -571,6 +601,9 @@ def import_students_preview():
         
         logger.info(f"成功解析Excel文件，发现 {len(students_data)} 条有效学生记录")
         
+        if class_mismatch_count > 0:
+            logger.warning(f"Excel中有 {class_mismatch_count} 条班级不匹配记录")
+        
         return jsonify({
             'status': 'ok',
             'message': f'成功读取 {len(students_data)} 条学生记录',
@@ -579,7 +612,10 @@ def import_students_preview():
                 'added': added_count,
                 'updated': updated_count,
                 'skipped': skipped_count,
-                'errors': error_records
+                'class_mismatch_count': class_mismatch_count,
+                'errors': error_records,
+                'all_classes_match': all_classes_match,  # 添加标志表示是否所有班级都匹配
+                'validation_rule': '严格验证：当Excel中存在任何班级不匹配的记录时，整个Excel都无法导入。' # 添加验证规则说明
             },
             'students': students_data,
             'file_path': file_path  # 返回文件路径以供后续使用
@@ -608,6 +644,18 @@ def confirm_import():
         if not students:
             return jsonify({'error': '没有要导入的学生数据'}), 400
             
+        # 检查是否存在班级不匹配的记录 - 严格规则：存在任何不匹配就拒绝整个导入
+        if not current_user.is_admin:
+            class_mismatch_found = any(student.get('class_mismatch', False) for student in students)
+            if class_mismatch_found:
+                mismatch_count = sum(1 for student in students if student.get('class_mismatch', False))
+                logger.warning(f"拒绝导入：检测到 {mismatch_count} 条班级不匹配的记录")
+                return jsonify({
+                    'status': 'error',
+                    'message': f'拒绝导入：Excel中存在 {mismatch_count} 条班级不匹配的记录。',
+                    'class_mismatch_count': mismatch_count
+                }), 400
+        
         # 获取数据库连接
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -624,6 +672,7 @@ def confirm_import():
         updated_count = 0
         error_count = 0
         error_details = []
+        class_mismatch_count = 0
         
         # 遍历学生数据，执行插入或更新
         for student in students:
@@ -635,6 +684,13 @@ def confirm_import():
                 if not class_id or not student_id:
                     error_count += 1
                     error_details.append(f"学生 {student.get('name', '未知')} (ID: {student_id or '未知'}) 缺少班级ID或学生ID")
+                    continue
+                
+                # 检查班级不匹配的情况（针对班主任）
+                if not current_user.is_admin and 'class_mismatch' in student and student['class_mismatch']:
+                    error_count += 1
+                    class_mismatch_count += 1
+                    error_details.append(f"学生 {student.get('name', '未知')} (ID: {student_id}) {student.get('error_reason', '班级不匹配')}")
                     continue
                 
                 # 检查该学生是否已存在
@@ -693,6 +749,9 @@ def confirm_import():
         
         logger.info(f"导入完成: 成功 {success_count} 条 (新增 {inserted_count}, 更新 {updated_count}), 失败 {error_count} 条")
         
+        if class_mismatch_count > 0:
+            logger.warning(f"跳过了 {class_mismatch_count} 条班级不匹配的记录")
+        
         return jsonify({
             'status': status,
             'message': f'完成导入 {success_count} 条记录',
@@ -700,6 +759,7 @@ def confirm_import():
             'inserted_count': inserted_count,
             'updated_count': updated_count,
             'error_count': error_count,
+            'class_mismatch_count': class_mismatch_count,
             'error_details': error_details
         })
         
@@ -711,12 +771,42 @@ def confirm_import():
 # 下载模板API
 @students_bp.route('/api/template', methods=['GET'])
 def download_template():
+    # 检查是否是班主任
+    is_teacher = not current_user.is_admin and current_user.class_id
+    
+    if is_teacher:
+        # 为班主任生成班级特定的模板
+        from create_student_template import create_custom_template
+        
+        try:
+            # 获取班级ID
+            class_id = current_user.class_id
+            
+            # 创建自定义模板
+            template_path = create_custom_template(class_id)
+            
+            if template_path:
+                # 获取文件名
+                template_filename = os.path.basename(template_path)
+                return jsonify({
+                    'status': 'ok',
+                    'message': '已生成您班级专用的导入模板',
+                    'template_url': f'/download/template/{template_filename}'
+                })
+            else:
+                # 如果自定义模板创建失败，回退到标准模板
+                logger.warning(f"班主任 {current_user.username} 的自定义模板创建失败，使用标准模板")
+        except Exception as e:
+            logger.error(f"创建自定义模板时出错: {str(e)}")
+    
+    # 通用模板（管理员或自定义模板失败的情况）
     template_path = os.path.join(TEMPLATE_FOLDER, 'student_template.xlsx')
     if not os.path.exists(template_path):
         create_student_template()
     
     return jsonify({
         'status': 'ok',
+        'message': '已生成通用导入模板',
         'template_url': f'/download/template/student_template.xlsx'
     })
 

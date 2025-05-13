@@ -1192,10 +1192,19 @@ function uploadFileForPreview(file) {
         body: formData
     })
     .then(response => {
-        if (!response.ok) {
-            throw new Error(`服务器响应错误: ${response.status}`);
+        // 首先检查是否有内容
+        if (response.status === 204) {
+            throw new Error('服务器没有返回内容');
         }
-        return response.json();
+        
+        // 不管HTTP状态如何，都尝试解析JSON
+        return response.json().then(data => {
+            if (!response.ok) {
+                // 有些错误（如班级不匹配）服务器会以400+状态码返回，但会包含详细错误信息
+                throw new Error(data.error || `服务器响应错误: ${response.status}`);
+            }
+            return data;
+        });
     })
     .then(data => {
         if (data.error) {
@@ -1215,41 +1224,123 @@ function uploadFileForPreview(file) {
             importDataField.value = JSON.stringify(data.students);
         }
         
+        // 控制确认导入按钮的启用状态
+        const confirmImportBtn = document.getElementById('confirmImportBtn');
+        const allClassesMatch = data.preview && data.preview.all_classes_match === true;
+        
+        // 如果存在任何班级不匹配的记录，禁用确认导入按钮
+        if (confirmImportBtn) {
+            confirmImportBtn.disabled = !allClassesMatch;
+            
+            // 如果按钮被禁用，添加提示信息
+            if (!allClassesMatch) {
+                confirmImportBtn.setAttribute('title', '存在班级不匹配的学生记录，无法导入');
+                confirmImportBtn.classList.add('disabled');  // 添加disabled类以增强视觉反馈
+            } else {
+                confirmImportBtn.setAttribute('title', '点击确认导入学生数据');
+                confirmImportBtn.classList.remove('disabled');
+            }
+        }
+        
         // 如果服务器返回了HTML预览，直接使用它
         if (data.html_preview) {
             previewContainer.innerHTML = data.html_preview;
             
-            // 启用确认导入按钮
-            const confirmImportBtn = document.getElementById('confirmImportBtn');
-            if (confirmImportBtn) {
-                confirmImportBtn.disabled = false;
+            // 添加验证规则提示
+            if (data.preview && data.preview.validation_rule) {
+                const ruleElement = document.createElement('div');
+                ruleElement.className = 'alert alert-info mt-3';
+                ruleElement.innerHTML = `
+                    <strong><i class='bx bx-info-circle'></i> 导入规则：</strong>
+                    ${data.preview.validation_rule}
+                `;
+                previewContainer.appendChild(ruleElement);
+            }
+            
+            // 添加班级不匹配的警告信息
+            if (!allClassesMatch && data.preview && data.preview.class_mismatch_count > 0) {
+                const warningElement = document.createElement('div');
+                warningElement.className = 'alert alert-danger mt-3';
+                warningElement.innerHTML = `
+                    <strong><i class='bx bx-error-circle'></i> 无法导入!</strong> 
+                    检测到 ${data.preview.class_mismatch_count} 条班级不匹配的记录。
+                    根据系统规定，当Excel中存在任何班级不匹配的记录时，整个Excel都无法导入。
+                    请使用正确的班级模板重新导入。
+                `;
+                previewContainer.appendChild(warningElement);
             }
         } 
         // 否则使用旧的预览方式
         else if (data.students && data.students.length > 0) {
             showLegacyPreview(previewContainer, data);
-        } 
+            
+            // 添加验证规则提示
+            if (data.preview && data.preview.validation_rule) {
+                const ruleElement = document.createElement('div');
+                ruleElement.className = 'alert alert-info mt-3';
+                ruleElement.innerHTML = `
+                    <strong><i class='bx bx-info-circle'></i> 导入规则：</strong>
+                    ${data.preview.validation_rule}
+                `;
+                previewContainer.appendChild(ruleElement);
+            }
+        }
         else {
             previewContainer.innerHTML = `
                 <div class="alert alert-warning">
                     <i class='bx bx-info-circle'></i> 文件中没有找到有效的学生数据。
                 </div>
             `;
+            
+            // 禁用确认导入按钮
+            if (confirmImportBtn) {
+                confirmImportBtn.disabled = true;
+                confirmImportBtn.setAttribute('title', '没有可导入的数据');
+                confirmImportBtn.classList.add('disabled');
+            }
         }
     })
     .catch(error => {
         console.error('上传文件出错:', error);
+        
+        
+        // 更友好的错误显示，突出显示班级不匹配错误
+        let errorMessage = error.message || '上传文件时出错';
+        let alertClass = 'alert-danger';
+        let icon = 'bx-error-circle';
+        
+        // 特殊处理班级不匹配错误
+        if (errorMessage.includes('班级不匹配') || errorMessage.includes('班级为') || errorMessage.includes('严格校验失败')) {
+            alertClass = 'alert-warning';
+            icon = 'bx-error-alt';
+            errorMessage = `<strong>班级验证失败</strong><br>${errorMessage}`;
+        }
+        
         previewContainer.innerHTML = `
-            <div class="alert alert-danger">
-                <i class='bx bx-error-circle'></i> 上传文件时出错: ${error.message}
+            <div class="alert ${alertClass}">
+                <i class='bx ${icon} me-2'></i>
+                ${errorMessage}
+            </div>
+            <div class="alert alert-info mt-3">
+                <i class='bx bx-info-circle me-2'></i>
+                <strong>提示:</strong> 请确保Excel中的所有学生都属于您当前管理的班级。
+                您可以点击"下载模板"获取一个为您班级预填的模板。
             </div>
         `;
+        
+        // 禁用确认导入按钮
+        const confirmImportBtn = document.getElementById('confirmImportBtn');
+        if (confirmImportBtn) {
+            confirmImportBtn.disabled = true;
+            confirmImportBtn.setAttribute('title', '无法导入，请修正错误后重试');
+        }
     });
 }
 
 // 显示遗留的预览方式（备用）
 function showLegacyPreview(previewContainer, data) {
     const students = data.students;
+    const preview = data.preview || {};
     
     // 定义一个辅助函数来处理数值显示
     const displayNumericValue = (value) => {
@@ -1277,19 +1368,31 @@ function showLegacyPreview(previewContainer, data) {
                         <th>视力左</th>
                         <th>视力右</th>
                         <th>体测情况</th>
+                        <th>状态</th>
                     </tr>
                 </thead>
                 <tbody>
     `;
     
+    // 计数器
+    let validCount = 0;
+    let invalidCount = 0;
+    
     // 生成表格行
     students.forEach(student => {
+        // 检查是否有班级不匹配标记
+        const hasClassMismatch = student.class_mismatch === true;
+        const rowClass = hasClassMismatch ? 'table-danger' : '';
+        const statusHtml = hasClassMismatch ? 
+            `<span class="badge bg-danger">班级不匹配</span>` : 
+            `<span class="badge bg-success">有效</span>`;
+        
         tableHtml += `
-            <tr>
+            <tr class="${rowClass}">
                 <td>${student.id || '-'}</td>
                 <td>${student.name || '-'}</td>
                 <td>${student.gender || '-'}</td>
-                <td>${student.class || '-'}</td>
+                <td>${student.class || '-'} ${hasClassMismatch ? `<i class="bx bx-error-circle text-danger" title="${student.error_reason}"></i>` : ''}</td>
                 <td>${displayNumericValue(student.height)}</td>
                 <td>${displayNumericValue(student.weight)}</td>
                 <td>${displayNumericValue(student.chest_circumference)}</td>
@@ -1298,26 +1401,54 @@ function showLegacyPreview(previewContainer, data) {
                 <td>${displayNumericValue(student.vision_left)}</td>
                 <td>${displayNumericValue(student.vision_right)}</td>
                 <td>${student.physical_test_status || '-'}</td>
+                <td>${statusHtml}</td>
             </tr>
         `;
+        
+        if (hasClassMismatch) {
+            invalidCount++;
+        } else {
+            validCount++;
+        }
     });
     
     tableHtml += `
                 </tbody>
             </table>
         </div>
+    `;
+    
+    // 添加提示信息
+    if (invalidCount > 0) {
+        let warningText = `共发现 ${students.length} 名学生数据，其中 <strong>${validCount}</strong> 名有效，<strong class="text-danger">${invalidCount}</strong> 名班级不匹配`;
+        
+        // 更明确地表达班级不匹配导致整个Excel无法导入的规则
+        warningText += `。<br><strong class="text-danger">系统规定：当Excel中存在任何班级不匹配的记录时，整个Excel都无法导入！</strong><br>请使用正确班级的Excel模板重新导入，或联系管理员处理。`;
+        
+        tableHtml += `
+        <div class="alert alert-danger">
+            <i class='bx bx-error-circle'></i> ${warningText}
+        </div>
+        `;
+        
+        // 添加获取正确模板的建议
+        tableHtml += `
+        <div class="alert alert-info">
+            <i class='bx bx-info-circle'></i> <strong>解决方法：</strong>点击"下载模板"按钮获取适用于您班级的Excel模板，确保所有学生记录的班级字段与您的班级匹配。
+        </div>
+        `;
+    } else {
+        tableHtml += `
         <div class="alert alert-info">
             <i class='bx bx-info-circle'></i> 共发现 ${students.length} 名学生数据，点击"确认导入"按钮完成导入。
         </div>
-    `;
+        `;
+    }
     
     previewContainer.innerHTML = tableHtml;
     
-    // 启用确认导入按钮
-    const confirmImportBtn = document.getElementById('confirmImportBtn');
-    if (confirmImportBtn) {
-        confirmImportBtn.disabled = false;
-    }
+    // 注意：不再在这里设置确认导入按钮的状态
+    // 按钮状态由上层调用函数统一管理
 }
 
 // 格式化文件大小
@@ -1332,6 +1463,13 @@ function importStudents() {
     const students = JSON.parse(document.getElementById('importData').value || '[]');
     if (!students || students.length === 0) {
         showNotification('没有可导入的学生数据', 'error');
+        return;
+    }
+    
+    // 检查是否存在班级不匹配的记录
+    const hasClassMismatch = students.some(student => student.class_mismatch === true);
+    if (hasClassMismatch) {
+        showNotification('存在班级不匹配的记录，整个Excel无法导入', 'error');
         return;
     }
     
@@ -1375,6 +1513,11 @@ function importStudents() {
             let message = `成功导入 ${data.success_count} 名学生`;
             if (data.updated_count > 0) {
                 message += `（更新 ${data.updated_count} 名，新增 ${data.inserted_count} 名）`;
+            }
+            
+            // 显示班级不匹配的跳过信息
+            if (data.class_mismatch_count > 0) {
+                message += `，跳过 ${data.class_mismatch_count} 名班级不匹配的学生`;
             }
             
             // 显示通知
