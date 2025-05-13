@@ -162,7 +162,7 @@ class DashboardManager:
         total = cursor.fetchone()['total']
         
         # 列出所有主要学科
-        subjects = ['yuwen', 'shuxue', 'yingyu', 'daof', 'kexue', 'tiyu', 'yinyue', 'meishu']
+        subjects = ['yuwen', 'shuxue', 'yingyu', 'daof', 'kexue', 'tiyu', 'yinyue', 'meishu', 'xinli']
         
         # 查询所有学生记录
         if user_class_id:
@@ -231,7 +231,7 @@ class DashboardManager:
         total = cursor.fetchone()['total']
         
         # 主要学科列表
-        subjects = ['yuwen', 'shuxue', 'yingyu', 'daof', 'kexue', 'tiyu', 'yinyue', 'meishu']
+        subjects = ['yuwen', 'shuxue', 'yingyu', 'daof', 'kexue', 'tiyu', 'yinyue', 'meishu', 'xinli']
         
         # 构建查询，检查学生个人信息、评语和所有主要学科成绩是否都已填写
         personal_info_conditions = [
@@ -285,7 +285,8 @@ class DashboardManager:
             'kexue': '科学',
             'tiyu': '体育',
             'yinyue': '音乐',
-            'meishu': '美术'
+            'meishu': '美术',
+            'xinli': '心理'
         }
         
         result = {}

@@ -125,7 +125,8 @@ class ReportExporter:
                 ('语文', '{{ 语文 }}', '数学', '{{ 数学 }}', '英语', '{{ 英语 }}'),
                 ('道法', '{{ 道法 }}', '科学', '{{ 科学 }}', '体育', '{{ 体育 }}'),
                 ('音乐', '{{ 音乐 }}', '美术', '{{ 美术 }}', '劳动', '{{ 劳动 }}'),
-                ('信息', '{{ 信息 }}', '综合', '{{ 综合 }}', '书法', '{{ 书法 }}')
+                ('信息', '{{ 信息 }}', '综合', '{{ 综合 }}', '书法', '{{ 书法 }}'),
+                ('心理', '{{ 心理 }}', '', '', '', '')
             ]
             
             grade_table = doc.add_table(rows=len(subjects), cols=6)
@@ -288,7 +289,8 @@ class ReportExporter:
                 'laodong': '劳动',
                 'xinxi': '信息',
                 'zonghe': '综合',
-                'shufa': '书法'
+                'shufa': '书法',
+                'xinli': '心理'
             }
             
             grades_data = grades.get('grades', {})
@@ -297,7 +299,7 @@ class ReportExporter:
         
         # 直接从学生数据中获取成绩字段（如果存在于学生数据中）
         grade_fields = ['yuwen', 'shuxue', 'yingyu', 'daof', 'kexue', 'tiyu', 
-                      'yinyue', 'meishu', 'laodong', 'xinxi', 'zonghe', 'shufa']
+                      'yinyue', 'meishu', 'laodong', 'xinxi', 'zonghe', 'shufa', 'xinli']
         grade_map = {
             'yuwen': '语文',
             'shuxue': '数学',
@@ -310,7 +312,8 @@ class ReportExporter:
             'laodong': '劳动',
             'xinxi': '信息',
             'zonghe': '综合',
-            'shufa': '书法'
+            'shufa': '书法',
+            'xinli': '心理'
         }
         
         for field in grade_fields:
