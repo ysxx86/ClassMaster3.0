@@ -104,6 +104,26 @@ def register_fonts():
     logger.warning("无法注册中文字体，将使用默认字体")
     return 'Helvetica'
 
+# 获取班主任姓名
+def get_teacher_name(class_id):
+    """根据班级ID获取班主任姓名"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # 查询班级对应的班主任信息
+        cursor.execute('SELECT u.username FROM users u WHERE u.class_id = ?', (class_id,))
+        teacher = cursor.fetchone()
+        conn.close()
+        
+        if teacher:
+            return teacher['username']
+        else:
+            return "未设置"
+    except Exception as e:
+        logger.error(f"获取班主任信息失败: {str(e)}")
+        return "未知"
+
 # 核心导出函数
 def export_comments_to_pdf(class_name=None, output_file=None, school_name=None, school_year=None):
     """
@@ -177,11 +197,11 @@ def export_comments_to_pdf(class_name=None, output_file=None, school_name=None, 
         
         # 查询语句
         if class_name:
-            query = 'SELECT id, name, gender, class, comments, updated_at FROM students WHERE class = ? ORDER BY CAST(id AS INTEGER)'
+            query = 'SELECT id, name, gender, class, class_id, comments, updated_at FROM students WHERE class = ? ORDER BY CAST(id AS INTEGER)'
             logger.info(f"执行查询: {query} 参数: {class_name}")
             cursor.execute(query, (class_name,))
         else:
-            query = 'SELECT id, name, gender, class, comments, updated_at FROM students ORDER BY class, CAST(id AS INTEGER)'
+            query = 'SELECT id, name, gender, class, class_id, comments, updated_at FROM students ORDER BY class, CAST(id AS INTEGER)'
             logger.info(f"执行查询: {query}")
             cursor.execute(query)
         
@@ -209,20 +229,28 @@ def export_comments_to_pdf(class_name=None, output_file=None, school_name=None, 
     try:
         # 分析学生数据
         students_by_class = {}
+        class_teacher_map = {}  # 存储班级ID和班主任的映射
+        
         for s in students:
             class_name = s['class'] if s['class'] else '未分班'
+            class_id = s['class_id']
+            
             if class_name not in students_by_class:
                 students_by_class[class_name] = []
+                # 获取班主任信息
+                if class_id and class_id not in class_teacher_map:
+                    class_teacher_map[class_id] = get_teacher_name(class_id)
+            
             students_by_class[class_name].append(dict(s))
         
         # 创建横向A4文档 - 与打印预览保持一致
         doc = SimpleDocTemplate(
             file_path,
             pagesize=landscape(A4),
-            rightMargin=10*mm,
-            leftMargin=10*mm,
-            topMargin=10*mm,
-            bottomMargin=10*mm
+            rightMargin=8*mm,  # 减小页边距
+            leftMargin=8*mm,   # 减小页边距
+            topMargin=8*mm,    # 减小页边距
+            bottomMargin=8*mm  # 减小页边距
         )
         
         # 创建样式
@@ -265,10 +293,14 @@ def export_comments_to_pdf(class_name=None, output_file=None, school_name=None, 
         
         # 处理每个班级
         for class_name, class_students in students_by_class.items():
+            # 获取班级对应的班主任姓名
+            class_id = class_students[0]['class_id'] if class_students else None
+            teacher_name = class_teacher_map.get(class_id, "未设置") if class_id else "未设置"
+            
             # 创建标题和班级信息放在同一行
             title_elements = [
                 [Paragraph("学生评语表", title_style), 
-                 Paragraph(f"班级：{class_name}", class_style)]
+                 Paragraph(f"班级：{class_name}      班主任：{teacher_name}", class_style)]
             ]
             title_table = Table(title_elements, colWidths=[100*mm, 150*mm])
             title_table.setStyle(TableStyle([
@@ -281,7 +313,7 @@ def export_comments_to_pdf(class_name=None, output_file=None, school_name=None, 
                 ('BOTTOMPADDING', (0, 0), (-1, -1), 0),
             ]))
             story.append(title_table)
-            story.append(Spacer(1, 5*mm))
+            story.append(Spacer(1, 4*mm))  # 减小标题和内容之间的间距
             
             # 每页显示6个学生卡片（3列2行）
             cards_per_page = 6
@@ -307,21 +339,21 @@ def export_comments_to_pdf(class_name=None, output_file=None, school_name=None, 
                             raw_comments = student.get('comments', '')
                             comments = str(raw_comments).replace('<', ' ').replace('>', ' ') if raw_comments else '暂无评语'
                             
-                            # 创建评语段落以测量高度
+                            # 创建评语段落以测量高度 - 使用小四号字体(约12pt)
                             comment_style = ParagraphStyle(
                                 'Comment',
                                 parent=styles['Normal'],
                                 fontName=font_name,
-                                fontSize=11,
+                                fontSize=12,  # 改为小四号字体大小
                                 alignment=0,
-                                firstLineIndent=22,  # 设置首行缩进2个字符
+                                firstLineIndent=24,  # 设置首行缩进2个字符
                                 spaceBefore=2*mm,
                                 spaceAfter=2*mm,
-                                leading=14  # 行间距
+                                leading=16  # 增加行间距以配合更大的字体
                             )
                             
                             # 评语的有效宽度应考虑到表格内边距
-                            effective_width = 70*mm  # 考虑到左右内边距
+                            effective_width = 74*mm  # 考虑到左右内边距，同时扩大一些以适应更多文本
                             p = Paragraph(comments, comment_style)
                             w, h = p.wrap(effective_width, 500*mm)  # 给予充足高度以测量实际需要的高度
                             if h > max_height:
@@ -330,11 +362,11 @@ def export_comments_to_pdf(class_name=None, output_file=None, school_name=None, 
                             row_comments.append((comments, p, h))
                         
                         # 设置最小高度，确保短评语也有足够空间
-                        if max_height < 30*mm:
-                            max_height = 30*mm
+                        if max_height < 33*mm:
+                            max_height = 33*mm
                         
                         # 为长评语增加额外空间，确保内容不会被截断
-                        max_height += 10*mm
+                        max_height += 8*mm
                         
                         # 现在用计算好的高度创建卡片
                         row_cards = []
@@ -358,7 +390,7 @@ def export_comments_to_pdf(class_name=None, output_file=None, school_name=None, 
                                     fontSize=12,
                                     alignment=0,
                                     fontWeight='bold',
-                                    spaceAfter=3*mm
+                                    spaceAfter=2*mm  # 减小学生信息和评语之间的间距
                                 )
                                 
                                 # 创建卡片内容元素，仅包含学生信息和评语
@@ -372,16 +404,16 @@ def export_comments_to_pdf(class_name=None, output_file=None, school_name=None, 
                                     ('BOX', (0, 0), (-1, -1), 1, colors.black),
                                     ('VALIGN', (0, 0), (0, 0), 'TOP'),  # 信息顶部对齐
                                     ('VALIGN', (0, 1), (0, 1), 'TOP'),  # 评语顶部对齐
-                                    ('LEFTPADDING', (0, 0), (-1, -1), 5*mm),
-                                    ('RIGHTPADDING', (0, 0), (-1, -1), 5*mm),
-                                    ('TOPPADDING', (0, 0), (-1, -1), 5*mm),
-                                    ('BOTTOMPADDING', (0, 0), (-1, -1), 5*mm)
+                                    ('LEFTPADDING', (0, 0), (-1, -1), 4*mm),  # 减小左内边距
+                                    ('RIGHTPADDING', (0, 0), (-1, -1), 4*mm),  # 减小右内边距
+                                    ('TOPPADDING', (0, 0), (-1, -1), 3*mm),  # 减小顶部内边距
+                                    ('BOTTOMPADDING', (0, 0), (-1, -1), 3*mm)  # 减小底部内边距
                                 ])
                                 
                                 # 使用自适应高度，确保所有卡片高度一致
                                 # 移除底部时间行，只保留标题和评语两行
                                 card_table = Table(card_elements, 
-                                                colWidths=[80*mm],
+                                                colWidths=[82*mm],  # 增加卡片宽度
                                                 rowHeights=[10*mm, max_height],  # 只有两行：标题和评语
                                                 hAlign='CENTER')  # 水平居中对齐
                                 card_table.setStyle(card_style)
@@ -391,7 +423,7 @@ def export_comments_to_pdf(class_name=None, output_file=None, school_name=None, 
                         while len(row_cards) < 3:
                             # 创建一个空的卡片，保持与其他卡片相同大小
                             empty_card = Table([[""], [""]], 
-                                            colWidths=[80*mm],
+                                            colWidths=[82*mm],  # 与其他卡片宽度保持一致
                                             rowHeights=[10*mm, max_height],  # 只有两行
                                             hAlign='CENTER')  # 水平居中对齐
                             empty_card.setStyle(TableStyle([
@@ -406,10 +438,10 @@ def export_comments_to_pdf(class_name=None, output_file=None, school_name=None, 
                     ('VALIGN', (0, 0), (-1, -1), 'TOP'),  # 顶部对齐
                     ('ALIGN', (0, 0), (-1, -1), 'CENTER'),  # 居中对齐表格
                     # 减少内边距，使卡片更紧凑
-                    ('LEFTPADDING', (0, 0), (-1, -1), 1.5*mm),
-                    ('RIGHTPADDING', (0, 0), (-1, -1), 1.5*mm),
-                    ('TOPPADDING', (0, 0), (-1, -1), 1.5*mm),
-                    ('BOTTOMPADDING', (0, 0), (-1, -1), 1.5*mm)
+                    ('LEFTPADDING', (0, 0), (-1, -1), 1*mm),
+                    ('RIGHTPADDING', (0, 0), (-1, -1), 1*mm),
+                    ('TOPPADDING', (0, 0), (-1, -1), 1*mm),
+                    ('BOTTOMPADDING', (0, 0), (-1, -1), 1*mm)
                 ])
                 
                 # 使用固定宽度确保所有卡片对齐
