@@ -63,9 +63,6 @@ document.addEventListener('DOMContentLoaded', function() {
             updateGrade(e.target);
         }
     });
-    
-    // 初始化表格布局
-    adjustTableLayout();
 });
 
 // 设置学期选择器
@@ -281,104 +278,6 @@ function renderGradesTable(grades) {
         });
         
         gradesTable.appendChild(row);
-    });
-    
-    // 渲染完成后调整表格布局
-    adjustTableLayout();
-}
-
-/**
- * 调整表格布局，优化显示效果
- */
-function adjustTableLayout() {
-    console.log('调整表格布局');
-    
-    // 获取表格和表头
-    const table = document.querySelector('.grades-table table');
-    if (!table) return;
-    
-    // 科目单元格默认宽度
-    const defaultColWidth = 80;
-    
-    // 获取表头所有列
-    const headers = table.querySelectorAll('thead th');
-    
-    // 设置科目列宽度
-    headers.forEach((header, index) => {
-        if (index >= 2) { // 跳过学号和姓名列
-            // 根据内容长度设置宽度，但不低于最小宽度
-            const text = header.textContent.trim();
-            // 汉字平均宽度约为16px
-            const contentWidth = Math.max(text.length * 16, defaultColWidth);
-            header.style.width = `${contentWidth}px`;
-            header.style.minWidth = `${defaultColWidth}px`;
-        }
-    });
-    
-    // 确保固定列背景色正确
-    const fixColumns = () => {
-        // 获取所有第一列和第二列的单元格
-        const firstCols = table.querySelectorAll('tr td:first-child, tr th:first-child');
-        const secondCols = table.querySelectorAll('tr td:nth-child(2), tr th:nth-child(2)');
-        
-        // 设置正确的背景色
-        firstCols.forEach(cell => {
-            if (cell.tagName === 'TH') {
-                cell.style.backgroundColor = '#f8f9fa';
-            } else {
-                cell.style.backgroundColor = '#fff';
-            }
-            cell.style.boxShadow = '2px 0 5px -2px rgba(0,0,0,0.1)';
-        });
-        
-        secondCols.forEach(cell => {
-            if (cell.tagName === 'TH') {
-                cell.style.backgroundColor = '#f8f9fa';
-            } else {
-                cell.style.backgroundColor = '#fff';
-            }
-            cell.style.boxShadow = '2px 0 5px -2px rgba(0,0,0,0.1)';
-        });
-    };
-    
-    // 执行固定列样式
-    fixColumns();
-    
-    // 检查水平滚动条是否应该显示
-    const tableContainer = document.querySelector('.table-responsive.grades-table');
-    if (tableContainer) {
-        // 计算表格实际宽度和容器宽度
-        const tableWidth = table.offsetWidth;
-        const containerWidth = tableContainer.offsetWidth;
-        
-        console.log(`表格宽度: ${tableWidth}px, 容器宽度: ${containerWidth}px`);
-        
-        // 如果表格宽度大于容器宽度，应该显示水平滚动条
-        if (tableWidth > containerWidth) {
-            console.log('表格宽度大于容器宽度，应该显示水平滚动条');
-            // 确保overflow-x是auto
-            tableContainer.style.overflowX = 'auto';
-        } else {
-            console.log('表格宽度小于等于容器宽度，不需要水平滚动条');
-        }
-    }
-    
-    // 监听窗口大小变化，重新调整固定列样式
-    window.addEventListener('resize', function() {
-        fixColumns();
-        
-        // 重新检查滚动条
-        const tableContainer = document.querySelector('.table-responsive.grades-table');
-        if (tableContainer) {
-            const tableWidth = table.offsetWidth;
-            const containerWidth = tableContainer.offsetWidth;
-            
-            console.log(`[resize] 表格宽度: ${tableWidth}px, 容器宽度: ${containerWidth}px`);
-            
-            if (tableWidth > containerWidth) {
-                tableContainer.style.overflowX = 'auto';
-            }
-        }
     });
 }
 
