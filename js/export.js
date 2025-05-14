@@ -1077,10 +1077,6 @@ async function exportReports(exportType = 'word') {
                                                 ${result.details ? `<pre style="margin-top:10px;white-space:pre-wrap;max-height:300px;overflow-y:auto">${result.details}</pre>` : ''}
                                             </div>
                                             <p class="mb-0">请修复以上问题后再尝试导出报告。</p>
-                                            ${(!result.problem_students || result.problem_students.length === 0) ? 
-                                                `<div class="alert alert-info mt-3">
-                                                    <i class="bx bx-info-circle me-1"></i> 注意：您只能看到您管理班级内的学生数据问题。
-                                                </div>` : ''}
                                         </div>
                                         <div class="modal-footer">
                                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
@@ -2500,12 +2496,6 @@ function highlightProblemStudents(problemStudentIds) {
         item.classList.remove('problem-student');
     });
     
-    // 如果没有问题学生ID列表或长度为0，显示提示并返回
-    if (!problemStudentIds || problemStudentIds.length === 0) {
-        showNotification('您管理的班级没有检测到数据问题的学生', 'info');
-        return;
-    }
-    
     // 添加高亮样式到页面
     const style = document.createElement('style');
     style.innerHTML = `
@@ -2524,12 +2514,10 @@ function highlightProblemStudents(problemStudentIds) {
     document.head.appendChild(style);
     
     // 高亮有问题的学生
-    let highlightedCount = 0;
     problemStudentIds.forEach(studentId => {
         const studentItem = document.querySelector(`.student-item[data-student-id="${studentId}"]`);
         if (studentItem) {
             studentItem.classList.add('problem-student');
-            highlightedCount++;
             
             // 确保学生被选中
             const checkbox = studentItem.querySelector('.student-checkbox');
@@ -2552,9 +2540,5 @@ function highlightProblemStudents(problemStudentIds) {
     });
     
     // 显示提示消息
-    if (highlightedCount > 0) {
-        showNotification(`已高亮显示 ${highlightedCount} 名有数据问题的学生`, 'info');
-    } else {
-        showNotification('没有找到匹配的学生ID，请检查所选学生', 'warning');
-    }
+    showNotification(`已高亮显示 ${problemStudentIds.length} 名有数据问题的学生`, 'info');
 }
