@@ -655,7 +655,7 @@ def confirm_import():
                     'message': f'拒绝导入：Excel中存在 {mismatch_count} 条班级不匹配的记录。',
                     'class_mismatch_count': mismatch_count
                 }), 400
-        
+            
         # 获取数据库连接
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -1000,7 +1000,7 @@ def get_students():
         
     except Exception as e:
         logger.error(f"获取学生列表时出错: {str(e)}", exc_info=True)
-        return jsonify({'status': 'error', 'message': f'获取学生列表失败: {str(e)}'})
+        return jsonify({'status': 'error', 'message': f'获取学生列表失败: {str(e)}'}) 
 
 # 清除学生名单API
 @students_bp.route('/api/clear-students', methods=['DELETE'], strict_slashes=False)
