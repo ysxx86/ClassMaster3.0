@@ -6,6 +6,7 @@ import os
 import json
 import argparse
 import re
+import random  # 添加random模块导入
 from functools import wraps
 
 def check_and_install(package, version=None):
@@ -143,6 +144,19 @@ SYSTEM_SETTINGS = {
     "deepseek_api_key": DEEPSEEK_API_KEY,
     "deepseek_api_enabled": bool(DEEPSEEK_API_KEY)
 }
+
+# 添加配置文件更新函数
+def update_config_file():
+    """更新系统配置文件，保存当前的系统设置"""
+    try:
+        config_path = os.path.join(os.path.dirname(__file__), 'config.json')
+        with open(config_path, 'w', encoding='utf-8') as f:
+            json.dump(SYSTEM_SETTINGS, f, ensure_ascii=False, indent=2)
+        logger.info("系统配置文件已更新")
+        return True
+    except Exception as e:
+        logger.error(f"更新配置文件时出错: {str(e)}")
+        return False
 
 # 配置日志
 logging.basicConfig(
