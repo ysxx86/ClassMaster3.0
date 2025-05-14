@@ -1127,6 +1127,35 @@ def api_export_reports():
             if not is_valid:
                 logger.error(f"数据验证失败: {error_message}")
                 
+                # 获取当前用户信息和权限
+                class_specific_students = []
+                if not current_user.is_admin:
+                    # 如果是班主任，只显示其班级的学生
+                    logger.info(f"当前用户是班主任，只显示班级ID为 {current_user.class_id} 的学生")
+                    
+                    # 查询班主任负责的班级名称
+                    conn = get_db_connection()
+                    cursor = conn.cursor()
+                    cursor.execute('SELECT name FROM classes WHERE id = ?', (current_user.class_id,))
+                    class_row = cursor.fetchone()
+                    class_name = class_row['name'] if class_row else f"班级ID: {current_user.class_id}"
+                    conn.close()
+                    
+                    # 过滤问题学生列表，只保留当前班主任班级的学生
+                    for student in problem_students:
+                        # 检查学生是否属于当前班主任的班级
+                        student_id = student['id']
+                        
+                        # 通过查询students表中的class_id来确认学生班级
+                        for s in students:
+                            if s['id'] == student_id and s['class_id'] == current_user.class_id:
+                                class_specific_students.append(student)
+                                break
+                    
+                    error_message += f"\n只显示 {class_name} 的学生数据问题"
+                    problem_students = class_specific_students
+                    logger.info(f"筛选后显示 {len(problem_students)} 名问题学生")
+                
                 # 构建更详细的错误信息
                 details = ""
                 if problem_students:
@@ -1137,6 +1166,9 @@ def api_export_reports():
                     
                     if len(problem_students) > 10:
                         details += f"... 以及其他 {len(problem_students) - 10} 名学生"
+                else:
+                    if not current_user.is_admin:
+                        details = "\n\n您的班级没有检测到数据问题的学生。"
                 
                 return jsonify({
                     'status': 'error', 
