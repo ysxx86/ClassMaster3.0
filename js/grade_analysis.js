@@ -3,6 +3,35 @@
  * 提供考试成绩的导入、分析和展示功能
  */
 
+// 添加样式到页面
+(function addStyles() {
+    const style = document.createElement('style');
+    style.textContent = `
+        th.sortable {
+            cursor: pointer;
+            position: relative;
+            user-select: none;
+        }
+        
+        th.sortable:hover {
+            background-color: rgba(0,0,0,0.05);
+        }
+        
+        th.sortable i {
+            font-size: 0.9em;
+            margin-left: 5px;
+            opacity: 0.5;
+        }
+        
+        th.sortable[data-sort-direction="asc"] i,
+        th.sortable[data-sort-direction="desc"] i {
+            opacity: 1;
+            color: #3498db;
+        }
+    `;
+    document.head.appendChild(style);
+})();
+
 // 全局变量
 let currentClassId = null;
 let currentExam = null;
@@ -483,8 +512,8 @@ function loadExamDetail(examId) {
                                         <table class="table table-striped table-hover">
                                             <thead>
                                                 <tr>
-                                                    <th>学号</th>
-                                                    <th>姓名</th>
+                                                    <th class="sortable" data-sort-by="id">学号 <i class="bx bx-sort"></i></th>
+                                                    <th class="sortable" data-sort-by="name">姓名 <i class="bx bx-sort"></i></th>
                                                     <!-- 学科列由JS加载 -->
                                                 </tr>
                                             </thead>
@@ -984,13 +1013,15 @@ function renderScoresTable(subjects, scores) {
     const tableBody = document.getElementById('scoresTableBody');
     
     // 清空现有内容，保留学号和姓名列
-    tableHead.innerHTML = '<th>学号</th><th>姓名</th>';
+    tableHead.innerHTML = '<th class="sortable" data-sort-by="id">学号 <i class="bx bx-sort"></i></th><th class="sortable" data-sort-by="name">姓名 <i class="bx bx-sort"></i></th>';
     tableBody.innerHTML = '';
     
     // 添加学科列
     subjects.forEach(subject => {
         const th = document.createElement('th');
-        th.textContent = subject;
+        th.className = 'sortable';
+        th.setAttribute('data-sort-by', subject);
+        th.innerHTML = `${subject} <i class="bx bx-sort"></i>`;
         tableHead.appendChild(th);
     });
     
@@ -1012,168 +1043,263 @@ function renderScoresTable(subjects, scores) {
         studentScores[score.student_id].scores[score.subject] = score.score;
     });
     
-    // 生成表格行
-    Object.values(studentScores).forEach(student => {
-        const row = document.createElement('tr');
-        
-        // 添加学号和姓名
-        row.innerHTML = `
-            <td>${student.id}</td>
-            <td>${student.name}</td>`;
-        
-        // 添加各科成绩
-        subjects.forEach(subject => {
-            const td = document.createElement('td');
-            const score = student.scores[subject];
+    // 转换为数组以便排序
+    let studentsArray = Object.values(studentScores);
+    
+    // 默认按学号排序
+    studentsArray.sort((a, b) => {
+        // 尝试将学号转为数字进行比较
+        const numA = parseInt(a.id);
+        const numB = parseInt(b.id);
+        if (!isNaN(numA) && !isNaN(numB)) {
+            return numA - numB;
+        }
+        // 如果不能转为数字，按字符串比较
+        return a.id.localeCompare(b.id);
+    });
+    
+    // 渲染表格
+    renderSortedTable(studentsArray, subjects);
+    
+    // 添加表头排序事件
+    document.querySelectorAll('th.sortable').forEach(th => {
+        th.addEventListener('click', function() {
+            const sortBy = this.getAttribute('data-sort-by');
+            const currentDirection = this.getAttribute('data-sort-direction') || 'asc';
+            const newDirection = currentDirection === 'asc' ? 'desc' : 'asc';
             
-            if (score !== undefined) {
-                // 包装成可编辑的形式
-                td.innerHTML = `
-                    <span class="score-value" 
-                          data-student-id="${student.id}" 
-                          data-subject="${subject}" 
-                          data-original-score="${score}">
-                        ${score}
-                    </span>
-                `;
-                
-                // 应用颜色样式
-                if (score >= 90) {
-                    td.className = 'table-success';
-                } else if (score >= 80) {
-                    td.className = 'table-info';
-                } else if (score >= 60) {
-                    td.className = 'table-warning';
-                } else {
-                    td.className = 'table-danger';
-                }
+            // 清除所有排序状态
+            document.querySelectorAll('th.sortable').forEach(el => {
+                el.setAttribute('data-sort-direction', '');
+                el.querySelector('i').className = 'bx bx-sort';
+            });
+            
+            // 设置当前排序状态
+            this.setAttribute('data-sort-direction', newDirection);
+            this.querySelector('i').className = newDirection === 'asc' ? 'bx bx-sort-up' : 'bx bx-sort-down';
+            
+            // 执行排序
+            if (sortBy === 'id') {
+                studentsArray.sort((a, b) => {
+                    const numA = parseInt(a.id);
+                    const numB = parseInt(b.id);
+                    if (!isNaN(numA) && !isNaN(numB)) {
+                        return newDirection === 'asc' ? numA - numB : numB - numA;
+                    }
+                    return newDirection === 'asc' ? a.id.localeCompare(b.id) : b.id.localeCompare(a.id);
+                });
+            } else if (sortBy === 'name') {
+                studentsArray.sort((a, b) => {
+                    return newDirection === 'asc' ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name);
+                });
             } else {
-                td.textContent = '-';
-                td.className = 'table-secondary';
+                // 按学科成绩排序
+                studentsArray.sort((a, b) => {
+                    const scoreA = a.scores[sortBy] !== undefined ? parseFloat(a.scores[sortBy]) : -1;
+                    const scoreB = b.scores[sortBy] !== undefined ? parseFloat(b.scores[sortBy]) : -1;
+                    return newDirection === 'asc' ? scoreA - scoreB : scoreB - scoreA;
+                });
             }
             
-            row.appendChild(td);
+            // 重新渲染表格
+            renderSortedTable(studentsArray, subjects);
         });
+    });
+    
+    // 初始状态设置为学号升序排序
+    const idHeader = document.querySelector('th[data-sort-by="id"]');
+    idHeader.setAttribute('data-sort-direction', 'asc');
+    idHeader.querySelector('i').className = 'bx bx-sort-up';
+
+    /**
+     * 渲染排序后的表格
+     * @param {Array} students 排序后的学生数组
+     * @param {Array} subjects 学科列表
+     */
+    function renderSortedTable(students, subjects) {
+        // 清空表格内容
+        tableBody.innerHTML = '';
         
-        // 添加操作按钮
-        const actionTd = document.createElement('td');
-        actionTd.innerHTML = `
-            <div class="btn-group btn-group-sm" role="group">
-                <button class="btn btn-outline-primary edit-student-scores-btn" data-student-id="${student.id}" data-student-name="${student.name}">
-                    <i class='bx bx-edit'></i>
-                </button>
-                <button class="btn btn-outline-danger delete-student-scores-btn" data-student-id="${student.id}" data-student-name="${student.name}">
-                    <i class='bx bx-trash'></i>
-                </button>
-            </div>
-        `;
-        row.appendChild(actionTd);
-        
-        tableBody.appendChild(row);
-    });
-    
-    // 添加编辑按钮事件
-    document.querySelectorAll('.edit-student-scores-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const studentId = this.getAttribute('data-student-id');
-            const studentName = this.getAttribute('data-student-name');
+        // 生成表格行
+        students.forEach(student => {
+            const row = document.createElement('tr');
             
-            // 获取该学生的所有成绩
-            const studentScoreData = studentScores[studentId];
+            // 添加学号和姓名
+            row.innerHTML = `
+                <td>${student.id}</td>
+                <td>${student.name}</td>`;
             
-            // 打开编辑成绩模态框
-            openEditScoresModal(studentId, studentName, subjects, studentScoreData.scores);
-        });
-    });
-    
-    // 添加删除按钮事件
-    document.querySelectorAll('.delete-student-scores-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const studentId = this.getAttribute('data-student-id');
-            const studentName = this.getAttribute('data-student-name');
-            
-            if (confirm(`确定要删除学生 ${studentName}(${studentId}) 的所有成绩记录吗？此操作不可恢复。`)) {
-                deleteStudentScores(currentExam.id, studentId);
-            }
-        });
-    });
-    
-    // 单击成绩值可以直接编辑
-    document.querySelectorAll('.score-value').forEach(span => {
-        span.addEventListener('click', function() {
-            const studentId = this.getAttribute('data-student-id');
-            const subject = this.getAttribute('data-subject');
-            const originalScore = this.getAttribute('data-original-score');
-            
-            // 将文本替换为输入框
-            const input = document.createElement('input');
-            input.type = 'number';
-            input.min = '0';
-            input.max = '100';
-            input.step = '0.5';
-            input.value = originalScore;
-            input.className = 'form-control form-control-sm';
-            input.style.width = '60px';
-            
-            // 替换内容
-            this.innerHTML = '';
-            this.appendChild(input);
-            input.focus();
-            
-            // 处理输入完成事件
-            const handleComplete = () => {
-                const newScore = parseFloat(input.value);
+            // 添加各科成绩
+            subjects.forEach(subject => {
+                const td = document.createElement('td');
+                const score = student.scores[subject];
                 
-                // 验证输入
-                if (isNaN(newScore) || newScore < 0 || newScore > 100) {
-                    showNotification('error', '请输入0-100之间的有效分数');
-                    this.innerHTML = originalScore;
-                    return;
+                if (score !== undefined) {
+                    // 包装成可编辑的形式
+                    td.innerHTML = `
+                        <span class="score-value" 
+                              data-student-id="${student.id}" 
+                              data-subject="${subject}" 
+                              data-original-score="${score}">
+                            ${score}
+                        </span>
+                    `;
+                    
+                    // 应用颜色样式
+                    if (score >= 90) {
+                        td.className = 'table-success';
+                    } else if (score >= 80) {
+                        td.className = 'table-info';
+                    } else if (score >= 60) {
+                        td.className = 'table-warning';
+                    } else {
+                        td.className = 'table-danger';
+                    }
+                } else {
+                    td.textContent = '-';
+                    td.className = 'table-secondary';
                 }
                 
-                // 如果分数没变，直接恢复显示
-                if (newScore === parseFloat(originalScore)) {
-                    this.innerHTML = originalScore;
-                    return;
-                }
-                
-                // 更新成绩
-                updateScore(currentExam.id, studentId, subject, newScore)
-                    .then(success => {
-                        if (success) {
-                            // 更新内容和属性
-                            this.innerHTML = newScore;
-                            this.setAttribute('data-original-score', newScore);
-                            
-                            // 可能需要更新单元格的颜色类
-                            const td = this.closest('td');
-                            td.className = '';
-                            if (newScore >= 90) {
-                                td.className = 'table-success';
-                            } else if (newScore >= 80) {
-                                td.className = 'table-info';
-                            } else if (newScore >= 60) {
-                                td.className = 'table-warning';
-                            } else {
-                                td.className = 'table-danger';
-                            }
-                        } else {
-                            // 恢复原始显示
-                            this.innerHTML = originalScore;
-                        }
-                    });
-            };
+                row.appendChild(td);
+            });
             
-            // 添加事件监听器
-            input.addEventListener('blur', handleComplete);
-            input.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    handleComplete();
-                    e.preventDefault();
+            // 添加操作按钮
+            const actionTd = document.createElement('td');
+            actionTd.innerHTML = `
+                <div class="btn-group btn-group-sm" role="group">
+                    <button class="btn btn-outline-primary edit-student-scores-btn" data-student-id="${student.id}" data-student-name="${student.name}">
+                        <i class='bx bx-edit'></i>
+                    </button>
+                    <button class="btn btn-outline-danger delete-student-scores-btn" data-student-id="${student.id}" data-student-name="${student.name}">
+                        <i class='bx bx-trash'></i>
+                    </button>
+                </div>
+            `;
+            row.appendChild(actionTd);
+            
+            tableBody.appendChild(row);
+        });
+        
+        // 添加编辑按钮事件
+        document.querySelectorAll('.edit-student-scores-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const studentId = this.getAttribute('data-student-id');
+                const studentName = this.getAttribute('data-student-name');
+                
+                // 获取该学生的所有成绩
+                const studentScoreData = studentScores[studentId];
+                
+                // 打开编辑成绩模态框
+                openEditScoresModal(studentId, studentName, subjects, studentScoreData.scores);
+            });
+        });
+        
+        // 添加删除按钮事件
+        document.querySelectorAll('.delete-student-scores-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const studentId = this.getAttribute('data-student-id');
+                const studentName = this.getAttribute('data-student-name');
+                
+                if (confirm(`确定要删除学生 ${studentName}(${studentId}) 的所有成绩记录吗？此操作不可恢复。`)) {
+                    deleteStudentScores(currentExam.id, studentId);
                 }
             });
         });
-    });
+        
+        // 单击成绩值可以直接编辑
+        document.querySelectorAll('.score-value').forEach(span => {
+            span.addEventListener('click', function() {
+                const studentId = this.getAttribute('data-student-id');
+                const subject = this.getAttribute('data-subject');
+                const originalScore = this.getAttribute('data-original-score');
+                
+                // 将文本替换为输入框
+                const input = document.createElement('input');
+                input.type = 'number';
+                input.min = '0';
+                input.max = '100';
+                input.step = '0.5';
+                input.value = originalScore;
+                input.className = 'form-control form-control-sm';
+                input.style.width = '60px';
+                
+                // 替换内容
+                this.innerHTML = '';
+                this.appendChild(input);
+                input.focus();
+                
+                // 处理输入完成事件
+                const handleComplete = () => {
+                    const newScore = parseFloat(input.value);
+                    
+                    // 验证输入
+                    if (isNaN(newScore) || newScore < 0 || newScore > 100) {
+                        showNotification('error', '请输入0-100之间的有效分数');
+                        this.innerHTML = originalScore;
+                        return;
+                    }
+                    
+                    // 如果分数没变，直接恢复显示
+                    if (newScore === parseFloat(originalScore)) {
+                        this.innerHTML = originalScore;
+                        return;
+                    }
+                    
+                    // 更新成绩
+                    updateScore(currentExam.id, studentId, subject, newScore)
+                        .then(success => {
+                            if (success) {
+                                // 更新内容和属性
+                                this.innerHTML = newScore;
+                                this.setAttribute('data-original-score', newScore);
+                                
+                                // 可能需要更新单元格的颜色类
+                                const td = this.closest('td');
+                                td.className = '';
+                                if (newScore >= 90) {
+                                    td.className = 'table-success';
+                                } else if (newScore >= 80) {
+                                    td.className = 'table-info';
+                                } else if (newScore >= 60) {
+                                    td.className = 'table-warning';
+                                } else {
+                                    td.className = 'table-danger';
+                                }
+                                
+                                // 更新内存中的分数数据
+                                if (studentScores[studentId]) {
+                                    studentScores[studentId].scores[subject] = newScore;
+                                }
+                                
+                                // 更新排序数组中的分数
+                                const student = studentsArray.find(s => s.id === studentId);
+                                if (student) {
+                                    student.scores[subject] = newScore;
+                                }
+                                
+                                // 如果当前正在按这个科目排序，则重新排序并刷新表格
+                                const activeSort = document.querySelector('th.sortable[data-sort-direction]');
+                                if (activeSort && activeSort.getAttribute('data-sort-by') === subject) {
+                                    activeSort.click();
+                                }
+                            } else {
+                                // 恢复原始显示
+                                this.innerHTML = originalScore;
+                            }
+                        });
+                };
+                
+                // 添加事件监听器
+                input.addEventListener('blur', handleComplete);
+                input.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        handleComplete();
+                        e.preventDefault();
+                    }
+                });
+            });
+        });
+    }
 }
 
 /**
