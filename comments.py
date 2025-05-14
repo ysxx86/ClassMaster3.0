@@ -1055,24 +1055,49 @@ def api_export_reports():
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         
-        # 准备SQL查询
+        # 准备SQL查询，对班主任进行班级过滤
         placeholders = ','.join(['?' for _ in student_ids])
-        student_sql = f'''
-            SELECT * FROM students 
-            WHERE id IN ({placeholders})
-        '''
         
-        cursor.execute(student_sql, student_ids)
+        # 构建SQL查询，根据用户身份添加班级过滤条件
+        if current_user.is_admin:
+            # 管理员可以查询所有班级学生
+            student_sql = f'''
+                SELECT * FROM students 
+                WHERE id IN ({placeholders})
+            '''
+            cursor.execute(student_sql, student_ids)
+        else:
+            # 班主任只能查询自己班级的学生
+            student_sql = f'''
+                SELECT * FROM students 
+                WHERE id IN ({placeholders}) AND class_id = ?
+            '''
+            params = student_ids + [current_user.class_id]
+            cursor.execute(student_sql, params)
+        
         students = [dict(row) for row in cursor.fetchall()]
         
-        logger.info(f"找到 {len(students)} 名学生的数据")
+        # 记录实际查询到的学生数量，并检查是否与请求的学生数量一致
+        logger.info(f"找到 {len(students)} 名学生的数据 (请求了 {len(student_ids)} 名学生)")
+        if len(students) < len(student_ids) and not current_user.is_admin:
+            logger.warning(f"有 {len(student_ids) - len(students)} 名学生不属于当前班主任的班级")
+        
         if not students:
-            return jsonify({'status': 'error', 'message': '未找到任何学生数据'})
+            return jsonify({'status': 'error', 'message': '未找到任何学生数据，或没有符合查询条件的学生'})
             
+        # 更新student_ids，只包含当前查询到的学生
+        student_ids = [s['id'] for s in students]
+        
         # 查询学生评语
         comments_dict = {}
         for student_id in student_ids:
-            cursor.execute('SELECT id, name, comments FROM students WHERE id = ?', (student_id,))
+            # 对非管理员用户，确保只查询本班级学生
+            if not current_user.is_admin:
+                cursor.execute('SELECT id, name, comments FROM students WHERE id = ? AND class_id = ?', 
+                             (student_id, current_user.class_id))
+            else:
+                cursor.execute('SELECT id, name, comments FROM students WHERE id = ?', (student_id,))
+                
             student = cursor.fetchone()
             if student and student['comments']:
                 comments_dict[student_id] = {
@@ -1091,11 +1116,20 @@ def api_export_reports():
         grades_dict = {}
         for student_id in student_ids:
             try:
-                cursor.execute('''
-                    SELECT daof, yuwen, shuxue, yingyu, laodong, tiyu, yinyue, 
-                           meishu, kexue, zonghe, xinxi, shufa
-                    FROM students WHERE id = ?
-                ''', (student_id,))
+                # 对非管理员用户，确保只查询本班级学生
+                if not current_user.is_admin:
+                    cursor.execute('''
+                        SELECT daof, yuwen, shuxue, yingyu, laodong, tiyu, yinyue, 
+                               meishu, kexue, zonghe, xinxi, shufa
+                        FROM students WHERE id = ? AND class_id = ?
+                    ''', (student_id, current_user.class_id))
+                else:
+                    cursor.execute('''
+                        SELECT daof, yuwen, shuxue, yingyu, laodong, tiyu, yinyue, 
+                               meishu, kexue, zonghe, xinxi, shufa
+                        FROM students WHERE id = ?
+                    ''', (student_id,))
+                
                 grade = cursor.fetchone()
                 
                 if grade:
@@ -1127,23 +1161,46 @@ def api_export_reports():
             if not is_valid:
                 logger.error(f"数据验证失败: {error_message}")
                 
+                # 处理问题学生列表，对于班主任只显示本班级的学生
+                filtered_problem_students = []
+                if problem_students:
+                    # 如果是班主任且有班级ID，则过滤问题学生列表
+                    if not current_user.is_admin and current_user.class_id:
+                        for student in problem_students:
+                            # 检查学生是否属于班主任的班级
+                            for s in students:
+                                if s['id'] == student['id'] and s.get('class_id') == current_user.class_id:
+                                    filtered_problem_students.append(student)
+                                    break
+                        logger.info(f"根据班主任班级筛选后的问题学生数量: {len(filtered_problem_students)}/{len(problem_students)}")
+                    else:
+                        # 如果是管理员，保留所有问题学生
+                        filtered_problem_students = problem_students
+                
                 # 构建更详细的错误信息
                 details = ""
-                if problem_students:
+                if filtered_problem_students:
                     details = "\n\n问题学生列表:\n"
-                    for i, student in enumerate(problem_students[:10], 1):  # 限制显示前10个
+                    for i, student in enumerate(filtered_problem_students[:10], 1):  # 限制显示前10个
                         problems_text = ", ".join(student['problems'])
                         details += f"{i}. {student['name']} (学号: {student['id']}): {problems_text}\n"
                     
-                    if len(problem_students) > 10:
-                        details += f"... 以及其他 {len(problem_students) - 10} 名学生"
+                    if len(filtered_problem_students) > 10:
+                        details += f"... 以及其他 {len(filtered_problem_students) - 10} 名学生"
+                
+                # 更新错误消息，显示筛选后的学生数量
+                if not current_user.is_admin and current_user.class_id:
+                    if filtered_problem_students:
+                        error_message = f"发现 {len(filtered_problem_students)} 名本班学生的数据不完整，无法导出报告。"
+                    else:
+                        error_message = "本班学生数据已完整，但其他班级存在数据问题，系统无法导出报告。"
                 
                 return jsonify({
                     'status': 'error', 
                     'message': error_message,
                     'details': details,
                     'validation_failed': True,
-                    'problem_students': [s['id'] for s in problem_students]
+                    'problem_students': [s['id'] for s in filtered_problem_students]
                 })
             
             logger.info("数据验证通过，继续导出报告...")

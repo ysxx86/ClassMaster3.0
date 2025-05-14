@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', function() {
             downloadTemplate();
         });
     }
-    
+        
     // 绑定清除学生名单确认按钮事件
     const confirmClearStudents = document.getElementById('confirmClearStudents');
     if (confirmClearStudents) {
@@ -1199,10 +1199,10 @@ function uploadFileForPreview(file) {
         
         // 不管HTTP状态如何，都尝试解析JSON
         return response.json().then(data => {
-            if (!response.ok) {
+        if (!response.ok) {
                 // 有些错误（如班级不匹配）服务器会以400+状态码返回，但会包含详细错误信息
                 throw new Error(data.error || `服务器响应错误: ${response.status}`);
-            }
+        }
             return data;
         });
     })
@@ -1284,7 +1284,7 @@ function uploadFileForPreview(file) {
                 `;
                 previewContainer.appendChild(ruleElement);
             }
-        }
+        } 
         else {
             previewContainer.innerHTML = `
                 <div class="alert alert-warning">
@@ -1442,7 +1442,7 @@ function showLegacyPreview(previewContainer, data) {
         <div class="alert alert-info">
             <i class='bx bx-info-circle'></i> 共发现 ${students.length} 名学生数据，点击"确认导入"按钮完成导入。
         </div>
-        `;
+    `;
     }
     
     previewContainer.innerHTML = tableHtml;
