@@ -786,6 +786,26 @@ function renderSubjectTabs(subjects, stats) {
                                 </div>
                             </div>
                         </div>
+                        <div class="row mt-3">
+                            <div class="col-md-4">
+                                <div class="stats-card">
+                                    <div class="stats-label">应考人数</div>
+                                    <div class="stats-value">${subjectStats.on_exam_students || subjectStats.total_students}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="stats-card">
+                                    <div class="stats-label">实考人数</div>
+                                    <div class="stats-value">${subjectStats.actual_exam_students || subjectStats.total_students}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="stats-card">
+                                    <div class="stats-label">请假人数</div>
+                                    <div class="stats-value">${subjectStats.leave_students || 0}</div>
+                                </div>
+                            </div>
+                        </div>
                         <div class="mt-4">
                             <h6>分数段分布</h6>
                             <div class="distribution-bar">
@@ -1123,6 +1143,7 @@ function renderScoresTable(subjects, scores) {
         // 生成表格行
         students.forEach(student => {
             const row = document.createElement('tr');
+            row.setAttribute('data-student-id', student.id);
             
             // 添加学号和姓名
             row.innerHTML = `
@@ -1135,6 +1156,14 @@ function renderScoresTable(subjects, scores) {
                 const score = student.scores[subject];
                 
                 if (score !== undefined) {
+                    // 检查是否为请假状态
+                    const isLeave = score === 0;
+                    
+                    if (isLeave) {
+                        // 显示请假标识
+                        td.innerHTML = `<span class="badge bg-secondary">请假</span>`;
+                        td.className = 'table-secondary';
+                    } else {
                     // 包装成可编辑的形式
                     td.innerHTML = `
                         <span class="score-value" 
@@ -1154,6 +1183,7 @@ function renderScoresTable(subjects, scores) {
                         td.className = 'table-warning';
                     } else {
                         td.className = 'table-danger';
+                        }
                     }
                 } else {
                     td.textContent = '-';
@@ -1482,9 +1512,21 @@ function renderPreview(preview, subjects) {
                         <tr>
                             <td>${student.student_id}</td>
                             <td>${student.student_name}</td>
-                            ${subjects.map(subject => `
-                                <td>${student.scores[subject] !== null ? student.scores[subject] : '-'}</td>
-                            `).join('')}
+                            ${subjects.map(subject => {
+                                const scoreData = student.scores[subject];
+                                if (!scoreData) return '<td>-</td>';
+                                
+                                const score = scoreData.score;
+                                const isLeave = scoreData.leave_status;
+                                
+                                if (isLeave) {
+                                    return '<td><span class="badge bg-secondary">请假</span></td>';
+                                } else if (score !== null) {
+                                    return `<td>${score}</td>`;
+                                } else {
+                                    return '<td>-</td>';
+                                }
+                            }).join('')}
                         </tr>
                     `).join('')}
                 </tbody>
@@ -1611,9 +1653,21 @@ function renderUploadPreview(preview, subjects) {
                         <tr>
                             <td>${student.student_id}</td>
                             <td>${student.student_name}</td>
-                            ${subjects.map(subject => `
-                                <td>${student.scores[subject] !== null ? student.scores[subject] : '-'}</td>
-                            `).join('')}
+                            ${subjects.map(subject => {
+                                const scoreData = student.scores[subject];
+                                if (!scoreData) return '<td>-</td>';
+                                
+                                const score = scoreData.score;
+                                const isLeave = scoreData.leave_status;
+                                
+                                if (isLeave) {
+                                    return '<td><span class="badge bg-secondary">请假</span></td>';
+                                } else if (score !== null) {
+                                    return `<td>${score}</td>`;
+                                } else {
+                                    return '<td>-</td>';
+                                }
+                            }).join('')}
                         </tr>
                     `).join('')}
                 </tbody>
@@ -1828,9 +1882,10 @@ function updateExam() {
  * @param {string} studentId 学生ID
  * @param {string} subject 学科
  * @param {number} score 分数
+ * @param {number} leaveStatus 请假状态，0表示正常，1表示请假
  * @returns {Promise<boolean>} 是否更新成功
  */
-function updateScore(examId, studentId, subject, score) {
+function updateScore(examId, studentId, subject, score, leaveStatus = 0) {
     // 显示加载中
     showNotification('info', '正在更新成绩...');
     
@@ -1839,7 +1894,8 @@ function updateScore(examId, studentId, subject, score) {
         exam_id: examId,
         student_id: studentId,
         subject: subject,
-        score: score
+        score: score,
+        leave_status: leaveStatus
     };
     
     // 发送请求
@@ -1960,7 +2016,7 @@ function openEditScoresModal(studentId, studentName, subjects, scores) {
         document.body.appendChild(modal);
     }
     
-    // 显示学生信息
+    // 显示学生基本信息
     document.getElementById('editScoresStudentName').value = `${studentName} (${studentId})`;
     document.getElementById('editScoresStudentId').value = studentId;
     
@@ -1970,18 +2026,50 @@ function openEditScoresModal(studentId, studentName, subjects, scores) {
     
     subjects.forEach((subject, index) => {
         const score = scores[subject] !== undefined ? scores[subject] : '';
+        const isLeave = score === 0;  // 判断是否为请假状态
         
         const col = document.createElement('div');
         col.className = 'col-md-4 mb-3';
         col.innerHTML = `
             <label class="form-label">${subject}</label>
+            <div class="input-group">
             <input type="number" class="form-control edit-score-input" 
                    data-subject="${subject}" 
-                   value="${score}" 
-                   min="0" max="100" step="0.5">
+                       value="${isLeave ? '' : score}" 
+                       min="0" max="100" step="0.5"
+                       ${isLeave ? 'disabled' : ''}>
+                <div class="input-group-text">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input leave-checkbox" type="checkbox" 
+                               data-subject="${subject}" 
+                               id="leaveCheckbox-${subject.replace(/[^a-zA-Z0-9]/g, '')}"
+                               ${isLeave ? 'checked' : ''}>
+                        <label class="form-check-label" for="leaveCheckbox-${subject.replace(/[^a-zA-Z0-9]/g, '')}">
+                            请假
+                        </label>
+                    </div>
+                </div>
+            </div>
         `;
         
         container.appendChild(col);
+    });
+    
+    // 添加请假勾选的事件处理
+    document.querySelectorAll('.leave-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const subject = this.getAttribute('data-subject');
+            const scoreInput = container.querySelector(`.edit-score-input[data-subject="${subject}"]`);
+            
+            if (this.checked) {
+                // 请假状态
+                scoreInput.disabled = true;
+                scoreInput.value = '';  // 清空分数
+            } else {
+                // 非请假状态
+                scoreInput.disabled = false;
+            }
+        });
     });
     
     // 保存按钮事件
@@ -1999,19 +2087,37 @@ function openEditScoresModal(studentId, studentName, subjects, scores) {
  * @param {string} studentId 学生ID
  */
 function saveEditedScores(studentId) {
-    // 收集所有成绩输入
+    // 收集所有成绩输入和请假状态
     const scoreInputs = document.querySelectorAll('.edit-score-input');
+    const leaveCheckboxes = document.querySelectorAll('.leave-checkbox');
     const scoreUpdates = [];
     
     // 验证并收集成绩数据
     let hasErrors = false;
-    scoreInputs.forEach(input => {
+    
+    // 遍历所有学科
+    for (let i = 0; i < scoreInputs.length; i++) {
+        const input = scoreInputs[i];
         const subject = input.getAttribute('data-subject');
+        
+        // 获取对应的请假复选框
+        const leaveCheckbox = document.querySelector(`.leave-checkbox[data-subject="${subject}"]`);
+        const isLeave = leaveCheckbox && leaveCheckbox.checked;
+        
+        if (isLeave) {
+            // 请假状态，分数设为0
+            scoreUpdates.push({
+                subject: subject,
+                score: 0,
+                leave_status: 1
+            });
+        } else {
+            // 非请假状态，检查分数是否有效
         const scoreValue = input.value.trim();
         
         if (scoreValue === '') {
             // 空值跳过
-            return;
+                continue;
         }
         
         const score = parseFloat(scoreValue);
@@ -2020,15 +2126,17 @@ function saveEditedScores(studentId) {
         if (isNaN(score) || score < 0 || score > 100) {
             showNotification('error', `${subject} 的分数必须在0-100之间`);
             hasErrors = true;
-            return;
+                continue;
         }
         
         // 添加到更新列表
         scoreUpdates.push({
             subject: subject,
-            score: score
+                score: score,
+                leave_status: 0
         });
-    });
+        }
+    }
     
     // 如果有错误，不继续
     if (hasErrors) {
@@ -2046,7 +2154,7 @@ function saveEditedScores(studentId) {
     
     // 批量更新成绩
     const requests = scoreUpdates.map(update => {
-        return updateScore(currentExam.id, studentId, update.subject, update.score);
+        return updateScore(currentExam.id, studentId, update.subject, update.score, update.leave_status);
     });
     
     // 等待所有请求完成
@@ -2845,11 +2953,11 @@ function calculateStudentChanges(students, exams, subject) {
             // 分数变化
             const firstScore = validScores[0];
             const lastScore = validScores[validScores.length - 1];
-            enhancedStudent.scoreChange = lastScore - firstScore;
+            enhancedStudent.scoreChange = firstScore - lastScore;
             
             // 变化率
-            if (firstScore > 0) {
-                enhancedStudent.changeRate = (enhancedStudent.scoreChange / firstScore * 100).toFixed(1);
+            if (lastScore > 0) { // 使用最后一个分数作为基准
+                enhancedStudent.changeRate = (enhancedStudent.scoreChange / lastScore * 100).toFixed(1);
             }
             
             // 最大分差
@@ -2886,12 +2994,34 @@ function renderStudentComparisonTable(data) {
         return;
     }
     
+    // 更新页面标题，显示比较关系
+    if (data.exams.length >= 2) {
+        const newestExamName = data.exams[0].name;
+        const previousExamName = data.exams[1].name;
+        const newestExamDate = new Date(data.exams[0].date).toLocaleDateString('zh-CN');
+        const previousExamDate = new Date(data.exams[1].date).toLocaleDateString('zh-CN');
+        const titleText = `学生个人成绩对比 (${newestExamName}[${newestExamDate}] 相对于 ${previousExamName}[${previousExamDate}])`;
+        
+        // 更新页面标题
+        const titleElement = document.getElementById('compareTitle');
+        if (titleElement) {
+            titleElement.textContent = titleText;
+        }
+    }
+    
     // 生成表头
     let headerRow = '<tr><th>学号</th><th>姓名</th>';
     
-    // 添加考试名称列
-    data.exams.forEach(exam => {
-        headerRow += `<th>${exam.name}</th>`;
+    // 添加考试名称列（已按时间降序排序，最新的在前）
+    data.exams.forEach((exam, index) => {
+        // 格式化日期为 YYYY-MM-DD
+        const examDate = new Date(exam.date).toLocaleDateString('zh-CN');
+        // 显示考试名称和日期，为最新考试添加标记
+        let headerClass = '';
+        if (index === 0) {
+            headerClass = 'text-primary fw-bold';  // 最新考试加粗显示
+        }
+        headerRow += `<th class="${headerClass}">${exam.name}<br><small>(${examDate})${index === 0 ? ' 最新' : ''}</small></th>`;
     });
     
     // 添加分差列，如果有两次以上考试
@@ -3066,7 +3196,7 @@ function renderStudentComparisonTable(data) {
 /**
  * 生成增强的学生成绩行
  * @param {Object} student 增强后的学生数据
- * @param {Array} exams 考试数组
+ * @param {Array} exams 考试数组（已按时间降序排序，最新的在前）
  * @param {string} subject 学科
  * @param {string} rowClass 行样式类
  * @returns {string} 表格行HTML
@@ -3086,7 +3216,7 @@ function generateEnhancedStudentRow(student, exams, subject, rowClass = '') {
         </a>
     </td>`;
     
-    // 添加每次考试的成绩和排名
+    // 添加每次考试的成绩和排名（已按时间降序排序，首个为最新考试）
     student.scores.forEach((score, index) => {
         // 为基于索引获取的成绩应用颜色样式
         let cellClass = '';
@@ -3104,10 +3234,16 @@ function generateEnhancedStudentRow(student, exams, subject, rowClass = '') {
             }
         }
         
-        row += `<td${cellClass ? ` class="${cellClass}"` : ''}>${score !== null ? score + rankDisplay : '-'}</td>`;
+        // 为最新考试（第一个）添加加粗样式
+        let cellStyle = '';
+        if (index === 0) {
+            cellStyle = ' style="font-weight: bold;"';
+        }
+        
+        row += `<td${cellClass ? ` class="${cellClass}"` : ''}${cellStyle}>${score !== null ? score + rankDisplay : '-'}</td>`;
     });
     
-    // 添加最大分差和变化指标
+    // 添加最大分差和变化指标（基于最新和前一次考试的比较）
     if (exams.length >= 2) {
         // 获取有效分数
         const validScores = student.scores.filter(score => score !== null);
@@ -3458,9 +3594,9 @@ function calculateScoreTrend(examScores, exams) {
     });
     
     // 计算最后一次和第一次的差值
-    const firstAverage = examAverages[0];
-    const lastAverage = examAverages[examAverages.length - 1];
-    const difference = lastAverage - firstAverage;
+    const firstAverage = examAverages[examAverages.length - 1]; // 修改：使用最新一次考试（数组末尾）
+    const lastAverage = examAverages[0]; // 修改：使用最早一次考试（数组开头）
+    const difference = firstAverage - lastAverage; // 修改：最新考试减去最早考试
     
     let trend, text;
     if (difference > 5) {
