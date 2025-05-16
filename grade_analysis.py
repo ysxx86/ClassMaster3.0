@@ -68,7 +68,8 @@ def init_grade_analysis(app):
         student_name TEXT NOT NULL,
         class_id INTEGER NOT NULL,
         subject TEXT NOT NULL,
-        score REAL NOT NULL,
+        score REAL,
+        leave_status INTEGER DEFAULT 0,
         created_at TEXT NOT NULL,
         updated_at TEXT NOT NULL,
         FOREIGN KEY (exam_id) REFERENCES exams(id) ON DELETE CASCADE,
@@ -278,6 +279,7 @@ def get_exam_detail(exam_id):
             # 提取分数列表 - 确保每个学生只计算一次
             subject_student_ids = set()
             valid_scores = []
+            leave_students = 0  # 请假学生数
             
             for score in subject_scores:
                 student_id = score['student_id']
@@ -287,18 +289,23 @@ def get_exam_detail(exam_id):
                 subject_student_ids.add(student_id)
                 score_value = score['score']
                 
-                # 验证分数是否有效
-                if 0 <= score_value <= 100:
+                # 检查是否为请假学生（成绩为0）
+                if score_value == 0:
+                    leave_students += 1
+                # 检查其他有效分数
+                elif 0 < score_value <= 100:
                     valid_scores.append(score_value)
                 else:
                     logger.warning(f"⚠️ 发现无效分数: 科目 {subject}, 学生 {score['student_name']}(ID:{student_id}), 分数: {score_value}")
             
-            # 获取该科目的学生总数 (去重后)
-            total_students = len(valid_scores)
-            logger.info(f"科目 {subject} 的有效成绩总数: {total_students}")
+            # 计算各类人数
+            on_exam_students = len(subject_student_ids)  # 应考人数
+            actual_exam_students = on_exam_students - leave_students  # 实考人数
+            
+            logger.info(f"科目 {subject} 的应考人数: {on_exam_students}, 实考人数: {actual_exam_students}, 请假人数: {leave_students}")
             
             # 检查有效学生人数
-            if total_students == 0:
+            if actual_exam_students == 0:
                 logger.warning(f"⚠️ 科目 {subject} 没有有效成绩！")
                 # 设置默认统计数据
                 stats[subject] = {
@@ -310,6 +317,9 @@ def get_exam_detail(exam_id):
                     'excellent_threshold': 90,
                     'score_distribution': {'0-59': 0, '60-69': 0, '70-79': 0, '80-89': 0, '90-100': 0},
                     'total_students': 0,
+                    'on_exam_students': on_exam_students,
+                    'actual_exam_students': actual_exam_students,
+                    'leave_students': leave_students,
                     'class_student_count': class_student_count
                 }
                 continue
@@ -326,15 +336,7 @@ def get_exam_detail(exam_id):
             elif "五年级" in class_name or "六年级" in class_name:
                 excellent_threshold = 80
             
-            # 计算各分数段人数 - 确保不会超过班级总人数
-            below_60 = min(sum(1 for s in valid_scores if s < 60), class_student_count)
-            from_60_to_69 = min(sum(1 for s in valid_scores if 60 <= s < 70), class_student_count)
-            from_70_to_79 = min(sum(1 for s in valid_scores if 70 <= s < 80), class_student_count)
-            from_80_to_89 = min(sum(1 for s in valid_scores if 80 <= s < 90), class_student_count)
-            from_90_to_100 = min(sum(1 for s in valid_scores if s >= 90), class_student_count)
-            
-            # 记录详细的分段信息用于调试
-            # 计算各分数段人数
+            # 计算各分数段人数 - 基于实考人数(不包括请假学生)
             below_60 = sum(1 for s in valid_scores if s < 60)
             from_60_to_69 = sum(1 for s in valid_scores if 60 <= s < 70)
             from_70_to_79 = sum(1 for s in valid_scores if 70 <= s < 80)
@@ -342,21 +344,21 @@ def get_exam_detail(exam_id):
             from_90_to_100 = sum(1 for s in valid_scores if s >= 90)
             
             # 记录详细的分段信息用于调试
-            logger.info(f"科目: {subject}, 总人数: {total_students}")
+            logger.info(f"科目: {subject}, 实考人数: {actual_exam_students}, 请假人数: {leave_students}")
             logger.info(f"  0-59分: {below_60}人")
             logger.info(f"  60-69分: {from_60_to_69}人")
             logger.info(f"  70-79分: {from_70_to_79}人")
             logger.info(f"  80-89分: {from_80_to_89}人")
             logger.info(f"  90-100分: {from_90_to_100}人")
             
-            # 验证总和是否等于学生总数
+            # 验证总和是否等于实考学生总数
             total_count = below_60 + from_60_to_69 + from_70_to_79 + from_80_to_89 + from_90_to_100
-            if total_count != total_students:
-                logger.error(f"❌ 分数段统计总人数({total_count})与有效成绩总数({total_students})不匹配！科目: {subject}")
+            if total_count != actual_exam_students:
+                logger.error(f"❌ 分数段统计总人数({total_count})与实考学生总数({actual_exam_students})不匹配！科目: {subject}")
             
-            # 计算及格率和优秀率
+            # 基于实考人数计算及格率和优秀率
             pass_count = from_60_to_69 + from_70_to_79 + from_80_to_89 + from_90_to_100
-            pass_rate = round(pass_count / total_students * 100, 2) if total_students > 0 else 0
+            pass_rate = round(pass_count / actual_exam_students * 100, 2) if actual_exam_students > 0 else 0
             
             # 根据不同年级的优秀标准计算优秀人数
             excellent_count = 0
@@ -369,16 +371,11 @@ def get_exam_detail(exam_id):
                 # 80分及以上，即全部80-89分段和全部90-100分段
                 excellent_count = from_80_to_89 + from_90_to_100
             
-            excellent_rate = round(excellent_count / total_students * 100, 2) if total_students > 0 else 0
-            
-            # 检查统计数据的合理性
-            if total_students > class_student_count:
-                logger.error(f"❌ 科目 {subject} 的学生人数({total_students})超过了班级总人数({class_student_count})！")
-                # 可能需要做进一步处理，例如限制最大人数
+            excellent_rate = round(excellent_count / actual_exam_students * 100, 2) if actual_exam_students > 0 else 0
             
             # 计算统计数据
             stats[subject] = {
-                'average': round(sum(valid_scores) / total_students, 2) if total_students > 0 else 0,
+                'average': round(sum(valid_scores) / actual_exam_students, 2) if actual_exam_students > 0 else 0,
                 'max': max(valid_scores) if valid_scores else 0,
                 'min': min(valid_scores) if valid_scores else 0,
                 'excellent_rate': excellent_rate,
@@ -391,8 +388,11 @@ def get_exam_detail(exam_id):
                     '80-89': from_80_to_89,
                     '90-100': from_90_to_100
                 },
-                'total_students': total_students,
-                'class_student_count': class_student_count  # 添加班级总人数用于前端展示
+                'total_students': actual_exam_students,  # 为了兼容性，保留此字段但实际是实考人数
+                'on_exam_students': on_exam_students,  # 应考人数
+                'actual_exam_students': actual_exam_students,  # 实考人数
+                'leave_students': leave_students,  # 请假人数
+                'class_student_count': class_student_count  # 班级总人数
             }
         
         return jsonify({
@@ -490,17 +490,36 @@ def upload_scores(exam_id):
             # 为每个学科添加一条记录
             for subject in subjects_list:
                 if pd.notna(row[subject]):  # 检查成绩是否有效
-                    score = float(row[subject])
+                    leave_status = 0  # 默认正常状态
+                    score_value = row[subject]
+                    
+                    # 处理成绩值
+                    try:
+                        # 尝试转换为浮点数
+                        score = float(score_value)
+                        # 如果成绩为0，视为请假
+                        if score == 0:
+                            leave_status = 1
+                    except (ValueError, TypeError):
+                        # 如果无法转换为浮点数，检查是否为"请假"文本
+                        if isinstance(score_value, str) and "请假" in score_value:
+                            score = 0  # 请假学生分数记为0
+                            leave_status = 1
+                        else:
+                            # 跳过无法识别的成绩
+                            logger.warning(f"跳过无法识别的成绩: {score_value}, 学生: {student_name}({student_id}), 学科: {subject}")
+                            continue
+                    
                     rows_to_insert.append((
                         exam_id, student_id, student_name, exam_dict['class_id'],
-                        subject, score, now, now
+                        subject, score, leave_status, now, now
                     ))
         
         # 批量插入成绩
         cursor.executemany('''
         INSERT OR REPLACE INTO exam_scores 
-        (exam_id, student_id, student_name, class_id, subject, score, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        (exam_id, student_id, student_name, class_id, subject, score, leave_status, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', rows_to_insert)
         
         conn.commit()
@@ -569,9 +588,34 @@ def preview_scores():
             
             for subject in subject_columns:
                 if pd.notna(row[subject]):
-                    student_data['scores'][subject] = float(row[subject])
+                    score_value = row[subject]
+                    leave_status = False  # 默认非请假状态
+                    
+                    # 处理成绩值
+                    try:
+                        # 尝试转换为浮点数
+                        score = float(score_value)
+                        # 如果成绩为0，视为请假
+                        if score == 0:
+                            leave_status = True
+                    except (ValueError, TypeError):
+                        # 如果无法转换为浮点数，检查是否为"请假"文本
+                        if isinstance(score_value, str) and "请假" in score_value:
+                            score = 0  # 请假学生分数记为0
+                            leave_status = True
+                        else:
+                            # 无法识别的成绩，设为None
+                            score = None
+                    
+                    student_data['scores'][subject] = {
+                        'score': score,
+                        'leave_status': leave_status
+                    }
                 else:
-                    student_data['scores'][subject] = None
+                    student_data['scores'][subject] = {
+                        'score': None,
+                        'leave_status': False
+                    }
             
             preview_data.append(student_data)
         
@@ -807,6 +851,16 @@ def update_student_score(exam_id):
             if field not in data:
                 return jsonify({'status': 'error', 'message': f'缺少字段: {field}'}), 400
         
+        # 获取数据
+        student_id = data['student_id']
+        subject = data['subject']
+        score = data['score']
+        leave_status = data.get('leave_status', 0)  # 默认为0表示正常
+        
+        # 验证分数是否有效 (请假状态的成绩为0)
+        if leave_status == 0 and (score < 0 or score > 100):
+            return jsonify({'status': 'error', 'message': '分数必须在0-100之间'}), 400
+        
         # 获取考试信息
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -821,50 +875,43 @@ def update_student_score(exam_id):
         if not current_user.is_admin and current_user.class_id != exam['class_id']:
             return jsonify({'status': 'error', 'message': '您无权修改此考试成绩'}), 403
         
-        # 验证学科是否属于考试
-        subjects = json.loads(exam['subjects'])
-        if data['subject'] not in subjects:
-            return jsonify({'status': 'error', 'message': f'学科 {data["subject"]} 不属于此次考试'}), 400
-        
-        # 验证学生是否存在且属于该班级
-        cursor.execute("SELECT * FROM students WHERE id = ? AND class_id = ?", 
-                      (data['student_id'], exam['class_id']))
+        # 检查学生是否属于该班级
+        cursor.execute("SELECT id FROM students WHERE id = ? AND class_id = ?", 
+                       (student_id, exam['class_id']))
         student = cursor.fetchone()
         
         if not student:
-            return jsonify({'status': 'error', 'message': '学生不存在或不属于该班级'}), 400
+            return jsonify({'status': 'error', 'message': '学生不属于此考试班级'}), 400
         
-        # 验证分数范围
-        score = float(data['score'])
-        if score < 0 or score > 100:
-            return jsonify({'status': 'error', 'message': '分数必须在0-100之间'}), 400
+        # 获取学生姓名
+        cursor.execute("SELECT name FROM students WHERE id = ?", (student_id,))
+        student_name = cursor.fetchone()['name']
         
-        # 准备更新数据
+        # 更新成绩
         now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         
-        # 检查成绩记录是否已存在
+        # 检查成绩记录是否存在
         cursor.execute('''
         SELECT * FROM exam_scores 
         WHERE exam_id = ? AND student_id = ? AND subject = ?
-        ''', (exam_id, data['student_id'], data['subject']))
+        ''', (exam_id, student_id, subject))
         
-        existing_score = cursor.fetchone()
+        score_record = cursor.fetchone()
         
-        if existing_score:
-            # 更新现有成绩
+        if score_record:
+            # 更新现有记录
             cursor.execute('''
             UPDATE exam_scores 
-            SET score = ?, updated_at = ?
+            SET score = ?, leave_status = ?, updated_at = ? 
             WHERE exam_id = ? AND student_id = ? AND subject = ?
-            ''', (score, now, exam_id, data['student_id'], data['subject']))
+            ''', (score, leave_status, now, exam_id, student_id, subject))
         else:
-            # 插入新成绩
+            # 插入新记录
             cursor.execute('''
             INSERT INTO exam_scores 
-            (exam_id, student_id, student_name, class_id, subject, score, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (exam_id, data['student_id'], student['name'], exam['class_id'], 
-                 data['subject'], score, now, now))
+            (exam_id, student_id, student_name, class_id, subject, score, leave_status, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (exam_id, student_id, student_name, exam['class_id'], subject, score, leave_status, now, now))
         
         conn.commit()
         
