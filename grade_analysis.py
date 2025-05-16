@@ -1084,9 +1084,20 @@ def get_exams_for_comparison():
                         'score': score_value
                     }
                     
-                    # 验证分数是否有效
-                    if 0 <= score_value <= 100:
-                        valid_scores.append(score_value)
+                    # 验证分数是否有效 - 修复类型比较问题
+                    try:
+                        # 检查是否为请假状态 - 请假状态的分数为0且leave_status为1
+                        if score.get('leave_status', 0) == 1 or score_value == 0:
+                            # 请假学生不计入有效分数统计
+                            continue
+                        
+                        # 确保分数是数字且在有效范围内
+                        if isinstance(score_value, (int, float)) and 0 < score_value <= 100:
+                            valid_scores.append(score_value)
+                    except TypeError:
+                        # 如果比较出现类型错误，记录日志并继续
+                        logger.warning(f"分数类型错误: {score_value}, 类型: {type(score_value)}")
+                        continue
                 
                 # 添加学生成绩到结果中
                 for student_id, score_info in student_scores.items():
