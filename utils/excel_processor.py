@@ -286,33 +286,258 @@ class ExcelProcessor:
         
         return html
 
+class CommentsExcelProcessor:
+    """评语Excel数据处理类，专门用于处理学生评语导入"""
+    
+    def __init__(self):
+        # 定义必需的列
+        self.required_columns = ['姓名', '评语']
+        
+    def process_file(self, file_path, class_id=None):
+        """处理评语Excel文件，返回标准化的评语数据"""
+        logger.info(f"开始处理评语Excel文件: {file_path}, 班级ID: {class_id}")
+        
+        if not os.path.exists(file_path):
+            logger.error(f"文件不存在: {file_path}")
+            return {'error': '文件不存在'}
+        
+        try:
+            # 读取Excel文件
+            df = pd.read_excel(file_path)
+            logger.info(f"成功读取评语Excel文件，包含 {len(df)} 行数据")
+            logger.info(f"Excel列: {list(df.columns)}")
+            
+            # 验证必要列是否存在
+            missing_columns = [col for col in self.required_columns if col not in df.columns]
+            if missing_columns:
+                logger.error(f"Excel缺少必要列: {missing_columns}")
+                return {'error': f'Excel文件缺少必要的列: {", ".join(missing_columns)}，请使用标准模板'}
+            
+            # 预处理DataFrame
+            df = self._preprocess_dataframe(df)
+            
+            # 转换为评语数据列表
+            comments_data = self._convert_to_comments(df)
+            
+            # 生成HTML预览代码
+            html_preview = self._generate_html_preview(comments_data)
+            
+            logger.info(f"评语Excel处理完成，共 {len(comments_data)} 条评语记录")
+            
+            return {
+                'status': 'ok',
+                'message': f'成功解析出{len(comments_data)}条评语记录',
+                'comments': comments_data,
+                'html_preview': html_preview
+            }
+            
+        except Exception as e:
+            logger.exception(f"处理评语Excel文件时出错: {str(e)}")
+            return {'error': f'处理Excel文件时出错: {str(e)}'}
+    
+    def _preprocess_dataframe(self, df):
+        """预处理DataFrame，处理空值和格式化评语内容"""
+        logger.info("开始预处理评语DataFrame")
+        
+        # 确保姓名列为字符串类型
+        if '姓名' in df.columns:
+            df['姓名'] = df['姓名'].astype(str)
+            # 去除姓名中的空白字符
+            df['姓名'] = df['姓名'].apply(lambda x: x.strip() if isinstance(x, str) else x)
+            # 将'nan'字符串转为空值
+            df['姓名'] = df['姓名'].replace('nan', np.nan)
+            df['姓名'] = df['姓名'].replace('NaN', np.nan)
+            df['姓名'] = df['姓名'].replace('None', np.nan)
+            df['姓名'] = df['姓名'].replace('', np.nan)
+        
+        # 确保评语列为字符串类型
+        if '评语' in df.columns:
+            # 将非字符串类型转换为字符串
+            df['评语'] = df['评语'].astype(str)
+            # 去除评语前后的空白字符
+            df['评语'] = df['评语'].apply(lambda x: x.strip() if isinstance(x, str) else x)
+            # 将'nan'字符串转为空值
+            df['评语'] = df['评语'].replace('nan', np.nan)
+            df['评语'] = df['评语'].replace('NaN', np.nan)
+            df['评语'] = df['评语'].replace('None', np.nan)
+            df['评语'] = df['评语'].replace('', np.nan)
+        
+        # 删除姓名或评语为空的行
+        df = df.dropna(subset=['姓名', '评语'])
+        
+        return df
+    
+    def _convert_to_comments(self, df):
+        """将DataFrame转换为评语数据列表"""
+        logger.info("开始将DataFrame转换为评语数据列表")
+        
+        comments_data = []
+        
+        for i, row in df.iterrows():
+            if pd.isna(row['姓名']) or pd.isna(row['评语']):
+                continue
+                
+            comment = {
+                'name': str(row['姓名']).strip(),
+                'comment': str(row['评语']).strip()
+            }
+            
+            # 检查评语长度，不再自动截断，仅标记是否超过限制
+            if len(comment['comment']) > 260:
+                logger.warning(f"学生[{comment['name']}]的评语超过260字符长度限制: {len(comment['comment'])}字")
+                comment['truncated'] = False  # 不再截断，只是标记
+                comment['valid'] = False  # 标记为无效
+            else:
+                comment['truncated'] = False
+                comment['valid'] = True  # 标记为有效
+            
+            comments_data.append(comment)
+        
+        # 记录第一个评语数据，便于调试
+        if comments_data:
+            logger.info(f"第一个评语数据: {json.dumps(comments_data[0], ensure_ascii=False)}")
+        
+        return comments_data
+    
+    def _generate_html_preview(self, comments_data):
+        """生成HTML预览表格"""
+        logger.info("生成评语数据HTML预览表格")
+        
+        html = """
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th width="5%">#</th>
+                        <th width="15%">姓名</th>
+                        <th width="80%">评语</th>
+                    </tr>
+                </thead>
+                <tbody>
+        """
+        
+        # 添加评语数据行
+        for i, comment in enumerate(comments_data, 1):
+            # 处理评语显示，对超过100字符的评语进行截断显示
+            preview_comment = comment['comment']
+            if len(preview_comment) > 100:
+                preview_comment = preview_comment[:100] + "..."
+            
+            # 对HTML特殊字符进行转义，防止XSS攻击
+            name = comment['name'].replace('<', '&lt;').replace('>', '&gt;')
+            preview_comment = preview_comment.replace('<', '&lt;').replace('>', '&gt;')
+            
+            # 如果评语被截断，添加警告提示
+            truncated_warning = '<span class="text-warning">(已截断)</span>' if comment.get('truncated', False) else ''
+            
+            html += f"""
+                <tr>
+                    <td>{i}</td>
+                    <td>{name}</td>
+                    <td>{preview_comment} {truncated_warning}</td>
+                </tr>
+            """
+        
+        html += """
+                </tbody>
+            </table>
+        </div>
+        <div class="alert alert-info">
+            <i class='bx bx-info-circle'></i> 共发现 """ + str(len(comments_data)) + """ 条评语数据，点击"确认导入"按钮完成导入。
+        </div>
+        """
+        
+        return html
+
+    def match_students_with_comments(self, comments_data, students_dict):
+        """将评语数据与学生信息匹配"""
+        logger.info(f"开始匹配评语数据与学生信息，评语数量: {len(comments_data)}, 学生数量: {len(students_dict)}")
+        
+        matched_comments = []
+        total_count = len(comments_data)
+        match_count = 0
+        valid_count = 0  # 有效评语数量（长度不超过260个字）
+        
+        for comment in comments_data:
+            student_name = comment['name']
+            comment_content = comment['comment']
+            comment_length = len(comment_content)
+            
+            # 检查评语长度是否有效（不超过260个字符）
+            is_valid = comment_length <= 260
+            if is_valid:
+                valid_count += 1
+            
+            preview = {
+                'name': student_name,
+                'comment': comment_content,
+                'matched': False,
+                'length': comment_length,
+                'valid': is_valid,
+                'valid_text': "有效" if is_valid else "无效(超过260字)"
+            }
+            
+            # 检查学生是否存在
+            if student_name in students_dict:
+                preview['matched'] = True
+                preview['student_id'] = students_dict[student_name]['id']
+                match_count += 1
+            
+            matched_comments.append(preview)
+        
+        logger.info(f"评语匹配完成，总计: {total_count}, 成功匹配: {match_count}, 有效评语: {valid_count}")
+        
+        return {
+            'previews': matched_comments,
+            'total_count': total_count,
+            'match_count': match_count,
+            'valid_count': valid_count,
+            'all_valid': valid_count == total_count  # 是否所有评语都有效
+        }
+
 # 用于命令行测试
 if __name__ == "__main__":
     import sys
     
-    if len(sys.argv) != 2:
-        print("用法: python excel_processor.py <excel_file_path>")
+    if len(sys.argv) < 2:
+        print("用法: python excel_processor.py <excel_file_path> [comments]")
         sys.exit(1)
     
     file_path = sys.argv[1]
-    processor = ExcelProcessor()
+    
+    # 判断是否处理评语数据
+    if len(sys.argv) > 2 and sys.argv[2] == "comments":
+        processor = CommentsExcelProcessor()
+    else:
+        processor = ExcelProcessor()
+        
     result = processor.process_file(file_path)
     
     if 'error' in result:
         print(f"错误: {result['error']}")
     else:
-        print(f"成功解析 {len(result['students'])} 条学生记录")
-        
-        # 输出前两条记录作为示例
-        if result['students']:
-            print("\n前两条学生记录:")
-            for i, student in enumerate(result['students'][:2], 1):
-                print(f"学生 {i}:")
-                for key, value in student.items():
-                    print(f"  {key}: {value}")
+        if 'comments' in result:
+            print(f"成功解析 {len(result['comments'])} 条评语记录")
+            # 输出前两条评语记录作为示例
+            if result['comments']:
+                print("\n前两条评语记录:")
+                for i, comment in enumerate(result['comments'][:2], 1):
+                    print(f"评语 {i}:")
+                    for key, value in comment.items():
+                        print(f"  {key}: {value}")
+        else:
+            print(f"成功解析 {len(result['students'])} 条学生记录")
+            # 输出前两条学生记录作为示例
+            if result['students']:
+                print("\n前两条学生记录:")
+                for i, student in enumerate(result['students'][:2], 1):
+                    print(f"学生 {i}:")
+                    for key, value in student.items():
+                        print(f"  {key}: {value}")
         
         # 将结果保存到JSON文件，方便检查
         output_file = f"{file_path}.processed.json"
+        data_to_save = result.get('comments', result.get('students', []))
         with open(output_file, 'w', encoding='utf-8') as f:
-            json.dump(result['students'], f, ensure_ascii=False, indent=2)
+            json.dump(data_to_save, f, ensure_ascii=False, indent=2)
         print(f"\n完整结果已保存到: {output_file}") 

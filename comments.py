@@ -13,6 +13,7 @@ import platform
 import threading
 import time
 import re
+from werkzeug.utils import secure_filename
 
 # 尝试导入pythoncom，如果不可用则跳过
 try:
@@ -1834,3 +1835,636 @@ def update_progress_in_pdf_conversion(docx_file, student_name, current_index, to
     # 调用websocket_progress更新进度
     websocket_progress(progress_message, percent, request_id)
     return progress_message
+
+# 評語导入预览API
+@comments_bp.route('/api/preview-import-comments', methods=['POST'])
+def preview_import_comments():
+    """预览Excel文件中的评语数据，不执行真正的导入"""
+    
+    try:
+        # 检查是否有文件上传
+        if 'file' not in request.files:
+            return jsonify({'status': 'error', 'message': '没有选择文件'}), 400
+        
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({'status': 'error', 'message': '没有选择文件'}), 400
+        
+        # 检查文件类型
+        if not file.filename.lower().endswith('.xlsx'):
+            return jsonify({'status': 'error', 'message': '请上传Excel文件（.xlsx格式），不支持旧版.xls格式'}), 400
+        
+        # 确保uploads目录存在
+        os.makedirs('uploads', exist_ok=True)
+        
+        # 【彻底修复】保存文件逻辑，确保保留.xlsx扩展名
+        filename = secure_filename(file.filename)
+        timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+        # 确保文件名包含扩展名
+        base_name, ext = os.path.splitext(filename)
+        if not ext or ext.lower() != '.xlsx':
+            ext = '.xlsx'  # 强制添加正确的扩展名
+        saved_filename = f"{timestamp}_{base_name}{ext}"
+        upload_path = os.path.join('uploads', saved_filename)
+        
+        logger.info(f"将保存Excel文件为: {upload_path}，原文件名: {filename}")
+        
+        # 保存文件
+        try:
+            file.save(upload_path)
+            logger.info(f"成功保存上传的Excel文件: {upload_path}")
+        except Exception as save_error:
+            logger.error(f"保存上传文件失败: {str(save_error)}")
+            return jsonify({'status': 'error', 'message': f'保存文件失败: {str(save_error)}'}), 500
+        
+        # 使用CommentsExcelProcessor处理Excel文件
+        try:
+            from utils.excel_processor import CommentsExcelProcessor
+            
+            # 获取当前班级ID
+            class_id = current_user.class_id
+            
+            # 创建处理器实例
+            processor = CommentsExcelProcessor()
+            
+            # 处理Excel文件
+            result = processor.process_file(upload_path, class_id)
+            if 'error' in result:
+                # 删除已上传的文件
+                try:
+                    if os.path.exists(upload_path):
+                        os.remove(upload_path)
+                except:
+                    pass
+                
+                return jsonify({'status': 'error', 'message': result['error']}), 400
+            
+            # 获取当前班级学生
+            try:
+                conn = get_db_connection()
+                cursor = conn.cursor()
+                
+                # 查询当前班级所有学生
+                cursor.execute('SELECT id, name FROM students WHERE class_id = ?', (class_id,))
+                students = cursor.fetchall()
+                
+                # 转换为字典，方便查找
+                students_dict = {student['name']: {'id': student['id']} for student in students}
+                conn.close()
+                
+                logger.info(f"从数据库获取学生信息成功，班级ID: {class_id}, 学生数量: {len(students_dict)}")
+            except Exception as db_error:
+                logger.error(f"数据库查询失败: {str(db_error)}")
+                return jsonify({'status': 'error', 'message': f'数据库查询失败: {str(db_error)}'}), 500
+            
+            # 将评语与学生匹配
+            match_result = processor.match_students_with_comments(result['comments'], students_dict)
+            
+            # 返回预览结果
+            return jsonify({
+                'status': 'ok',
+                'file_path': upload_path,
+                'previews': match_result['previews'],
+                'total_count': match_result['total_count'],
+                'match_count': match_result['match_count'],
+                'valid_count': match_result['valid_count'],
+                'all_valid': match_result['all_valid']
+            })
+            
+        except ImportError:
+            logger.error("CommentsExcelProcessor模块不可用")
+            
+            # 回退到原始代码处理Excel文件
+            return process_excel_file_legacy(upload_path, class_id=current_user.class_id)
+            
+    except Exception as e:
+        logger.error(f"预览评语导入时出错: {str(e)}")
+        logger.error(traceback.format_exc())
+        return jsonify({'status': 'error', 'message': f'服务器错误: {str(e)}'}), 500
+
+# 原始Excel处理函数，用作回退
+def process_excel_file_legacy(file_path, class_id=None):
+    """原始Excel文件处理函数，当新处理器不可用时回退使用"""
+    
+    try:
+        import openpyxl
+        
+        # 验证是否确实是一个Excel文件
+        try:
+            wb = openpyxl.load_workbook(file_path)
+            ws = wb.active
+            logger.info(f"成功读取Excel文件，工作表名称: {ws.title}")
+        except Exception as wb_error:
+            # 记录详细的解析错误
+            logger.error(f"无法解析Excel文件: {str(wb_error)}")
+            
+            # 尝试删除已保存的文件
+            try:
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+            except:
+                pass
+            
+            return jsonify({
+                'status': 'error', 
+                'message': f'无法解析Excel文件，请确保是标准的.xlsx格式。错误信息: {str(wb_error)}'
+            }), 400
+    except ImportError:
+        logger.error("openpyxl模块未安装")
+        return jsonify({'status': 'error', 'message': 'openpyxl模块未安装，请联系管理员'}), 500
+    
+    # 检查必要的列是否存在
+    headers = []
+    for cell in ws[1]:
+        if cell.value:
+            headers.append(str(cell.value).strip())
+    
+    if '姓名' not in headers or '评语' not in headers:
+        # 删除已上传的文件
+        try:
+            if os.path.exists(file_path):
+                os.remove(file_path)
+        except:
+            pass
+            
+        return jsonify({
+            'status': 'error', 
+            'message': f'Excel文件格式错误：缺少必要的列"姓名"和"评语"。请下载并使用标准模板。当前表头: {", ".join(headers)}'
+        }), 400
+    
+    logger.info(f"Excel文件校验成功，表头: {headers}")
+    
+    # 获取姓名和评语列的索引
+    name_index = headers.index('姓名')
+    comment_index = headers.index('评语')
+    
+    # 获取当前班级学生
+    try:
+        # 获取班级ID
+        if class_id is None:
+            class_id = current_user.class_id
+        
+        # 获取数据库连接
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # 查询当前班级所有学生
+        cursor.execute('SELECT id, name FROM students WHERE class_id = ?', (class_id,))
+        students = cursor.fetchall()
+        
+        # 转换为字典，方便查找
+        students_dict = {student['name']: student['id'] for student in students}
+        conn.close()
+        
+        logger.info(f"从数据库获取学生信息成功，班级ID: {class_id}, 学生数量: {len(students_dict)}")
+    except Exception as db_error:
+        logger.error(f"数据库查询失败: {str(db_error)}")
+        return jsonify({'status': 'error', 'message': f'数据库查询失败: {str(db_error)}'}), 500
+    
+    # 解析Excel数据
+    previews = []
+    row_index = 0
+    match_count = 0
+    total_count = 0
+    
+    # 获取所有数据行
+    data_rows = list(ws.iter_rows(min_row=2))  # 跳过表头
+    
+    # 遍历数据行
+    for row in data_rows:
+        row_index += 1
+        if row_index > 30:  # 限制预览行数为30行
+            break
+            
+        # 获取姓名和评语，确保name_index和comment_index在有效范围内
+        name = row[name_index].value if name_index < len(row) and row[name_index].value else ""
+        comment = row[comment_index].value if comment_index < len(row) and row[comment_index].value else ""
+        
+        # 确保名称为字符串类型
+        if name is not None and not isinstance(name, str):
+            name = str(name)
+            
+        # 确保评语为字符串类型
+        if comment is not None and not isinstance(comment, str):
+            comment = str(comment)
+        
+        if not name or not comment:
+            continue
+        
+        total_count += 1
+        # 检查是否匹配到学生
+        matched = name in students_dict
+        if matched:
+            match_count += 1
+            
+        # 添加到预览数据
+        previews.append({
+            'name': name,
+            'comment': comment if len(comment) <= 260 else comment[:260] + '...(已截断)',
+            'matched': matched
+        })
+    
+    # 统计Excel中的总行数（不包括表头）
+    valid_rows_count = 0
+    for row in data_rows:
+        name = row[name_index].value if name_index < len(row) else None
+        comment = row[comment_index].value if comment_index < len(row) else None
+        if name and comment:
+            valid_rows_count += 1
+    
+    logger.info(f"Excel文件解析完成，总行数: {valid_rows_count}，匹配学生数: {match_count}")
+            
+    return jsonify({
+        'status': 'ok',
+        'file_path': file_path,
+        'previews': previews,
+        'total_count': valid_rows_count,
+        'match_count': match_count
+    })
+
+# 确认导入评语API
+@comments_bp.route('/api/confirm-import-comments', methods=['POST'])
+def confirm_import_comments():
+    """确认导入评语数据"""
+    
+    try:
+        data = request.get_json()
+        
+        # 验证请求数据
+        if not data or 'file_path' not in data:
+            logger.error("确认导入请求缺少file_path参数")
+            return jsonify({'status': 'error', 'message': '缺少必要的参数'}), 400
+        
+        file_path = data['file_path']
+        append_mode = data.get('append_mode', False)  # 默认使用替换模式
+        
+        # 详细记录请求信息，帮助调试
+        logger.info(f"确认导入请求: 文件路径={file_path}, 追加模式={append_mode}")
+        
+        # 检查文件是否存在
+        if not os.path.exists(file_path):
+            logger.error(f"导入文件不存在: {file_path}")
+            return jsonify({'status': 'error', 'message': '找不到上传的文件，可能已被删除或过期'}), 400
+        
+        # 检查文件扩展名，如果缺少，则添加临时副本
+        base_name, ext = os.path.splitext(file_path)
+        temp_file_path = file_path
+        
+        if not ext or ext.lower() != '.xlsx':
+            # 创建带扩展名的临时文件
+            temp_file_path = f"{file_path}.xlsx"
+            try:
+                import shutil
+                shutil.copy2(file_path, temp_file_path)
+                logger.info(f"为确保文件格式识别，创建了带扩展名的临时文件副本: {temp_file_path}")
+            except Exception as copy_error:
+                logger.warning(f"创建临时文件副本失败: {str(copy_error)}，将继续尝试使用原文件")
+                temp_file_path = file_path  # 回退到原始文件
+
+        # 尝试验证Excel文件
+        try:
+            import openpyxl
+            
+            logger.info(f"尝试打开文件验证Excel格式: {temp_file_path}")
+            wb = openpyxl.load_workbook(temp_file_path)
+            ws = wb.active
+            logger.info(f"成功验证Excel文件: {temp_file_path}, 工作表: {ws.title}")
+        except Exception as excel_error:
+            logger.error(f"文件不是有效的Excel文件: {temp_file_path}, 错误: {str(excel_error)}")
+            
+            # 清理临时文件
+            if temp_file_path != file_path and os.path.exists(temp_file_path):
+                try:
+                    os.remove(temp_file_path)
+                    logger.info(f"已删除临时文件: {temp_file_path}")
+                except:
+                    pass
+                    
+            return jsonify({'status': 'error', 'message': f'无法解析Excel文件: {str(excel_error)}'}), 400
+
+        # 获取当前班级ID
+        class_id = current_user.class_id
+        
+        # 使用CommentsExcelProcessor处理Excel文件
+        try:
+            from utils.excel_processor import CommentsExcelProcessor
+            
+            # 创建处理器实例
+            processor = CommentsExcelProcessor()
+            
+            # 处理Excel文件 - 使用带扩展名的临时文件
+            result = processor.process_file(temp_file_path, class_id)
+            
+            if 'error' in result:
+                logger.error(f"处理Excel文件失败: {result['error']}")
+                
+                # 清理临时文件
+                if temp_file_path != file_path and os.path.exists(temp_file_path):
+                    try:
+                        os.remove(temp_file_path)
+                    except:
+                        pass
+                        
+                return jsonify({'status': 'error', 'message': result['error']}), 400
+                
+            # 获取当前班级学生
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            
+            # 查询当前班级所有学生
+            cursor.execute('SELECT id, name, comments FROM students WHERE class_id = ?', (class_id,))
+            students = cursor.fetchall()
+            
+            # 转换为字典，方便查找
+            students_dict = {student['name']: {
+                'id': student['id'],
+                'comments': student['comments']
+            } for student in students}
+            
+            logger.info(f"从数据库获取学生: {len(students_dict)}名")
+            
+            # 匹配评语和学生
+            logger.info(f"匹配评语和学生...")
+            match_result = processor.match_students_with_comments(result['comments'], students_dict)
+            previews = match_result['previews']
+            logger.info(f"评语匹配结果: 总数={match_result['total_count']}, 匹配={match_result['match_count']}, 有效评语={match_result['valid_count']}")
+            
+            # 执行导入
+            success_count = 0
+            error_count = 0
+            error_details = []
+            skipped_count = 0
+            now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            
+            # 开始事务
+            conn.execute('BEGIN TRANSACTION')
+            
+            for preview in previews:
+                # 只导入匹配的且有效的评语（不超过260字）
+                if preview['matched'] and preview['valid']:
+                    student_name = preview['name']
+                    student_id = students_dict[student_name]['id']
+                    comment = preview['comment']
+                    existing_comment = students_dict[student_name]['comments']
+                    
+                    # 根据模式更新评语
+                    if append_mode and existing_comment:
+                        # 追加模式
+                        updated_comment = f"{existing_comment}\n\n--- {now} ---\n{comment}"
+                    else:
+                        # 替换模式
+                        updated_comment = comment
+                    
+                    try:
+                        # 更新学生评语
+                        cursor.execute(
+                            'UPDATE students SET comments = ?, updated_at = ? WHERE id = ? AND class_id = ?',
+                            (updated_comment, now, student_id, class_id)
+                        )
+                        success_count += 1
+                    except Exception as update_error:
+                        error_count += 1
+                        error_detail = f"更新学生 {student_name} 的评语失败: {str(update_error)}"
+                        error_details.append(error_detail)
+                        logger.error(f"更新学生评语时出错: {error_detail}")
+                else:
+                    skipped_count += 1
+                    # 记录跳过原因 
+                    if not preview['matched']:
+                        logger.info(f"跳过未匹配学生的评语: {preview['name']}")
+                    elif not preview['valid']:
+                        logger.info(f"跳过无效评语: {preview['name']}, 长度: {preview['length']}字")
+            
+            # 提交事务
+            conn.commit()
+            conn.close()
+            
+            # 清理临时和原始文件
+            try:
+                # 先删除临时文件（如果创建了的话）
+                if temp_file_path != file_path and os.path.exists(temp_file_path):
+                    os.remove(temp_file_path)
+                    logger.info(f"已删除临时文件: {temp_file_path}")
+                    
+                # 再删除原始文件
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+                    logger.info(f"已删除原始上传文件: {file_path}")
+            except Exception as file_error:
+                logger.warning(f"删除文件失败: {str(file_error)}")
+            
+            # 根据成功和失败的数量确定状态
+            status = 'ok' if error_count == 0 else 'partial' if success_count > 0 else 'error'
+            
+            logger.info(f"评语导入完成: 成功 {success_count} 条, 失败 {error_count} 条, 跳过 {skipped_count} 条")
+            
+            # 限制错误详情的数量
+            if len(error_details) > 10:
+                error_details = error_details[:10] + [f"...还有 {len(error_details) - 10} 条错误未显示"]
+            
+            return jsonify({
+                'status': status,
+                'success_count': success_count,
+                'error_count': error_count,
+                'skipped_count': skipped_count,
+                'error_details': error_details
+            })
+            
+        except ImportError as import_error:
+            logger.warning(f"CommentsExcelProcessor模块不可用: {str(import_error)}")
+            logger.warning("回退到原始导入逻辑")
+            
+            # 清理临时文件
+            if temp_file_path != file_path and os.path.exists(temp_file_path):
+                try:
+                    os.remove(temp_file_path)
+                except:
+                    pass
+            
+            # 如果CommentsExcelProcessor不可用，使用原始导入逻辑
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            
+            # 查询当前班级所有学生
+            cursor.execute('SELECT id, name, comments FROM students WHERE class_id = ?', (class_id,))
+            students = cursor.fetchall()
+            
+            # 转换为字典，方便查找
+            students_dict = {student['name']: {
+                'id': student['id'],
+                'comments': student['comments']
+            } for student in students}
+            
+            logger.info(f"已获取班级学生信息，共{len(students_dict)}名学生")
+            
+            # 使用openpyxl读取Excel文件
+            try:
+                import openpyxl
+                
+                try:
+                    # 尝试读取临时文件，如果失败则尝试原始文件
+                    try:
+                        wb = openpyxl.load_workbook(temp_file_path)
+                        excel_file_used = temp_file_path
+                    except:
+                        wb = openpyxl.load_workbook(file_path)
+                        excel_file_used = file_path
+                        
+                    ws = wb.active
+                    logger.info(f"导入确认：成功读取Excel文件 {excel_file_used}")
+                except Exception as wb_error:
+                    conn.close()
+                    logger.error(f"导入确认：无法解析Excel文件: {str(wb_error)}")
+                    return jsonify({'status': 'error', 'message': f'无法解析Excel文件: {str(wb_error)}'}), 500
+            except ImportError as ie:
+                conn.close()
+                logger.error(f"导入确认：缺少openpyxl模块: {str(ie)}")
+                return jsonify({'status': 'error', 'message': 'openpyxl模块未安装，请联系管理员'}), 500
+            
+            # 获取表头
+            headers = []
+            for cell in ws[1]:
+                if cell.value:
+                    headers.append(str(cell.value).strip())
+            
+            if '姓名' not in headers or '评语' not in headers:
+                conn.close()
+                logger.error(f"文件格式错误，缺少必要的列，表头: {headers}")
+                return jsonify({'status': 'error', 'message': '文件格式错误，缺少必要的列'}), 400
+            
+            # 获取姓名和评语列的索引
+            name_index = headers.index('姓名')
+            comment_index = headers.index('评语')
+            
+            # 开始导入
+            success_count = 0
+            error_count = 0
+            error_details = []
+            skipped_count = 0
+            now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            
+            # 开始事务
+            conn.execute('BEGIN TRANSACTION')
+            
+            try:
+                # 遍历Excel行
+                data_rows = list(ws.iter_rows(min_row=2))  # 跳过表头
+                logger.info(f"开始处理Excel数据，共{len(data_rows)}行")
+                
+                for row in data_rows:
+                    # 确保索引在有效范围内
+                    if name_index >= len(row) or comment_index >= len(row):
+                        error_count += 1
+                        error_details.append("Excel行数据结构错误，列索引超出范围")
+                        continue
+                    
+                    # 获取姓名和评语
+                    name = row[name_index].value
+                    comment = row[comment_index].value
+                    
+                    # 确保名称为字符串类型
+                    if name is not None and not isinstance(name, str):
+                        name = str(name)
+                    
+                    # 确保评语为字符串类型
+                    if comment is not None and not isinstance(comment, str):
+                        comment = str(comment)
+                    
+                    if not name or not comment:
+                        skipped_count += 1
+                        continue
+                    
+                    # 截断评语（如果超过260字符）
+                    if len(comment) > 260:
+                        comment = comment[:260]
+                    
+                    # 检查是否匹配到学生
+                    if name in students_dict:
+                        student_info = students_dict[name]
+                        student_id = student_info['id']
+                        existing_comment = student_info['comments']
+                        
+                        # 根据模式更新评语
+                        if append_mode and existing_comment:
+                            # 追加模式
+                            updated_comment = f"{existing_comment}\n\n--- {now} ---\n{comment}"
+                        else:
+                            # 替换模式
+                            updated_comment = comment
+                        
+                        try:
+                            # 更新学生评语
+                            cursor.execute(
+                                'UPDATE students SET comments = ?, updated_at = ? WHERE id = ? AND class_id = ?',
+                                (updated_comment, now, student_id, class_id)
+                            )
+                            success_count += 1
+                        except Exception as update_error:
+                            error_count += 1
+                            error_detail = f"更新学生 {name} 的评语失败: {str(update_error)}"
+                            error_details.append(error_detail)
+                            logger.error(f"更新学生评语时出错: {error_detail}")
+                    else:
+                        error_count += 1
+                        error_details.append(f"找不到匹配的学生: {name}")
+                
+                # 提交事务
+                conn.commit()
+                
+                # 关闭数据库连接
+                conn.close()
+                
+                # 清理文件
+                try:
+                    # 先删除临时文件（如果创建了的话）
+                    if temp_file_path != file_path and os.path.exists(temp_file_path):
+                        os.remove(temp_file_path)
+                        logger.info(f"已删除临时文件: {temp_file_path}")
+                        
+                    # 再删除原始文件
+                    if os.path.exists(file_path):
+                        os.remove(file_path)
+                        logger.info(f"已删除原始上传文件: {file_path}")
+                except Exception as file_error:
+                    logger.warning(f"删除文件失败: {str(file_error)}")
+                
+                # 生成响应
+                status = 'ok' if error_count == 0 else 'partial' if success_count > 0 else 'error'
+                
+                logger.info(f"导入完成: 成功 {success_count} 条, 失败 {error_count} 条, 跳过 {skipped_count} 条")
+                
+                # 限制错误详情的数量，避免响应太大
+                if len(error_details) > 10:
+                    error_details = error_details[:10] + [f"...还有 {len(error_details) - 10} 条错误未显示"]
+                
+                return jsonify({
+                    'status': status,
+                    'success_count': success_count,
+                    'error_count': error_count,
+                    'skipped_count': skipped_count,
+                    'error_details': error_details
+                })
+                
+            except Exception as e:
+                # 回滚事务
+                conn.rollback()
+                conn.close()
+                
+                # 清理文件
+                try:
+                    if temp_file_path != file_path and os.path.exists(temp_file_path):
+                        os.remove(temp_file_path)
+                except:
+                    pass
+                
+                logger.error(f"导入评语时出错: {str(e)}")
+                logger.error(traceback.format_exc())
+                return jsonify({
+                    'status': 'error',
+                    'message': f'导入评语时出错: {str(e)}'
+                }), 500
+        
+    except Exception as e:
+        logger.error(f"确认导入评语时出错: {str(e)}")
+        logger.error(traceback.format_exc())
+        return jsonify({'status': 'error', 'message': f'服务器错误: {str(e)}'}), 500
