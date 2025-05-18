@@ -1052,6 +1052,30 @@ function initialize() {
     
     // 设置DOM变更监听
     monitorDOMChanges();
+    
+    // 检查是否需要显示新功能提示
+    checkNewFeatureTips();
+}
+
+// 检查并显示新功能提示
+function checkNewFeatureTips() {
+    // 使用localStorage检查用户是否看过新功能提示
+    const hasSeenNewFeatureTip = localStorage.getItem('hasSeenImportFeatureTip');
+    
+    if (!hasSeenNewFeatureTip) {
+        // 用户未看过提示，显示模态框
+        setTimeout(() => {
+            try {
+                const newFeatureModal = new bootstrap.Modal(document.getElementById('newFeatureModal'));
+                newFeatureModal.show();
+                
+                // 标记用户已看过提示
+                localStorage.setItem('hasSeenImportFeatureTip', 'true');
+            } catch (error) {
+                console.error('显示新功能提示模态框失败:', error);
+            }
+        }, 1000); // 延迟1秒显示，确保页面已完全加载
+    }
 }
 
 // 获取当前用户的班级ID
@@ -1094,61 +1118,631 @@ function fetchCurrentUserClassId() {
 function bindEventListeners() {
     console.log('绑定事件监听器...');
     
-    
-    
-    // 导出评语按钮事件
-    const exportCommentsBtn = document.getElementById('exportCommentsBtn');
-    if (exportCommentsBtn) {
-        exportCommentsBtn.addEventListener('click', function() {
-            console.log('导出评语按钮被点击');
-            exportComments();
-        });
-    } else {
-        console.error('找不到导出评语按钮');
+    // 获取导出评语按钮
+    const exportBtn = document.getElementById('exportCommentsBtn');
+    if (exportBtn) {
+        exportBtn.addEventListener('click', exportComments);
     }
     
-    // 打印预览按钮事件
+    // 获取打印预览按钮
     const printPreviewBtn = document.getElementById('printPreviewBtn');
     if (printPreviewBtn) {
-        printPreviewBtn.addEventListener('click', function() {
-            console.log('打印预览按钮被点击');
-            showPrintPreview();
-        });
-    } else {
-        console.error('找不到打印预览按钮');
+        printPreviewBtn.addEventListener('click', showPrintPreview);
     }
     
+    // 获取导入评语按钮
+    const importBtn = document.getElementById('importCommentsBtn');
+    if (importBtn) {
+        importBtn.addEventListener('click', showImportCommentsModal);
+    }
     
+    // 模板标签点击
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('template-tag')) {
+            e.preventDefault();
+            insertTemplate(e.target.dataset.content);
+        }
+    });
     
-    
-    
-    
-    
-    // 监听评语文本框输入事件，更新字数统计
+    // 绑定模态框中评语文本框的字数统计事件
     const commentText = document.getElementById('commentText');
     if (commentText) {
-        commentText.addEventListener('input', function() {
-            updateCharCount();
-        });
-    } else {
-        console.error('找不到评语文本框');
+        commentText.addEventListener('input', updateCharCount);
     }
     
-    // 搜索输入事件
+    // 保存评语按钮
+    const saveCommentBtn = document.getElementById('saveCommentBtn');
+    if (saveCommentBtn) {
+        saveCommentBtn.addEventListener('click', saveComment);
+    }
+    
+    // 搜索框
     const searchInput = document.getElementById('searchStudent');
     if (searchInput) {
+        let lastValue = '';
+        
+        // 添加防抖动功能
         searchInput.addEventListener('input', function() {
-            console.log('搜索框输入:', this.value);
-            filterComments(this.value);
+            if (this.value !== lastValue) {
+                lastValue = this.value;
+                clearTimeout(this.searchTimer);
+                
+                this.searchTimer = setTimeout(() => {
+                    filterComments(this.value);
+                }, 300);
+            }
         });
-    } else {
-        console.error('找不到搜索输入框');
     }
     
+    // 打印按钮
+    const printBtn = document.getElementById('printBtn');
+    if (printBtn) {
+        printBtn.addEventListener('click', function() {
+            window.print();
+        });
+    }
     
-   
+    // 导入评语相关事件绑定
+    bindImportCommentsEvents();
+}
+
+// 导入评语相关事件绑定
+function bindImportCommentsEvents() {
+    // 文件选择变化事件
+    const importFileInput = document.getElementById('commentsImportFile');
+    if (importFileInput) {
+        importFileInput.addEventListener('change', handleImportFileSelection);
+    }
     
-    console.log('事件监听器绑定完成');
+    // 导入区域拖拽事件
+    const dropZone = document.getElementById('importDropZone');
+    if (dropZone) {
+        // 阻止默认拖拽行为
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        // 高亮显示
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, highlight, false);
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, unhighlight, false);
+        });
+        
+        // 处理拖放
+        dropZone.addEventListener('drop', handleDrop, false);
+    }
+    
+    // 下载模板按钮
+    const downloadTemplateBtn = document.getElementById('downloadImportTemplateBtn');
+    if (downloadTemplateBtn) {
+        downloadTemplateBtn.addEventListener('click', downloadImportTemplate);
+    }
+    
+    // 确认导入按钮
+    const confirmImportBtn = document.getElementById('confirmImportBtn');
+    if (confirmImportBtn) {
+        confirmImportBtn.addEventListener('click', confirmImportComments);
+    }
+}
+
+// 阻止默认拖拽行为
+function preventDefaults(e) {
+    e.preventDefault();
+    e.stopPropagation();
+}
+
+// 高亮拖拽区域
+function highlight() {
+    const dropZone = document.getElementById('importDropZone');
+    if (dropZone) {
+        dropZone.classList.add('border-primary');
+        dropZone.classList.add('bg-light-blue');
+    }
+}
+
+// 取消高亮拖拽区域
+function unhighlight() {
+    const dropZone = document.getElementById('importDropZone');
+    if (dropZone) {
+        dropZone.classList.remove('border-primary');
+        dropZone.classList.remove('bg-light-blue');
+    }
+}
+
+// 处理拖放文件
+function handleDrop(e) {
+    const dt = e.dataTransfer;
+    const files = dt.files;
+    
+    if (files.length > 0) {
+        const fileInput = document.getElementById('commentsImportFile');
+        fileInput.files = files;
+        handleImportFileSelection({ target: fileInput });
+    }
+}
+
+// 显示导入评语模态框
+function showImportCommentsModal() {
+    // 重置表单
+    resetImportForm();
+    
+    // 显示模态框
+    const modal = new bootstrap.Modal(document.getElementById('importCommentsModal'));
+    modal.show();
+}
+
+// 重置导入表单
+function resetImportForm() {
+    const fileInput = document.getElementById('commentsImportFile');
+    if (fileInput) {
+        fileInput.value = '';
+    }
+    
+    const fileNameDisplay = document.getElementById('importSelectedFileName');
+    if (fileNameDisplay) {
+        fileNameDisplay.textContent = '';
+    }
+    
+    const previewArea = document.getElementById('importPreviewArea');
+    if (previewArea) {
+        previewArea.classList.add('d-none');
+    }
+    
+    const previewLoading = document.getElementById('importPreviewLoading');
+    if (previewLoading) {
+        previewLoading.classList.add('d-none');
+    }
+    
+    const importFilePath = document.getElementById('importFilePath');
+    if (importFilePath) {
+        importFilePath.value = '';
+    }
+    
+    const confirmImportBtn = document.getElementById('confirmImportBtn');
+    if (confirmImportBtn) {
+        confirmImportBtn.classList.add('d-none');
+        confirmImportBtn.disabled = true;
+    }
+    
+    const importAppendMode = document.getElementById('importAppendMode');
+    if (importAppendMode) {
+        importAppendMode.checked = false;  // 默认使用替换模式
+    }
+    
+    const importSummary = document.getElementById('importSummary');
+    if (importSummary) {
+        importSummary.textContent = '共发现0条评语记录，其中0条可以匹配到学生。';
+    }
+    
+    // 清空预览容器
+    const previewContainer = document.getElementById('importPreviewContainer');
+    if (previewContainer) {
+        previewContainer.innerHTML = '';
+    }
+}
+
+// 处理导入文件选择
+function handleImportFileSelection(e) {
+    const fileInput = e.target;
+    const files = fileInput.files;
+    
+    if (files.length === 0) {
+        return;
+    }
+    
+    const file = files[0];
+    
+    // 检查文件类型
+    if (!file.name.toLowerCase().endsWith('.xlsx')) {
+        showNotification('请上传Excel文件（.xlsx格式），不支持旧版.xls格式', 'warning');
+        return;
+    }
+    
+    // 显示文件名
+    const fileNameDisplay = document.getElementById('importSelectedFileName');
+    if (fileNameDisplay) {
+        fileNameDisplay.textContent = file.name;
+    }
+    
+    // 显示加载状态
+    const previewLoading = document.getElementById('importPreviewLoading');
+    if (previewLoading) {
+        previewLoading.classList.remove('d-none');
+    }
+    
+    const previewArea = document.getElementById('importPreviewArea');
+    if (previewArea) {
+        previewArea.classList.add('d-none');
+    }
+    
+    const confirmImportBtn = document.getElementById('confirmImportBtn');
+    if (confirmImportBtn) {
+        confirmImportBtn.classList.add('d-none');
+    }
+    
+    // 准备FormData对象
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    console.log('开始上传Excel文件进行预览...');
+    
+    // 发送预览请求
+    fetch('/api/preview-import-comments', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        // 检查响应状态
+        if (!response.ok) {
+            return response.json().then(data => {
+                throw new Error(data.message || `HTTP错误! 状态: ${response.status}`);
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        // 隐藏加载状态
+        if (previewLoading) {
+            previewLoading.classList.add('d-none');
+        }
+        
+        if (data.status === 'ok') {
+            console.log('预览成功:', data);
+            
+            // 确保预览区域可见
+            const previewArea = document.getElementById('importPreviewArea');
+            if (previewArea) {
+                previewArea.classList.remove('d-none');
+            }
+            
+            // 显示预览数据
+            showCommentsPreview(data);
+            
+            // 保存文件路径
+            const importFilePath = document.getElementById('importFilePath');
+            if (importFilePath) {
+                importFilePath.value = data.file_path;
+            }
+            
+            // 显示确认导入按钮（只有当有匹配的学生且所有评语有效时才显示）
+            if (confirmImportBtn) {
+                // 检查是否有匹配到学生且所有评语都有效
+                if (data.match_count > 0 && data.all_valid) {
+                    confirmImportBtn.classList.remove('d-none');
+                    confirmImportBtn.disabled = false;
+                } else {
+                    confirmImportBtn.classList.remove('d-none');
+                    confirmImportBtn.disabled = true;
+                    
+                    if (data.match_count === 0) {
+                        showNotification('没有匹配到任何学生，请检查Excel文件中的姓名是否正确', 'warning');
+                    } else if (!data.all_valid) {
+                        showNotification('部分评语超过260字限制，请修改后重试', 'warning');
+                    }
+                }
+            }
+        } else {
+            showNotification(`预览失败: ${data.message}`, 'error');
+        }
+    })
+    .catch(error => {
+        if (previewLoading) {
+            previewLoading.classList.add('d-none');
+        }
+        showNotification(`预览失败: ${error.message}`, 'error');
+        console.error('预览Excel数据失败:', error);
+        
+        // 清空文件选择
+        fileInput.value = '';
+        if (fileNameDisplay) {
+            fileNameDisplay.textContent = '';
+        }
+    });
+}
+
+// 渲染导入预览数据
+function renderImportPreview(data) {
+    const previewArea = document.getElementById('importPreviewArea');
+    const previewTableBody = document.getElementById('importPreviewTableBody');
+    const importSummary = document.getElementById('importSummary');
+    
+    if (!previewArea || !previewTableBody || !importSummary) {
+        showNotification('找不到预览区域元素', 'error');
+        return;
+    }
+    
+    // 清空预览表格
+    previewTableBody.innerHTML = '';
+    
+    // 显示预览区域
+    previewArea.classList.remove('d-none');
+    
+    // 渲染预览数据
+    data.previews.forEach((item, index) => {
+        const row = document.createElement('tr');
+        
+        if (!item.matched) {
+            row.classList.add('table-warning');
+        }
+        
+        row.innerHTML = `
+            <td>${index + 1}</td>
+            <td>${item.name || ''} ${item.matched ? '<i class="bx bx-check text-success"></i>' : '<i class="bx bx-x text-danger"></i>'}</td>
+            <td>${item.comment || ''}</td>
+        `;
+        
+        previewTableBody.appendChild(row);
+    });
+    
+    // 更新导入摘要
+    importSummary.textContent = `共发现${data.total_count}条评语记录，其中${data.match_count}条可以匹配到学生。`;
+}
+
+// 下载导入模板
+function downloadImportTemplate() {
+    try {
+        // 检查ExcelJS是否可用
+        if (typeof ExcelJS === 'undefined') {
+            showNotification('ExcelJS库未加载，无法生成Excel文件', 'error');
+            return;
+        }
+        
+        // 创建一个工作簿
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('评语导入模板');
+        
+        // 添加表头
+        worksheet.columns = [
+            { header: '姓名', key: 'name', width: 15 },
+            { header: '评语', key: 'comment', width: 60 }
+        ];
+        
+        // 添加示例数据
+        worksheet.addRow({ name: '张三', comment: '这是张三的评语示例，请替换为实际内容。' });
+        worksheet.addRow({ name: '李四', comment: '这是李四的评语示例，请替换为实际内容。' });
+        worksheet.addRow({ name: '王五', comment: '这是王五的评语示例，请替换为实际内容。' });
+        
+        // 设置表头样式
+        worksheet.getRow(1).font = { bold: true };
+        worksheet.getRow(1).fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFD3D3D3' }
+        };
+        
+        // 导出Excel文件
+        workbook.xlsx.writeBuffer().then(function(buffer) {
+            const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = '评语导入模板.xlsx';
+            a.click();
+            
+            URL.revokeObjectURL(url);
+            showNotification('模板下载成功', 'success');
+        }).catch(function(error) {
+            console.error('生成Excel文件失败:', error);
+            showNotification('生成Excel文件失败: ' + error.message, 'error');
+        });
+    } catch (error) {
+        console.error('下载模板失败:', error);
+        showNotification('下载模板失败: ' + error.message, 'error');
+    }
+}
+
+// 显示评语导入预览
+function showCommentsPreview(data) {
+    if (!data || !data.previews || data.previews.length === 0) {
+        showNotification('没有找到有效的评语数据', 'warning');
+        return false;
+    }
+
+    // 保存文件路径到隐藏字段，用于确认导入时使用
+    document.getElementById('importFilePath').value = data.file_path;
+    
+    // 构建预览表格
+    let tableHtml = `
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th width="5%">#</th>
+                        <th width="15%">姓名</th>
+                        <th width="60%">评语</th>
+                        <th width="10%">字数</th>
+                        <th width="10%">状态</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+    
+    // 添加每行评语数据
+    for (let i = 0; i < data.previews.length; i++) {
+        const preview = data.previews[i];
+        const matchStatus = preview.matched ? 
+            '<span class="badge bg-success">匹配</span>' : 
+            '<span class="badge bg-danger">未匹配</span>';
+        
+        // 添加有效性状态标签 - 强调字数超出问题
+        const validStatus = preview.valid ? 
+            '<span class="badge bg-success">有效</span>' : 
+            `<span class="badge bg-danger">超出字数(${preview.length}/260)</span>`;
+        
+        // 计算评语显示，超过100字符的截断显示（仅用于UI展示）
+        let previewComment = preview.comment;
+        if (previewComment.length > 100) {
+            previewComment = previewComment.substring(0, 100) + "...";
+        }
+        
+        tableHtml += `
+            <tr class="${preview.matched ? '' : 'table-warning'} ${preview.valid ? '' : 'table-danger'}">
+                <td>${i + 1}</td>
+                <td>${preview.name}</td>
+                <td>${previewComment.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</td>
+                <td>${preview.length} / 260</td>
+                <td>${matchStatus} ${validStatus}</td>
+            </tr>
+        `;
+    }
+    
+    tableHtml += `
+                </tbody>
+            </table>
+        </div>
+    `;
+    
+    // 添加摘要信息，强调字数问题
+    const allValid = data.all_valid;
+    const validClass = allValid ? 'alert-success' : 'alert-danger';
+    const validIcon = allValid ? 'bx-check-circle' : 'bx-error-circle';
+    
+    tableHtml += `
+        <div class="alert ${validClass}">
+            <i class='bx ${validIcon}'></i> 
+            共发现 ${data.total_count} 条评语记录，其中 ${data.match_count} 条可匹配到学生，
+            ${data.valid_count} 条在字数范围内有效(不超过260字)。
+            ${!allValid ? '<strong>存在超出260字数限制的评语，请修改Excel文件后重新导入。系统不会自动截断评语。</strong>' : ''}
+        </div>
+    `;
+    
+    // 显示预览数据
+    const previewContainer = document.getElementById('importPreviewContainer');
+    if (previewContainer) {
+        previewContainer.innerHTML = tableHtml;
+        previewContainer.style.display = 'block';
+    }
+    
+    // 控制确认按钮状态
+    const confirmBtn = document.getElementById('confirmImportBtn');
+    if (confirmBtn) {
+        // 只有当所有评语都有效且至少匹配一条才可以启用按钮
+        const enableButton = allValid && data.match_count > 0;
+        confirmBtn.disabled = !enableButton;
+        
+        if (!enableButton) {
+            if (data.match_count === 0) {
+                confirmBtn.title = "没有任何评语匹配到学生，无法导入";
+            } else if (!allValid) {
+                confirmBtn.title = "存在评语超过字数限制(260字)，请修改后重试，系统不会自动截断评语";
+            }
+        } else {
+            confirmBtn.title = "确认导入评语";
+        }
+    }
+    
+    // 更新摘要信息
+    const importSummary = document.getElementById('importSummary');
+    if (importSummary) {
+        if (!allValid) {
+            importSummary.innerHTML = `共发现 ${data.total_count} 条评语记录，其中 <strong class="text-danger">${data.total_count - data.valid_count} 条超出字数限制</strong>，请修改后重试。`;
+        } else {
+            importSummary.textContent = `共发现 ${data.total_count} 条评语记录，其中 ${data.match_count} 条可匹配到学生。`;
+        }
+    }
+    
+    return true;
+}
+
+// 确认导入评语
+function confirmImportComments() {
+    const filePath = document.getElementById('importFilePath').value;
+    // 检查并打印文件路径，帮助调试问题
+    console.log('确认导入，文件路径:', filePath);
+    
+    if (!filePath) {
+        showNotification('未找到导入文件路径', 'error');
+        return;
+    }
+    
+    // 评语导入模式设置为替换模式（默认）
+    const appendMode = false;
+    console.log('导入模式 - 替换原评语');
+    
+    // 禁用确认按钮
+    const confirmImportBtn = document.getElementById('confirmImportBtn');
+    if (confirmImportBtn) {
+        confirmImportBtn.disabled = true;
+        confirmImportBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 导入中...';
+    }
+    
+    // 构建请求数据
+    const requestData = {
+        file_path: filePath,
+        append_mode: appendMode
+    };
+    console.log('发送请求数据:', requestData);
+    
+    // 发送请求
+    fetch('/api/confirm-import-comments', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestData)
+    })
+    .then(response => {
+        console.log('服务器响应状态:', response.status);
+        return response.json().then(data => {
+            if (!response.ok) {
+                return Promise.reject({
+                    status: response.status,
+                    ...data
+                });
+            }
+            return data;
+        });
+    })
+    .then(data => {
+        // 导入成功
+        let message = `成功导入 ${data.success_count} 条评语`;
+        if (data.error_count > 0) {
+            message += `，但有 ${data.error_count} 条导入失败`;
+        }
+        
+        // 关闭导入模态框
+        const importModal = bootstrap.Modal.getInstance(document.getElementById('importCommentsModal'));
+        if (importModal) {
+            importModal.hide();
+        }
+        
+        // 显示成功消息
+        showNotification(message, data.status === 'ok' ? 'success' : 'warning');
+        
+        // 如果需要，刷新页面或重新加载评语数据
+        if (data.success_count > 0) {
+            // 延迟刷新页面，让用户先看到成功消息
+            setTimeout(() => {
+                location.reload();
+            }, 1500);
+        }
+    })
+    .catch(error => {
+        console.error('确认导入评语失败:', error);
+        
+        // 还原确认按钮状态
+        if (confirmImportBtn) {
+            confirmImportBtn.disabled = false;
+            confirmImportBtn.innerHTML = '确认导入';
+        }
+        
+        // 显示错误消息
+        let errorMessage = '导入失败: ';
+        if (error.status) {
+            errorMessage += `服务器返回 ${error.status}`;
+            if (error.message) {
+                errorMessage += ` - ${error.message}`;
+            }
+        } else {
+            errorMessage += error.message || '未知错误';
+        }
+        
+        showNotification(errorMessage, 'error');
+    });
 }
 
 // 显示AI评语助手模态框

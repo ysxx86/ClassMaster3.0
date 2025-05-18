@@ -8,6 +8,8 @@
     <link href="/css/bootstrap.min.css" rel="stylesheet">
     <link href="../css/boxicons-local.css" rel="stylesheet">
     <link href="../css/comments.css" rel="stylesheet">
+    <!-- ExcelJS库 - 用于处理Excel文件 -->
+    <script src="https://cdn.bootcdn.net/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
 </head>
 <body>
     <div class="container-fluid">
@@ -22,6 +24,9 @@
                 </button>
                 <button class="btn btn-info" id="printPreviewBtn">
                     <i class='bx bx-printer'></i> 打印预览
+                </button>
+                <button class="btn btn-primary new-feature-badge" id="importCommentsBtn">
+                    <i class='bx bx-import'></i> 导入评语
                 </button>
             </div>
             <div class="input-group" style="max-width: 300px;">
@@ -89,6 +94,86 @@
             </div>
         </div>
     </div>
+    
+    <!-- 导入评语模态框 -->
+    <div class="modal fade" id="importCommentsModal" tabindex="-1" aria-labelledby="importCommentsModalLabel" data-bs-backdrop="static">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="importCommentsModalLabel">导入评语</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted mb-3">请上传包含学生评语的Excel文件(.xlsx格式)，Excel表头必须包含"姓名"和"评语"两列。</p>
+                    
+                    <div class="alert alert-info mb-3">
+                        <i class='bx bx-info-circle me-2'></i>
+                        <strong>导入说明：</strong>
+                        <ul class="mb-0 mt-1">
+                            <li>确保Excel文件为.xlsx格式，不支持.xls等旧格式</li>
+                            <li>Excel表头第一行必须包含"姓名"和"评语"两个字段</li>
+                            <li>姓名必须与系统中已有学生姓名完全匹配</li>
+                            <li>评语内容自动限制为260字以内</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- 导入区域（支持拖放） -->
+                    <div id="importDropZone" class="border border-dashed border-primary rounded-3 p-4 mb-4 text-center bg-light">
+                        <i class="bx bx-cloud-upload text-primary" style="font-size: 48px;"></i>
+                        <h5 class="mt-2">点击选择文件或拖放至此区域</h5>
+                        <p class="text-muted small">支持Excel文件（.xlsx格式）</p>
+                        
+                        <div class="input-group mt-3 justify-content-center">
+                            <input type="file" id="commentsImportFile" class="d-none" accept=".xlsx">
+                            <label for="commentsImportFile" class="btn btn-outline-primary">
+                                <i class="bx bx-file me-1"></i> 选择文件
+                            </label>
+                            <button type="button" class="btn btn-outline-secondary ms-2" id="downloadImportTemplateBtn">
+                                <i class="bx bx-download me-1"></i> 下载模板
+                            </button>
+                        </div>
+                        
+                        <div id="importSelectedFileName" class="mt-2 text-primary"></div>
+                    </div>
+                    
+                    <!-- 预览区域 -->
+                    <div id="importPreviewLoading" class="text-center py-3 d-none">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">加载中...</span>
+                        </div>
+                        <p class="mt-2">正在解析Excel文件，请稍候...</p>
+                    </div>
+                    
+                    <div id="importPreviewArea" class="d-none">
+                        <h5 class="mt-3 mb-2">数据预览</h5>
+                        <div id="importPreviewContainer">
+                            <!-- 预览内容将由JavaScript动态填充 -->
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" id="importAppendMode" checked>
+                                <label class="form-check-label" for="importAppendMode">
+                                    添加到原有评语（若不勾选则替换原有评语）
+                                </label>
+                            </div>
+                            <div>
+                                <span id="importSummary">共发现0条评语记录，其中0条可以匹配到学生。</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 存储导入数据的隐藏字段 -->
+                    <input type="hidden" id="importFilePath" value="">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary d-none" id="confirmImportBtn">确认导入</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <!-- 打印预览模态框 -->
     <div class="modal fade" id="printPreviewModal" tabindex="-1" data-bs-backdrop="static">
         <div class="modal-dialog modal-fullscreen">
@@ -119,6 +204,39 @@
     </div>
     <!-- 通知容器 -->
     <div id="toastContainer" class="position-fixed bottom-0 end-0 p-3" style="z-index: 5"></div>
+    
+    <!-- 新功能提示模态框 -->
+    <div class="modal fade" id="newFeatureModal" tabindex="-1" aria-labelledby="newFeatureModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header" style="background: linear-gradient(135deg, #f9ce34, #ee5a24); color: white;">
+                    <h5 class="modal-title" id="newFeatureModalLabel">
+                        <i class='bx bx-bulb'></i> 新功能提示
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center mb-3">
+                        <i class='bx bx-import' style="font-size: 48px; color: #f9ce34;"></i>
+                    </div>
+                    <h4 class="text-center mb-3">导入评语功能上线啦！</h4>
+                    <p>现在您可以通过Excel文件批量导入学生评语，轻松高效地管理班级评语。</p>
+                    <div class="alert alert-light border">
+                        <h6><i class='bx bx-check-circle text-success'></i> 主要功能：</h6>
+                        <ul>
+                            <li>支持Excel文件导入(.xlsx格式)</li>
+                            <li>导入前可预览评语内容</li>
+                            <li>自动匹配学生姓名</li>
+                            <li>支持批量导入多条评语</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">我知道了</button>
+                </div>
+            </div>
+        </div>
+    </div>
     
     <script src="/js/libs/bootstrap.bundle.min.js"></script>
     <script src="../js/data.js"></script>
