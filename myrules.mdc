@@ -1,0 +1,95 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# ClassMaster项目规则
+
+## 新功能标记与提示规则
+
+为确保用户能够及时了解系统的新功能，我们制定了以下规则：
+
+### 1. 新功能标记
+
+所有新添加的功能应在界面上明确标记为"新功能"，具体规则如下：
+
+- 在新功能按钮或链接右上角添加金色"NEW"标签
+- 使用`.new-feature-badge`CSS类实现此效果
+- 标记应保持至少一个版本周期（通常为一个月）
+
+实现示例：
+```html
+<button class="btn btn-primary new-feature-badge" id="newFeatureBtn">
+    <i class='bx bx-feature'></i> 新功能名称
+</button>
+```
+
+### 2. 新功能提示
+
+当用户首次访问包含新功能的页面时，应显示模态框提示用户关于新功能的信息：
+
+- 模态框应显示在屏幕正中间
+- 提示内容应简明扼要地介绍新功能的作用和使用方法
+- 每个新功能只提示一次，使用localStorage记录用户是否已看过提示
+
+实现逻辑：
+```javascript
+// 检查并显示新功能提示
+function checkNewFeatureTips() {
+    // 使用localStorage检查用户是否看过新功能提示
+    const hasSeenNewFeatureTip = localStorage.getItem('hasSeenXxxFeatureTip');
+    
+    if (!hasSeenNewFeatureTip) {
+        // 用户未看过提示，显示模态框
+        const newFeatureModal = new bootstrap.Modal(document.getElementById('newFeatureModal'));
+        newFeatureModal.show();
+        
+        // 标记用户已看过提示
+        localStorage.setItem('hasSeenXxxFeatureTip', 'true');
+    }
+}
+```
+
+### 3. 新功能模态框结构
+
+新功能提示模态框应包含以下内容：
+
+- 醒目的标题，注明"新功能提示"
+- 功能图标和名称
+- 简要说明功能的主要用途
+- 列出功能的主要特点
+- "我知道了"按钮
+
+模态框HTML结构示例：
+```html
+<div class="modal fade" id="newFeatureModal">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #f9ce34, #ee5a24); color: white;">
+                <h5 class="modal-title">
+                    <i class='bx bx-bulb'></i> 新功能提示
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-3">
+                    <i class='bx bx-feature' style="font-size: 48px; color: #f9ce34;"></i>
+                </div>
+                <h4 class="text-center mb-3">新功能名称</h4>
+                <p>新功能的简要说明...</p>
+                <div class="alert alert-light border">
+                    <h6><i class='bx bx-check-circle text-success'></i> 主要功能：</h6>
+                    <ul>
+                        <li>功能点1</li>
+                        <li>功能点2</li>
+                        <li>功能点3</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">我知道了</button>
+            </div>
+        </div>
+    </div>
+</div>
+```
