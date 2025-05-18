@@ -25,7 +25,7 @@
                 <button class="btn btn-info" id="printPreviewBtn">
                     <i class='bx bx-printer'></i> 打印预览
                 </button>
-                <button class="btn btn-primary" id="importCommentsBtn">
+                <button class="btn btn-primary new-feature-badge" id="importCommentsBtn">
                     <i class='bx bx-import'></i> 导入评语
                 </button>
             </div>
@@ -204,6 +204,39 @@
     </div>
     <!-- 通知容器 -->
     <div id="toastContainer" class="position-fixed bottom-0 end-0 p-3" style="z-index: 5"></div>
+    
+    <!-- 新功能提示模态框 -->
+    <div class="modal fade" id="newFeatureModal" tabindex="-1" aria-labelledby="newFeatureModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header" style="background: linear-gradient(135deg, #f9ce34, #ee5a24); color: white;">
+                    <h5 class="modal-title" id="newFeatureModalLabel">
+                        <i class='bx bx-bulb'></i> 新功能提示
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center mb-3">
+                        <i class='bx bx-import' style="font-size: 48px; color: #f9ce34;"></i>
+                    </div>
+                    <h4 class="text-center mb-3">导入评语功能上线啦！</h4>
+                    <p>现在您可以通过Excel文件批量导入学生评语，轻松高效地管理班级评语。</p>
+                    <div class="alert alert-light border">
+                        <h6><i class='bx bx-check-circle text-success'></i> 主要功能：</h6>
+                        <ul>
+                            <li>支持Excel文件导入(.xlsx格式)</li>
+                            <li>导入前可预览评语内容</li>
+                            <li>自动匹配学生姓名</li>
+                            <li>支持批量导入多条评语</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">我知道了</button>
+                </div>
+            </div>
+        </div>
+    </div>
     
     <script src="/js/libs/bootstrap.bundle.min.js"></script>
     <script src="../js/data.js"></script>

@@ -1052,6 +1052,30 @@ function initialize() {
     
     // 设置DOM变更监听
     monitorDOMChanges();
+    
+    // 检查是否需要显示新功能提示
+    checkNewFeatureTips();
+}
+
+// 检查并显示新功能提示
+function checkNewFeatureTips() {
+    // 使用localStorage检查用户是否看过新功能提示
+    const hasSeenNewFeatureTip = localStorage.getItem('hasSeenImportFeatureTip');
+    
+    if (!hasSeenNewFeatureTip) {
+        // 用户未看过提示，显示模态框
+        setTimeout(() => {
+            try {
+                const newFeatureModal = new bootstrap.Modal(document.getElementById('newFeatureModal'));
+                newFeatureModal.show();
+                
+                // 标记用户已看过提示
+                localStorage.setItem('hasSeenImportFeatureTip', 'true');
+            } catch (error) {
+                console.error('显示新功能提示模态框失败:', error);
+            }
+        }, 1000); // 延迟1秒显示，确保页面已完全加载
+    }
 }
 
 // 获取当前用户的班级ID
