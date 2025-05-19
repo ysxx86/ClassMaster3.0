@@ -197,7 +197,7 @@ def export_comments_to_pdf(class_name=None, output_file=None, school_name=None, 
         cursor = conn.cursor()
         
         # 查询语句，增加班级ID筛选
-        if hasattr(current_user, 'is_admin') and not current_user.is_admin and hasattr(current_user, 'class_id') and current_user.class_id:
+        if hasattr(current_user, 'is_authenticated') and current_user.is_authenticated and hasattr(current_user, 'is_admin') and not current_user.is_admin and hasattr(current_user, 'class_id') and current_user.class_id:
             # 班主任只能导出本班级学生
             if class_name:
                 query = 'SELECT id, name, gender, class, class_id, comments, updated_at FROM students WHERE class = ? AND class_id = ? ORDER BY CAST(id AS INTEGER)'
@@ -208,7 +208,11 @@ def export_comments_to_pdf(class_name=None, output_file=None, school_name=None, 
                 logger.info(f"班主任模式: 执行查询: {query} 参数: {current_user.class_id}")
                 cursor.execute(query, (current_user.class_id,))
         else:
-            # 管理员可以导出所有班级
+            # 管理员可以导出所有班级，未登录用户或会话过期的用户视为游客
+            if not hasattr(current_user, 'is_authenticated') or not current_user.is_authenticated:
+                logger.warning("未登录用户或会话过期，无法访问数据")
+                return {'status': 'error', 'message': '您需要登录后才能导出报告'}
+                
             if class_name:
                 query = 'SELECT id, name, gender, class, class_id, comments, updated_at FROM students WHERE class = ? ORDER BY CAST(id AS INTEGER)'
                 logger.info(f"管理员模式: 执行查询: {query} 参数: {class_name}")
