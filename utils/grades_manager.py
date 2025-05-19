@@ -807,7 +807,7 @@ class GradesManager:
         # 添加科目列标题 - 仅包含已识别的科目
         if recognized_subjects:
             for subject in ['道法', '语文', '数学', '英语', '劳动', '体育', '音乐', 
-                            '美术', '科学', '综合', '信息', '书法']:
+                            '美术', '科学', '综合', '信息', '书法', '心理']:
                 if subject in recognized_subjects:
                     html += f"""
                         <th style="background-color: #d1fae5;">{subject}</th>
@@ -827,6 +827,7 @@ class GradesManager:
                         <th>综合</th>
                         <th>信息</th>
                         <th>书法</th>
+                        <th>心理</th>
             """
             
         html += """
@@ -866,6 +867,7 @@ class GradesManager:
                     <td>{grade.get('zonghe', '-')}</td>
                     <td>{grade.get('xinxi', '-')}</td>
                     <td>{grade.get('shufa', '-')}</td>
+                    <td>{grade.get('xinli', '-')}</td>
                 """
                 
             html += """
@@ -1008,6 +1010,7 @@ class GradesManager:
             {'header': '综合', 'key': 'zonghe', 'width': 10},
             {'header': '信息', 'key': 'xinxi', 'width': 10},
             {'header': '书法', 'key': 'shufa', 'width': 10},
+            {'header': '心理', 'key': 'xinli', 'width': 10},
         ]
         
         # 设置标题行
@@ -1029,9 +1032,11 @@ class GradesManager:
         ws.cell(row=notes_row+1, column=1, value="1. 成绩可填写：优、良、及格、待及格，请勿使用其他评分方式")
         ws.cell(row=notes_row+2, column=1, value="2. 请勿修改学号、姓名和班级")
         ws.cell(row=notes_row+3, column=1, value="3. 导入时只需填写有变更的成绩")
+        ws.cell(row=notes_row+4, column=1, value="4. 没有教授的学科成绩填/")
+        ws.cell(row=notes_row+5, column=1, value="5. 导入时要把这些说明事项都删除，方可导入")
         
         # 合并说明文字的单元格
-        for i in range(4):
+        for i in range(6):
             ws.merge_cells(start_row=notes_row+i, start_column=1, end_row=notes_row+i, end_column=6)
         
         # 确定保存路径
