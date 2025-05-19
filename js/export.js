@@ -1,4 +1,4 @@
-  // @charset UTF-8
+// @charset UTF-8
 // 导出报告模块
 
 // 全局变量，防止重复初始化和重复上传
@@ -11,6 +11,33 @@ let abortController = null; // 用于取消请求
 
 // 全局变量，用于记录轮询状态
 let progressPoller = null; 
+
+// 记录数据检查的最后时间戳
+let lastDataCheckTimestamp = Date.now();
+
+// 为其他页面提供的刷新方法
+window.refreshStudentsList = function() {
+    console.log('手动触发学生列表刷新...');
+    initStudentList();
+};
+
+// 定期检查学生数据是否有变更（例如：学生被删除）
+function startDataChangeChecking() {
+    // 每5秒检查一次
+    setInterval(checkStudentDataChanged, 5000);
+}
+
+// 检查学生数据是否发生变化
+function checkStudentDataChanged() {
+    // 尝试从localStorage获取数据变更时间戳
+    const storedTimestamp = localStorage.getItem('studentDataChangeTimestamp');
+    
+    if (storedTimestamp && parseInt(storedTimestamp) > lastDataCheckTimestamp) {
+        console.log('检测到学生数据变更，刷新学生选择列表...');
+        lastDataCheckTimestamp = parseInt(storedTimestamp);
+        initStudentList();  // 重新加载学生列表
+    }
+}
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('初始化导出页面开始...');
@@ -59,6 +86,17 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 初始化导出功能
     initExportFunctions();
+    
+    // 启动数据变更检查
+    startDataChangeChecking();
+    
+    // 设置数据变更事件监听
+    window.addEventListener('storage', function(e) {
+        if (e.key === 'studentDataChangeTimestamp') {
+            console.log('从localStorage事件检测到学生数据变更');
+            initStudentList();  // 重新加载学生列表
+        }
+    });
     
     console.log('导出页面初始化完成');
 });

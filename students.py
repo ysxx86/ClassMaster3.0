@@ -407,7 +407,11 @@ def delete_student(student_id):
                       (student_id, class_id))
         
         conn.commit()
-        return jsonify({'message': '学生删除成功'})
+        return jsonify({
+            'message': '学生删除成功',
+            'data_changed': True,  # 添加数据更改标志，用于通知前端刷新
+            'timestamp': datetime.datetime.now().timestamp()
+        })
         
     except Exception as e:
         logger.error(f"删除学生时出错: {str(e)}")

@@ -18,6 +18,33 @@ const subjectNames = {
     'xinli': '心理'
 };
 
+// 记录数据检查的最后时间戳
+let lastDataCheckTimestamp = Date.now();
+
+// 为其他页面提供的刷新方法
+window.refreshGradesList = function() {
+    console.log('手动触发成绩列表刷新...');
+    loadGrades();
+};
+
+// 定期检查学生数据是否有变更（例如：学生被删除）
+function startDataChangeChecking() {
+    // 每5秒检查一次
+    setInterval(checkStudentDataChanged, 5000);
+}
+
+// 检查学生数据是否发生变化
+function checkStudentDataChanged() {
+    // 尝试从localStorage获取数据变更时间戳
+    const storedTimestamp = localStorage.getItem('studentDataChangeTimestamp');
+    
+    if (storedTimestamp && parseInt(storedTimestamp) > lastDataCheckTimestamp) {
+        console.log('检测到学生数据变更，刷新成绩列表...');
+        lastDataCheckTimestamp = parseInt(storedTimestamp);
+        loadGrades();  // 重新加载成绩列表
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // 初始化学期选择和数据
     setupSemesterSelect();
@@ -66,6 +93,17 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 初始化表格布局
     adjustTableLayout();
+    
+    // 启动数据变更检查
+    startDataChangeChecking();
+    
+    // 设置数据变更事件监听
+    window.addEventListener('storage', function(e) {
+        if (e.key === 'studentDataChangeTimestamp') {
+            console.log('从localStorage事件检测到学生数据变更');
+            loadGrades();  // 重新加载成绩列表
+        }
+    });
 });
 
 // 设置学期选择器
