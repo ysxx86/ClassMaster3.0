@@ -11,6 +11,31 @@ let commentTemplates = {
     behavior: []
 };
 let currentStudentId = null;
+let lastDataCheckTimestamp = Date.now();  // 添加最后数据检查时间戳
+
+// 为其他页面提供的刷新方法
+window.refreshCommentList = function() {
+    console.log('手动触发评语列表刷新...');
+    initCommentList();
+};
+
+// 定期检查学生数据是否有变更（例如：学生被删除）
+function startDataChangeChecking() {
+    // 每5秒检查一次
+    setInterval(checkStudentDataChanged, 5000);
+}
+
+// 检查学生数据是否发生变化
+function checkStudentDataChanged() {
+    // 尝试从localStorage获取数据变更时间戳
+    const storedTimestamp = localStorage.getItem('studentDataChangeTimestamp');
+    
+    if (storedTimestamp && parseInt(storedTimestamp) > lastDataCheckTimestamp) {
+        console.log('检测到学生数据变更，刷新评语列表...');
+        lastDataCheckTimestamp = parseInt(storedTimestamp);
+        initCommentList();  // 重新加载评语列表
+    }
+}
 
 // 添加DOM监控，确保按钮事件始终有效
 function monitorDOMChanges() {
@@ -44,6 +69,17 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 启动DOM监控
     monitorDOMChanges();
+    
+    // 启动数据变更检查
+    startDataChangeChecking();
+    
+    // 设置数据变更事件监听
+    window.addEventListener('storage', function(e) {
+        if (e.key === 'studentDataChangeTimestamp') {
+            console.log('从localStorage事件检测到学生数据变更');
+            initCommentList();  // 重新加载评语列表
+        }
+    });
 });
 
 // 初始化评语列表

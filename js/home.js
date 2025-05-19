@@ -3,22 +3,57 @@ document.addEventListener('DOMContentLoaded', function() {
     // 添加数据加载
     try {
         // 加载首页数据总览
-    loadDashboardData();
+        loadDashboardData();
         
         // 加载图表数据
         loadGradeDistribution();
         loadCommentsProgress();
     
-    // 为快捷操作绑定点击事件
-    setupQuickActions();
+        // 为快捷操作绑定点击事件
+        setupQuickActions();
     
-    // 动态加载待办事项和最近活动
-    loadTodos();
-    loadActivities();
+        // 动态加载待办事项和最近活动
+        loadTodos();
+        loadActivities();
+        
+        // 记录最后数据检查的时间戳
+        lastDataCheckTimestamp = Date.now();
+        
+        // 启动数据变更检查
+        startDataChangeChecking();
+        
+        // 设置数据变更事件监听
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'studentDataChangeTimestamp') {
+                console.log('从localStorage事件检测到学生数据变更');
+                loadDashboardData();  // 重新加载首页数据
+            }
+        });
     } catch (e) {
         console.error('初始化仪表盘出错:', e);
     }
 });
+
+// 记录数据检查的最后时间戳
+let lastDataCheckTimestamp = Date.now();
+
+// 定期检查学生数据是否有变更（例如：学生被删除）
+function startDataChangeChecking() {
+    // 每5秒检查一次
+    setInterval(checkStudentDataChanged, 5000);
+}
+
+// 检查学生数据是否发生变化
+function checkStudentDataChanged() {
+    // 尝试从localStorage获取数据变更时间戳
+    const storedTimestamp = localStorage.getItem('studentDataChangeTimestamp');
+    
+    if (storedTimestamp && parseInt(storedTimestamp) > lastDataCheckTimestamp) {
+        console.log('检测到学生数据变更，刷新首页数据...');
+        lastDataCheckTimestamp = parseInt(storedTimestamp);
+        loadDashboardData();  // 重新加载首页数据
+    }
+}
 
 // 加载首页基本数据
 function loadDashboardData() {

@@ -992,6 +992,13 @@ function saveEditedStudent() {
     }
 }
 
+// 删除成功后，通知其他页面数据已变更
+function notifyDataChanged() {
+    console.log('发送学生数据变更通知...');
+    // 使用localStorage存储时间戳，触发storage事件
+    localStorage.setItem('studentDataChangeTimestamp', Date.now().toString());
+}
+
 // 删除学生
 function deleteStudent(studentId, classId) {
     // 如果没有提供studentId参数，尝试从隐藏输入框获取
@@ -1092,6 +1099,9 @@ function deleteStudent(studentId, classId) {
             if (modal) {
                 modal.hide();
             }
+            
+            // 通知其他页面数据已变更
+            notifyDataChanged();
             
             // 刷新学生列表
             loadStudentsFromServer();
@@ -2269,6 +2279,9 @@ function clearAllStudents() {
         if (data.status === 'ok') {
             // 显示成功通知
             showNotification('所有学生数据已成功清除', 'success');
+            
+            // 通知其他页面数据已变更
+            notifyDataChanged();
             
             // 重新加载学生列表（应该是空的了）
             loadStudentsFromServer();
