@@ -172,11 +172,11 @@ class DataValidator:
             return False, error_message, problem_students
         
         if all_excellent:
-            error_message = "所有学生的成绩等级均为'优'，这可能不符合实际情况，请检查。"
+            error_message = "成绩管理中所有学生的成绩等级均为'优'，不符合实际情况，请修改部分学生的成绩等级后再导出报告。"
             return False, error_message, []
         
         if all_max_deyu:
-            error_message = "所有学生的德育维度均为满分，这可能不符合实际情况，请检查。"
+            error_message = "德育维度中所有学生的所有维度均为满分，不符合实际情况，请修改部分学生的德育维度分数后再导出报告。"
             return False, error_message, []
         
         return True, "", [] 

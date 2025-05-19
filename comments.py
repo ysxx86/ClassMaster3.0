@@ -473,11 +473,11 @@ def api_export_comments_pdf():
     
     try:
         # 检查用户权限
-        if not current_user.is_authenticated:
-            return jsonify({'status': 'error', 'message': '未登录'}), 401
+        if not hasattr(current_user, 'is_authenticated') or not current_user.is_authenticated:
+            return jsonify({'status': 'error', 'message': '您需要登录后才能导出评语', 'code': 'login_required'}), 401
             
         # 如果是班主任，检查是否有权限导出指定班级
-        if not current_user.is_admin and current_user.class_id:
+        if hasattr(current_user, 'is_admin') and not current_user.is_admin and hasattr(current_user, 'class_id') and current_user.class_id:
             # 如果未指定班级，则使用班主任自己的班级
             if not class_name:
                 conn = get_db_connection()
@@ -613,11 +613,11 @@ def api_preview_comments():
     
     try:
         # 检查用户权限
-        if not current_user.is_authenticated:
-            return jsonify({'status': 'error', 'message': '未登录'}), 401
+        if not hasattr(current_user, 'is_authenticated') or not current_user.is_authenticated:
+            return jsonify({'status': 'error', 'message': '未登录', 'code': 'login_required'}), 401
             
         # 如果是班主任，检查是否有权限预览指定班级
-        if not current_user.is_admin and current_user.class_id:
+        if hasattr(current_user, 'is_admin') and not current_user.is_admin and hasattr(current_user, 'class_id') and current_user.class_id:
             # 如果未指定班级，则使用班主任自己的班级
             if not class_name:
                 conn = get_db_connection()
@@ -989,6 +989,11 @@ def convert_docx_to_pdf(input_file, output_file, request_id=None):
 @comments_bp.route('/api/export-reports', methods=['POST'])
 def api_export_reports():
     try:
+        # 检查用户是否已登录
+        if not hasattr(current_user, 'is_authenticated') or not current_user.is_authenticated:
+            logger.warning("未登录用户或会话过期，尝试导出报告")
+            return jsonify({'status': 'error', 'message': '您需要登录后才能导出报告', 'code': 'login_required'}), 401
+            
         # 获取请求数据
         data = request.get_json()
         
@@ -1166,7 +1171,7 @@ def api_export_reports():
                 filtered_problem_students = []
                 if problem_students:
                     # 如果是班主任且有班级ID，则过滤问题学生列表
-                    if not current_user.is_admin and current_user.class_id:
+                    if hasattr(current_user, 'is_admin') and not current_user.is_admin and hasattr(current_user, 'class_id') and current_user.class_id:
                         for student in problem_students:
                             # 检查学生是否属于班主任的班级
                             for s in students:
@@ -1190,19 +1195,33 @@ def api_export_reports():
                         details += f"... 以及其他 {len(filtered_problem_students) - 10} 名学生"
                 
                 # 更新错误消息，显示筛选后的学生数量
-                if not current_user.is_admin and current_user.class_id:
+                if hasattr(current_user, 'is_admin') and not current_user.is_admin and hasattr(current_user, 'class_id') and current_user.class_id:
                     if filtered_problem_students:
                         error_message = f"发现 {len(filtered_problem_students)} 名本班学生的数据不完整，无法导出报告。"
                     else:
-                        error_message = "本班学生数据已完整，但其他班级存在数据问题，系统无法导出报告。"
+                        # 如果本班学生数据已完整但有其他验证问题(如全优或全满分)，仍阻止导出
+                        if "均为'优'" in error_message or "均为满分" in error_message:
+                            logger.info(f"验证失败: {error_message}")
+                        # 如果确实只是其他班级的问题，允许导出
+                        else:
+                            logger.info("本班学生数据已完整，忽略其他班级的数据问题，继续导出报告")
+                            # 继续执行导出流程
+                            pass
                 
-                return jsonify({
-                    'status': 'error', 
-                    'message': error_message,
-                    'details': details,
-                    'validation_failed': True,
-                    'problem_students': [s['id'] for s in filtered_problem_students]
-                })
+                # 只有在本班没有问题学生且不是全优或全满分问题时才继续执行
+                if (hasattr(current_user, 'is_admin') and not current_user.is_admin and hasattr(current_user, 'class_id') and current_user.class_id and 
+                    not filtered_problem_students and 
+                    "均为'优'" not in error_message and 
+                    "均为满分" not in error_message):
+                    logger.info("跳过验证错误，允许导出本班学生数据")
+                else:
+                    return jsonify({
+                        'status': 'error', 
+                        'message': error_message,
+                        'details': details,
+                        'validation_failed': True,
+                        'problem_students': [s['id'] for s in filtered_problem_students]
+                    })
             
             logger.info("数据验证通过，继续导出报告...")
         except Exception as e:
@@ -1773,15 +1792,18 @@ def get_students():
         cursor = conn.cursor()
         
         # 获取当前用户信息
-        if not current_user.is_authenticated:
-            return jsonify({'error': '未登录'}), 401
+        if not hasattr(current_user, 'is_authenticated') or not current_user.is_authenticated:
+            return jsonify({'status': 'error', 'message': '未登录', 'code': 'login_required'}), 401
             
         # 如果是管理员，返回所有学生
-        if current_user.is_admin:
+        if hasattr(current_user, 'is_admin') and current_user.is_admin:
             cursor.execute('SELECT * FROM students ORDER BY class, CAST(id AS INTEGER)')
         else:
             # 如果是班主任，只返回其班级的学生
-            cursor.execute('SELECT * FROM students WHERE class_id = ? ORDER BY CAST(id AS INTEGER)', (current_user.class_id,))
+            if hasattr(current_user, 'class_id') and current_user.class_id:
+                cursor.execute('SELECT * FROM students WHERE class_id = ? ORDER BY CAST(id AS INTEGER)', (current_user.class_id,))
+            else:
+                return jsonify({'status': 'error', 'message': '您没有关联的班级'}), 403
             
         students = cursor.fetchall()
         conn.close()
@@ -1842,6 +1864,10 @@ def preview_import_comments():
     """预览Excel文件中的评语数据，不执行真正的导入"""
     
     try:
+        # 检查用户是否已登录
+        if not hasattr(current_user, 'is_authenticated') or not current_user.is_authenticated:
+            return jsonify({'status': 'error', 'message': '您需要登录后才能导入评语', 'code': 'login_required'}), 401
+            
         # 检查是否有文件上传
         if 'file' not in request.files:
             return jsonify({'status': 'error', 'message': '没有选择文件'}), 400
@@ -1882,6 +1908,9 @@ def preview_import_comments():
             from utils.excel_processor import CommentsExcelProcessor
             
             # 获取当前班级ID
+            if not hasattr(current_user, 'class_id') or not current_user.class_id:
+                return jsonify({'status': 'error', 'message': '您没有关联的班级，无法导入评语'}), 403
+                
             class_id = current_user.class_id
             
             # 创建处理器实例
@@ -2002,6 +2031,8 @@ def process_excel_file_legacy(file_path, class_id=None):
     try:
         # 获取班级ID
         if class_id is None:
+            if not hasattr(current_user, 'class_id') or not current_user.class_id:
+                return jsonify({'status': 'error', 'message': '您没有关联的班级，无法导入评语'}), 403
             class_id = current_user.class_id
         
         # 获取数据库连接
@@ -2088,6 +2119,10 @@ def confirm_import_comments():
     """确认导入评语数据"""
     
     try:
+        # 检查用户是否已登录
+        if not hasattr(current_user, 'is_authenticated') or not current_user.is_authenticated:
+            return jsonify({'status': 'error', 'message': '您需要登录后才能导入评语', 'code': 'login_required'}), 401
+            
         data = request.get_json()
         
         # 验证请求数据
