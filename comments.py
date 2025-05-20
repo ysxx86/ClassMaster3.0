@@ -14,6 +14,7 @@ import threading
 import time
 import re
 from werkzeug.utils import secure_filename
+import urllib.parse
 
 # 尝试导入pythoncom，如果不可用则跳过
 try:
@@ -36,6 +37,12 @@ except ImportError:
             'message': 'PDF导出功能不可用，请安装reportlab模块'
         }
     print("! PDF导出功能不可用，请安装reportlab模块")
+
+# 导入Excel相关库
+import pandas as pd
+import numpy as np
+import json
+from io import BytesIO
 
 # 创建评语管理蓝图
 comments_bp = Blueprint('comments', __name__)
@@ -2503,3 +2510,106 @@ def confirm_import_comments():
         logger.error(f"确认导入评语时出错: {str(e)}")
         logger.error(traceback.format_exc())
         return jsonify({'status': 'error', 'message': f'服务器错误: {str(e)}'}), 500
+
+# 导出评语为Excel
+@comments_bp.route('/api/export-comments-excel', methods=['GET'])
+def export_comments_excel():
+    """导出班级学生评语为Excel文件"""
+    try:
+        logger.info("收到导出评语Excel请求")
+        
+        # 检查用户是否已登录
+        if not hasattr(current_user, 'is_authenticated') or not current_user.is_authenticated:
+            logger.error("用户未登录，无法导出评语")
+            return jsonify({'status': 'error', 'message': '您需要登录后才能导出评语', 'code': 'login_required'}), 401
+        
+        # 获取班级ID，优先使用请求参数中的class_id，如果没有则使用当前用户的class_id
+        class_id = request.args.get('class_id')
+        if not class_id and hasattr(current_user, 'class_id'):
+            class_id = current_user.class_id
+            logger.info(f"使用当前用户班级ID: {class_id}")
+        
+        # 如果没有班级ID，返回错误
+        if not class_id:
+            logger.error("未指定班级ID")
+            return jsonify({'status': 'error', 'message': '未指定班级ID'}), 400
+            
+        logger.info(f"导出评语Excel: 班级ID={class_id}")
+        
+        # 获取班级学生数据
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # 查询班级名称 - 使用正确的列名class_name
+        cursor.execute('SELECT class_name FROM classes WHERE id = ?', (class_id,))
+        class_result = cursor.fetchone()
+        class_name = class_result['class_name'] if class_result else f"班级{class_id}"
+        logger.info(f"班级名称: {class_name}")
+        
+        # 查询学生数据
+        cursor.execute('SELECT id, name, comments FROM students WHERE class_id = ? ORDER BY CAST(id AS INTEGER)', (class_id,))
+        students = cursor.fetchall()
+        conn.close()
+        
+        if not students:
+            logger.error(f"未找到班级{class_id}的学生数据")
+            return jsonify({'status': 'error', 'message': '未找到班级学生数据'}), 404
+        
+        logger.info(f"找到{len(students)}名学生的数据")
+        
+        try:
+            # 尝试导入pandas
+            import pandas as pd
+            from io import BytesIO
+            import urllib.parse
+        except ImportError as e:
+            logger.error(f"缺少必要的库，无法导出Excel: {str(e)}")
+            return jsonify({'status': 'error', 'message': f'服务器缺少必要的库，无法导出Excel: {str(e)}'}), 500
+        
+        # 创建DataFrame
+        data = []
+        for student in students:
+            data.append({
+                '姓名': student['name'],
+                '评语': student['comments'] if student['comments'] else ''
+            })
+        
+        df = pd.DataFrame(data)
+        
+        # 创建Excel文件
+        output = BytesIO()
+        try:
+            with pd.ExcelWriter(output, engine='openpyxl') as writer:
+                df.to_excel(writer, sheet_name='评语数据', index=False)
+                
+                # 获取工作表以设置列宽
+                worksheet = writer.sheets['评语数据']
+                worksheet.column_dimensions['A'].width = 15  # 姓名列宽
+                worksheet.column_dimensions['B'].width = 60  # 评语列宽
+        except Exception as excel_error:
+            logger.error(f"创建Excel文件失败: {str(excel_error)}")
+            return jsonify({'status': 'error', 'message': f'创建Excel文件失败: {str(excel_error)}'}), 500
+        
+        # 设置响应头
+        output.seek(0)
+        timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+        
+        # 生成文件名并进行URL编码
+        raw_filename = f"{class_name}_评语导出_{timestamp}.xlsx"
+        encoded_filename = urllib.parse.quote(raw_filename)
+        
+        # 创建响应
+        response = make_response(output.getvalue())
+        response.headers['Content-Type'] = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        response.headers['Content-Disposition'] = f'attachment; filename*=UTF-8\'\'{encoded_filename}'
+        
+        logger.info(f"成功导出评语Excel: 班级={class_name}, 学生数量={len(students)}")
+        return response
+        
+    except Exception as e:
+        logger.error(f"导出评语Excel时出错: {str(e)}")
+        logger.error(traceback.format_exc())
+        return jsonify({
+            'status': 'error',
+            'message': f'导出评语Excel时出错: {str(e)}'
+        }), 500
