@@ -61,26 +61,33 @@ function monitorDOMChanges() {
     }, 1000); // 每秒检查一次
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('评语管理页面初始化...');
+// 初始化函数
+function initialize() {
+    console.log('初始化评语管理...');
     
-    // 初始化
-    initialize();
+    // 获取班级ID
+    fetchCurrentUserClassId();
     
-    // 启动DOM监控
+    // 绑定事件监听器
+    bindEventListeners();
+    
+    // 初始化评语列表
+    initCommentList();
+    
+    // 检查新功能提示
+    checkNewFeatureTips();
+    
+    // 监听DOM变化
     monitorDOMChanges();
     
     // 启动数据变更检查
     startDataChangeChecking();
     
-    // 设置数据变更事件监听
-    window.addEventListener('storage', function(e) {
-        if (e.key === 'studentDataChangeTimestamp') {
-            console.log('从localStorage事件检测到学生数据变更');
-            initCommentList();  // 重新加载评语列表
-        }
-    });
-});
+    console.log('评语管理初始化完成');
+}
+
+// 在页面加载完成后初始化
+document.addEventListener('DOMContentLoaded', initialize);
 
 // 初始化评语列表
 function initCommentList() {
@@ -716,8 +723,102 @@ function showPrintPreview() {
     };
 }
 
-// 导出评语为PDF
+// 导出评语
 function exportComments() {
+    try {
+        console.log('开始导出评语...');
+        
+        // 创建导出格式选择对话框
+        const modalId = 'exportFormatModal';
+        
+        // 检查是否已存在模态框
+        let modalElement = document.getElementById(modalId);
+        
+        // 如果不存在，则创建新的模态框
+        if (!modalElement) {
+            console.log('创建导出格式选择对话框...');
+            modalElement = document.createElement('div');
+            modalElement.id = modalId;
+            modalElement.className = 'modal fade';
+            modalElement.tabIndex = '-1';
+            modalElement.setAttribute('aria-labelledby', `${modalId}Label`);
+            modalElement.setAttribute('aria-hidden', 'true');
+            
+            modalElement.innerHTML = `
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="${modalId}Label">选择导出格式</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="d-flex justify-content-center">
+                                <button id="exportPdfBtn" class="btn btn-primary btn-lg m-2">
+                                    <i class='bx bxs-file-pdf'></i> 导出PDF
+                                </button>
+                                <button id="exportExcelBtn" class="btn btn-success btn-lg m-2">
+                                    <i class='bx bxs-file-excel'></i> 导出Excel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modalElement);
+        }
+        
+        // 确保Bootstrap已加载
+        if (typeof bootstrap === 'undefined') {
+            console.error('Bootstrap未加载，无法显示模态框');
+            showNotification('导出功能错误：Bootstrap未加载', 'error');
+            return;
+        }
+        
+        // 创建Bootstrap模态框实例
+        const modal = new bootstrap.Modal(modalElement);
+        
+        // 绑定按钮事件
+        const pdfBtn = document.getElementById('exportPdfBtn');
+        const excelBtn = document.getElementById('exportExcelBtn');
+        
+        if (pdfBtn) {
+            // 移除旧的事件监听器
+            const newPdfBtn = pdfBtn.cloneNode(true);
+            pdfBtn.parentNode.replaceChild(newPdfBtn, pdfBtn);
+            
+            // 重新绑定事件
+            document.getElementById('exportPdfBtn').addEventListener('click', function() {
+                console.log('点击导出PDF按钮');
+                modal.hide();
+                exportCommentsToPdf();
+            });
+        }
+        
+        if (excelBtn) {
+            // 移除旧的事件监听器
+            const newExcelBtn = excelBtn.cloneNode(true);
+            excelBtn.parentNode.replaceChild(newExcelBtn, excelBtn);
+            
+            // 重新绑定事件
+            document.getElementById('exportExcelBtn').addEventListener('click', function() {
+                console.log('点击导出Excel按钮');
+                modal.hide();
+                exportCommentsToExcel();
+            });
+        }
+        
+        // 显示模态框
+        console.log('显示导出格式选择对话框');
+        modal.show();
+    } catch (error) {
+        console.error('导出评语错误:', error);
+        showNotification('导出功能出错: ' + error.message, 'error');
+    }
+}
+
+// 导出评语为PDF
+function exportCommentsToPdf() {
     // 显示加载通知
     showNotification('正在生成PDF，请稍候...', 'info', 0);
     
@@ -863,6 +964,67 @@ function exportComments() {
                 showNotification('导出PDF时出错，请检查网络连接或服务器状态', 'error');
             }
         });
+}
+
+// 导出评语为Excel
+function exportCommentsToExcel() {
+    try {
+        console.log('开始导出Excel评语...');
+        
+        // 显示加载状态
+        showNotification('正在导出Excel评语...', 'info', 0);
+        
+        // 获取班级ID
+        let classId;
+        
+        // 尝试从班级过滤器获取班级ID
+        const classFilter = document.getElementById('commentClassFilter');
+        if (classFilter && classFilter.value) {
+            classId = classFilter.value;
+            console.log('从过滤器获取班级ID:', classId);
+        }
+        
+        // 构建请求URL - 确保URL路径正确
+        let url = `/api/export-comments-excel`;
+        if (classId) {
+            url += `?class_id=${classId}`;
+        }
+        
+        console.log('导出Excel请求URL:', url);
+        
+        // 创建一个隐藏的iframe来处理下载
+        const downloadFrame = document.createElement('iframe');
+        downloadFrame.style.display = 'none';
+        document.body.appendChild(downloadFrame);
+        
+        // 设置iframe的src属性以触发下载
+        downloadFrame.src = url;
+        
+        // 监听iframe的load事件
+        downloadFrame.onload = function() {
+            // 延迟移除iframe
+            setTimeout(() => {
+                document.body.removeChild(downloadFrame);
+                
+                // 隐藏加载通知
+                const toastContainer = document.getElementById('toastContainer');
+                if (toastContainer) {
+                    const toasts = toastContainer.querySelectorAll('.toast');
+                    toasts.forEach(toast => {
+                        const bsToast = bootstrap.Toast.getInstance(toast);
+                        if (bsToast) bsToast.hide();
+                    });
+                }
+                
+                // 显示成功消息
+                showNotification('评语导出请求已发送，请检查下载内容', 'success');
+            }, 1000);
+        };
+        
+    } catch (error) {
+        console.error('导出Excel评语错误:', error);
+        showNotification('导出Excel功能出错: ' + error.message, 'error');
+    }
 }
 
 // 导入docx库
@@ -1073,26 +1235,6 @@ function notifyStudentDataChanged() {
     }
 }
 
-// 初始化评语数据
-function initialize() {
-    console.log('初始化评语模块...');
-    
-    // 获取当前用户班级ID
-    fetchCurrentUserClassId();
-    
-    // 加载评语数据
-    initCommentList();
-    
-    // 绑定事件监听器
-    bindEventListeners();
-    
-    // 设置DOM变更监听
-    monitorDOMChanges();
-    
-    // 检查是否需要显示新功能提示
-    checkNewFeatureTips();
-}
-
 // 检查并显示新功能提示
 function checkNewFeatureTips() {
     // 使用localStorage检查用户是否看过新功能提示
@@ -1152,73 +1294,90 @@ function fetchCurrentUserClassId() {
 
 // 绑定事件监听器
 function bindEventListeners() {
-    console.log('绑定事件监听器...');
+    // 绑定搜索框事件
+    const searchInput = document.getElementById('commentSearch');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            filterComments(this.value);
+        });
+    }
     
-    // 获取导出评语按钮
+    // 绑定打印预览按钮
+    const previewBtn = document.getElementById('previewCommentsBtn');
+    if (previewBtn) {
+        previewBtn.addEventListener('click', showPrintPreview);
+    }
+    
+    // 绑定导出按钮
     const exportBtn = document.getElementById('exportCommentsBtn');
     if (exportBtn) {
         exportBtn.addEventListener('click', exportComments);
     }
     
-    // 获取打印预览按钮
-    const printPreviewBtn = document.getElementById('printPreviewBtn');
-    if (printPreviewBtn) {
-        printPreviewBtn.addEventListener('click', showPrintPreview);
-    }
-    
-    // 获取导入评语按钮
+    // 绑定导入按钮
     const importBtn = document.getElementById('importCommentsBtn');
     if (importBtn) {
         importBtn.addEventListener('click', showImportCommentsModal);
     }
     
-    // 模板标签点击
-    document.addEventListener('click', function(e) {
-        if (e.target.classList.contains('template-tag')) {
+    // 绑定评语表单提交事件
+    const commentForm = document.getElementById('commentForm');
+    if (commentForm) {
+        commentForm.addEventListener('submit', function(e) {
             e.preventDefault();
-            insertTemplate(e.target.dataset.content);
-        }
-    });
-    
-    // 绑定模态框中评语文本框的字数统计事件
-    const commentText = document.getElementById('commentText');
-    if (commentText) {
-        commentText.addEventListener('input', updateCharCount);
+            saveComment();
+        });
     }
     
-    // 保存评语按钮
-    const saveCommentBtn = document.getElementById('saveCommentBtn');
-    if (saveCommentBtn) {
-        saveCommentBtn.addEventListener('click', saveComment);
+    // 绑定评语文本区域事件
+    const commentTextarea = document.getElementById('commentContent');
+    if (commentTextarea) {
+        commentTextarea.addEventListener('input', updateCharCount);
     }
     
-    // 搜索框
-    const searchInput = document.getElementById('searchStudent');
-    if (searchInput) {
-        let lastValue = '';
-        
-        // 添加防抖动功能
-        searchInput.addEventListener('input', function() {
-            if (this.value !== lastValue) {
-                lastValue = this.value;
-                clearTimeout(this.searchTimer);
-                
-                this.searchTimer = setTimeout(() => {
-                    filterComments(this.value);
-                }, 300);
+    // 绑定批量更新表单提交事件
+    const batchUpdateForm = document.getElementById('batchUpdateForm');
+    if (batchUpdateForm) {
+        batchUpdateForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            batchUpdateComments();
+        });
+    }
+    
+    // 绑定班级过滤器变更事件
+    const classFilter = document.getElementById('commentClassFilter');
+    if (classFilter) {
+        classFilter.addEventListener('change', function() {
+            // 保存选择的班级ID
+            currentClassId = this.value;
+            // 重新加载评语列表
+            initCommentList();
+        });
+    }
+    
+    // 绑定AI评语助手按钮
+    const aiHelperBtn = document.getElementById('aiCommentHelperBtn');
+    if (aiHelperBtn) {
+        aiHelperBtn.addEventListener('click', function() {
+            const studentId = document.getElementById('studentId').value;
+            const studentName = document.getElementById('studentName').value;
+            const classId = document.getElementById('classId').value;
+            
+            if (studentId && studentName) {
+                showAICommentAssistant(studentId, studentName, classId);
+            } else {
+                showNotification('请先选择一个学生', 'warning');
             }
         });
     }
     
-    // 打印按钮
-    const printBtn = document.getElementById('printBtn');
-    if (printBtn) {
-        printBtn.addEventListener('click', function() {
-            window.print();
-        });
+    // 绑定API设置按钮
+    const apiSettingsBtn = document.getElementById('apiSettingsBtn');
+    if (apiSettingsBtn) {
+        apiSettingsBtn.addEventListener('click', showApiSettingsModal);
     }
     
-    // 导入评语相关事件绑定
+    // 绑定导入评语相关事件
     bindImportCommentsEvents();
 }
 
@@ -1922,6 +2081,7 @@ function showAICommentAssistant(studentId, studentName, classId) {
                 </div>
             </div>
         `;
+        
         
         document.body.appendChild(modalElement);
         
