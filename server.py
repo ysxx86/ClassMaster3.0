@@ -9,6 +9,17 @@ import re
 import random  # 添加random模块导入
 from functools import wraps
 
+# 配置
+UPLOAD_FOLDER = 'uploads'
+TEMPLATE_FOLDER = 'templates'
+EXPORTS_FOLDER = 'exports'
+DATABASE = 'students.db'
+
+# 确保所有必要的文件夹存在
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(TEMPLATE_FOLDER, exist_ok=True)
+os.makedirs(EXPORTS_FOLDER, exist_ok=True)
+
 def check_and_install(package, version=None):
     """检查并安装Python包"""
     package_with_version = f"{package}=={version}" if version else package
@@ -145,6 +156,94 @@ SYSTEM_SETTINGS = {
     "deepseek_api_enabled": bool(DEEPSEEK_API_KEY)
 }
 
+# 从数据库加载系统设置
+def load_settings_from_db():
+    """从数据库加载系统设置"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # 检查系统设置表是否存在
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='system_settings'")
+        if not cursor.fetchone():
+            logger.info("系统设置表不存在，将使用默认设置")
+            conn.close()
+            return
+        
+        # 查询所有设置
+        cursor.execute("SELECT key, value FROM system_settings")
+        settings = cursor.fetchall()
+        
+        # 更新全局设置
+        for row in settings:
+            key, value = row['key'], row['value']
+            
+            # 尝试解析JSON值
+            try:
+                # 对于可能是JSON的值，尝试解析
+                if value and (value.startswith('{') or value.startswith('[')):
+                    SYSTEM_SETTINGS[key] = json.loads(value)
+                else:
+                    SYSTEM_SETTINGS[key] = value
+            except:
+                # 如果解析失败，直接使用字符串值
+                SYSTEM_SETTINGS[key] = value
+        
+        conn.close()
+        logger.info("从数据库加载系统设置成功")
+    except Exception as e:
+        logger.error(f"从数据库加载系统设置时出错: {str(e)}")
+
+# 将设置保存到数据库
+def save_setting_to_db(key, value, description=None):
+    """将单个设置保存到数据库"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # 检查系统设置表是否存在
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='system_settings'")
+        if not cursor.fetchone():
+            # 创建系统设置表
+            cursor.execute('''
+            CREATE TABLE IF NOT EXISTS system_settings (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                key TEXT UNIQUE NOT NULL,
+                value TEXT,
+                description TEXT,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            ''')
+        
+        # 将值转换为字符串
+        if isinstance(value, (dict, list)):
+            value = json.dumps(value, ensure_ascii=False)
+        else:
+            value = str(value)
+        
+        # 更新或插入设置
+        if description:
+            cursor.execute('''
+            INSERT OR REPLACE INTO system_settings (key, value, description, updated_at)
+            VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+            ''', (key, value, description))
+        else:
+            cursor.execute('''
+            INSERT OR REPLACE INTO system_settings (key, value, updated_at)
+            VALUES (?, ?, CURRENT_TIMESTAMP)
+            ''', (key, value))
+        
+        conn.commit()
+        conn.close()
+        
+        # 同时更新内存中的设置
+        SYSTEM_SETTINGS[key] = value
+        
+        return True
+    except Exception as e:
+        logger.error(f"保存设置到数据库时出错: {str(e)}")
+        return False
+
 # 添加配置文件更新函数
 def update_config_file():
     """更新系统配置文件，保存当前的系统设置"""
@@ -181,8 +280,43 @@ CORS(app)  # 启用跨域资源共享
 # 设置密钥（用于会话安全）
 app.secret_key = os.environ.get("SECRET_KEY", "dev_secret_key")
 app.config['JSON_AS_ASCII'] = False  # 确保JSON响应支持中文
-app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False  # 关闭JSON格式化
-app.config['TRAP_HTTP_EXCEPTIONS'] = True  # 捕获HTTP异常
+app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False  # 禁用JSON美化，减少响应大小
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 限制上传文件大小为16MB
+
+# 初始化登录管理
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'users.login'  # 设置登录视图的端点
+
+# 从数据库加载系统设置
+try:
+    # 检查系统设置表是否存在，如果不存在则创建
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='system_settings'")
+    if not cursor.fetchone():
+        logger.info("系统设置表不存在，正在创建...")
+        # 导入并运行创建系统设置表的函数
+        from add_system_settings_table import add_system_settings_table
+        add_system_settings_table()
+    conn.close()
+    
+    # 加载系统设置
+    load_settings_from_db()
+    logger.info("系统设置已从数据库加载")
+except Exception as e:
+    logger.error(f"加载系统设置时出错: {str(e)}")
+    logger.info("将使用默认系统设置")
+
+# 设置DeepSeek API实例
+if SYSTEM_SETTINGS.get('deepseek_api_enabled'):
+    from utils.deepseek_api import DeepSeekAPI
+    deepseek_api = DeepSeekAPI(SYSTEM_SETTINGS.get('deepseek_api_key', ''))
+    app.config['deepseek_api'] = deepseek_api
+else:
+    deepseek_api = None
+    app.config['deepseek_api'] = None
 
 # 额外的静态文件路由
 @app.route('/css/<path:filename>')
@@ -260,11 +394,6 @@ def api_logout():
         app.logger.error(f"登出出错: {str(e)}")
         return jsonify({'status': 'error', 'message': '登出过程中发生错误'}), 500
 
-# 初始化Flask-Login
-login_manager = LoginManager()
-login_manager.init_app(app)
-login_manager.login_view = 'users.login'  # 设置登录视图
-
 # 用户加载函数
 @login_manager.user_loader
 def load_user(user_id):
@@ -283,9 +412,6 @@ def admin_required(f):
             return redirect(url_for('index'))
         return f(*args, **kwargs)
     return decorated_function
-
-# 将deepseek_api添加到应用配置中
-app.config['deepseek_api'] = deepseek_api
 
 # 注册学生蓝图
 app.register_blueprint(students_bp)
@@ -790,20 +916,6 @@ def unified_reset_password(user_id):
     except Exception as e:
         logger.error(f"重置用户密码时出错: {str(e)}")
         return jsonify({'status': 'error', 'message': f'重置密码失败: {str(e)}'}), 500
-
-# 配置
-UPLOAD_FOLDER = 'uploads'
-TEMPLATE_FOLDER = 'templates'
-EXPORTS_FOLDER = 'exports'
-DATABASE = 'students.db'
-
-# 将UPLOAD_FOLDER添加到app.config中
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
-# 确保所有必要的文件夹存在
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-os.makedirs(TEMPLATE_FOLDER, exist_ok=True)
-os.makedirs(EXPORTS_FOLDER, exist_ok=True)
 
 # 创建数据库连接
 def get_db_connection():
@@ -1572,23 +1684,112 @@ def save_deepseek_api_settings():
 @app.route('/api/settings', methods=['GET'])
 @login_required
 def get_system_settings():
-    # 添加用户权限检查，只有管理员可以获取完整的系统设置
-    if not current_user.is_admin:
-        # 非管理员用户，只返回有限的设置信息
-        filtered_settings = {
-            'system_name': SYSTEM_SETTINGS.get('system_name', '班主任管理系统'),
-            'school_name': SYSTEM_SETTINGS.get('school_name', '泉州东海湾实验学校')
-        }
+    try:
+        # 从数据库重新加载设置，确保获取最新数据
+        load_settings_from_db()
+        
+        # 添加用户权限检查，只有管理员可以获取完整的系统设置
+        if not current_user.is_admin:
+            # 非管理员用户，只返回有限的设置信息
+            filtered_settings = {
+                'system_name': SYSTEM_SETTINGS.get('system_name', '班主任管理系统'),
+                'school_name': SYSTEM_SETTINGS.get('school_name', '泉州东海湾实验学校'),
+                'school_year': SYSTEM_SETTINGS.get('school_year', '2024-2025'),
+                'semester': SYSTEM_SETTINGS.get('semester', '2'),
+                'start_date': SYSTEM_SETTINGS.get('start_date', '2025-03-01')
+            }
+            return jsonify({
+                'status': 'ok',
+                'settings': filtered_settings
+            })
+        
+        # 管理员用户，返回完整设置
         return jsonify({
             'status': 'ok',
-            'settings': filtered_settings
+            'settings': SYSTEM_SETTINGS
         })
-    
-    # 管理员用户，返回完整设置
-    return jsonify({
-        'status': 'ok',
-        'settings': SYSTEM_SETTINGS
-    })
+    except Exception as e:
+        logger.error(f"获取系统设置时出错: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': f"获取系统设置时出错: {str(e)}"
+        }), 500
+
+# 更新系统设置
+@app.route('/api/settings/update', methods=['POST'])
+@login_required
+@admin_required
+def update_system_settings():
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({
+                'status': 'error',
+                'message': '没有提供设置数据'
+            }), 400
+        
+        # 更新设置
+        for key, value in data.items():
+            # 保存到数据库
+            save_setting_to_db(key, value)
+        
+        # 更新配置文件
+        update_config_file()
+        
+        return jsonify({
+            'status': 'ok',
+            'message': '系统设置已更新'
+        })
+    except Exception as e:
+        logger.error(f"更新系统设置时出错: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': f"更新系统设置时出错: {str(e)}"
+        }), 500
+
+# 更新学期设置
+@app.route('/api/settings/semester', methods=['POST'])
+@login_required
+@admin_required
+def update_semester_settings():
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({
+                'status': 'error',
+                'message': '没有提供设置数据'
+            }), 400
+        
+        # 获取学年、学期和开学时间
+        school_year = data.get('school_year')
+        semester = data.get('semester')
+        start_date = data.get('start_date')
+        
+        # 验证数据
+        if not school_year or not semester or not start_date:
+            return jsonify({
+                'status': 'error',
+                'message': '学年、学期和开学时间都是必填项'
+            }), 400
+        
+        # 保存到数据库
+        save_setting_to_db('school_year', school_year, '学年设置')
+        save_setting_to_db('semester', semester, '学期设置 (1: 第一学期, 2: 第二学期)')
+        save_setting_to_db('start_date', start_date, '开学时间')
+        
+        # 更新配置文件
+        update_config_file()
+        
+        return jsonify({
+            'status': 'ok',
+            'message': '学期设置已更新'
+        })
+    except Exception as e:
+        logger.error(f"更新学期设置时出错: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': f"更新学期设置时出错: {str(e)}"
+        }), 500
 
 # 模板管理API
 @app.route('/api/templates', methods=['GET'])

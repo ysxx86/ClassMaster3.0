@@ -113,23 +113,23 @@ function initExportSettings() {
             if (data.status === 'success' || data.status === 'ok') {
                 const serverSettings = data.data || data.settings || {};
                 
-                // 更新学年和学期信息
-                if (serverSettings.school_year || serverSettings.schoolYear) {
-                    // 优先使用设置中的学年信息
-                    const schoolYear = serverSettings.school_year || serverSettings.schoolYear;
-                    document.getElementById('schoolYear').value = schoolYear;
-                    settings.schoolYear = schoolYear;
+                // 更新学年信息
+                if (serverSettings.school_year) {
+                    // 使用服务器设置的学年信息
+                    document.getElementById('schoolYear').value = serverSettings.school_year;
+                    settings.schoolYear = serverSettings.school_year;
                 } else {
-                    // 使用默认学年，确保与首页一致
+                    // 使用默认学年
                     document.getElementById('schoolYear').value = "2024-2025";
                     settings.schoolYear = "2024-2025";
                 }
                 
+                // 更新学期信息
                 if (serverSettings.semester) {
                     let semesterText = '第一学期';
                     let semesterValue = '1';
                     
-                    if (serverSettings.semester === '第二学期' || serverSettings.semester === '下学期' || serverSettings.semester === '2') {
+                    if (serverSettings.semester === '2' || serverSettings.semester === '第二学期') {
                         semesterText = '第二学期';
                         semesterValue = '2';
                     }
@@ -144,7 +144,7 @@ function initExportSettings() {
                     settings.semester = semesterValue;
                     settings.semesterText = semesterText;
                 } else {
-                    // 使用默认学期，确保与首页一致
+                    // 使用默认学期
                     const semesterInput = document.getElementById('semester');
                     const semesterValueInput = document.getElementById('semesterValue');
                     
@@ -155,8 +155,12 @@ function initExportSettings() {
                     settings.semesterText = "第二学期";
                 }
                 
-                // 根据学期设置合适的开学时间
-                if (document.getElementById('startDate')) {
+                // 更新开学时间
+                if (serverSettings.start_date && document.getElementById('startDate')) {
+                    document.getElementById('startDate').value = serverSettings.start_date;
+                    settings.startDate = serverSettings.start_date;
+                } else if (document.getElementById('startDate')) {
+                    // 使用默认开学时间
                     const currentYear = new Date().getFullYear();
                     let defaultStartDate;
                     
@@ -168,12 +172,8 @@ function initExportSettings() {
                         defaultStartDate = `${currentYear}-03-01`;
                     }
                     
-                    // 如果没有特别设置过开学时间，用默认值
-                    if (!settings.startDate) {
-                        settings.startDate = defaultStartDate;
-                    }
-                    
-                    document.getElementById('startDate').value = settings.startDate;
+                    document.getElementById('startDate').value = defaultStartDate;
+                    settings.startDate = defaultStartDate;
                 }
                 
                 // 保存更新后的设置
@@ -193,16 +193,6 @@ function initExportSettings() {
             // 设置默认学年学期
             setDefaultSemesterInfo(settings);
         });
-    
-    // 设置默认值
-    document.getElementById('schoolYear').value = settings.schoolYear || "2024-2025";
-    document.getElementById('semester').value = settings.semester === '1' ? '第一学期' : '第二学期';
-    document.getElementById('semesterValue').value = settings.semester || "2";
-    
-    // 设置开学时间
-    if (document.getElementById('startDate')) {
-        document.getElementById('startDate').value = settings.startDate || '';
-    }
     
     // 设置包含内容复选框
     document.getElementById('includeBasicInfo').checked = settings.includeBasicInfo !== false;
