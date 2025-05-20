@@ -336,6 +336,9 @@
                         <button class="nav-link active" id="v-pills-ai-tab" data-bs-toggle="pill" data-bs-target="#v-pills-ai" type="button" role="tab">
                             <i class='bx bx-bot'></i> AI评语设置
                         </button>
+                        <button class="nav-link" id="v-pills-semester-tab" data-bs-toggle="pill" data-bs-target="#v-pills-semester" type="button" role="tab">
+                            <i class='bx bx-calendar'></i> 学期设置
+                        </button>
                         <button class="nav-link" id="v-pills-carousel-tab" data-bs-toggle="pill" data-bs-target="#v-pills-carousel" type="button" role="tab">
                             <i class='bx bx-image'></i> 登录轮播设置
                         </button>
@@ -427,6 +430,58 @@
                                         <i class='bx bx-save'></i> 保存设置
                                     </button>
                                 </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 学期设置选项卡 -->
+                        <div class="tab-pane fade" id="v-pills-semester" role="tabpanel">
+                            <div class="settings-card">
+                                <div class="settings-icon">
+                                    <i class='bx bx-calendar'></i>
+                                </div>
+                                <h2 class="settings-title">学期设置</h2>
+                                <p class="settings-desc">设置系统的学年、学期和开学时间。这些设置将在导出报告时自动应用。</p>
+                                
+                                <div class="alert alert-info">
+                                    <i class='bx bx-info-circle'></i> 这些设置会影响所有用户的导出报告，请谨慎修改。
+                                </div>
+                                
+                                <form id="semesterSettingsForm" class="mt-4">
+                                    <div class="form-group row mb-3">
+                                        <label for="schoolYearSetting" class="col-sm-3 col-form-label">学年</label>
+                                        <div class="col-sm-9">
+                                            <input type="text" class="form-control" id="schoolYearSetting" name="schoolYearSetting" placeholder="例如：2024-2025" required>
+                                            <small class="form-text text-muted">格式：YYYY-YYYY，例如：2024-2025</small>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group row mb-3">
+                                        <label for="semesterSetting" class="col-sm-3 col-form-label">学期</label>
+                                        <div class="col-sm-9">
+                                            <select class="form-select" id="semesterSetting" name="semesterSetting" required>
+                                                <option value="1">第一学期</option>
+                                                <option value="2">第二学期</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group row mb-3">
+                                        <label for="startDateSetting" class="col-sm-3 col-form-label">开学时间</label>
+                                        <div class="col-sm-9">
+                                            <input type="date" class="form-control" id="startDateSetting" name="startDateSetting" required>
+                                            <small class="form-text text-muted">开学日期，将在报告中显示</small>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group row">
+                                        <div class="col-sm-9 offset-sm-3">
+                                            <button type="button" id="saveSemesterSettingsBtn" class="btn btn-primary">
+                                                <i class='bx bx-save'></i> 保存设置
+                                            </button>
+                                            <div id="semesterSettingsStatus" class="mt-2"></div>
+                                        </div>
+                                    </div>
+                                </form>
                             </div>
                         </div>
                         
