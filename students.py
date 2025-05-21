@@ -595,6 +595,66 @@ def import_students_preview():
                           (student['id'], student['class_id']))
             if cursor.fetchone():
                 updated_count += 1
+                
+                # 查询数据库中已有的学生信息，用于字段比对
+                cursor.execute('''
+                    SELECT id, name, height, weight, chest_circumference, vital_capacity, 
+                           vision_left, vision_right, dental_caries, physical_test_status
+                    FROM students 
+                    WHERE id = ? AND class_id = ?
+                ''', (student['id'], student['class_id']))
+                existing_data = cursor.fetchone()
+                
+                if existing_data:
+                    # 转换为字典
+                    existing_student = dict(existing_data)
+                    
+                    # 添加需要更新的字段信息
+                    student['fields_to_update'] = []
+                    
+                    # 比对各个字段
+                    fields_to_compare = [
+                        ('height', '身高'), 
+                        ('weight', '体重'), 
+                        ('chest_circumference', '胸围'), 
+                        ('vital_capacity', '肺活量'),
+                        ('vision_left', '视力左'), 
+                        ('vision_right', '视力右'), 
+                        ('dental_caries', '龋齿'),
+                        ('physical_test_status', '体测情况')
+                    ]
+                    
+                    for field, display_name in fields_to_compare:
+                        # 只比对Excel中有值的字段
+                        if field in student and student[field] is not None:
+                            # 数值字段比较
+                            if field in ['height', 'weight', 'chest_circumference', 'vital_capacity', 
+                                      'vision_left', 'vision_right']:
+                                # 获取数据库中的值，确保是浮点数
+                                db_value = existing_student.get(field)
+                                if db_value is not None:
+                                    try:
+                                        db_value = float(db_value)
+                                    except (ValueError, TypeError):
+                                        db_value = None
+                                
+                                # 比较值
+                                if db_value != student[field]:
+                                    student['fields_to_update'].append({
+                                        'field': field,
+                                        'display_name': display_name,
+                                        'old_value': db_value,
+                                        'new_value': student[field]
+                                    })
+                            else:
+                                # 非数值字段比较
+                                if existing_student.get(field) != student[field]:
+                                    student['fields_to_update'].append({
+                                        'field': field,
+                                        'display_name': display_name,
+                                        'old_value': existing_student.get(field),
+                                        'new_value': student[field]
+                                    })
             else:
                 added_count += 1
                 
@@ -725,9 +785,36 @@ def confirm_import():
                 # 执行SQL
                 if existing_student:
                     # 更新现有学生
-                    query = f"UPDATE students SET {', '.join(update_pairs)} WHERE id = ? AND class_id = ?"
-                    cursor.execute(query, db_values + [student_id, class_id])
-                    updated_count += 1
+                    # 只更新与数据库中不一致的字段
+                    if 'fields_to_update' in student and student['fields_to_update']:
+                        # 如果有需要更新的字段，只更新那些字段
+                        update_fields = []
+                        update_values = []
+                        
+                        for field_info in student['fields_to_update']:
+                            field_name = field_info['field']
+                            if field_name in db_columns:
+                                update_fields.append(f"{field_name} = ?")
+                                update_values.append(student[field_name])
+                        
+                        # 添加更新时间
+                        if 'updated_at' in db_columns:
+                            update_fields.append('updated_at = ?')
+                            update_values.append(now)
+                        
+                        # 如果有需要更新的字段，执行更新
+                        if update_fields:
+                            query = f"UPDATE students SET {', '.join(update_fields)} WHERE id = ? AND class_id = ?"
+                            cursor.execute(query, update_values + [student_id, class_id])
+                            updated_count += 1
+                        else:
+                            # 如果没有需要更新的字段，跳过更新
+                            logger.info(f"学生 {student_id} 无需更新任何字段")
+                    else:
+                        # 向后兼容，如果没有fields_to_update字段，执行原有逻辑
+                        query = f"UPDATE students SET {', '.join(update_pairs)} WHERE id = ? AND class_id = ?"
+                        cursor.execute(query, db_values + [student_id, class_id])
+                        updated_count += 1
                 else:
                     # 插入新学生
                     placeholders = ', '.join(['?'] * len(db_fields))
