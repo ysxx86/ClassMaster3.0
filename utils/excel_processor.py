@@ -383,21 +383,45 @@ class CommentsExcelProcessor:
             }
             
             # 检查评语长度，不再自动截断，仅标记是否超过限制
-            if len(comment['comment']) > 260:
-                logger.warning(f"学生[{comment['name']}]的评语超过260字符长度限制: {len(comment['comment'])}字")
+            if len(comment['comment']) > 5000:  # 临时调整为1000字
+                logger.warning(f"学生[{comment['name']}]的评语超过5000字符长度限制: {len(comment['comment'])}字")
                 comment['truncated'] = False  # 不再截断，只是标记
                 comment['valid'] = False  # 标记为无效
             else:
                 comment['truncated'] = False
                 comment['valid'] = True  # 标记为有效
             
-            comments_data.append(comment)
+            # 检查评语长度是否有效（不超过1000个字符）
+            is_valid = len(comment['comment']) <= 260
+            if is_valid:
+                valid_count += 1
+            
+            preview = {
+                'name': comment['name'],
+                'comment': comment['comment'],
+                'matched': False,
+                'length': len(comment['comment']),
+                'valid': is_valid,
+                'valid_text': "有效" if is_valid else "无效(超过5000字)"  # 临时调整为1000字
+            }
+            
+            # 检查学生是否存在
+            if comment['name'] in students_dict:
+                preview['matched'] = True
+                preview['student_id'] = students_dict[comment['name']]['id']
+                match_count += 1
+            
+            matched_comments.append(preview)
         
-        # 记录第一个评语数据，便于调试
-        if comments_data:
-            logger.info(f"第一个评语数据: {json.dumps(comments_data[0], ensure_ascii=False)}")
+        logger.info(f"评语匹配完成，总计: {total_count}, 成功匹配: {match_count}, 有效评语: {valid_count}")
         
-        return comments_data
+        return {
+            'previews': matched_comments,
+            'total_count': total_count,
+            'match_count': match_count,
+            'valid_count': valid_count,
+            'all_valid': valid_count == total_count  # 是否所有评语都有效
+        }
     
     def _generate_html_preview(self, comments_data):
         """生成HTML预览表格"""
@@ -456,15 +480,15 @@ class CommentsExcelProcessor:
         matched_comments = []
         total_count = len(comments_data)
         match_count = 0
-        valid_count = 0  # 有效评语数量（长度不超过260个字）
+        valid_count = 0  # 有效评语数量（长度不超过1000个字）
         
         for comment in comments_data:
             student_name = comment['name']
             comment_content = comment['comment']
             comment_length = len(comment_content)
             
-            # 检查评语长度是否有效（不超过260个字符）
-            is_valid = comment_length <= 260
+            # 检查评语长度是否有效（不超过1000个字符）
+            is_valid = comment_length <= 5000  # 修改为5000字  # 临时调整为1000字
             if is_valid:
                 valid_count += 1
             
@@ -474,7 +498,7 @@ class CommentsExcelProcessor:
                 'matched': False,
                 'length': comment_length,
                 'valid': is_valid,
-                'valid_text': "有效" if is_valid else "无效(超过260字)"
+                'valid_text': "有效" if is_valid else "无效(超过5000字)"  # 临时调整为1000字
             }
             
             # 检查学生是否存在
