@@ -16,7 +16,7 @@ class DeepSeekAPI:
     """DeepSeek API封装类，用于调用DeepSeek AI大模型生成学生评语"""
 
     # API端点
-    API_URL = "https://api.deepseek.com/v1/chat/completions"
+    API_URL = "https://api.deepseek.com/chat/completions"
     
     def __init__(self, api_key: Optional[str] = None):
         """初始化DeepSeek API客户端
@@ -82,7 +82,6 @@ class DeepSeekAPI:
                 {"role": "system", "content": "你是一个简单的API测试助手。"},
                 {"role": "user", "content": "返回'连接测试成功'这几个字，不要返回其他内容。"}
             ],
-            "temperature": 0.1,
             "max_tokens": 10
         }
         
@@ -97,17 +96,22 @@ class DeepSeekAPI:
             
             # 检查响应是否包含预期字段
             if "choices" in result and len(result["choices"]) > 0:
-                logger.info("DeepSeek API连接测试成功")
-                return {
-                    "status": "success",
-                    "message": "API连接正常"
-                }
-            else:
-                logger.warning(f"API响应格式异常: {result}")
-                return {
-                    "status": "error",
-                    "message": "API响应格式异常，但连接成功"
-                }
+                # 获取消息内容
+                message = result["choices"][0]["message"]
+                
+                # 检查是否存在content或reasoning_content任一字段
+                if "content" in message or "reasoning_content" in message:
+                    logger.info("DeepSeek API连接测试成功")
+                    return {
+                        "status": "success",
+                        "message": "API连接正常"
+                    }
+                else:
+                    logger.warning(f"API响应格式异常: {result}")
+                    return {
+                        "status": "error",
+                        "message": "API响应格式异常，但连接成功"
+                    }
                 
         except requests.exceptions.RequestException as e:
             logger.error(f"API连接测试失败: {str(e)}")
@@ -132,7 +136,7 @@ class DeepSeekAPI:
                         student_info: Dict[str, Any], 
                         style: str = "鼓励性的", 
                         tone: str = "正式的", 
-                        max_length: int = 260) -> Dict[str, Any]:
+                        max_length: int = 5000) -> Dict[str, Any]:
         """生成学生评语
         
         Args:
@@ -260,11 +264,7 @@ class DeepSeekAPI:
                 {"role": "system", "content": "你是一位专业的班主任评语撰写专家。你最重要的任务是严格控制评语字数在要求范围内，不得超过上限。"},
                 {"role": "user", "content": prompt}
             ],
-            "temperature": 0.7,
-            "max_tokens": min(800, max_length * 2),  # 控制生成字数，限制最大token
-            "top_p": 0.95,
-            "frequency_penalty": 0.1,
-            "presence_penalty": 0.1
+            "max_tokens": min(4000, max_length * 2)  # 增加最大token数以支持更长的输出
         }
         
         # 初始化重试计数
@@ -295,7 +295,17 @@ class DeepSeekAPI:
                 
                 # 检查是否有有效内容
                 if "choices" in result and len(result["choices"]) > 0:
-                    content = result["choices"][0]["message"]["content"]
+                    # 获取消息内容
+                    message = result["choices"][0]["message"]
+                    
+                    # 处理DeepSeek-Reasoner模型返回的reasoning_content字段
+                    reasoning_content = message.get("reasoning_content", "")
+                    content = message.get("content", "")
+                    
+                    # 如果content为空但reasoning_content不为空，使用reasoning_content
+                    if not content.strip() and reasoning_content:
+                        logger.info(f"content为空，使用reasoning_content，长度：{len(reasoning_content)}字符")
+                        content = reasoning_content
                     
                     # 清理内容，去除多余的引号和空格
                     content = content.strip()
@@ -303,16 +313,18 @@ class DeepSeekAPI:
                     logger.info(f"成功获取评语，评语长度: {len(content)}字")
                     
                     # 检查评语长度，严格限制不超过最大字数
-                    if len(content) > max_length:
-                        logger.warning(f"评语超出最大长度限制，当前长度: {len(content)}，最大允许: {max_length}")
-                        content = self._truncate_to_complete_sentence(content, max_length)
-                        logger.info(f"截断后评语长度: {len(content)}字")
+                    # if len(content) > max_length:
+                    #     logger.warning(f"评语超出最大长度限制，当前长度: {len(content)}，最大允许: {max_length}")
+                    #     content = self._truncate_to_complete_sentence(content, max_length)
+                    #     logger.info(f"截断后评语长度: {len(content)}字")
                     
                     # 返回结果
                     return {
                         "status": "ok",
                         "comment": content,
-                        "message": "评语生成成功"
+                        "message": "评语生成成功",
+                        "reasoning_content": reasoning_content,
+                        "content_field": message.get("content", "")
                     }
                 else:
                     logger.warning(f"API响应缺少有效内容: {result}")
@@ -562,7 +574,6 @@ class DeepSeekAPI:
                 {"role": "system", "content": f"你是一名专业的{subject}教师和教学分析专家，善于分析试卷数据并提供有针对性的教学建议。"},
                 {"role": "user", "content": prompt}
             ],
-            "temperature": 0.7,
             "response_format": {"type": "json_object"},
             "max_tokens": 2000
         }
@@ -577,7 +588,17 @@ class DeepSeekAPI:
             
             # 检查响应是否包含预期字段
             if "choices" in result and len(result["choices"]) > 0:
-                analysis_content = result["choices"][0]["message"]["content"].strip()
+                # 获取消息内容
+                message = result["choices"][0]["message"]
+                
+                # 处理DeepSeek-Reasoner模型返回的reasoning_content字段
+                reasoning_content = message.get("reasoning_content", "")
+                analysis_content = message.get("content", "").strip()
+                
+                # 如果content为空但reasoning_content不为空，使用reasoning_content
+                if not analysis_content and reasoning_content:
+                    logger.info(f"content为空，使用reasoning_content，长度：{len(reasoning_content)}字符")
+                    analysis_content = reasoning_content.strip()
                 
                 try:
                     # 解析JSON内容

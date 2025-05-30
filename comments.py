@@ -420,7 +420,7 @@ def generate_comment():
         # 获取评语参数
         style = data.get('style', '鼓励性的')
         tone = data.get('tone', '正式的')
-        max_length = int(data.get('max_length', 260))
+        max_length = int(data.get('max_length', 5000))
         additional_instructions = data.get('additional_instructions', '')
         
         # 如果有额外指令，添加到学生信息中
@@ -2098,7 +2098,7 @@ def process_excel_file_legacy(file_path, class_id=None):
         # 添加到预览数据
         previews.append({
             'name': name,
-            'comment': comment if len(comment) <= 260 else comment[:260] + '...(已截断)',
+            'comment': comment if len(comment) <= 5000 else comment[:5000] + '...(已截断)',
             'matched': matched
         })
     
@@ -2242,7 +2242,7 @@ def confirm_import_comments():
             conn.execute('BEGIN TRANSACTION')
             
             for preview in previews:
-                # 只导入匹配的且有效的评语（不超过260字）
+                # 只导入匹配的且有效的评语（不超过5000字）
                 if preview['matched'] and preview['valid']:
                     student_name = preview['name']
                     student_id = students_dict[student_name]['id']
@@ -2416,9 +2416,9 @@ def confirm_import_comments():
                         skipped_count += 1
                         continue
                     
-                    # 截断评语（如果超过260字符）
-                    if len(comment) > 260:
-                        comment = comment[:260]
+                    # 截断评语（如果超过5000字符）
+                    if len(comment) > 5000:  # 临时调整为5000字
+                        comment = comment[:5000]
                     
                     # 检查是否匹配到学生
                     if name in students_dict:

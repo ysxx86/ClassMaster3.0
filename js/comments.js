@@ -261,8 +261,8 @@ function createCommentCard(student, commentData) {
     // 评语字数
     const commentLength = commentContent.length;
     
-    // 设置字数的颜色 - 从绿色(接近0字)渐变到红色(接近260字)
-    const maxLength = 260;
+    // 设置字数的颜色 - 从绿色(接近0字)渐变到红色(接近1000字)
+    const maxLength = 5000;  // 修改为260字 // 临时调整为1000字
     const percentage = commentLength / maxLength; // 使用百分比来确定颜色
     let textColor = '';
     
@@ -457,7 +457,7 @@ function saveComment() {
     }
     
     // 检查评语字数是否超过限制
-    const maxLength = 260;
+    const maxLength = 5000;  // 修改为260字 // 临时调整为1000字
     if (content.length > maxLength) {
         console.warn(`评语内容超过字数限制: ${content.length}/${maxLength}，将自动截断`);
         // 自动截断内容而不是显示错误
@@ -1069,7 +1069,7 @@ function updateCharCount() {
     const batchCharCount = document.getElementById('batchCommentCharCount');
     
     if (commentText && charCount) {
-        const maxLength = 260; // 最大字数限制
+        const maxLength = 5000;  // 修改为260字 // 临时调整为1000字
         const count = commentText.value.length;
         charCount.textContent = `${count}/${maxLength}`;
         console.log(`当前字数: ${count}/${maxLength}`);
@@ -1081,7 +1081,7 @@ function updateCharCount() {
             console.log(`已截断至最大字数: ${maxLength}`);
         }
         
-        // 根据字数改变颜色提示 - 从绿色(接近0字)渐变到红色(接近260字)
+        // 根据字数改变颜色提示 - 从绿色(接近0字)渐变到红色(接近字数限制)
         const percentage = Math.min(count / maxLength, 1.0); // 确保不超过1.0
         
         if (percentage < 0.5) {
@@ -1105,7 +1105,7 @@ function updateCharCount() {
     }
     
     if (batchCommentText && batchCharCount) {
-        const maxLength = 260; // 最大字数限制
+        const maxLength = 5000;  // 修改为260字 // 临时调整为1000字
         const count = batchCommentText.value.length;
         batchCharCount.textContent = `${count}/${maxLength}`;
         
@@ -1115,7 +1115,7 @@ function updateCharCount() {
             batchCharCount.textContent = `${maxLength}/${maxLength}`;
         }
         
-        // 根据字数改变颜色提示 - 从绿色(接近0字)渐变到红色(接近260字)
+        // 根据字数改变颜色提示 - 从绿色(接近0字)渐变到红色(接近字数限制)
         const percentage = Math.min(count / maxLength, 1.0); // 确保不超过1.0
         
         if (percentage < 0.5) {
@@ -1615,7 +1615,7 @@ function handleImportFileSelection(e) {
                     if (data.match_count === 0) {
                         showNotification('没有匹配到任何学生，请检查Excel文件中的姓名是否正确', 'warning');
                     } else if (!data.all_valid) {
-                        showNotification('部分评语超过260字限制，请修改后重试', 'warning');
+                        showNotification('部分评语超过5000字限制，请修改后重试', 'warning');
                     }
                 }
             }
@@ -1766,7 +1766,7 @@ function showCommentsPreview(data) {
         // 添加有效性状态标签 - 强调字数超出问题
         const validStatus = preview.valid ? 
             '<span class="badge bg-success">有效</span>' : 
-            `<span class="badge bg-danger">超出字数(${preview.length}/260)</span>`;
+            `<span class="badge bg-danger">超出字数(${preview.length}/1000)</span>`;
         
         // 计算评语显示，超过100字符的截断显示（仅用于UI展示）
         let previewComment = preview.comment;
@@ -1779,7 +1779,7 @@ function showCommentsPreview(data) {
                 <td>${i + 1}</td>
                 <td>${preview.name}</td>
                 <td>${previewComment.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</td>
-                <td>${preview.length} / 260</td>
+                <td>${preview.length} / 1000</td>
                 <td>${matchStatus} ${validStatus}</td>
             </tr>
         `;
@@ -1800,8 +1800,8 @@ function showCommentsPreview(data) {
         <div class="alert ${validClass}">
             <i class='bx ${validIcon}'></i> 
             共发现 ${data.total_count} 条评语记录，其中 ${data.match_count} 条可匹配到学生，
-            ${data.valid_count} 条在字数范围内有效(不超过260字)。
-            ${!allValid ? '<strong>存在超出260字数限制的评语，请修改Excel文件后重新导入。系统不会自动截断评语。</strong>' : ''}
+            ${data.valid_count} 条在字数范围内有效(不超过5000字)。
+            ${!allValid ? '<strong>存在超出1000字数限制的评语，请修改Excel文件后重新导入。系统不会自动截断评语。</strong>' : ''}
         </div>
     `;
     
@@ -1823,7 +1823,7 @@ function showCommentsPreview(data) {
             if (data.match_count === 0) {
                 confirmBtn.title = "没有任何评语匹配到学生，无法导入";
             } else if (!allValid) {
-                confirmBtn.title = "存在评语超过字数限制(260字)，请修改后重试，系统不会自动截断评语";
+                confirmBtn.title = "存在评语超过字数限制(1000字)，请修改后重试，系统不会自动截断评语";
             }
         } else {
             confirmBtn.title = "确认导入评语";
@@ -2031,7 +2031,7 @@ function showAICommentAssistant(studentId, studentName, classId) {
                                     </div>
                                     <div class="col-md-4">
                                         <label class="form-label">最大字数</label>
-                                        <input type="number" class="form-control" id="aiMaxLengthInput" value="260" min="50" max="260">
+                                        <input type="number" class="form-control" id="aiMaxLengthInput" value="5000" min="50" max="5000">
                                     </div>
                                 </div>
                                 <div class="text-end">
@@ -2053,7 +2053,7 @@ function showAICommentAssistant(studentId, studentName, classId) {
                                 <div id="aiCommentContent" class="mb-3 p-3 border rounded" style="min-height: 100px;"></div>
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
-                                        <span class="badge bg-light text-dark" id="aiCommentLength">0/260</span> 字
+                                        <span class="badge bg-light text-dark" id="aiCommentLength">0/5000</span> 字
                                     </div>
                                     <div>
                                         <button class="btn btn-outline-secondary" id="generateAnotherBtn">
@@ -2284,7 +2284,7 @@ async function generateAIComment(studentId, classId) {
         // 获取所有输入值
         const style = modal.querySelector('#aiStyleSelect').value;
         const tone = modal.querySelector('#aiToneSelect').value;
-        const maxLength = parseInt(modal.querySelector('#aiMaxLengthInput').value);
+        const maxLength = parseInt(modal.querySelector('#aiMaxLengthInput').value) || 5000; // 临时调整为1000字
         const personality = modal.querySelector('#aiPersonalityInput').value.trim();
         const studyPerformance = modal.querySelector('#aiStudyInput').value.trim();
         const hobbies = modal.querySelector('#aiHobbiesInput').value.trim();
@@ -2397,7 +2397,7 @@ async function generateAIComment(studentId, classId) {
                 let commentText = data.comment;
                 
                 // 检查并截断超过字数限制的评语
-                const maxLength = parseInt(modal.querySelector('#aiMaxLengthInput').value) || 260;
+                const maxLength = parseInt(modal.querySelector('#aiMaxLengthInput').value) || 5000; // 临时调整为1000字
                 if (commentText.length > maxLength) {
                     console.warn(`评语超过字数限制: ${commentText.length}/${maxLength}，截断至${maxLength}字`);
                     commentText = commentText.substring(0, maxLength);
@@ -2492,9 +2492,9 @@ function useAIComment(studentId, classId) {
     }
     
     // 检查评语字数是否超过限制
-    const maxLength = 260;
+    const maxLength = 5000;  // 修改为260字 // 临时调整为1000字
     if (aiCommentContent.length > maxLength) {
-        showNotification(`评语超过${maxLength}字限制，请重新生成`, 'error');
+        showNotification(`评语超过5000字限制，请重新生成`, 'error');
         return;
     }
     
