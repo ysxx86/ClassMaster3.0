@@ -136,7 +136,7 @@ class DeepSeekAPI:
                         student_info: Dict[str, Any], 
                         style: str = "鼓励性的", 
                         tone: str = "正式的", 
-                        max_length: int = 5000,
+                        max_length: int = 50000,
                         min_length: int = 200) -> Dict[str, Any]:
         """生成学生评语
         
@@ -144,7 +144,7 @@ class DeepSeekAPI:
             student_info: 学生信息，包含姓名、性别、特点、爱好等
             style: 评语风格，如"鼓励性的"、"严肃的"、"中肯的"等
             tone: 评语语气，如"正式的"、"亲切的"、"严厉的"等
-            max_length: 思考过程(reasoning_content)最大字数，默认5000字
+            max_length: 思考过程(reasoning_content)最大字数，默认50000字
             min_length: 评语最小字数，默认200字
             
         Returns:
@@ -280,13 +280,13 @@ class DeepSeekAPI:
                 {"role": "system", "content": "你是一位专业的班主任评语撰写专家。你最重要的任务是严格控制评语字数在要求范围内，不得超过上限。"},
                 {"role": "user", "content": prompt}
             ],
-            "max_tokens": min(4000, reasoning_max_length * 2)  # 增加最大token数以支持更长的输出
+            "max_tokens": min(5000, reasoning_max_length * 2)  # 增加最大token数以支持更长的输出
         }
         
         # 初始化重试计数
         attempts = 0
         max_attempts = 3
-        base_timeout = 45  # 基础超时时间，单位为秒
+        base_timeout = 180  # 基础超时时间，单位为秒
         
         while attempts < max_attempts:
             try:
