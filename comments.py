@@ -420,7 +420,9 @@ def generate_comment():
         # 获取评语参数
         style = data.get('style', '鼓励性的')
         tone = data.get('tone', '正式的')
-        max_length = int(data.get('max_length', 5000))
+        # 强制设置最大字数为260，忽略前端传入的值
+        max_length = 5000  # 无论前端传入什么值，都固定为260
+        min_length = 200  # 最小字数固定为200
         additional_instructions = data.get('additional_instructions', '')
         
         # 如果有额外指令，添加到学生信息中
@@ -436,7 +438,8 @@ def generate_comment():
                 student_info=student_info,
                 style=style,
                 tone=tone,
-                max_length=max_length
+                max_length=max_length,
+                min_length=min_length  # 添加最小字数参数
             )
         except Exception as e:
             logger.error(f"评语生成引擎错误: {str(e)}")
@@ -453,7 +456,9 @@ def generate_comment():
                 "status": "ok",
                 "comment": result["comment"],
                 "student_id": student_id,
-                "class_id": class_id
+                "class_id": class_id,
+                "reasoning_content": result.get("reasoning_content", ""),
+                "content_field": result.get("content_field", "")
             })
         else:
             return jsonify({

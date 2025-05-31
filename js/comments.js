@@ -262,7 +262,7 @@ function createCommentCard(student, commentData) {
     const commentLength = commentContent.length;
     
     // 设置字数的颜色 - 从绿色(接近0字)渐变到红色(接近1000字)
-    const maxLength = 5000;  // 修改为260字 // 临时调整为1000字
+    const maxLength = 260;  // 修改为5000字 // 临时调整为5000字
     const percentage = commentLength / maxLength; // 使用百分比来确定颜色
     let textColor = '';
     
@@ -457,7 +457,7 @@ function saveComment() {
     }
     
     // 检查评语字数是否超过限制
-    const maxLength = 5000;  // 修改为260字 // 临时调整为1000字
+    const maxLength = 260;  // 修改为5000字
     if (content.length > maxLength) {
         console.warn(`评语内容超过字数限制: ${content.length}/${maxLength}，将自动截断`);
         // 自动截断内容而不是显示错误
@@ -1069,7 +1069,7 @@ function updateCharCount() {
     const batchCharCount = document.getElementById('batchCommentCharCount');
     
     if (commentText && charCount) {
-        const maxLength = 5000;  // 修改为260字 // 临时调整为1000字
+        const maxLength = 260;  // 修改为5000字
         const count = commentText.value.length;
         charCount.textContent = `${count}/${maxLength}`;
         console.log(`当前字数: ${count}/${maxLength}`);
@@ -1105,7 +1105,7 @@ function updateCharCount() {
     }
     
     if (batchCommentText && batchCharCount) {
-        const maxLength = 5000;  // 修改为260字 // 临时调整为1000字
+        const maxLength = 260;  // 修改为5000字
         const count = batchCommentText.value.length;
         batchCharCount.textContent = `${count}/${maxLength}`;
         
@@ -1615,7 +1615,7 @@ function handleImportFileSelection(e) {
                     if (data.match_count === 0) {
                         showNotification('没有匹配到任何学生，请检查Excel文件中的姓名是否正确', 'warning');
                     } else if (!data.all_valid) {
-                        showNotification('部分评语超过5000字限制，请修改后重试', 'warning');
+                        showNotification('部分评语超过260字限制，请修改后重试', 'warning');
                     }
                 }
             }
@@ -1800,7 +1800,7 @@ function showCommentsPreview(data) {
         <div class="alert ${validClass}">
             <i class='bx ${validIcon}'></i> 
             共发现 ${data.total_count} 条评语记录，其中 ${data.match_count} 条可匹配到学生，
-            ${data.valid_count} 条在字数范围内有效(不超过5000字)。
+            ${data.valid_count} 条在字数范围内有效(不超过260字)。
             ${!allValid ? '<strong>存在超出1000字数限制的评语，请修改Excel文件后重新导入。系统不会自动截断评语。</strong>' : ''}
         </div>
     `;
@@ -1823,7 +1823,7 @@ function showCommentsPreview(data) {
             if (data.match_count === 0) {
                 confirmBtn.title = "没有任何评语匹配到学生，无法导入";
             } else if (!allValid) {
-                confirmBtn.title = "存在评语超过字数限制(1000字)，请修改后重试，系统不会自动截断评语";
+                confirmBtn.title = "存在评语超过字数限制(5000字)，请修改后重试，系统不会自动截断评语";
             }
         } else {
             confirmBtn.title = "确认导入评语";
@@ -2032,6 +2032,7 @@ function showAICommentAssistant(studentId, studentName, classId) {
                                     <div class="col-md-4">
                                         <label class="form-label">最大字数</label>
                                         <input type="number" class="form-control" id="aiMaxLengthInput" value="5000" min="50" max="5000">
+                                        <small class="form-text text-muted">系统将生成200-260字的评语</small>
                                     </div>
                                 </div>
                                 <div class="text-end">
@@ -2051,9 +2052,14 @@ function showAICommentAssistant(studentId, studentName, classId) {
                             </div>
                             <div class="card-body">
                                 <div id="aiCommentContent" class="mb-3 p-3 border rounded" style="min-height: 100px;"></div>
+                                <div id="aiReasoningContent" class="mb-3 p-3 border rounded bg-light" style="min-height: 100px; display: none;"></div>
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
-                                        <span class="badge bg-light text-dark" id="aiCommentLength">0/5000</span> 字
+                                        <span class="badge bg-light text-dark" id="aiCommentLength">0/260</span> 字 
+                                        <small class="text-muted">(最少200字)</small>
+                                        <button class="btn btn-sm btn-outline-info ms-2" id="toggleReasoningBtn" style="display: none;">
+                                            <i class='bx bx-brain'></i> 查看思考过程
+                                        </button>
                                     </div>
                                     <div>
                                         <button class="btn btn-outline-secondary" id="generateAnotherBtn">
@@ -2169,6 +2175,17 @@ function showAICommentAssistant(studentId, studentName, classId) {
     // 清空生成的评语预览
     document.getElementById('aiCommentPreview').style.display = 'none';
     document.getElementById('aiCommentContent').textContent = '';
+    
+    // 清空思考过程和隐藏切换按钮
+    const aiReasoningContent = document.getElementById('aiReasoningContent');
+    const toggleReasoningBtn = document.getElementById('toggleReasoningBtn');
+    if (aiReasoningContent) {
+        aiReasoningContent.textContent = '';
+        aiReasoningContent.style.display = 'none';
+    }
+    if (toggleReasoningBtn) {
+        toggleReasoningBtn.style.display = 'none';
+    }
     
     // 每次打开模态框时重新绑定事件，使用当前的学生ID和班级ID
     const generateBtn = document.getElementById('generateAICommentBtn');
@@ -2355,6 +2372,7 @@ async function generateAIComment(studentId, classId) {
                     style: style,
                     tone: tone,
                     max_length: maxLength,
+                    min_length: 200, // 添加最小字数参数，设置为200字
                     personality: personality,
                     study_performance: studyPerformance,
                     hobbies: hobbies,
@@ -2391,18 +2409,56 @@ async function generateAIComment(studentId, classId) {
             if (data.status === 'ok') {
                 // 显示生成的评语
                 const aiCommentContent = modal.querySelector('#aiCommentContent');
+                const aiReasoningContent = modal.querySelector('#aiReasoningContent');
                 const aiCommentLength = modal.querySelector('#aiCommentLength');
+                const toggleReasoningBtn = modal.querySelector('#toggleReasoningBtn');
                 
                 // 获取评语内容
                 let commentText = data.comment;
                 
+                // 获取思考过程和原始content字段
+                const reasoningContent = data.reasoning_content || '';
+                const contentField = data.content_field || '';
+                
+                // 保存思考过程内容
+                if (aiReasoningContent && reasoningContent) {
+                    aiReasoningContent.textContent = reasoningContent;
+                    
+                    // 如果有思考过程，显示切换按钮
+                    if (toggleReasoningBtn) {
+                        toggleReasoningBtn.style.display = 'inline-block';
+                        
+                        // 添加切换事件
+                        toggleReasoningBtn.onclick = function() {
+                            const isShowingReasoning = aiReasoningContent.style.display !== 'none';
+                            
+                            // 切换显示内容
+                            aiCommentContent.style.display = isShowingReasoning ? 'block' : 'none';
+                            aiReasoningContent.style.display = isShowingReasoning ? 'none' : 'block';
+                            
+                            // 更改按钮文本
+                            this.innerHTML = isShowingReasoning ? 
+                                '<i class="bx bx-brain"></i> 查看思考过程' : 
+                                '<i class="bx bx-comment-detail"></i> 查看评语';
+                        };
+                    }
+                } else if (toggleReasoningBtn) {
+                    toggleReasoningBtn.style.display = 'none';
+                }
+                
                 // 检查并截断超过字数限制的评语
-                const maxLength = parseInt(modal.querySelector('#aiMaxLengthInput').value) || 5000; // 临时调整为1000字
+                const maxLength = parseInt(modal.querySelector('#aiMaxLengthInput').value) || 260; // 临时调整为1000字
+                const minLength = 200; // 设置最小字数为200
+                
                 if (commentText.length > maxLength) {
                     console.warn(`评语超过字数限制: ${commentText.length}/${maxLength}，截断至${maxLength}字`);
                     commentText = commentText.substring(0, maxLength);
                     // 显示截断提示
                     showNotification(`评语已自动截断至${maxLength}字`, 'warning');
+                } else if (commentText.length < minLength) {
+                    console.warn(`评语字数不足: ${commentText.length}字，最少需要${minLength}字`);
+                    // 显示字数不足提示
+                    showNotification(`评语字数仅有${commentText.length}字，低于${minLength}字的要求，建议重新生成`, 'warning');
                 } else {
                     console.log(`评语字数符合要求: ${commentText.length}/${maxLength}字`);
                 }
@@ -2414,13 +2470,14 @@ async function generateAIComment(studentId, classId) {
                 if (aiCommentLength) {
                     aiCommentLength.textContent = `${commentText.length}/${maxLength}`;
                     // 根据字数比例设置颜色
-                    const percentage = commentText.length / maxLength;
-                    if (percentage > 0.9) {
-                        aiCommentLength.style.color = '#dc3545'; // 红色
-                    } else if (percentage > 0.75) {
-                        aiCommentLength.style.color = '#fd7e14'; // 橙色
+                    if (commentText.length < minLength) {
+                        aiCommentLength.style.color = '#dc3545'; // 红色 - 字数不足
+                    } else if (commentText.length / maxLength > 0.9) {
+                        aiCommentLength.style.color = '#dc3545'; // 红色 - 接近上限
+                    } else if (commentText.length / maxLength > 0.75) {
+                        aiCommentLength.style.color = '#fd7e14'; // 橙色 - 适中偏多
                     } else {
-                        aiCommentLength.style.color = '#28a745'; // 绿色
+                        aiCommentLength.style.color = '#28a745'; // 绿色 - 适中
                     }
                 }
                 
@@ -2492,9 +2549,14 @@ function useAIComment(studentId, classId) {
     }
     
     // 检查评语字数是否超过限制
-    const maxLength = 5000;  // 修改为260字 // 临时调整为1000字
+    const maxLength = 260;  // 修改为5000字 // 临时调整为5000字
+    const minLength = 200;  // 设置最小字数为200字
+    
     if (aiCommentContent.length > maxLength) {
-        showNotification(`评语超过5000字限制，请重新生成`, 'error');
+        showNotification(`评语超过${maxLength}字限制，请重新生成`, 'error');
+        return;
+    } else if (aiCommentContent.length < minLength) {
+        showNotification(`评语字数仅有${aiCommentContent.length}字，低于${minLength}字的最小要求，请重新生成`, 'error');
         return;
     }
     

@@ -383,8 +383,8 @@ class CommentsExcelProcessor:
             }
             
             # 检查评语长度，不再自动截断，仅标记是否超过限制
-            if len(comment['comment']) > 5000:  # 临时调整为1000字
-                logger.warning(f"学生[{comment['name']}]的评语超过5000字符长度限制: {len(comment['comment'])}字")
+            if len(comment['comment']) > 260:  # 临时调整为1000字
+                logger.warning(f"学生[{comment['name']}]的评语超过260字符长度限制: {len(comment['comment'])}字")
                 comment['truncated'] = False  # 不再截断，只是标记
                 comment['valid'] = False  # 标记为无效
             else:
@@ -402,7 +402,7 @@ class CommentsExcelProcessor:
                 'matched': False,
                 'length': len(comment['comment']),
                 'valid': is_valid,
-                'valid_text': "有效" if is_valid else "无效(超过5000字)"  # 临时调整为1000字
+                'valid_text': "有效" if is_valid else "无效(超过260字)"  # 临时调整为1000字
             }
             
             # 检查学生是否存在
@@ -498,7 +498,7 @@ class CommentsExcelProcessor:
                 'matched': False,
                 'length': comment_length,
                 'valid': is_valid,
-                'valid_text': "有效" if is_valid else "无效(超过5000字)"  # 临时调整为1000字
+                'valid_text': "有效" if is_valid else "无效(超过260字)"  # 临时调整为1000字
             }
             
             # 检查学生是否存在
