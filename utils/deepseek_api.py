@@ -136,20 +136,29 @@ class DeepSeekAPI:
                         student_info: Dict[str, Any], 
                         style: str = "鼓励性的", 
                         tone: str = "正式的", 
-                        max_length: int = 5000) -> Dict[str, Any]:
+                        max_length: int = 5000,
+                        min_length: int = 200) -> Dict[str, Any]:
         """生成学生评语
         
         Args:
             student_info: 学生信息，包含姓名、性别、特点、爱好等
             style: 评语风格，如"鼓励性的"、"严肃的"、"中肯的"等
             tone: 评语语气，如"正式的"、"亲切的"、"严厉的"等
-            max_length: 评语最大字数
+            max_length: 思考过程(reasoning_content)最大字数，默认5000字
+            min_length: 评语最小字数，默认200字
             
         Returns:
             包含生成评语的字典，格式为 {"status": "ok|error", "comment": "...", "message": "..."}
         """
         logger.info(f"开始为学生 {student_info.get('name')} 生成评语")
         logger.info(f"学生特征信息: 个性特点={student_info.get('personality', '未提供')}, 学习表现={student_info.get('study_performance', '未提供')}, 爱好={student_info.get('hobbies', '未提供')}, 待改进={student_info.get('improvement', '未提供')}")
+        
+        # 设置最终评语(content字段)的长度限制
+        content_max_length = 260
+        content_min_length = 200
+        
+        # 保留传入的max_length参数，用于控制思考过程(reasoning_content)的长度
+        reasoning_max_length = max_length
         
         if not self.api_key:
             logger.error("API密钥未设置，无法调用API")
@@ -191,25 +200,20 @@ class DeepSeekAPI:
 
 请根据以上信息，生成一段全面、具体且有针对性的评语，突出{gender}的优点，同时也提出建设性的改进建议。
 
-重要要求：
-1. 【这是最核心的要求】评语的字数必须严格控制在{max_length}字以内，即不能超过{max_length}个字符
-2. 请在构思前就计算好字数，直接生成不超过{max_length}字的完整评语，切勿超出后再截断
-3. 评语内容必须完整，不能因字数限制而出现不完整的句子
-4. 确保评语内容积极向上且有指导意义
-5. 必须高度个性化，根据提供的学生具体特点生成评语，避免千篇一律的模板化表达
-6. 格式要求：不要在段落中间或段落之间添加空行；评语结尾不要添加字数统计信息；如果以"某某同学："开头，后面直接接正文，不要空行
-7. 直接输出评语内容，不要添加任何标题、前缀或后缀
-8. 绝对避免使用"春日里"、"像春日里的阳光"等常见模板化开头，每位学生的评语风格应该明显不同
-9. 即使没有提供学生特征信息，每次生成的评语也应有明显差异，不要使用固定模式和表达方式
-10. 使用多样化的表达方式和句式结构，根据学生的特点定制化表达
+【字数限制】这是最重要的要求：
+1. 最终生成的评语字数必须严格控制在{content_min_length}-{content_max_length}字之间
+2. 生成评语后，请检查字数，确保不少于{content_min_length}字，不超过{content_max_length}字
+3. 如果超过{content_max_length}字，必须删减内容使字数符合要求
+4. 如果少于{content_min_length}字，必须适当扩充内容
+5. 最终评语绝对不能超过{content_max_length}字，这是硬性要求
 
-评语风格指南 - 根据选择的风格采用不同的表达方式：
-- 如果是"鼓励性的"风格：使用温暖、积极的表达，强调进步空间和优点
-- 如果是"严肃的"风格：使用更加正式、客观的陈述，直接指出问题和解决方案
-- 如果是"中肯的"风格：保持平衡，客观评价优缺点，给出具体建议
-- 如果是"温和的"风格：使用柔和的语言，委婉表达不足，重点表扬进步
-- 如果是"诗意的"风格：【必须】在评语中引用至少一句完整的、与学生特点相关的古诗词名句或古文赋篇，并用引号标明。这是诗意风格最核心的要求，不可省略。评语整体应具有文学气息。
-- 如果是"自然的"风格：如同日常对话，平实真诚，不做作不浮夸
+输出前的检查步骤：
+1. 数一下你的评语字数
+2. 确认字数在{content_min_length}-{content_max_length}字之间
+3. 如不符合要求，立即调整
+4. 再次检查字数，确保符合要求后再输出
+
+你的思考过程(reasoning_content)可以充分展开，长度限制为{reasoning_max_length}字，但最终输出的评语(content字段)必须严格控制在{content_min_length}-{content_max_length}字之间。
 """
 
         # 根据是否提供了特征信息添加额外指导
@@ -253,8 +257,20 @@ class DeepSeekAPI:
         prompt += f"""
 {additional_instructions}
 不要在回复中写除了评语之外的任何内容。
-请记住，评语字数必须是{max_length}字以内，这是最核心的要求。
-请先构思内容，确保评语完整、有深度的同时，严格控制在{max_length}字以内。
+【字数限制】这是最重要的要求：
+1. 最终生成的评语字数必须严格控制在{content_min_length}-{content_max_length}字之间
+2. 生成评语后，请检查字数，确保不少于{content_min_length}字，不超过{content_max_length}字
+3. 如果超过{content_max_length}字，必须删减内容使字数符合要求
+4. 如果少于{content_min_length}字，必须适当扩充内容
+5. 最终评语绝对不能超过{content_max_length}字，这是硬性要求
+
+输出前的检查步骤：
+1. 数一下你的评语字数
+2. 确认字数在{content_min_length}-{content_max_length}字之间
+3. 如不符合要求，立即调整
+4. 再次检查字数，确保符合要求后再输出
+
+你的思考过程(reasoning_content)可以充分展开，长度限制为{reasoning_max_length}字，但最终输出的评语(content字段)必须严格控制在{content_min_length}-{content_max_length}字之间。
 """
 
         # 构建请求体
@@ -264,7 +280,7 @@ class DeepSeekAPI:
                 {"role": "system", "content": "你是一位专业的班主任评语撰写专家。你最重要的任务是严格控制评语字数在要求范围内，不得超过上限。"},
                 {"role": "user", "content": prompt}
             ],
-            "max_tokens": min(4000, max_length * 2)  # 增加最大token数以支持更长的输出
+            "max_tokens": min(4000, reasoning_max_length * 2)  # 增加最大token数以支持更长的输出
         }
         
         # 初始化重试计数
@@ -301,10 +317,11 @@ class DeepSeekAPI:
                     # 处理DeepSeek-Reasoner模型返回的reasoning_content字段
                     reasoning_content = message.get("reasoning_content", "")
                     content = message.get("content", "")
+                    original_content = content  # 保存原始content字段
                     
-                    # 如果content为空但reasoning_content不为空，使用reasoning_content
+                    # 只有当content为空且reasoning_content不为空时，才使用reasoning_content作为评语内容
                     if not content.strip() and reasoning_content:
-                        logger.info(f"content为空，使用reasoning_content，长度：{len(reasoning_content)}字符")
+                        logger.info(f"content为空，使用reasoning_content作为评语内容，长度：{len(reasoning_content)}字符")
                         content = reasoning_content
                     
                     # 清理内容，去除多余的引号和空格
@@ -312,11 +329,11 @@ class DeepSeekAPI:
                     
                     logger.info(f"成功获取评语，评语长度: {len(content)}字")
                     
-                    # 检查评语长度，严格限制不超过最大字数
-                    # if len(content) > max_length:
-                    #     logger.warning(f"评语超出最大长度限制，当前长度: {len(content)}，最大允许: {max_length}")
-                    #     content = self._truncate_to_complete_sentence(content, max_length)
-                    #     logger.info(f"截断后评语长度: {len(content)}字")
+                    # 检查评语长度，严格限制不超过content_max_length
+                    if len(content) > content_max_length:
+                        logger.warning(f"评语超出最大长度限制，当前长度: {len(content)}，最大允许: {content_max_length}")
+                        content = self._truncate_to_complete_sentence(content, content_max_length)
+                        logger.info(f"截断后评语长度: {len(content)}字")
                     
                     # 返回结果
                     return {
@@ -324,7 +341,7 @@ class DeepSeekAPI:
                         "comment": content,
                         "message": "评语生成成功",
                         "reasoning_content": reasoning_content,
-                        "content_field": message.get("content", "")
+                        "content_field": original_content
                     }
                 else:
                     logger.warning(f"API响应缺少有效内容: {result}")
