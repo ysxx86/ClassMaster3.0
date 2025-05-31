@@ -24,7 +24,7 @@ class CommentGenerator:
                         student_info: Dict[str, Any],
                         style: str = "鼓励性的",
                         tone: str = "正式的",
-                        max_length: int = 5000,
+                        max_length: int = 50000,
                         min_length: int = 200) -> Dict[str, Any]:
         """生成学生评语
         

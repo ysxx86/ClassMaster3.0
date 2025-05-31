@@ -421,7 +421,7 @@ def generate_comment():
         style = data.get('style', '鼓励性的')
         tone = data.get('tone', '正式的')
         # 强制设置最大字数为260，忽略前端传入的值
-        max_length = 5000  # 无论前端传入什么值，都固定为260
+        max_length = 50000  # 无论前端传入什么值，都固定为260
         min_length = 200  # 最小字数固定为200
         additional_instructions = data.get('additional_instructions', '')
         
