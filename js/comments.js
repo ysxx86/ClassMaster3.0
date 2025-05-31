@@ -2036,7 +2036,7 @@ function showAICommentAssistant(studentId, studentName, classId) {
                                     </div>
                                     <div class="col-md-4">
                                         <label class="form-label">最大字数</label>
-                                        <input type="number" class="form-control" id="aiMaxLengthInput" value="5000" min="50" max="5000">
+                                        <input type="number" class="form-control" id="aiMaxLengthInput" value="260" min="200" max="260">
                                         <small class="form-text text-muted">系统将生成200-260字的评语</small>
                                     </div>
                                 </div>
