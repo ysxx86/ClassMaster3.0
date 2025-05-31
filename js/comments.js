@@ -255,7 +255,10 @@ function createCommentCard(student, commentData) {
         comment = commentData;
     }
     
-    const commentContent = comment ? comment.content : '暂无评语';
+    let commentContent = comment ? comment.content : '暂无评语';
+    // 移除评语末尾的"（字数：xxx字）"格式
+    commentContent = commentContent.replace(/（字数：\d+字）$/, '');
+    
     const updateDate = comment ? comment.updateDate : '';
     
     // 评语字数
@@ -569,7 +572,9 @@ function updateCommentCard(studentId, comment) {
     // 更新评语内容
     const contentElement = commentCard.querySelector('.comment-text');
     if (contentElement) {
-        contentElement.textContent = comment.content || '暂无评语';
+        // 移除评语末尾的"（字数：xxx字）"格式
+        let cleanedContent = (comment.content || '暂无评语').replace(/（字数：\d+字）$/, '');
+        contentElement.textContent = cleanedContent;
     } else {
         console.error('找不到评语内容元素');
     }
@@ -2416,6 +2421,9 @@ async function generateAIComment(studentId, classId) {
                 // 获取评语内容
                 let commentText = data.comment;
                 
+                // 移除评语末尾的"（字数：xxx字）"格式
+                commentText = commentText.replace(/（字数：\d+字）$/, '');
+                
                 // 获取思考过程和原始content字段
                 const reasoningContent = data.reasoning_content || '';
                 const contentField = data.content_field || '';
@@ -2548,15 +2556,18 @@ function useAIComment(studentId, classId) {
         return;
     }
     
+    // 移除评语末尾的"（字数：xxx字）"格式
+    let cleanedContent = aiCommentContent.replace(/（字数：\d+字）$/, '');
+    
     // 检查评语字数是否超过限制
     const maxLength = 260;  // 修改为5000字 // 临时调整为5000字
     const minLength = 200;  // 设置最小字数为200字
     
-    if (aiCommentContent.length > maxLength) {
+    if (cleanedContent.length > maxLength) {
         showNotification(`评语超过${maxLength}字限制，请重新生成`, 'error');
         return;
-    } else if (aiCommentContent.length < minLength) {
-        showNotification(`评语字数仅有${aiCommentContent.length}字，低于${minLength}字的最小要求，请重新生成`, 'error');
+    } else if (cleanedContent.length < minLength) {
+        showNotification(`评语字数仅有${cleanedContent.length}字，低于${minLength}字的最小要求，请重新生成`, 'error');
         return;
     }
     
@@ -2573,7 +2584,7 @@ function useAIComment(studentId, classId) {
             studentId,
             // 使用传入的班级ID，而不是当前用户的班级ID
             classId: classId,
-            content: aiCommentContent,
+            content: cleanedContent,
             // 添加标志表明这是AI评语
             isAIComment: true
         };
@@ -2639,7 +2650,7 @@ function useAIComment(studentId, classId) {
                 
                 // 实时更新评语卡片
                 updateCommentCard(studentId, {
-                    content: aiCommentContent,
+                    content: cleanedContent,
                     updateDate: data.updateDate || new Date().toLocaleDateString()
                 });
                 
