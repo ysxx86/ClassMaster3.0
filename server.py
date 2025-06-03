@@ -124,6 +124,9 @@ from users import users_bp, init_users
 # 导入班级模块
 from classes import classes_bp, init_classes
 
+# 导入数据库备份模块
+from database_backup import backup_bp, init_backup
+
 # 导入仪表盘模块
 try:
     from dashboard import init_dashboard
@@ -434,6 +437,9 @@ app.register_blueprint(users_bp)
 # 注册班级蓝图
 app.register_blueprint(classes_bp)
 
+# 注册数据库备份模块蓝图
+app.register_blueprint(backup_bp)
+
 # 全局错误处理中间件
 @app.before_request
 def before_request():
@@ -466,6 +472,15 @@ init_deyu(app)
 
 # 初始化成绩分析模块
 init_grade_analysis(app)
+
+# 初始化用户模块
+init_users()
+
+# 初始化班级模块
+init_classes()
+
+# 初始化数据库备份模块
+init_backup()
 
 # 初始化仪表盘模块
 if dashboard_enabled:
