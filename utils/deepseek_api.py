@@ -189,7 +189,7 @@ class DeepSeekAPI:
         prompt = f"""
 你是一名经验丰富的班主任，请为以下学生生成一段评语。
 
-【重要提醒】评语必须严格控制在{content_min_length}-{content_max_length}字之间，这是系统强制要求，请计算好字数再生成。
+【重要提醒】评语必须严格控制在{content_min_length}-{content_max_length}字之间，也就是AI本身清楚如何生成一个段200-260字的评语，这是系统强制要求，中文一个字算一个字，不要在生成的过程中反复计算字数，也不用生成草稿。会导致生成变慢，等待变久。
 
 评语应该是{style}和{tone}的。
 
@@ -203,11 +203,8 @@ class DeepSeekAPI:
 
 请根据以上信息，生成一段全面、具体且有针对性的评语，突出{gender}的优点，同时也提出建设性的改进建议。
 
-【字数要求】
-请在生成评语时严格控制字数在{content_min_length}-{content_max_length}字之间。这是硬性要求，系统会拒绝不符合字数要求的评语。
-请在撰写过程中就注意字数控制，确保最终输出的评语恰好在此范围内。
 
-你的思考过程(reasoning_content)可以充分展开，但最终输出的评语(content字段)必须严格在{content_min_length}-{content_max_length}字之间。
+你的思考过程(reasoning_content)可以充分展开，但最终输出的评语(content字段)必须严格在235±5字左右。
 """
 
         # 根据是否提供了特征信息添加额外指导
@@ -257,7 +254,7 @@ class DeepSeekAPI:
         payload = {
             "model": "deepseek-reasoner",
             "messages": [
-                {"role": "system", "content": "你是一位专业的班主任评语撰写专家。你必须在生成评语时就严格控制字数在200-260字之间，这是系统的硬性要求。绝对不要生成少于200字或超过260字的评语。请在生成过程中持续注意字数控制。"},
+                {"role": "system", "content": "你是一位专业的班主任评语撰写专家。不要在生成的过程中反复计算字数，会导致生成变慢，等待变久。评语字数严格控制字数在200-260字之间，这是系统的硬性要求。"},
                 {"role": "user", "content": prompt}
             ],
             "max_tokens": min(5000, reasoning_max_length * 2)  # 增加最大token数以支持更长的输出
