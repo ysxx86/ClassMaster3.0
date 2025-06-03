@@ -264,8 +264,8 @@ def export_comments_to_pdf(class_name=None, output_file=None, school_name=None, 
         doc = SimpleDocTemplate(
             file_path,
             pagesize=landscape(A4),
-            rightMargin=3*mm,  # 极小页边距
-            leftMargin=3*mm,   # 极小页边距
+            rightMargin=10*mm,  # 增加右边距，确保内容不会超出红色框
+            leftMargin=10*mm,   # 增加左边距，确保内容不会超出红色框
             topMargin=5*mm,    # 保持适当的上边距
             bottomMargin=5*mm  # 保持适当的下边距
         )
@@ -326,7 +326,7 @@ def export_comments_to_pdf(class_name=None, output_file=None, school_name=None, 
                     [Paragraph("学生评语表", title_style), 
                      Paragraph(f"班级：{class_name}      班主任：{teacher_name}", class_style)]
                 ]
-                title_table = Table(title_elements, colWidths=[100*mm, 180*mm])
+                title_table = Table(title_elements, colWidths=[90*mm, 170*mm])
                 title_table.setStyle(TableStyle([
                     ('VALIGN', (0, 0), (-1, -1), 'TOP'),
                     ('ALIGN', (0, 0), (0, 0), 'LEFT'),
@@ -372,7 +372,7 @@ def export_comments_to_pdf(class_name=None, output_file=None, school_name=None, 
                             )
                             
                             # 评语的有效宽度应考虑到表格内边距
-                            effective_width = 90*mm  # 进一步增加评语宽度
+                            effective_width = 85*mm  # 减小评语宽度，避免超出红色框
                             p = Paragraph(comments, comment_style)
                             w, h = p.wrap(effective_width, 500*mm)  # 给予充足高度以测量实际需要的高度
                             
@@ -433,7 +433,7 @@ def export_comments_to_pdf(class_name=None, output_file=None, school_name=None, 
                                 
                                 # 使用自适应高度，确保所有卡片高度一致
                                 card_table = Table(card_elements, 
-                                                colWidths=[95*mm],  # 进一步增加卡片宽度
+                                                colWidths=[90*mm],  # 减小卡片宽度
                                                 rowHeights=[8*mm, max_height],  
                                                 hAlign='CENTER')  # 水平居中对齐
                                 card_table.setStyle(card_style)
@@ -443,7 +443,7 @@ def export_comments_to_pdf(class_name=None, output_file=None, school_name=None, 
                         while len(row_cards) < 3:
                             # 创建一个空的卡片，保持与其他卡片相同大小
                             empty_card = Table([[""], [""]], 
-                                            colWidths=[95*mm],  # 与其他卡片宽度保持一致
+                                            colWidths=[90*mm],  # 与其他卡片宽度保持一致
                                             rowHeights=[8*mm, max_height],  # 与其他卡片高度保持一致
                                             hAlign='CENTER')  # 水平居中对齐
                             empty_card.setStyle(TableStyle([
@@ -457,16 +457,16 @@ def export_comments_to_pdf(class_name=None, output_file=None, school_name=None, 
                 grid_style = TableStyle([
                     ('VALIGN', (0, 0), (-1, -1), 'TOP'),  # 顶部对齐
                     ('ALIGN', (0, 0), (-1, -1), 'CENTER'),  # 居中对齐表格
-                    # 减少内边距，使卡片更紧凑
-                    ('LEFTPADDING', (0, 0), (-1, -1), 0.2*mm),  # 更进一步减小间距
-                    ('RIGHTPADDING', (0, 0), (-1, -1), 0.2*mm),  # 更进一步减小间距
-                    ('TOPPADDING', (0, 0), (-1, -1), 0.2*mm),  # 更进一步减小间距
+                    # 调整内边距，使卡片之间有适当间距
+                    ('LEFTPADDING', (0, 0), (-1, -1), 1.5*mm),  # 增加左右间距
+                    ('RIGHTPADDING', (0, 0), (-1, -1), 1.5*mm),  # 增加左右间距
+                    ('TOPPADDING', (0, 0), (-1, -1), 1*mm),  # 增加上下间距
                     ('BOTTOMPADDING', (0, 0), (-1, -1), 2*mm)  # 保持行间距
                 ])
                 
                 # 使用固定宽度确保所有卡片对齐
                 student_grid = Table(student_cards, 
-                                    colWidths=[95.4*mm, 95.4*mm, 95.4*mm],  # 进一步增加卡片宽度
+                                    colWidths=[90*mm, 90*mm, 90*mm],  # 减小卡片宽度
                                     repeatRows=0)  # 首行不重复
                 student_grid.setStyle(grid_style)
                 story.append(student_grid)
