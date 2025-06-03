@@ -342,6 +342,9 @@
                         <button class="nav-link" id="v-pills-carousel-tab" data-bs-toggle="pill" data-bs-target="#v-pills-carousel" type="button" role="tab">
                             <i class='bx bx-image'></i> 登录轮播设置
                         </button>
+                        <button class="nav-link" id="v-pills-backup-tab" data-bs-toggle="pill" data-bs-target="#v-pills-backup" type="button" role="tab">
+                            <i class='bx bx-data'></i> 数据库备份
+                        </button>
                         <button class="nav-link" id="v-pills-about-tab" data-bs-toggle="pill" data-bs-target="#v-pills-about" type="button" role="tab">
                             <i class='bx bx-info-circle'></i> 关于系统
                         </button>
@@ -634,6 +637,104 @@
                             </div>
                         </div>
                         
+                        <!-- 数据库备份选项卡 -->
+                        <div class="tab-pane fade" id="v-pills-backup" role="tabpanel">
+                            <h2 class="settings-title"><i class='bx bx-data'></i> 数据库备份</h2>
+                            <div class="alert alert-info">
+                                <i class='bx bx-info-circle'></i> 备份和恢复系统数据库，保护您的重要数据安全。定期备份可以防止数据丢失。
+                            </div>
+                            
+                            <div class="card mb-4">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">创建备份</h5>
+                                    <button class="btn btn-primary" id="createBackupBtn">
+                                        <i class='bx bx-download'></i> 创建新备份
+                                    </button>
+                                </div>
+                                <div class="card-body">
+                                    <p>创建一个包含当前所有数据的备份文件。备份过程不会影响系统的正常使用。</p>
+                                    <div id="backupProgress" class="progress" style="display: none;">
+                                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h5 class="mb-0">备份历史</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>备份日期</th>
+                                                    <th>备份大小</th>
+                                                    <th>描述</th>
+                                                    <th>操作</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="backupHistoryList">
+                                                <tr>
+                                                    <td colspan="4" class="text-center">
+                                                        <div class="spinner-border text-primary" role="status">
+                                                            <span class="visually-hidden">加载中...</span>
+                                                        </div>
+                                                        <p class="mt-2">正在加载备份历史...</p>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div id="noBackupsMessage" style="display: none;" class="text-center py-4">
+                                        <i class='bx bx-info-circle bx-lg text-muted'></i>
+                                        <p class="mt-2 text-muted">暂无备份记录，请创建新的备份。</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 恢复确认对话框 -->
+                            <div class="modal fade" id="restoreConfirmModal" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">确认恢复</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="alert alert-warning">
+                                                <i class='bx bx-error-circle'></i> 警告：恢复操作将使用备份数据替换当前所有数据，此操作不可撤销！
+                                            </div>
+                                            <p>您确定要恢复到 <strong id="restoreBackupDate">2023-01-01 12:00:00</strong> 的备份吗？</p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                            <button type="button" class="btn btn-danger" id="confirmRestoreBtn">确认恢复</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 删除确认对话框 -->
+                            <div class="modal fade" id="deleteBackupModal" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">确认删除</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p>您确定要删除 <strong id="deleteBackupDate">2023-01-01 12:00:00</strong> 的备份吗？此操作不可撤销！</p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                            <button type="button" class="btn btn-danger" id="confirmDeleteBtn">确认删除</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <!-- 关于系统 -->
                         <div class="tab-pane fade" id="v-pills-about" role="tabpanel">
                             <h2 class="settings-title"><i class='bx bx-info-circle'></i> 关于系统</h2>
@@ -729,6 +830,9 @@
                 
                 // 直接使用模拟系统信息，不再调用API
                 displayMockSystemInfo();
+                
+                // 加载数据库备份历史
+                loadBackupHistory();
             } catch (error) {
                 console.error('获取设置失败:', error);
                 showToast('error', '获取设置失败，请刷新页面重试');
@@ -1524,6 +1628,290 @@
             toast.addEventListener('hidden.bs.toast', function() {
                 toastContainer.removeChild(toast);
             });
+        }
+
+        // 数据库备份功能
+        
+        // 创建备份按钮点击事件
+        document.getElementById('createBackupBtn').addEventListener('click', function() {
+            createBackup();
+        });
+        
+        // 创建数据库备份
+        async function createBackup() {
+            try {
+                // 显示进度条
+                const progressBar = document.getElementById('backupProgress');
+                const progressBarInner = progressBar.querySelector('.progress-bar');
+                progressBar.style.display = 'block';
+                progressBarInner.style.width = '0%';
+                
+                // 禁用创建按钮
+                const createBtn = document.getElementById('createBackupBtn');
+                createBtn.disabled = true;
+                createBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 备份中...';
+                
+                // 模拟进度更新
+                let progress = 0;
+                const progressInterval = setInterval(() => {
+                    progress += 5;
+                    if (progress > 90) {
+                        clearInterval(progressInterval);
+                    }
+                    progressBarInner.style.width = progress + '%';
+                }, 200);
+                
+                // 发送创建备份请求
+                const response = await fetch('/api/database/backup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                // 清除进度条定时器
+                clearInterval(progressInterval);
+                
+                if (data.status === 'success') {
+                    // 完成进度条
+                    progressBarInner.style.width = '100%';
+                    
+                    // 显示成功消息
+                    showToast('success', '数据库备份创建成功');
+                    
+                    // 重新加载备份历史
+                    setTimeout(() => {
+                        loadBackupHistory();
+                        
+                        // 隐藏进度条并重置按钮
+                        setTimeout(() => {
+                            progressBar.style.display = 'none';
+                            createBtn.disabled = false;
+                            createBtn.innerHTML = '<i class="bx bx-download"></i> 创建新备份';
+                        }, 1000);
+                    }, 500);
+                } else {
+                    // 显示错误消息
+                    showToast('error', data.message || '创建备份失败');
+                    
+                    // 重置进度条和按钮
+                    progressBar.style.display = 'none';
+                    createBtn.disabled = false;
+                    createBtn.innerHTML = '<i class="bx bx-download"></i> 创建新备份';
+                }
+            } catch (error) {
+                console.error('创建备份失败:', error);
+                showToast('error', '创建备份失败: ' + error.message);
+                
+                // 重置进度条和按钮
+                const progressBar = document.getElementById('backupProgress');
+                const createBtn = document.getElementById('createBackupBtn');
+                progressBar.style.display = 'none';
+                createBtn.disabled = false;
+                createBtn.innerHTML = '<i class="bx bx-download"></i> 创建新备份';
+            }
+        }
+        
+        // 加载备份历史
+        async function loadBackupHistory() {
+            try {
+                const backupHistoryList = document.getElementById('backupHistoryList');
+                const noBackupsMessage = document.getElementById('noBackupsMessage');
+                
+                // 显示加载中
+                backupHistoryList.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-center">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">加载中...</span>
+                            </div>
+                            <p class="mt-2">正在加载备份历史...</p>
+                        </td>
+                    </tr>
+                `;
+                
+                // 发送获取备份历史请求
+                const response = await fetch('/api/database/backups');
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    if (data.backups && data.backups.length > 0) {
+                        // 显示备份列表
+                        backupHistoryList.innerHTML = '';
+                        
+                        data.backups.forEach(backup => {
+                            const row = document.createElement('tr');
+                            
+                            // 格式化日期时间
+                            const backupDate = new Date(backup.timestamp);
+                            const formattedDate = backupDate.toLocaleString('zh-CN', {
+                                year: 'numeric',
+                                month: '2-digit',
+                                day: '2-digit',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                second: '2-digit'
+                            });
+                            
+                            row.innerHTML = `
+                                <td>${formattedDate}</td>
+                                <td>${formatBytes(backup.size)}</td>
+                                <td>${backup.description || '系统自动备份'}</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-primary restore-backup" data-id="${backup.id}" data-date="${formattedDate}">
+                                            <i class="bx bx-reset"></i> 恢复
+                                        </button>
+                                        <button class="btn btn-outline-danger delete-backup" data-id="${backup.id}" data-date="${formattedDate}">
+                                            <i class="bx bx-trash"></i> 删除
+                                        </button>
+                                    </div>
+                                </td>
+                            `;
+                            
+                            backupHistoryList.appendChild(row);
+                        });
+                        
+                        // 添加恢复按钮点击事件
+                        document.querySelectorAll('.restore-backup').forEach(button => {
+                            button.addEventListener('click', function() {
+                                const backupId = this.getAttribute('data-id');
+                                const backupDate = this.getAttribute('data-date');
+                                showRestoreConfirmation(backupId, backupDate);
+                            });
+                        });
+                        
+                        // 添加删除按钮点击事件
+                        document.querySelectorAll('.delete-backup').forEach(button => {
+                            button.addEventListener('click', function() {
+                                const backupId = this.getAttribute('data-id');
+                                const backupDate = this.getAttribute('data-date');
+                                showDeleteConfirmation(backupId, backupDate);
+                            });
+                        });
+                        
+                        // 隐藏无备份消息
+                        noBackupsMessage.style.display = 'none';
+                    } else {
+                        // 显示无备份消息
+                        backupHistoryList.innerHTML = '';
+                        noBackupsMessage.style.display = 'block';
+                    }
+                } else {
+                    // 显示错误消息
+                    backupHistoryList.innerHTML = `
+                        <tr>
+                            <td colspan="4" class="text-center text-danger">
+                                <i class="bx bx-error-circle"></i> 加载备份历史失败
+                            </td>
+                        </tr>
+                    `;
+                    showToast('error', data.message || '加载备份历史失败');
+                }
+            } catch (error) {
+                console.error('加载备份历史失败:', error);
+                
+                const backupHistoryList = document.getElementById('backupHistoryList');
+                backupHistoryList.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-center text-danger">
+                            <i class="bx bx-error-circle"></i> 加载备份历史失败
+                        </td>
+                    </tr>
+                `;
+                
+                showToast('error', '加载备份历史失败: ' + error.message);
+            }
+        }
+        
+        // 显示恢复确认对话框
+        function showRestoreConfirmation(backupId, backupDate) {
+            const modal = new bootstrap.Modal(document.getElementById('restoreConfirmModal'));
+            document.getElementById('restoreBackupDate').textContent = backupDate;
+            
+            // 设置确认按钮点击事件
+            document.getElementById('confirmRestoreBtn').onclick = function() {
+                restoreBackup(backupId);
+                modal.hide();
+            };
+            
+            modal.show();
+        }
+        
+        // 显示删除确认对话框
+        function showDeleteConfirmation(backupId, backupDate) {
+            const modal = new bootstrap.Modal(document.getElementById('deleteBackupModal'));
+            document.getElementById('deleteBackupDate').textContent = backupDate;
+            
+            // 设置确认按钮点击事件
+            document.getElementById('confirmDeleteBtn').onclick = function() {
+                deleteBackup(backupId);
+                modal.hide();
+            };
+            
+            modal.show();
+        }
+        
+        // 恢复备份
+        async function restoreBackup(backupId) {
+            try {
+                showToast('info', '正在恢复备份，请稍候...');
+                
+                // 发送恢复备份请求
+                const response = await fetch(`/api/database/restore/${backupId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    showToast('success', '数据库恢复成功，系统将在5秒后刷新...');
+                    
+                    // 5秒后刷新页面
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 5000);
+                } else {
+                    showToast('error', data.message || '恢复备份失败');
+                }
+            } catch (error) {
+                console.error('恢复备份失败:', error);
+                showToast('error', '恢复备份失败: ' + error.message);
+            }
+        }
+        
+        // 删除备份
+        async function deleteBackup(backupId) {
+            try {
+                showToast('info', '正在删除备份...');
+                
+                // 发送删除备份请求
+                const response = await fetch(`/api/database/backup/${backupId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    showToast('success', '备份已成功删除');
+                    
+                    // 重新加载备份历史
+                    loadBackupHistory();
+                } else {
+                    showToast('error', data.message || '删除备份失败');
+                }
+            } catch (error) {
+                console.error('删除备份失败:', error);
+                showToast('error', '删除备份失败: ' + error.message);
+            }
         }
     </script>
 </body>

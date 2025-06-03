@@ -189,7 +189,7 @@ class DeepSeekAPI:
         prompt = f"""
 你是一名经验丰富的班主任，请为以下学生生成一段评语。
 
-【重要提醒】评语必须严格控制在{content_min_length}-{content_max_length}字之间，这是系统强制要求，请在生成时就控制好字数，不要超出或不足。
+【重要提醒】评语必须严格控制在{content_min_length}-{content_max_length}字之间，这是系统强制要求，请计算好字数再生成。
 
 评语应该是{style}和{tone}的。
 
