@@ -1325,6 +1325,12 @@ function bindEventListeners() {
         importBtn.addEventListener('click', showImportCommentsModal);
     }
     
+    // 绑定清除评语按钮
+    const clearAllBtn = document.getElementById('clearAllCommentsBtn');
+    if (clearAllBtn) {
+        clearAllBtn.addEventListener('click', showClearAllCommentsConfirm);
+    }
+    
     // 绑定评语表单提交事件
     const commentForm = document.getElementById('commentForm');
     if (commentForm) {
@@ -2922,5 +2928,267 @@ function showApiStatus(message, type) {
             break;
         default:
             statusDisplay.classList.add('alert-info');
+    }
+}
+
+// 显示清除所有评语的确认对话框
+function showClearAllCommentsConfirm() {
+    console.log('显示清除评语确认对话框');
+    
+    // 显示加载通知
+    const notification = showNotification('正在获取班级信息，请稍候...', 'info', 0);
+    
+    // 先获取当前班级ID
+    let currentClassId = null;
+    
+    // 方法1：从meta标签获取（最可靠）
+    const classIdMeta = document.querySelector('meta[name="user-class-id"]');
+    if (classIdMeta && classIdMeta.content) {
+        currentClassId = parseInt(classIdMeta.content, 10);
+        console.log('从meta标签获取班级ID:', currentClassId);
+    }
+    
+    // 方法2：从学生卡片获取
+    if (!currentClassId) {
+        const studentCard = document.querySelector('.student-card[data-class-id]');
+        if (studentCard && studentCard.dataset.classId) {
+            currentClassId = parseInt(studentCard.dataset.classId, 10);
+            console.log('从学生卡片获取班级ID:', currentClassId);
+        }
+    }
+    
+    // 发送请求获取班级列表
+    fetch('/api/students', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        // 关闭加载通知
+        if (notification) {
+            const bsToast = bootstrap.Toast.getInstance(notification);
+            if (bsToast) bsToast.hide();
+        }
+        
+        if (data.status === 'ok' && data.students) {
+            // 提取不同的班级ID
+            const classIds = [...new Set(data.students.map(student => student.class_id))];
+            console.log('获取到的班级ID列表:', classIds);
+            
+            // 如果只有一个班级ID，直接使用
+            if (classIds.length === 1) {
+                currentClassId = classIds[0];
+                
+                // 显示确认对话框
+                if (confirm(`确定要清除班级ID为 ${currentClassId} 的所有学生评语吗？此操作不可恢复！`)) {
+                    console.log('用户确认清除评语，班级ID:', currentClassId);
+                    clearAllComments(currentClassId);
+                } else {
+                    console.log('用户取消清除评语');
+                }
+            } 
+            // 如果有多个班级ID，让用户选择
+            else if (classIds.length > 1) {
+                let message = '请选择要清除评语的班级ID:\n\n';
+                classIds.forEach((id, index) => {
+                    // 尝试获取班级名称
+                    const classStudents = data.students.filter(student => student.class_id === id);
+                    const className = classStudents.length > 0 ? classStudents[0].class : `班级${id}`;
+                    message += `${index + 1}. ${className} (ID: ${id})\n`;
+                });
+                
+                // 让用户输入选择
+                const selection = prompt(message + '\n请输入选项编号:');
+                if (selection !== null) {
+                    const index = parseInt(selection, 10) - 1;
+                    if (index >= 0 && index < classIds.length) {
+                        const selectedClassId = classIds[index];
+                        
+                        // 再次确认
+                        if (confirm(`确定要清除班级ID为 ${selectedClassId} 的所有学生评语吗？此操作不可恢复！`)) {
+                            console.log('用户确认清除评语，班级ID:', selectedClassId);
+                            clearAllComments(selectedClassId);
+                        } else {
+                            console.log('用户取消清除评语');
+                        }
+                    } else {
+                        showNotification('选择无效，请重试', 'error');
+                    }
+                } else {
+                    console.log('用户取消选择班级');
+                }
+            } else {
+                showNotification('未找到任何班级信息', 'error');
+            }
+        } else {
+            console.error('获取班级信息失败:', data);
+            
+            // 回退到简单确认对话框
+            if (confirm('无法获取班级信息。确定要清除当前班级所有学生的评语吗？此操作不可恢复！')) {
+                console.log('用户确认清除评语，使用默认班级ID');
+                clearAllComments(currentClassId || 1);
+            } else {
+                console.log('用户取消清除评语');
+            }
+        }
+    })
+    .catch(error => {
+        console.error('获取班级信息时出错:', error);
+        
+        // 关闭加载通知
+        if (notification) {
+            const bsToast = bootstrap.Toast.getInstance(notification);
+            if (bsToast) bsToast.hide();
+        }
+        
+        // 回退到简单确认对话框
+        if (confirm('获取班级信息失败。确定要清除当前班级所有学生的评语吗？此操作不可恢复！')) {
+            console.log('用户确认清除评语，使用默认班级ID');
+            clearAllComments(currentClassId || 1);
+        } else {
+            console.log('用户取消清除评语');
+        }
+    });
+}
+
+// 清除当前班级所有学生的评语
+function clearAllComments(classId) {
+    try {
+        // 如果没有传入班级ID，尝试获取
+        if (!classId) {
+            // 获取当前班级ID的多种方法
+            let foundClassId = null;
+            
+            // 方法1：从meta标签获取（最可靠）
+            const classIdMeta = document.querySelector('meta[name="user-class-id"]');
+            if (classIdMeta && classIdMeta.content) {
+                foundClassId = parseInt(classIdMeta.content, 10);
+                console.log('从meta标签获取班级ID:', foundClassId);
+            }
+            
+            // 方法2：从URL参数获取
+            if (!foundClassId) {
+                const urlParams = new URLSearchParams(window.location.search);
+                const classParam = urlParams.get('class_id');
+                if (classParam) {
+                    foundClassId = parseInt(classParam, 10);
+                    console.log('从URL参数获取班级ID:', foundClassId);
+                }
+            }
+            
+            // 方法3：从页面标题获取班级名称，然后映射到ID
+            if (!foundClassId) {
+                const headerText = document.querySelector('.text-muted')?.innerText || '';
+                const classMatch = headerText.match(/班级：([^|]+)/);
+                if (classMatch && classMatch[1]) {
+                    const className = classMatch[1].trim();
+                    console.log('从页面标题获取班级名称:', className);
+                    
+                    // 从班级名称中提取班级ID（这里需要根据实际情况调整）
+                    if (className.includes('5年级6班') || className.includes('五年级6班')) {
+                        foundClassId = 1;
+                    }
+                }
+            }
+            
+            // 方法4：从学生卡片获取
+            if (!foundClassId) {
+                const studentCard = document.querySelector('.student-card[data-class-id]');
+                if (studentCard && studentCard.dataset.classId) {
+                    foundClassId = parseInt(studentCard.dataset.classId, 10);
+                    console.log('从学生卡片获取班级ID:', foundClassId);
+                }
+            }
+            
+            // 方法5：从window全局变量获取
+            if (!foundClassId && window.currentUserClassId) {
+                foundClassId = parseInt(window.currentUserClassId, 10);
+                console.log('从全局变量获取班级ID:', foundClassId);
+            }
+            
+            // 如果所有方法都失败，使用默认值1
+            if (!foundClassId) {
+                foundClassId = 1;
+                console.warn('无法获取班级ID，使用默认值:', foundClassId);
+            }
+            
+            classId = foundClassId;
+        }
+        
+        console.log('清除评语最终使用班级ID:', classId);
+        
+        // 显示加载通知
+        const notification = showNotification('正在清除评语，请稍候...', 'info', 0);
+        
+        // 发送请求
+        fetch('/api/clear-all-comments', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                class_id: classId // 确保发送的是数字类型
+            })
+        })
+        .then(response => {
+            console.log('清除评语API响应状态:', response.status);
+            
+            // 即使状态码不是200，也尝试解析响应内容
+            return response.text().then(text => {
+                try {
+                    // 尝试解析为JSON
+                    const data = JSON.parse(text);
+                    console.log('清除评语API响应内容:', data);
+                    
+                    // 如果响应不是成功状态，抛出错误
+                    if (!response.ok) {
+                        throw new Error(data.message || `HTTP错误! 状态: ${response.status}`);
+                    }
+                    
+                    return data;
+                } catch (e) {
+                    console.error('解析JSON失败:', e);
+                    console.log('原始响应:', text);
+                    throw new Error(`响应解析失败: ${text}`);
+                }
+            });
+        })
+        .then(data => {
+            // 关闭加载通知
+            if (notification) {
+                const bsToast = bootstrap.Toast.getInstance(notification);
+                if (bsToast) bsToast.hide();
+            }
+            
+            if (data.status === 'ok') {
+                // 显示成功通知
+                showNotification(data.message, 'success');
+                console.log('清除评语成功，影响的学生数:', data.affected_count);
+                
+                // 重新加载评语列表
+                initCommentList();
+                
+                // 触发更新事件
+                notifyStudentDataChanged();
+            } else {
+                throw new Error(data.message || '清除评语失败');
+            }
+        })
+        .catch(error => {
+            console.error('清除评语时出错:', error);
+            
+            // 关闭加载通知
+            if (notification) {
+                const bsToast = bootstrap.Toast.getInstance(notification);
+                if (bsToast) bsToast.hide();
+            }
+            
+            showNotification(`清除评语失败: ${error.message}`, 'error');
+        });
+    } catch (error) {
+        console.error('清除评语时出错:', error);
+        showNotification(`清除评语失败: ${error.message}`, 'error');
     }
 }// 文件结束
