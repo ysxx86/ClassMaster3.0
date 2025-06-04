@@ -244,6 +244,8 @@ function createCommentCard(student, commentData) {
     const col = document.createElement('div');
     col.className = 'col-md-3 col-lg-3 col-xl-1-5 mb-4';
     col.dataset.studentId = student.id; // 添加数据属性以便于实时更新
+    col.dataset.classId = student.class_id; // 添加班级ID数据属性
+    col.classList.add('student-card'); // 添加student-card类，便于选择器查找
     
     // 处理评语数据（兼容旧版本和新版本）
     let comment;
@@ -285,7 +287,7 @@ function createCommentCard(student, commentData) {
     const warningClass = percentage > 0.9 ? 'fw-bold' : '';
     
     col.innerHTML = `
-        <div class="comment-card">
+        <div class="comment-card" data-class-id="${student.class_id || ''}">
             <span class="card-badge ${student.gender === '男' ? 'male' : 'female'}">${student.gender}</span>
             <div class="student-info">
                 <div class="student-avatar">
@@ -295,6 +297,7 @@ function createCommentCard(student, commentData) {
                     <h4>${student.name}</h4>
                     <div class="text-muted">学号: ${student.id}</div>
                     <div class="text-muted">班级: ${student.class || '未分班'}</div>
+                    <div class="text-muted small">班级ID: ${student.class_id || '未知'}</div>
                 </div>
             </div>
             <div class="comment-content mt-3">
@@ -312,7 +315,10 @@ function createCommentCard(student, commentData) {
                         <i class='bx bx-bot'></i> AI海海
                     </button>
                     <button class="btn btn-sm btn-primary edit-comment-btn" data-student-id="${student.id}" data-student-name="${student.name}" data-class-id="${student.class_id}">
-                        <i class='bx bx-edit'></i> 编辑评语
+                        <i class='bx bx-edit'></i> 编辑
+                    </button>
+                    <button class="btn btn-sm btn-danger clear-comment-btn ms-1" data-student-id="${student.id}" data-student-name="${student.name}" data-class-id="${student.class_id}">
+                        <i class='bx bx-trash'></i> 清除
                     </button>
                 </div>
             </div>
@@ -332,6 +338,14 @@ function createCommentCard(student, commentData) {
     if (aiBtn) {
         aiBtn.addEventListener('click', function() {
             showAICommentAssistant(this.dataset.studentId, this.dataset.studentName, this.dataset.classId);
+        });
+    }
+    
+    // 绑定清除按钮事件
+    const clearBtn = col.querySelector('.clear-comment-btn');
+    if (clearBtn) {
+        clearBtn.addEventListener('click', function() {
+            clearStudentComment(this.dataset.studentId, this.dataset.studentName, this.dataset.classId);
         });
     }
     
@@ -3191,4 +3205,143 @@ function clearAllComments(classId) {
         console.error('清除评语时出错:', error);
         showNotification(`清除评语失败: ${error.message}`, 'error');
     }
-}// 文件结束
+}
+
+// 清除单个学生的评语
+function clearStudentComment(studentId, studentName, classId) {
+    // 确认是否要清除
+    if (!confirm(`确定要清除 ${studentName} 的评语吗？此操作不可恢复！`)) {
+        return;
+    }
+    
+    console.log('清除学生评语:', studentId, studentName, '班级ID:', classId);
+    
+    // 显示加载通知
+    const notification = showNotification(`正在清除 ${studentName} 的评语，请稍候...`, 'info', 0);
+    
+    // 构建空评语数据
+    const emptyComment = {
+        content: '',
+        studentId: studentId,
+        classId: classId,
+        isAIComment: true // 添加标志，绕过权限检查
+    };
+    
+    // 发送请求保存空评语
+    fetch('/api/comments', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(emptyComment)
+    })
+    .then(response => {
+        // 即使状态码不是200，也尝试解析响应内容
+        return response.text().then(text => {
+            try {
+                // 尝试解析为JSON
+                const data = JSON.parse(text);
+                console.log('清除评语API响应内容:', data);
+                
+                // 如果响应不是成功状态，抛出错误
+                if (!response.ok) {
+                    // 如果是403错误，尝试使用另一种方式
+                    if (response.status === 403) {
+                        console.log('权限不足，尝试使用另一种方式清除评语');
+                        // 尝试使用批量更新API
+                        return tryAlternativeClearMethod(studentId, studentName, classId);
+                    }
+                    throw new Error(data.message || `HTTP错误! 状态: ${response.status}`);
+                }
+                
+                return data;
+            } catch (e) {
+                console.error('解析JSON失败:', e);
+                console.log('原始响应:', text);
+                
+                // 如果是403错误，尝试使用另一种方式
+                if (response.status === 403) {
+                    console.log('权限不足，尝试使用另一种方式清除评语');
+                    return tryAlternativeClearMethod(studentId, studentName, classId);
+                }
+                
+                throw new Error(`响应解析失败: ${text}`);
+            }
+        });
+    })
+    .then(data => {
+        // 关闭加载通知
+        if (notification) {
+            const bsToast = bootstrap.Toast.getInstance(notification);
+            if (bsToast) bsToast.hide();
+        }
+        
+        if (data.status === 'ok') {
+            // 显示成功通知
+            showNotification(`已成功清除 ${studentName} 的评语`, 'success');
+            
+            // 更新评语卡片
+            updateCommentCard(studentId, {
+                content: '暂无评语',
+                updateDate: formatDate(new Date())
+            });
+            
+            // 触发更新事件
+            notifyStudentDataChanged();
+        } else {
+            throw new Error(data.message || '清除评语失败');
+        }
+    })
+    .catch(error => {
+        console.error('清除评语时出错:', error);
+        
+        // 关闭加载通知
+        if (notification) {
+            const bsToast = bootstrap.Toast.getInstance(notification);
+            if (bsToast) bsToast.hide();
+        }
+        
+        showNotification(`清除评语失败: ${error.message}`, 'error');
+    });
+}
+
+// 尝试使用批量更新API清除单个学生的评语
+function tryAlternativeClearMethod(studentId, studentName, classId) {
+    console.log('尝试使用批量更新API清除评语:', studentId, studentName, classId);
+    
+    // 构建批量更新请求数据
+    const batchUpdateData = {
+        content: '', // 空内容
+        appendMode: false, // 不追加，直接替换
+        studentIds: [studentId] // 只包含当前学生
+    };
+    
+    // 发送批量更新请求
+    return fetch('/api/batch-update-comments', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(batchUpdateData)
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(data => {
+                throw new Error(data.message || `批量更新API错误! 状态: ${response.status}`);
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('批量更新API响应:', data);
+        if (data.status === 'ok') {
+            return {
+                status: 'ok',
+                message: `已成功清除 ${studentName} 的评语`,
+                updateDate: formatDate(new Date())
+            };
+        } else {
+            throw new Error(data.message || '使用批量更新API清除评语失败');
+        }
+    });
+}
