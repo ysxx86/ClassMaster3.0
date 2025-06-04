@@ -1771,7 +1771,7 @@ function showCommentsPreview(data) {
         // 添加有效性状态标签 - 强调字数超出问题
         const validStatus = preview.valid ? 
             '<span class="badge bg-success">有效</span>' : 
-            `<span class="badge bg-danger">超出字数(${preview.length}/1000)</span>`;
+            `<span class="badge bg-danger">超出字数(${preview.length}/260)</span>`;
         
         // 计算评语显示，超过100字符的截断显示（仅用于UI展示）
         let previewComment = preview.comment;
@@ -1784,7 +1784,7 @@ function showCommentsPreview(data) {
                 <td>${i + 1}</td>
                 <td>${preview.name}</td>
                 <td>${previewComment.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</td>
-                <td>${preview.length} / 1000</td>
+                <td>${preview.length} / 260</td>
                 <td>${matchStatus} ${validStatus}</td>
             </tr>
         `;
@@ -1801,12 +1801,16 @@ function showCommentsPreview(data) {
     const validClass = allValid ? 'alert-success' : 'alert-danger';
     const validIcon = allValid ? 'bx-check-circle' : 'bx-error-circle';
     
+    // 计算有效评语数量，如果服务器没有提供valid_count，则手动计算
+    const validCount = data.valid_count !== undefined ? data.valid_count : 
+        data.previews.filter(preview => preview.valid).length;
+    
     tableHtml += `
         <div class="alert ${validClass}">
             <i class='bx ${validIcon}'></i> 
             共发现 ${data.total_count} 条评语记录，其中 ${data.match_count} 条可匹配到学生，
-            ${data.valid_count} 条在字数范围内有效(不超过260字)。
-            ${!allValid ? '<strong>存在超出1000字数限制的评语，请修改Excel文件后重新导入。系统不会自动截断评语。</strong>' : ''}
+            ${validCount} 条在字数范围内有效(不超过260字)。
+            ${!allValid ? '<strong>存在超出260字数限制的评语，请修改Excel文件后重新导入。系统不会自动截断评语。</strong>' : ''}
         </div>
     `;
     
@@ -1828,7 +1832,7 @@ function showCommentsPreview(data) {
             if (data.match_count === 0) {
                 confirmBtn.title = "没有任何评语匹配到学生，无法导入";
             } else if (!allValid) {
-                confirmBtn.title = "存在评语超过字数限制(5000字)，请修改后重试，系统不会自动截断评语";
+                confirmBtn.title = "存在评语超过字数限制(260字)，请修改后重试，系统不会自动截断评语";
             }
         } else {
             confirmBtn.title = "确认导入评语";
@@ -1839,7 +1843,7 @@ function showCommentsPreview(data) {
     const importSummary = document.getElementById('importSummary');
     if (importSummary) {
         if (!allValid) {
-            importSummary.innerHTML = `共发现 ${data.total_count} 条评语记录，其中 <strong class="text-danger">${data.total_count - data.valid_count} 条超出字数限制</strong>，请修改后重试。`;
+            importSummary.innerHTML = `共发现 ${data.total_count} 条评语记录，其中 <strong class="text-danger">${data.total_count - validCount} 条超出字数限制</strong>，请修改后重试。`;
         } else {
             importSummary.textContent = `共发现 ${data.total_count} 条评语记录，其中 ${data.match_count} 条可匹配到学生。`;
         }

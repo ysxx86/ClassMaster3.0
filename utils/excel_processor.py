@@ -390,39 +390,12 @@ class CommentsExcelProcessor:
             else:
                 comment['truncated'] = False
                 comment['valid'] = True  # 标记为有效
-            
-            # 检查评语长度是否有效（不超过1000个字符）
-            is_valid = len(comment['comment']) <= 260
-            if is_valid:
-                valid_count += 1
-            
-            preview = {
-                'name': comment['name'],
-                'comment': comment['comment'],
-                'matched': False,
-                'length': len(comment['comment']),
-                'valid': is_valid,
-                'valid_text': "有效" if is_valid else "无效(超过260字)"  # 临时调整为1000字
-            }
-            
-            # 检查学生是否存在
-            if comment['name'] in students_dict:
-                preview['matched'] = True
-                preview['student_id'] = students_dict[comment['name']]['id']
-                match_count += 1
-            
-            matched_comments.append(preview)
+                
+            comments_data.append(comment)
         
-        logger.info(f"评语匹配完成，总计: {total_count}, 成功匹配: {match_count}, 有效评语: {valid_count}")
-        
-        return {
-            'previews': matched_comments,
-            'total_count': total_count,
-            'match_count': match_count,
-            'valid_count': valid_count,
-            'all_valid': valid_count == total_count  # 是否所有评语都有效
-        }
-    
+        logger.info(f"评语数据转换完成，共 {len(comments_data)} 条评语记录")
+        return comments_data
+
     def _generate_html_preview(self, comments_data):
         """生成HTML预览表格"""
         logger.info("生成评语数据HTML预览表格")
@@ -480,15 +453,14 @@ class CommentsExcelProcessor:
         matched_comments = []
         total_count = len(comments_data)
         match_count = 0
-        valid_count = 0  # 有效评语数量（长度不超过1000个字）
+        valid_count = 0  # 有效评语数量（长度不超过260个字）
         
         for comment in comments_data:
             student_name = comment['name']
             comment_content = comment['comment']
-            comment_length = len(comment_content)
             
-            # 检查评语长度是否有效（不超过1000个字符）
-            is_valid = comment_length <= 5000  # 修改为5000字  # 临时调整为1000字
+            # 检查评语长度是否有效（不超过260个字符）
+            is_valid = len(comment_content) <= 260
             if is_valid:
                 valid_count += 1
             
@@ -496,9 +468,9 @@ class CommentsExcelProcessor:
                 'name': student_name,
                 'comment': comment_content,
                 'matched': False,
-                'length': comment_length,
+                'length': len(comment_content),
                 'valid': is_valid,
-                'valid_text': "有效" if is_valid else "无效(超过260字)"  # 临时调整为1000字
+                'valid_text': "有效" if is_valid else "无效(超过260字)"
             }
             
             # 检查学生是否存在
