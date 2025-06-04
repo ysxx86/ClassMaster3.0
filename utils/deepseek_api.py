@@ -218,7 +218,7 @@ class DeepSeekAPI:
                 prompt += f"- 肯定爱好特长：{student_info.get('hobbies')}\n"
             
             if has_improvement:
-                prompt += f"- 改进建议：针对"{student_info.get('improvement')}"\n"
+                prompt += f"- 改进建议：针对\"{student_info.get('improvement')}\"\n"
         else:
             # 如果没有提供特征信息，强调多样性和随机性
             prompt += """
