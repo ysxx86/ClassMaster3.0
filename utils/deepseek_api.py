@@ -189,9 +189,9 @@ class DeepSeekAPI:
         prompt = f"""
 你是一名经验丰富的班主任，请为以下学生生成一段评语。
 
-【重要提醒】评语必须严格控制在{content_min_length}-{content_max_length}字之间，也就是AI本身清楚如何生成一个段200-260字的评语，这是系统强制要求，中文一个字算一个字，不要在生成的过程中反复计算字数，也不用生成草稿。会导致生成变慢，等待变久。
-
-评语应该是{style}和{tone}的。
+【核心指令】
+- 直接生成评语，不在评语正文里显示统计的字数。
+- 评语必须是{style}和{tone}的
 
 学生信息:
 - 姓名: {student_info.get('name', '学生')}
@@ -201,47 +201,39 @@ class DeepSeekAPI:
 - 课外活动/爱好: {student_info.get('hobbies', '未提供')}
 - 需要改进的方面: {student_info.get('improvement', '未提供')}
 
-请根据以上信息，生成一段全面、具体且有针对性的评语，突出{gender}的优点，同时也提出建设性的改进建议。
-
-
-你的思考过程(reasoning_content)可以充分展开，但最终输出的评语(content字段)必须严格在235±5字左右。
+仅输出评语，不要任何其他内容。
 """
 
         # 根据是否提供了特征信息添加额外指导
         if has_personality or has_study_info or has_hobbies or has_improvement:
-            prompt += "\n额外要求：\n"
+            prompt += "\n要点：\n"
             
             if has_personality:
-                prompt += f"- 一定要突出学生的个性特点：\"{student_info.get('personality')}\"，并据此给出针对性评价\n"
+                prompt += f"- 突出个性特点：{student_info.get('personality')}\n"
             
             if has_study_info:
-                prompt += f"- 评语中要明确反映学生的学习表现：\"{student_info.get('study_performance')}\"，并给予恰当评价\n"
+                prompt += f"- 反映学习表现：{student_info.get('study_performance')}\n"
             
             if has_hobbies:
-                prompt += f"- 要提及并积极肯定学生的爱好特长：\"{student_info.get('hobbies')}\"\n"
+                prompt += f"- 肯定爱好特长：{student_info.get('hobbies')}\n"
             
             if has_improvement:
-                prompt += f"- 对于学生需要改进的方面：\"{student_info.get('improvement')}\"，给予建设性且鼓励性的建议\n"
+                prompt += f"- 改进建议：针对"{student_info.get('improvement')}"\n"
         else:
             # 如果没有提供特征信息，强调多样性和随机性
             prompt += """
-特别注意：
-- 由于没有提供详细的学生特征信息，请创造性地生成评语
-- 每次生成的评语必须有明显差异，不使用固定模板
-- 使用多样化的句式结构、表达方式和主题
-- 避免使用"春日里"、"像阳光一样"等常见套路表达
-- 生成的评语应根据选定的风格和语气而显著不同
+特点：
+- 随机创造性地生成评语
+- 避免模板化表达
+- 避免开头都是春日、春风等固定式开头。
 """
 
         # 特别强调诗意风格的要求
         if style == "诗意的":
             prompt += """
-【诗意风格特别强调】
-- 这是最重要的要求：必须在评语中引用至少一句与学生特点相关的完整古诗词名句
-- 引用的古诗词必须用引号标明，并可以简单说明出处
-- 请选择恰当的、能反映学生特点或品质的古诗词
-- 评语的其他部分也应当保持文学性，与引用的诗词风格一致
-- 这是判断生成质量的关键标准，请务必执行
+【诗意风格】
+- 在评语中引用一句与学生特点相关的古诗词名句，带引号和出处
+- 整体评语保持文学性，与诗词风格一致
 """
 
         # 添加额外指令和结束提示
@@ -254,10 +246,14 @@ class DeepSeekAPI:
         payload = {
             "model": "deepseek-reasoner",
             "messages": [
-                {"role": "system", "content": "你是一位专业的班主任评语撰写专家。不要在生成的过程中反复计算字数，会导致生成变慢，等待变久。评语字数严格控制字数在200-260字之间，这是系统的硬性要求。"},
+                {"role": "system", "content": "直接生成235字左右学生评语。"},
                 {"role": "user", "content": prompt}
             ],
-            "max_tokens": min(5000, reasoning_max_length * 2)  # 增加最大token数以支持更长的输出
+            "max_tokens": 5000,
+            "temperature": 0.9,
+            "top_p": 0.95,
+            "frequency_penalty": 0.3,
+            "presence_penalty": 0.3
         }
         
         # 初始化重试计数
