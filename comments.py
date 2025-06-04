@@ -347,6 +347,107 @@ def batch_update_comments_api():
         logger.error(f"批量更新评语时出错: {str(e)}")
         return jsonify({'status': 'error', 'message': f'服务器错误: {str(e)}'})
 
+# 清除当前班级所有评语
+@comments_bp.route('/api/clear-all-comments', methods=['POST'])
+def clear_all_comments():
+    try:
+        data = request.get_json()
+        if not data:
+            logger.error("清除评语 - 未接收到数据")
+            return jsonify({'status': 'error', 'message': '未接收到数据'})
+        
+        # 获取班级ID
+        class_id = data.get('class_id')
+        
+        # 记录班级ID的类型和值，帮助调试
+        logger.info(f"清除评语 - 接收到的班级ID: {class_id}, 类型: {type(class_id)}")
+        
+        # 确保class_id是整数
+        try:
+            class_id = int(class_id)
+            logger.info(f"清除评语 - 转换后的班级ID: {class_id}")
+        except (TypeError, ValueError):
+            logger.error(f"清除评语时班级ID类型转换失败: {class_id}")
+            return jsonify({'status': 'error', 'message': f'班级ID格式不正确: {class_id}'})
+        
+        # 获取数据库连接
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        try:
+            # 获取当前时间
+            now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            
+            # 先获取班级中有评语的学生数量
+            cursor.execute('SELECT COUNT(*) FROM students WHERE class_id = ? AND (comments IS NOT NULL AND comments <> "")', (class_id,))
+            affected_count = cursor.fetchone()[0]
+            
+            logger.info(f"清除评语 - 班级ID {class_id} 中有评语的学生数量: {affected_count}")
+            
+            # 调试：获取班级中的学生总数
+            cursor.execute('SELECT COUNT(*) FROM students WHERE class_id = ?', (class_id,))
+            total_students = cursor.fetchone()[0]
+            logger.info(f"清除评语 - 班级ID {class_id} 中的学生总数: {total_students}")
+            
+            # 调试：获取所有班级ID和对应的学生数量
+            cursor.execute('SELECT class_id, COUNT(*) as student_count FROM students GROUP BY class_id')
+            all_classes = cursor.fetchall()
+            logger.info(f"清除评语 - 数据库中的所有班级ID和学生数量: {all_classes}")
+            
+            # 如果没有找到任何学生，尝试查询这个班级是否存在
+            if total_students == 0:
+                cursor.execute('SELECT DISTINCT class_id FROM students')
+                all_class_ids = [row[0] for row in cursor.fetchall()]
+                logger.warning(f"清除评语 - 班级ID {class_id} 没有学生。数据库中存在的班级ID: {all_class_ids}")
+                return jsonify({
+                    'status': 'error', 
+                    'message': f'班级ID {class_id} 不存在或没有学生',
+                    'available_class_ids': all_class_ids
+                })
+            
+            # 清除指定班级所有学生的评语 - 使用空字符串而不是NULL，确保兼容性
+            update_sql = 'UPDATE students SET comments = "", updated_at = ? WHERE class_id = ?'
+            logger.info(f"清除评语 - 执行SQL: {update_sql}, 参数: ({now}, {class_id})")
+            
+            cursor.execute(update_sql, (now, class_id))
+            
+            # 检查影响的行数
+            rows_affected = cursor.rowcount
+            logger.info(f"清除评语 - 实际影响的行数: {rows_affected}")
+            
+            # 验证是否真的清除了评语
+            cursor.execute('SELECT COUNT(*) FROM students WHERE class_id = ? AND (comments IS NOT NULL AND comments <> "")', (class_id,))
+            remaining_comments = cursor.fetchone()[0]
+            logger.info(f"清除评语 - 操作后仍有评语的学生数量: {remaining_comments}")
+            
+            conn.commit()
+        except Exception as e:
+            conn.rollback()
+            logger.error(f"清除评语 - 数据库操作失败: {str(e)}")
+            raise
+        finally:
+            conn.close()
+        
+        # 如果没有影响任何行，但有学生有评语，可能是SQL执行问题
+        if rows_affected == 0 and affected_count > 0:
+            logger.warning(f"清除评语 - 有{affected_count}名学生有评语，但SQL影响了0行")
+            return jsonify({
+                'status': 'error', 
+                'message': f'清除评语失败，请检查数据库权限',
+                'affected_count': 0
+            })
+        
+        return jsonify({
+            'status': 'ok', 
+            'message': f'已成功清除 {affected_count} 名学生的评语',
+            'affected_count': affected_count
+        })
+        
+    except Exception as e:
+        logger.error(f"清除评语时出错: {str(e)}")
+        logger.error(traceback.format_exc())  # 添加堆栈跟踪以便更好地调试
+        return jsonify({'status': 'error', 'message': f'服务器错误: {str(e)}'})
+
 # AI生成评语API
 @comments_bp.route('/api/generate-comment', methods=['POST'])
 def generate_comment():
