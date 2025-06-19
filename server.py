@@ -8,6 +8,8 @@ import argparse
 import re
 import random  # 添加random模块导入
 from functools import wraps
+import threading  # 添加threading模块以支持线程安全操作
+from utils.excel_processor import ExcelProcessor
 
 # 配置
 UPLOAD_FOLDER = 'uploads'
@@ -89,18 +91,7 @@ import shutil
 import time
 import logging
 import traceback
-from utils.excel_processor import ExcelProcessor
-try:
-    from utils.pdf_exporter_fixed import export_comments_to_pdf  # 导入修复后的PDF导出函数
-except ImportError:
-    # 创建一个简化版的PDF导出函数，返回格式与正常函数一致
-    def export_comments_to_pdf(*args, **kwargs):
-        return {
-            'status': 'error',
-            'message': 'PDF导出功能不可用，请安装reportlab模块'
-        }
-    print("! PDF导出功能不可用，请安装reportlab模块")
-    
+from utils.pdf_exporter_fixed import export_comments_to_pdf  # 导入修复后的PDF导出函数
 from utils.comment_generator import CommentGenerator
 from utils.report_exporter import ReportExporter
 # 导入学生模块
@@ -2310,4 +2301,4 @@ if __name__ == '__main__':
         # 开发环境设置
         app.debug = True if args.debug else False
         app.config['PROPAGATE_EXCEPTIONS'] = True
-        app.run(host=args.host, port=args.port)
+        app.run(host=args.host, port=args.port, threaded=True)

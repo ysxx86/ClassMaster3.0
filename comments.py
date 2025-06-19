@@ -48,12 +48,9 @@ from io import BytesIO
 comments_bp = Blueprint('comments', __name__)
 logger = logging.getLogger(__name__)
 
-# 添加导出进度全局变量
-export_progress = {
-    'message': '',
-    'percent': 0,
-    'timestamp': 0
-}
+# 添加导出进度全局变量 - 改为基于用户的进度跟踪
+user_export_progress = {}
+progress_lock = threading.Lock()
 
 # 更新导出进度信息
 def websocket_progress(message, percent=None, request_id=None):
@@ -65,20 +62,36 @@ def websocket_progress(message, percent=None, request_id=None):
     - percent: 百分比值(0-100)
     - request_id: 请求ID
     """
-    global export_progress
+    global user_export_progress
     
-    # 更新进度信息
-    current_time = time.time()
-    export_progress['message'] = message
-    if percent is not None:
-        export_progress['percent'] = percent
-    export_progress['timestamp'] = current_time
-    export_progress['request_id'] = request_id
+    # 获取当前用户ID，如果没有request_id则使用用户ID
+    user_id = None
+    if hasattr(current_user, 'id') and current_user.is_authenticated:
+        user_id = str(current_user.id)
+    
+    # 使用request_id作为主键，如果没有则使用user_id
+    progress_key = request_id if request_id else user_id
+    if not progress_key:
+        progress_key = 'anonymous'
+    
+    # 线程安全地更新进度信息
+    with progress_lock:
+        current_time = time.time()
+        if progress_key not in user_export_progress:
+            user_export_progress[progress_key] = {}
+        
+        user_export_progress[progress_key].update({
+            'message': message,
+            'percent': percent if percent is not None else user_export_progress[progress_key].get('percent', 0),
+            'timestamp': current_time,
+            'request_id': request_id,
+            'user_id': user_id
+        })
     
     # 打印日志
-    logger.info(f"导出进度更新: {message} ({percent if percent is not None else ''}%)")
+    logger.info(f"导出进度更新 [用户:{user_id}, 请求:{request_id}]: {message} ({percent if percent is not None else ''}%)")
     
-    return export_progress
+    return user_export_progress.get(progress_key, {})
 
 # 获取数据库连接函数
 def get_db_connection():
@@ -1936,28 +1949,65 @@ def get_students():
         logger.error(traceback.format_exc())
         return jsonify({'error': f'获取学生列表时出错: {str(e)}'}), 500
 
+# 清理过期的导出进度
+def cleanup_export_progress():
+    """清理超过30分钟的导出进度信息"""
+    global user_export_progress
+    
+    current_time = time.time()
+    with progress_lock:
+        expired_keys = []
+        for key, progress in user_export_progress.items():
+            if current_time - progress.get('timestamp', 0) > 1800:  # 30分钟
+                expired_keys.append(key)
+        
+        for key in expired_keys:
+            logger.info(f"清理过期的导出进度: {key}")
+            del user_export_progress[key]
+
 # 添加导出进度查询接口
 @comments_bp.route('/api/export-progress', methods=['GET'])
 def get_export_progress():
     """获取当前导出进度信息"""
-    global export_progress
+    global user_export_progress
+    
+    # 清理过期的进度信息
+    cleanup_export_progress()
+    
+    # 获取当前用户ID
+    user_id = None
+    if hasattr(current_user, 'id') and current_user.is_authenticated:
+        user_id = str(current_user.id)
+    
+    # 获取请求中的request_id参数
+    request_id = request.args.get('request_id')
+    
+    # 确定要查询的进度键
+    progress_key = request_id if request_id else user_id
+    if not progress_key:
+        progress_key = 'anonymous'
+    
+    # 线程安全地获取进度信息
+    with progress_lock:
+        user_progress = user_export_progress.get(progress_key, {})
     
     # 检查是否有有效的进度信息
     current_time = time.time()
-    if current_time - export_progress.get('timestamp', 0) > 300:  # 5分钟内的进度才是有效的
-        # 超过5分钟没有更新，返回空进度
+    if not user_progress or current_time - user_progress.get('timestamp', 0) > 300:  # 5分钟内的进度才是有效的
+        # 超过5分钟没有更新或没有进度信息，返回空进度
         return jsonify({
             'status': 'idle',
             'message': '',
             'percent': 0
         })
     
-    # 返回当前进度
+    # 返回当前用户的进度
     return jsonify({
-        'status': 'processing' if export_progress.get('message') else 'idle',
-        'message': export_progress.get('message', ''),
-        'percent': export_progress.get('percent', 0),
-        'request_id': export_progress.get('request_id')
+        'status': 'processing' if user_progress.get('message') else 'idle',
+        'message': user_progress.get('message', ''),
+        'percent': user_progress.get('percent', 0),
+        'request_id': user_progress.get('request_id'),
+        'user_id': user_progress.get('user_id')
     })
 
 # 更新导出报告的转换和合并进度显示
