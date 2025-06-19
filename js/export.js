@@ -2451,8 +2451,14 @@ function startPollingProgress(requestId) {
     // 设置轮询间隔
     progressPoller = setInterval(async () => {
         try {
+            // 构建查询URL，如果有requestId则添加参数
+            let progressUrl = '/api/export-progress';
+            if (requestId) {
+                progressUrl += `?request_id=${encodeURIComponent(requestId)}`;
+            }
+            
             // 调用API获取最新进度
-            const response = await fetch('/api/export-progress', {
+            const response = await fetch(progressUrl, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -2473,9 +2479,9 @@ function startPollingProgress(requestId) {
                 return;
             }
             
-            // 检查是否是当前请求的进度
-            if (progressData.request_id && progressData.request_id !== requestId) {
-                console.warn('收到的进度信息不属于当前请求');
+            // 检查是否是当前请求的进度（如果有requestId）
+            if (requestId && progressData.request_id && progressData.request_id !== requestId) {
+                console.warn('收到的进度信息不属于当前请求:', progressData.request_id, '!=', requestId);
                 return;
             }
             
@@ -2505,7 +2511,7 @@ function startPollingProgress(requestId) {
         }
     }, 500); // 每500毫秒轮询一次
     
-    console.log('开始轮询导出进度...');
+    console.log(`开始轮询导出进度 [请求ID: ${requestId}]...`);
 }
 
 // 停止轮询导出进度
