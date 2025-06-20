@@ -130,27 +130,68 @@ def convert_docx_to_pdf(input_file, output_file, request_id=None):
                 logger.error(f"Windows PDF转换失败: {str(e)}")
                 return False
             finally:
-                # 确保资源正确释放
+                # 强制释放所有COM资源和文件句柄
+                doc_closed = False
+                word_quit = False
+                
+                # 步骤1：强制关闭文档
                 try:
                     if doc is not None:
+                        # 使用强制参数关闭文档
                         doc.Close(SaveChanges=False)
+                        doc = None
+                        doc_closed = True
                         clean_input = clean_unicode_for_logging(os.path.basename(input_file))
                         logger.debug(f"文档已关闭: {clean_input}")
                 except Exception as e:
                     logger.warning(f"关闭文档时出错: {str(e)}")
                 
+                # 步骤2：强制退出Word应用程序
                 try:
                     if word is not None:
-                        word.Quit()
+                        # 先尝试关闭所有文档
+                        try:
+                            word.Documents.Close(SaveChanges=False)
+                        except:
+                            pass
+                        # 强制退出Word
+                        word.Quit(SaveChanges=False)
+                        word = None
+                        word_quit = True
                         logger.debug("Word应用程序已退出")
                 except Exception as e:
                     logger.warning(f"退出Word应用程序时出错: {str(e)}")
                 
+                # 步骤3：强制垃圾回收
+                try:
+                    import gc
+                    gc.collect()
+                    gc.collect()  # 执行两次确保清理
+                except:
+                    pass
+                
+                # 步骤4：等待文件句柄释放
+                try:
+                    import time
+                    time.sleep(1.0)  # 等待1秒让文件句柄完全释放
+                except:
+                    pass
+                
+                # 步骤5：释放COM环境
                 try:
                     pythoncom.CoUninitialize()
                     logger.debug("COM环境已释放")
                 except Exception as e:
                     logger.warning(f"释放COM环境时出错: {str(e)}")
+                
+                # 步骤6：再次垃圾回收和短暂延迟
+                try:
+                    import gc
+                    gc.collect()
+                    import time
+                    time.sleep(0.5)  # 额外的短暂延迟
+                except:
+                    pass
                 
         elif system == "Linux":
             # Linux系统使用LibreOffice转换
