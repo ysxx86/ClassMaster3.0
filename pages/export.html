@@ -465,7 +465,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-secondary" id="cancelExportBtn">取消</button>
                 </div>
             </div>
         </div>
@@ -765,6 +765,14 @@
             
             // 初始化班级导出功能
             await initClassExportFeatures();
+            
+            // 绑定取消导出按钮事件
+            const cancelExportBtn = document.getElementById('cancelExportBtn');
+            if (cancelExportBtn) {
+                cancelExportBtn.addEventListener('click', function() {
+                    cancelClassExport();
+                });
+            }
         });
         
         // 检查用户权限并初始化管理员功能
@@ -936,6 +944,9 @@
                 // 生成唯一的请求ID
                 const requestId = Date.now().toString();
                 
+                // 设置全局变量
+                currentClassExportRequestId = requestId;
+                
                 // 显示进度对话框
                 const progressModal = new bootstrap.Modal(document.getElementById('progressModal'));
                 progressModal.show();
@@ -961,6 +972,9 @@
                 
                 // 停止轮询
                 stopClassProgressPolling();
+                
+                // 清理全局变量
+                currentClassExportRequestId = null;
                 
                 if (response.ok) {
                     // 检查是否是直接文件下载
@@ -1030,6 +1044,8 @@
                 console.error('班级导出时出错:', error);
                 // 停止轮询
                 stopClassProgressPolling();
+                // 清理全局变量
+                currentClassExportRequestId = null;
                 // 隐藏进度对话框
                 const progressModal = bootstrap.Modal.getInstance(document.getElementById('progressModal'));
                 if (progressModal) {
@@ -1159,6 +1175,51 @@
                 document.body.removeChild(a);
                 window.URL.revokeObjectURL(url);
             }, 100);
+        }
+        
+        // 全局变量：当前班级导出请求ID
+        let currentClassExportRequestId = null;
+        
+        // 取消班级导出
+        function cancelClassExport() {
+            if (!currentClassExportRequestId) {
+                console.warn('没有活动的班级导出任务');
+                return;
+            }
+            
+            console.log('发送班级导出取消请求:', currentClassExportRequestId);
+            
+            // 停止轮询
+            stopClassProgressPolling();
+            
+            // 发送取消请求到后端
+            fetch('/api/cancel-export', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    requestId: currentClassExportRequestId
+                })
+            }).then(response => response.json())
+            .then(data => {
+                console.log('班级导出取消响应:', data);
+            })
+            .catch(error => {
+                console.error('发送班级导出取消请求时出错:', error);
+            })
+            .finally(() => {
+                // 无论成功与否，都重置状态
+                currentClassExportRequestId = null;
+                
+                // 隐藏进度模态框
+                const progressModal = bootstrap.Modal.getInstance(document.getElementById('progressModal'));
+                if (progressModal) {
+                    progressModal.hide();
+                }
+                
+                showNotification('班级导出操作已取消', 'warning');
+            });
         }
         
         // 初始化班级导出功能（兼容性函数）

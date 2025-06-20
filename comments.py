@@ -88,8 +88,15 @@ def websocket_progress(message, percent=None, request_id=None):
             'user_id': user_id
         })
     
-    # 打印日志
-    logger.info(f"导出进度更新 [用户:{user_id}, 请求:{request_id}]: {message} ({percent if percent is not None else ''}%)")
+    # 清理消息中的特殊字符并打印日志
+    def clean_unicode_for_logging(text):
+        """清理字符串中的特殊Unicode字符，用于日志输出"""
+        if not isinstance(text, str):
+            return text
+        return text.replace('\xa0', ' ').replace('\u00a0', ' ').encode('gbk', errors='ignore').decode('gbk')
+    
+    clean_message = clean_unicode_for_logging(message)
+    logger.info(f"导出进度更新 [用户:{user_id}, 请求:{request_id}]: {clean_message} ({percent if percent is not None else ''}%)")
     
     return user_export_progress.get(progress_key, {})
 
@@ -815,7 +822,9 @@ def cleanup_export_requests():
     with export_requests_lock:
         expired_requests = []
         for req_id, info in active_export_requests.items():
-            if (now - info['started_at']).total_seconds() > 1800:  # 30分钟
+            # 兼容两种时间字段名
+            start_time = info.get('started_at') or info.get('timestamp')
+            if start_time and (now - start_time).total_seconds() > 1800:  # 30分钟
                 expired_requests.append(req_id)
                 
         for req_id in expired_requests:
@@ -834,10 +843,7 @@ def cancel_export():
             
         logger.info(f"收到取消导出请求: {request_id}")
         
-        # 清理过期请求
-        cleanup_export_requests()
-        
-        # 标记请求为已取消
+        # 标记请求为已取消（优先执行，确保取消标志设置成功）
         found = False
         with export_requests_lock:
             if request_id in active_export_requests:
@@ -849,6 +855,12 @@ def cancel_export():
                 
                 # 立即更新进度为取消状态
                 websocket_progress("导出已取消", 0, request_id)
+        
+        # 尝试清理过期请求（如果出错不影响取消操作）
+        try:
+            cleanup_export_requests()
+        except Exception as cleanup_error:
+            logger.warning(f"清理过期请求时出错: {str(cleanup_error)}，但取消操作继续")
             
         if found:
             return jsonify({
