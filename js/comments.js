@@ -838,6 +838,12 @@ function exportComments() {
 
 // 导出评语为PDF
 function exportCommentsToPdf() {
+    // 设置导出进行中标志和启用拦截器
+    if (typeof exportInProgress !== 'undefined' && typeof setupExportInterceptor === 'function') {
+        exportInProgress = true;
+        setupExportInterceptor();
+    }
+    
     // 显示加载通知
     showNotification('正在生成PDF，请稍候...', 'info', 0);
     
@@ -899,6 +905,12 @@ function exportCommentsToPdf() {
                     const bsToast = bootstrap.Toast.getInstance(toast);
                     if (bsToast) bsToast.hide();
                 });
+            }
+            
+            // 重置导出状态和停止拦截器
+            if (typeof exportInProgress !== 'undefined' && typeof stopExportInterceptor === 'function') {
+                exportInProgress = false;
+                stopExportInterceptor();
             }
             
             // 检查结果
@@ -976,6 +988,12 @@ function exportCommentsToPdf() {
                 });
             }
             
+            // 重置导出状态和停止拦截器
+            if (typeof exportInProgress !== 'undefined' && typeof stopExportInterceptor === 'function') {
+                exportInProgress = false;
+                stopExportInterceptor();
+            }
+            
             // 处理超时错误
             if (error.name === 'AbortError') {
                 showNotification('PDF生成超时，请选择较小的班级范围或稍后重试', 'error');
@@ -989,6 +1007,12 @@ function exportCommentsToPdf() {
 function exportCommentsToExcel() {
     try {
         console.log('开始导出Excel评语...');
+        
+        // 设置导出进行中标志和启用拦截器
+        if (typeof exportInProgress !== 'undefined' && typeof setupExportInterceptor === 'function') {
+            exportInProgress = true;
+            setupExportInterceptor();
+        }
         
         // 显示加载状态
         showNotification('正在导出Excel评语...', 'info', 0);
@@ -1035,6 +1059,12 @@ function exportCommentsToExcel() {
                     });
                 }
                 
+                // 重置导出状态和停止拦截器
+                if (typeof exportInProgress !== 'undefined' && typeof stopExportInterceptor === 'function') {
+                    exportInProgress = false;
+                    stopExportInterceptor();
+                }
+                
                 // 显示成功消息
                 showNotification('评语导出请求已发送，请检查下载内容', 'success');
             }, 1000);
@@ -1042,6 +1072,13 @@ function exportCommentsToExcel() {
         
     } catch (error) {
         console.error('导出Excel评语错误:', error);
+        
+        // 重置导出状态和停止拦截器
+        if (typeof exportInProgress !== 'undefined' && typeof stopExportInterceptor === 'function') {
+            exportInProgress = false;
+            stopExportInterceptor();
+        }
+        
         showNotification('导出Excel功能出错: ' + error.message, 'error');
     }
 }

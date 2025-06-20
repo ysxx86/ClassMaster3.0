@@ -947,6 +947,12 @@
                 // 设置全局变量
                 currentClassExportRequestId = requestId;
                 
+                // 设置导出进行中标志和启用拦截器
+                if (typeof exportInProgress !== 'undefined' && typeof setupExportInterceptor === 'function') {
+                    exportInProgress = true;
+                    setupExportInterceptor();
+                }
+                
                 // 显示进度对话框
                 const progressModal = new bootstrap.Modal(document.getElementById('progressModal'));
                 progressModal.show();
@@ -1024,6 +1030,13 @@
                         // 延迟隐藏进度对话框并显示成功消息
                         setTimeout(() => {
                             progressModal.hide();
+                            
+                            // 重置导出状态和停止拦截器
+                            if (typeof exportInProgress !== 'undefined' && typeof stopExportInterceptor === 'function') {
+                                exportInProgress = false;
+                                stopExportInterceptor();
+                            }
+                            
                             const finalMessage = totalElapsedTime ? 
                                 `成功导出 ${selectedClasses.length} 个班级的报告！总耗时：${totalElapsedTime}` :
                                 `成功导出 ${selectedClasses.length} 个班级的报告！`;
@@ -1032,11 +1045,25 @@
                     } else {
                         const errorData = await response.json();
                         progressModal.hide();
+                        
+                        // 重置导出状态和停止拦截器
+                        if (typeof exportInProgress !== 'undefined' && typeof stopExportInterceptor === 'function') {
+                            exportInProgress = false;
+                            stopExportInterceptor();
+                        }
+                        
                         showNotification(`导出失败: ${errorData.message || '未知错误'}`, 'error');
                     }
                 } else {
                     const errorData = await response.json();
                     progressModal.hide();
+                    
+                    // 重置导出状态和停止拦截器
+                    if (typeof exportInProgress !== 'undefined' && typeof stopExportInterceptor === 'function') {
+                        exportInProgress = false;
+                        stopExportInterceptor();
+                    }
+                    
                     showNotification(`导出失败: ${errorData.message || '未知错误'}`, 'error');
                 }
                 
@@ -1046,6 +1073,13 @@
                 stopClassProgressPolling();
                 // 清理全局变量
                 currentClassExportRequestId = null;
+                
+                // 重置导出状态和停止拦截器
+                if (typeof exportInProgress !== 'undefined' && typeof stopExportInterceptor === 'function') {
+                    exportInProgress = false;
+                    stopExportInterceptor();
+                }
+                
                 // 隐藏进度对话框
                 const progressModal = bootstrap.Modal.getInstance(document.getElementById('progressModal'));
                 if (progressModal) {
@@ -1181,13 +1215,15 @@
         let currentClassExportRequestId = null;
         
         // 取消班级导出
-        function cancelClassExport() {
-            if (!currentClassExportRequestId) {
+        function cancelClassExport(requestId) {
+            const targetRequestId = requestId || currentClassExportRequestId;
+            
+            if (!targetRequestId) {
                 console.warn('没有活动的班级导出任务');
                 return;
             }
             
-            console.log('发送班级导出取消请求:', currentClassExportRequestId);
+            console.log('发送班级导出取消请求:', targetRequestId);
             
             // 停止轮询
             stopClassProgressPolling();
@@ -1199,7 +1235,7 @@
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    requestId: currentClassExportRequestId
+                    requestId: targetRequestId
                 })
             }).then(response => response.json())
             .then(data => {
@@ -1211,6 +1247,12 @@
             .finally(() => {
                 // 无论成功与否，都重置状态
                 currentClassExportRequestId = null;
+                
+                // 重置导出状态和停止拦截器
+                if (typeof exportInProgress !== 'undefined' && typeof stopExportInterceptor === 'function') {
+                    exportInProgress = false;
+                    stopExportInterceptor();
+                }
                 
                 // 隐藏进度模态框
                 const progressModal = bootstrap.Modal.getInstance(document.getElementById('progressModal'));
