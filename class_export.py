@@ -62,15 +62,68 @@ def convert_docx_to_pdf(input_file, output_file, request_id=None):
                 import pythoncom
                 from win32com.client import Dispatch
                 
+                # 在初始化COM前检查取消状态
+                if request_id and check_export_cancelled(request_id):
+                    logger.info(f"PDF转换在初始化COM前被取消: {os.path.basename(input_file)}")
+                    return False
+                
                 pythoncom.CoInitialize()
+                
+                # 在打开Word之前检查取消状态
+                if request_id and check_export_cancelled(request_id):
+                    logger.info(f"PDF转换在打开Word前被取消: {os.path.basename(input_file)}")
+                    pythoncom.CoUninitialize()
+                    return False
+                
                 word = Dispatch("Word.Application")
                 word.Visible = False
                 word.DisplayAlerts = False  # 禁用弹窗
                 
+                # 在打开文档前检查取消状态
+                if request_id and check_export_cancelled(request_id):
+                    logger.info(f"PDF转换在打开文档前被取消: {os.path.basename(input_file)}")
+                    try:
+                        word.Quit()
+                    except:
+                        pass
+                    pythoncom.CoUninitialize()
+                    return False
+                
                 doc = word.Documents.Open(input_file)
+                
+                # 在保存PDF前检查取消状态
+                if request_id and check_export_cancelled(request_id):
+                    logger.info(f"PDF转换在保存前被取消: {os.path.basename(input_file)}")
+                    try:
+                        doc.Close(SaveChanges=False)
+                        word.Quit()
+                    except:
+                        pass
+                    pythoncom.CoUninitialize()
+                    return False
+                
                 doc.SaveAs(output_file, FileFormat=17)  # 17表示PDF格式
                 
-                logger.info(f"成功转换PDF: {os.path.basename(input_file)} -> {os.path.basename(output_file)}")
+                # 保存完成后再次检查取消状态
+                if request_id and check_export_cancelled(request_id):
+                    logger.info(f"PDF转换在保存完成后被取消: {os.path.basename(input_file)}")
+                    # 删除刚生成的PDF文件
+                    try:
+                        if os.path.exists(output_file):
+                            os.remove(output_file)
+                    except:
+                        pass
+                    try:
+                        doc.Close(SaveChanges=False)
+                        word.Quit()
+                    except:
+                        pass
+                    pythoncom.CoUninitialize()
+                    return False
+                
+                clean_input = clean_unicode_for_logging(os.path.basename(input_file))
+                clean_output = clean_unicode_for_logging(os.path.basename(output_file))
+                logger.info(f"成功转换PDF: {clean_input} -> {clean_output}")
                 return True
                 
             except Exception as e:
@@ -81,7 +134,8 @@ def convert_docx_to_pdf(input_file, output_file, request_id=None):
                 try:
                     if doc is not None:
                         doc.Close(SaveChanges=False)
-                        logger.debug(f"文档已关闭: {os.path.basename(input_file)}")
+                        clean_input = clean_unicode_for_logging(os.path.basename(input_file))
+                        logger.debug(f"文档已关闭: {clean_input}")
                 except Exception as e:
                     logger.warning(f"关闭文档时出错: {str(e)}")
                 
@@ -109,7 +163,9 @@ def convert_docx_to_pdf(input_file, output_file, request_id=None):
                 ], capture_output=True, text=True, timeout=60)
                 
                 if result.returncode == 0:
-                    logger.info(f"成功转换PDF: {os.path.basename(input_file)} -> {os.path.basename(output_file)}")
+                    clean_input = clean_unicode_for_logging(os.path.basename(input_file))
+                    clean_output = clean_unicode_for_logging(os.path.basename(output_file))
+                    logger.info(f"成功转换PDF: {clean_input} -> {clean_output}")
                     return True
                 else:
                     logger.error(f"unoconv转换失败: {result.stderr}")
@@ -141,15 +197,26 @@ def get_teacher_name(class_id):
         return '未分配班主任'
 
 # 导入websocket_progress函数来更新进度
+def clean_unicode_for_logging(text):
+    """清理字符串中的特殊Unicode字符，用于日志输出"""
+    if not isinstance(text, str):
+        return text
+    # 替换非间断空格和其他可能导致GBK编码问题的字符
+    return text.replace('\xa0', ' ').replace('\u00a0', ' ').encode('gbk', errors='ignore').decode('gbk')
+
 def websocket_progress(message, percent=None, request_id=None):
     """更新导出进度信息"""
     try:
+        # 清理消息中的特殊字符
+        clean_message = clean_unicode_for_logging(message)
+        
         # 从comments模块导入进度更新函数
         from comments import websocket_progress as update_progress
-        return update_progress(message, percent, request_id)
+        return update_progress(clean_message, percent, request_id)
     except ImportError:
         logger.warning("无法导入进度更新函数")
-        logger.info(f"进度更新: {message} ({percent}%)")
+        clean_message = clean_unicode_for_logging(message)
+        logger.info(f"进度更新: {clean_message} ({percent}%)")
 
 def check_export_cancelled(request_id):
     """检查导出是否被取消"""
@@ -157,14 +224,10 @@ def check_export_cancelled(request_id):
         return False
     
     try:
-        from comments import active_export_requests, export_requests_lock
-        with export_requests_lock:
-            request_info = active_export_requests.get(request_id)
-            if request_info and request_info.get('cancelled'):
-                logger.info(f"检测到导出取消请求: {request_id}")
-                return True
-        return False
+        from comments import is_export_cancelled
+        return is_export_cancelled(request_id)
     except ImportError:
+        logger.warning("无法导入is_export_cancelled函数")
         return False
 
 def format_elapsed_time(start_time):
@@ -209,6 +272,24 @@ def api_export_class_reports():
         
         # 记录开始时间
         start_time = datetime.datetime.now()
+        
+        # 注册导出请求到active_export_requests
+        try:
+            from comments import active_export_requests, export_requests_lock
+            if request_id:
+                with export_requests_lock:
+                    active_export_requests[request_id] = {
+                        'user_id': current_user.id,
+                        'status': 'processing',
+                        'percent': 5,
+                        'message': f"开始导出 {len(selected_classes)} 个班级的报告...",
+                        'started_at': datetime.datetime.now(),
+                        'request_id': request_id,
+                        'cancelled': False
+                    }
+                logger.info(f"已注册班级导出请求到active_export_requests: {request_id}")
+        except ImportError:
+            logger.warning("无法导入active_export_requests，取消功能可能不可用")
         
         # 更新初始进度
         websocket_progress(f"[5%] 开始导出 {len(selected_classes)} 个班级的报告...", 5, request_id)
@@ -399,10 +480,20 @@ def api_export_class_reports():
                                 os.makedirs(individual_pdf_dir, exist_ok=True)
                                 
                                 for docx_index, docx_file in enumerate(docx_files):
-                                    # 检查是否被取消
+                                    # 转换前检查是否被取消
                                     if check_export_cancelled(request_id):
                                         websocket_progress("导出已取消", 0, request_id)
-                                        logger.info(f"班级 {class_name} 导出在PDF转换时被取消")
+                                        logger.info(f"班级 {class_name} 导出在PDF转换 {docx_file} 前被取消")
+                                        # 清理进度信息
+                                        try:
+                                            from comments import active_export_requests, export_requests_lock
+                                            if request_id:
+                                                with export_requests_lock:
+                                                    if request_id in active_export_requests:
+                                                        del active_export_requests[request_id]
+                                                        logger.info(f"已清理取消的导出请求: {request_id}")
+                                        except ImportError:
+                                            pass
                                         return jsonify({'status': 'cancelled', 'message': '导出已取消'})
                                     
                                     # 显示PDF转换进度
@@ -413,8 +504,41 @@ def api_export_class_reports():
                                     pdf_file = docx_file.replace('.docx', '.pdf')
                                     pdf_path = os.path.join(individual_pdf_dir, pdf_file)
                                     
-                                    if convert_docx_to_pdf(docx_path, pdf_path):
+                                    # 执行PDF转换（convert_docx_to_pdf内部也会检查取消状态）
+                                    if convert_docx_to_pdf(docx_path, pdf_path, request_id):
                                         pdf_files.append(pdf_path)
+                                    else:
+                                        # 如果转换失败，可能是被取消了，立即检查
+                                        if check_export_cancelled(request_id):
+                                            websocket_progress("导出已取消", 0, request_id)
+                                            logger.info(f"班级 {class_name} 导出在PDF转换 {docx_file} 过程中被取消")
+                                            # 清理进度信息
+                                            try:
+                                                from comments import active_export_requests, export_requests_lock
+                                                if request_id:
+                                                    with export_requests_lock:
+                                                        if request_id in active_export_requests:
+                                                            del active_export_requests[request_id]
+                                                            logger.info(f"已清理取消的导出请求: {request_id}")
+                                            except ImportError:
+                                                pass
+                                            return jsonify({'status': 'cancelled', 'message': '导出已取消'})
+                                    
+                                    # 每转换完一个文档后再次检查取消状态
+                                    if check_export_cancelled(request_id):
+                                        websocket_progress("导出已取消", 0, request_id)
+                                        logger.info(f"班级 {class_name} 导出在PDF转换 {docx_file} 完成后被取消")
+                                        # 清理进度信息
+                                        try:
+                                            from comments import active_export_requests, export_requests_lock
+                                            if request_id:
+                                                with export_requests_lock:
+                                                    if request_id in active_export_requests:
+                                                        del active_export_requests[request_id]
+                                                        logger.info(f"已清理取消的导出请求: {request_id}")
+                                        except ImportError:
+                                            pass
+                                        return jsonify({'status': 'cancelled', 'message': '导出已取消'})
                                 
                                 # 合并PDF
                                 if pdf_files:
@@ -469,6 +593,22 @@ def api_export_class_reports():
                 logger.info("班级导出在最终打包前被取消")
                 return jsonify({'status': 'cancelled', 'message': '导出已取消'})
             
+            # 最后检查是否被取消
+            if check_export_cancelled(request_id):
+                websocket_progress("导出已取消", 0, request_id)
+                logger.info("班级导出在最终打包前被取消")
+                # 清理进度信息
+                try:
+                    from comments import active_export_requests, export_requests_lock
+                    if request_id:
+                        with export_requests_lock:
+                            if request_id in active_export_requests:
+                                del active_export_requests[request_id]
+                                logger.info(f"已清理取消的导出请求: {request_id}")
+                except ImportError:
+                    pass
+                return jsonify({'status': 'cancelled', 'message': '导出已取消'})
+            
             # 更新进度
             websocket_progress(f"[90%] 正在打包 {len(all_class_results)} 个班级的导出文件...", 90, request_id)
             
@@ -505,14 +645,15 @@ def api_export_class_reports():
             
             logger.info(f"班级导出完成，共处理 {len(all_class_results)} 个班级，文件大小: {len(zip_data)} 字节")
             
-            # 清理进度信息（标记为完成）
+            # 清理进度信息（正常完成）
             try:
                 from comments import active_export_requests, export_requests_lock
                 if request_id:
                     with export_requests_lock:
                         if request_id in active_export_requests:
-                            active_export_requests[request_id]['status'] = 'completed'
-                            active_export_requests[request_id]['completed_at'] = datetime.datetime.now()
+                            # 正常完成时也删除，不保留状态
+                            del active_export_requests[request_id]
+                            logger.info(f"已清理完成的导出请求: {request_id}")
             except ImportError:
                 pass
             
@@ -531,8 +672,9 @@ def api_export_class_reports():
             if request_id:
                 with export_requests_lock:
                     if request_id in active_export_requests:
-                        active_export_requests[request_id]['status'] = 'error'
-                        active_export_requests[request_id]['error'] = str(e)
+                        # 出错时直接删除，不保留状态
+                        del active_export_requests[request_id]
+                        logger.info(f"已清理出错的导出请求: {request_id}")
         except ImportError:
             pass
         
