@@ -228,6 +228,58 @@
                     <h2 class="export-title">选择学生</h2>
                     <p class="export-desc">选择需要导出报告的学生。</p>
                     
+                    <!-- 管理员专用班级导出功能 -->
+                    <div id="adminClassExportSection" class="mb-3 d-none">
+                        <div class="alert alert-info">
+                            <i class='bx bx-shield-check me-2'></i>
+                            <strong>管理员功能：按班级批量导出</strong>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="exportMode" id="normalExportMode" value="normal" checked>
+                            <label class="form-check-label" for="normalExportMode">
+                                <strong>选择学生导出</strong> - 手动选择下方学生进行导出
+                            </label>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="radio" name="exportMode" id="classExportMode" value="class">
+                            <label class="form-check-label" for="classExportMode">
+                                <strong>按班级导出</strong> - 选择班级导出所有学生，按班级分组
+                            </label>
+                        </div>
+                        
+                        <!-- 班级选择区域 -->
+                        <div id="classSelectionArea" class="d-none">
+                            <div class="form-group mb-3">
+                                <label for="classSelector" class="form-label">选择要导出的班级：</label>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="selectAllClasses">
+                                    <label class="form-check-label" for="selectAllClasses">
+                                        <strong>全部班级</strong>
+                                    </label>
+                                </div>
+                                <div id="classCheckboxList" class="border rounded p-3" style="max-height: 200px; overflow-y: auto;">
+                                    <div class="text-center p-2">正在加载班级列表...</div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group mb-3">
+                                <label class="form-label">PDF文件组织方式：</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="pdfOrganization" id="separateByClass" value="separate" checked>
+                                    <label class="form-check-label" for="separateByClass">
+                                        按班级分别创建文件夹，每个班级生成合并PDF + 单独PDF
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="pdfOrganization" id="allInOne" value="unified">
+                                    <label class="form-check-label" for="allInOne">
+                                        所有学生PDF放在同一个文件夹内
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div class="export-options">
                         <div class="form-check form-check-inline">
                             <input class="form-check-input" type="checkbox" id="selectAllStudents" checked>
@@ -328,13 +380,30 @@
                         </div>
                     </div>
                     
-                    <div class="btn-group w-100 mt-3" role="group">
+                    <!-- 普通导出按钮 -->
+                    <div id="normalExportButtons" class="btn-group w-100 mt-3" role="group">
                         <button class="btn btn-primary" id="exportBtn" style="flex: 1;">
                             <i class='bx bx-file-doc'></i> 导出Word版本
                         </button>
                         <button class="btn btn-danger" id="exportPdfBtn" style="flex: 1;">
                             <i class='bx bx-file-pdf'></i> 导出|合并PDF报告
                         </button>
+                    </div>
+                    
+                    <!-- 管理员班级导出按钮 -->
+                    <div id="classExportButtons" class="d-none mt-3">
+                        <div class="btn-group w-100 mb-2" role="group">
+                            <button class="btn btn-success" id="exportClassWordBtn" style="flex: 1;">
+                                <i class='bx bx-file-doc'></i> 按班级导出Word
+                            </button>
+                            <button class="btn btn-warning" id="exportClassPdfBtn" style="flex: 1;">
+                                <i class='bx bx-file-pdf'></i> 按班级导出PDF
+                            </button>
+                        </div>
+                        <div class="alert alert-warning small">
+                            <i class='bx bx-info-circle me-1'></i>
+                            班级导出将为每个选中的班级创建独立的文件夹，包含该班所有学生的报告
+                        </div>
                     </div>
                     
                     <div class="progress-area d-none">
@@ -619,6 +688,9 @@
             // 初始化学生列表
             initStudentList();
             
+            // 检查用户权限并初始化管理员功能
+            await checkUserPermissionsAndInitAdminFeatures();
+            
             // 页面加载完成后执行
             document.addEventListener('DOMContentLoaded', () => {
                 // 初始化各种功能
@@ -690,7 +762,233 @@
                     exportReports('pdf');
                 });
             }
+            
+            // 初始化班级导出功能
+            await initClassExportFeatures();
         });
+        
+        // 检查用户权限并初始化管理员功能
+        async function checkUserPermissionsAndInitAdminFeatures() {
+            try {
+                const response = await fetch('/api/current-user');
+                const userData = await response.json();
+                
+                if (userData.status === 'ok' && userData.user && userData.user.is_admin) {
+                    console.log('检测到管理员用户，启用班级导出功能');
+                    // 显示管理员专用功能
+                    const adminSection = document.getElementById('adminClassExportSection');
+                    if (adminSection) {
+                        adminSection.classList.remove('d-none');
+                    }
+                    
+                    // 加载班级列表
+                    await loadClassesForExport();
+                    
+                    // 设置事件监听器
+                    setupClassExportEventListeners();
+                } else {
+                    console.log('当前用户非管理员，隐藏班级导出功能');
+                }
+            } catch (error) {
+                console.error('检查用户权限时出错:', error);
+            }
+        }
+        
+        // 加载班级列表用于导出
+        async function loadClassesForExport() {
+            try {
+                const response = await fetch('/api/classes');
+                const data = await response.json();
+                
+                if (data.status === 'ok' && data.classes) {
+                    const classCheckboxList = document.getElementById('classCheckboxList');
+                    if (classCheckboxList) {
+                        let html = '';
+                        data.classes.forEach(classInfo => {
+                            html += `
+                                <div class="form-check">
+                                    <input class="form-check-input class-checkbox" type="checkbox" 
+                                           id="class_${classInfo.id}" value="${classInfo.id}" 
+                                           data-class-name="${classInfo.class_name}">
+                                    <label class="form-check-label" for="class_${classInfo.id}">
+                                        ${classInfo.class_name} (${classInfo.student_count}人)
+                                        ${classInfo.teacher_name !== '未分配' ? ' - ' + classInfo.teacher_name : ''}
+                                    </label>
+                                </div>
+                            `;
+                        });
+                        classCheckboxList.innerHTML = html;
+                        
+                        console.log(`加载了 ${data.classes.length} 个班级`);
+                    }
+                } else {
+                    console.error('获取班级列表失败:', data.message);
+                }
+            } catch (error) {
+                console.error('加载班级列表时出错:', error);
+            }
+        }
+        
+        // 设置班级导出相关事件监听器
+        function setupClassExportEventListeners() {
+            // 导出模式切换
+            const normalModeRadio = document.getElementById('normalExportMode');
+            const classModeRadio = document.getElementById('classExportMode');
+            const classSelectionArea = document.getElementById('classSelectionArea');
+            const normalExportButtons = document.getElementById('normalExportButtons');
+            const classExportButtons = document.getElementById('classExportButtons');
+            
+            function toggleExportMode() {
+                if (classModeRadio && classModeRadio.checked) {
+                    // 班级导出模式
+                    if (classSelectionArea) classSelectionArea.classList.remove('d-none');
+                    if (normalExportButtons) normalExportButtons.classList.add('d-none');
+                    if (classExportButtons) classExportButtons.classList.remove('d-none');
+                } else {
+                    // 普通导出模式
+                    if (classSelectionArea) classSelectionArea.classList.add('d-none');
+                    if (normalExportButtons) normalExportButtons.classList.remove('d-none');
+                    if (classExportButtons) classExportButtons.classList.add('d-none');
+                }
+            }
+            
+            if (normalModeRadio) normalModeRadio.addEventListener('change', toggleExportMode);
+            if (classModeRadio) classModeRadio.addEventListener('change', toggleExportMode);
+            
+            // 全选班级功能
+            const selectAllClassesCheckbox = document.getElementById('selectAllClasses');
+            if (selectAllClassesCheckbox) {
+                selectAllClassesCheckbox.addEventListener('change', function() {
+                    const classCheckboxes = document.querySelectorAll('.class-checkbox');
+                    classCheckboxes.forEach(checkbox => {
+                        checkbox.checked = this.checked;
+                    });
+                });
+            }
+            
+            // 班级复选框状态监听
+            document.addEventListener('change', function(e) {
+                if (e.target.classList.contains('class-checkbox')) {
+                    const allClassCheckboxes = document.querySelectorAll('.class-checkbox');
+                    const checkedClassCheckboxes = document.querySelectorAll('.class-checkbox:checked');
+                    const selectAllCheckbox = document.getElementById('selectAllClasses');
+                    
+                    if (selectAllCheckbox) {
+                        selectAllCheckbox.checked = allClassCheckboxes.length === checkedClassCheckboxes.length;
+                        selectAllCheckbox.indeterminate = checkedClassCheckboxes.length > 0 && checkedClassCheckboxes.length < allClassCheckboxes.length;
+                    }
+                }
+            });
+            
+            // 班级导出按钮事件
+            const exportClassWordBtn = document.getElementById('exportClassWordBtn');
+            const exportClassPdfBtn = document.getElementById('exportClassPdfBtn');
+            
+            if (exportClassWordBtn) {
+                exportClassWordBtn.addEventListener('click', function() {
+                    exportClassReports('word');
+                });
+            }
+            
+            if (exportClassPdfBtn) {
+                exportClassPdfBtn.addEventListener('click', function() {
+                    exportClassReports('pdf');
+                });
+            }
+        }
+        
+        // 按班级导出报告
+        async function exportClassReports(exportType) {
+            try {
+                // 获取选中的班级
+                const selectedClasses = [];
+                const classCheckboxes = document.querySelectorAll('.class-checkbox:checked');
+                
+                if (classCheckboxes.length === 0) {
+                    showNotification('请至少选择一个班级', 'warning');
+                    return;
+                }
+                
+                classCheckboxes.forEach(checkbox => {
+                    selectedClasses.push({
+                        id: checkbox.value,
+                        name: checkbox.getAttribute('data-class-name')
+                    });
+                });
+                
+                // 获取PDF组织方式
+                const pdfOrganization = document.querySelector('input[name="pdfOrganization"]:checked')?.value || 'separate';
+                
+                // 获取导出设置
+                const settings = {
+                    schoolYear: document.getElementById('schoolYear')?.value || '',
+                    semester: document.getElementById('semesterValue')?.value || '1',
+                    startDate: document.getElementById('startDate')?.value || '',
+                    teacherName: document.getElementById('teacherName')?.value || '',
+                    fileNameFormat: document.getElementById('fileNameFormat')?.value || 'id_name',
+                    exportType: exportType,
+                    pdfOrganization: pdfOrganization
+                };
+                
+                // 显示进度对话框
+                const progressModal = new bootstrap.Modal(document.getElementById('progressModal'));
+                progressModal.show();
+                
+                // 更新进度文本
+                const progressText = document.getElementById('progressText');
+                if (progressText) {
+                    progressText.textContent = `正在导出 ${selectedClasses.length} 个班级的报告...`;
+                }
+                
+                // 发送导出请求
+                const response = await fetch('/api/export-class-reports', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        classes: selectedClasses,
+                        settings: settings
+                    })
+                });
+                
+                if (response.ok) {
+                    // 处理文件下载
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `班级报告_${exportType}_${new Date().getTime()}.zip`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                    
+                    // 隐藏进度对话框并显示成功消息
+                    progressModal.hide();
+                    showNotification(`成功导出 ${selectedClasses.length} 个班级的报告`, 'success');
+                } else {
+                    const errorData = await response.json();
+                    progressModal.hide();
+                    showNotification(`导出失败: ${errorData.message || '未知错误'}`, 'error');
+                }
+                
+            } catch (error) {
+                console.error('班级导出时出错:', error);
+                // 隐藏进度对话框
+                const progressModal = bootstrap.Modal.getInstance(document.getElementById('progressModal'));
+                if (progressModal) {
+                    progressModal.hide();
+                }
+                showNotification(`导出失败: ${error.message}`, 'error');
+            }
+        }
+        
+        // 初始化班级导出功能（兼容性函数）
+        async function initClassExportFeatures() {
+            // 这个函数现在由checkUserPermissionsAndInitAdminFeatures处理
+            console.log('班级导出功能初始化完成');
+        }
         
         // 从API加载模板
         function loadTemplatesFromAPI() {

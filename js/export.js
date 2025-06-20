@@ -8,6 +8,7 @@ let templateContent = null;
 let templateFile = null;
 let currentExportRequestId = null; // 用于跟踪当前导出请求ID
 let abortController = null; // 用于取消请求
+let exportInProgress = false;  // 新增：导出进行中标志
 
 // 全局变量，用于记录轮询状态
 let progressPoller = null; 
@@ -97,6 +98,9 @@ document.addEventListener('DOMContentLoaded', function() {
             initStudentList();  // 重新加载学生列表
         }
     });
+    
+    // 初始化导出拦截器
+    setupExportInterceptor();
     
     console.log('导出页面初始化完成');
 });
@@ -833,6 +837,9 @@ function clearAllModals() {
 // 修改导出完成的处理函数，确保清除模态框
 async function exportReports(exportType = 'word') {
     try {
+        // 设置导出进行中标志
+        exportInProgress = true;
+        
         // 生成唯一的请求ID
         currentExportRequestId = Date.now().toString();
         // 创建新的AbortController用于取消请求
@@ -994,6 +1001,9 @@ async function exportReports(exportType = 'word') {
                 
                 // 延迟一秒后关闭进度条，让用户看到100%完成状态
                 setTimeout(() => {
+                    // 重置导出状态
+                    exportInProgress = false;
+                    
                     // 隐藏进度模态框
                     hideProgressModal();
                     
@@ -1259,6 +1269,7 @@ async function exportReports(exportType = 'word') {
         resetExportButton(exportType);
         
         // 重置导出状态
+        exportInProgress = false;
         window.isExporting = false;
         currentExportRequestId = null;
         abortController = null;
@@ -1298,6 +1309,7 @@ function cancelExport(requestId) {
     })
     .finally(() => {
         // 无论成功与否，都重置状态
+        exportInProgress = false;
         currentExportRequestId = null;
         abortController = null;
         window.isExporting = false;
@@ -2479,6 +2491,13 @@ function startPollingProgress(requestId) {
                 return;
             }
             
+            // 检查是否导出已完成
+            if (progressData.status === 'completed') {
+                console.log('导出已完成，停止轮询');
+                stopPollingProgress();
+                return;
+            }
+            
             // 检查是否是当前请求的进度（如果有requestId）
             if (requestId && progressData.request_id && progressData.request_id !== requestId) {
                 console.warn('收到的进度信息不属于当前请求:', progressData.request_id, '!=', requestId);
@@ -2505,6 +2524,9 @@ function startPollingProgress(requestId) {
                 } else {
                     progressBar.classList.add('bg-primary', 'progress-bar-striped', 'progress-bar-animated');
                 }
+                
+                // 更新阻塞对话框的状态显示
+                updateBlockingDialogStatus();
             }
         } catch (error) {
             console.error('轮询进度时出错:', error);
@@ -2575,4 +2597,111 @@ function highlightProblemStudents(problemStudentIds) {
     
     // 显示提示消息
     showNotification(`已高亮显示 ${problemStudentIds.length} 名有数据问题的学生`, 'info');
+}
+
+// 导出期间操作拦截器
+function setupExportInterceptor() {
+    // 拦截页面跳转
+    window.addEventListener('beforeunload', function(e) {
+        if (exportInProgress) {
+            e.preventDefault();
+            e.returnValue = '正在导出中，确定要离开吗？这将取消导出操作。';
+            return e.returnValue;
+        }
+    });
+    
+    // 拦截表单提交
+    document.addEventListener('submit', function(e) {
+        if (exportInProgress) {
+            e.preventDefault();
+            showExportBlockingDialog('有导出任务正在进行', '检测到表单提交操作，是否要取消当前导出？');
+        }
+    });
+    
+    // 拦截按钮点击
+    document.addEventListener('click', function(e) {
+        if (exportInProgress && e.target.tagName === 'BUTTON' && 
+            !e.target.closest('.progress-modal') && 
+            !e.target.hasAttribute('data-allow-during-export')) {
+            e.preventDefault();
+            e.stopPropagation();
+            showExportBlockingDialog('有导出任务正在进行', '检测到按钮操作，是否要取消当前导出？');
+        }
+    });
+}
+
+// 显示导出阻塞对话框
+function showExportBlockingDialog(title, message) {
+    // 创建模态框HTML
+    const modalHtml = `
+        <div class="modal fade" id="exportBlockingModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header bg-warning">
+                        <h5 class="modal-title"><i class="bx bx-error-circle me-2"></i>${title}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" data-allow-during-export="true"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>${message}</p>
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
+                            <span class="text-muted">当前导出进度：<span id="currentExportStatus">处理中...</span></span>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-allow-during-export="true">继续导出</button>
+                        <button type="button" class="btn btn-danger" onclick="forceStopExport()" data-allow-during-export="true">取消导出</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // 移除旧的模态框
+    const oldModal = document.getElementById('exportBlockingModal');
+    if (oldModal) {
+        oldModal.remove();
+    }
+    
+    // 添加新的模态框
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    // 显示模态框
+    const modal = new bootstrap.Modal(document.getElementById('exportBlockingModal'));
+    modal.show();
+    
+    // 更新当前导出状态
+    updateBlockingDialogStatus();
+}
+
+// 更新阻塞对话框中的导出状态
+function updateBlockingDialogStatus() {
+    const statusElement = document.getElementById('currentExportStatus');
+    if (statusElement) {
+        // 从进度文本获取当前状态
+        const progressText = document.getElementById('progressText');
+        if (progressText && progressText.textContent) {
+            statusElement.textContent = progressText.textContent;
+        }
+    }
+}
+
+// 强制停止导出
+function forceStopExport() {
+    if (currentExportRequestId) {
+        cancelExport(currentExportRequestId);
+    }
+    
+    // 隐藏阻塞对话框
+    const modal = bootstrap.Modal.getInstance(document.getElementById('exportBlockingModal'));
+    if (modal) {
+        modal.hide();
+    }
+    
+    // 重置状态
+    exportInProgress = false;
+    stopPollingProgress();
+    hideProgressModal();
+    
+    showNotification('导出已取消', 'warning');
 }
