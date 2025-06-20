@@ -17,11 +17,9 @@ class User(UserMixin):
             try:
                 # 尝试转换为整数，因为数据库中class_id是INTEGER
                 self.class_id = int(class_id)
-                print(f"用户{username}的class_id已转换为整数: {self.class_id}")
             except (ValueError, TypeError):
                 # 如果转换失败，保留原始值
                 self.class_id = class_id
-                print(f"用户{username}的class_id无法转换为整数，保留原值: {self.class_id}，类型: {type(self.class_id).__name__}")
         else:
             self.class_id = None
     
@@ -44,16 +42,12 @@ class User(UserMixin):
             user_data = cursor.fetchone()
             
             if user_data:
-                # 记录从数据库获取的原始class_id值和类型
-                class_id = user_data['class_id']
-                print(f"从数据库获取到用户ID={user_id}的class_id={class_id}, 类型={type(class_id).__name__}")
-                
                 return cls(
                     id=user_data['id'],
                     username=user_data['username'],
                     password_hash=user_data['password_hash'],
                     is_admin=bool(user_data['is_admin']),
-                    class_id=class_id
+                    class_id=user_data['class_id']
                 )
             return None
         finally:

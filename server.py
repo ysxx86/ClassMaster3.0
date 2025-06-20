@@ -242,6 +242,10 @@ app.register_blueprint(backup_bp)
 from system_api import system_api_bp
 app.register_blueprint(system_api_bp)
 
+# 注册班级导出蓝图
+from class_export import class_export_bp
+app.register_blueprint(class_export_bp)
+
 # 全局错误处理中间件
 @app.before_request
 def before_request():

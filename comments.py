@@ -843,8 +843,12 @@ def cancel_export():
             if request_id in active_export_requests:
                 active_export_requests[request_id]['cancelled'] = True
                 active_export_requests[request_id]['status'] = 'cancelled'
+                active_export_requests[request_id]['cancelled_at'] = datetime.datetime.now()
                 found = True
                 logger.info(f"已标记导出请求 {request_id} 为已取消")
+                
+                # 立即更新进度为取消状态
+                websocket_progress("导出已取消", 0, request_id)
             
         if found:
             return jsonify({
@@ -2001,9 +2005,17 @@ def get_export_progress():
             'percent': 0
         })
     
+    # 检查是否有导出完成的标记
+    progress_status = 'idle'
+    if user_progress.get('message'):
+        if user_progress.get('percent') == 100 or '导出完成' in user_progress.get('message', ''):
+            progress_status = 'completed'
+        else:
+            progress_status = 'processing'
+    
     # 返回当前用户的进度
     return jsonify({
-        'status': 'processing' if user_progress.get('message') else 'idle',
+        'status': progress_status,
         'message': user_progress.get('message', ''),
         'percent': user_progress.get('percent', 0),
         'request_id': user_progress.get('request_id'),
