@@ -841,6 +841,9 @@ async function exportReports(exportType = 'word') {
         // 设置导出进行中标志
         exportInProgress = true;
         
+        // 启用导出拦截器
+        setupExportInterceptor();
+        
         // 记录导出开始时间
         exportStartTime = new Date();
         
@@ -1029,6 +1032,9 @@ async function exportReports(exportType = 'word') {
                 setTimeout(() => {
                     // 重置导出状态
                     exportInProgress = false;
+                    
+                    // 停止导出拦截器
+                    stopExportInterceptor();
                     
                     // 隐藏进度模态框
                     hideProgressModal();
@@ -1301,6 +1307,10 @@ async function exportReports(exportType = 'word') {
         
         // 重置导出状态
         exportInProgress = false;
+        
+        // 停止导出拦截器
+        stopExportInterceptor();
+        
         window.isExporting = false;
         currentExportRequestId = null;
         abortController = null;
@@ -1341,6 +1351,10 @@ function cancelExport(requestId) {
     .finally(() => {
         // 无论成功与否，都重置状态
         exportInProgress = false;
+        
+        // 停止导出拦截器
+        stopExportInterceptor();
+        
         currentExportRequestId = null;
         abortController = null;
         window.isExporting = false;
@@ -2669,58 +2683,83 @@ function highlightProblemStudents(problemStudentIds) {
     showNotification(`已高亮显示 ${problemStudentIds.length} 名有数据问题的学生`, 'info');
 }
 
+// 全局导出拦截器状态
+let exportInterceptorActive = false;
+
 // 导出期间操作拦截器
 function setupExportInterceptor() {
-    // 拦截页面跳转
-    window.addEventListener('beforeunload', function(e) {
-        if (exportInProgress) {
-            e.preventDefault();
-            e.returnValue = '正在导出中，确定要离开吗？这将取消导出操作。';
-            return e.returnValue;
-        }
-    });
+    if (exportInterceptorActive) {
+        return; // 避免重复设置
+    }
+    exportInterceptorActive = true;
     
-    // 拦截表单提交
-    document.addEventListener('submit', function(e) {
-        if (exportInProgress) {
-            e.preventDefault();
-            showExportBlockingDialog('有导出任务正在进行', '检测到表单提交操作，是否要取消当前导出？');
-        }
-    });
+    // 拦截页面刷新和关闭
+    window.addEventListener('beforeunload', handleBeforeUnload);
     
-    // 拦截按钮点击
-    document.addEventListener('click', function(e) {
-        if (exportInProgress && e.target.tagName === 'BUTTON' && 
-            !e.target.closest('.progress-modal') && 
-            !e.target.hasAttribute('data-allow-during-export')) {
+    // 拦截点击模态框以外的空白位置
+    document.addEventListener('click', handleModalBackdropClick);
+    
+    console.log('导出拦截器已启用');
+}
+
+// 停止导出拦截器
+function stopExportInterceptor() {
+    if (!exportInterceptorActive) {
+        return;
+    }
+    exportInterceptorActive = false;
+    
+    // 移除事件监听器
+    window.removeEventListener('beforeunload', handleBeforeUnload);
+    document.removeEventListener('click', handleModalBackdropClick);
+    
+    console.log('导出拦截器已停用');
+}
+
+// 处理页面刷新和关闭
+function handleBeforeUnload(e) {
+    if (exportInProgress) {
+        e.preventDefault();
+        e.returnValue = '正在进行导出，是否要取消导出任务？';
+        return e.returnValue;
+    }
+}
+
+
+
+// 处理模态框外点击
+function handleModalBackdropClick(e) {
+    if (exportInProgress) {
+        // 只拦截点击模态框背景的情况
+        // 不拦截页面上其他UI元素的正常点击
+        if (e.target.classList.contains('modal') || 
+            e.target.classList.contains('modal-backdrop')) {
             e.preventDefault();
             e.stopPropagation();
-            showExportBlockingDialog('有导出任务正在进行', '检测到按钮操作，是否要取消当前导出？');
+            showExportBlockingDialog();
         }
-    });
+    }
 }
 
 // 显示导出阻塞对话框
-function showExportBlockingDialog(title, message) {
+function showExportBlockingDialog() {
     // 创建模态框HTML
     const modalHtml = `
-        <div class="modal fade" id="exportBlockingModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog">
+        <div class="modal fade" id="exportBlockingModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+            <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header bg-warning">
-                        <h5 class="modal-title"><i class="bx bx-error-circle me-2"></i>${title}</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" data-allow-during-export="true"></button>
+                        <h5 class="modal-title"><i class="bx bx-error-circle me-2"></i>正在进行导出，是否要取消导出任务？</h5>
                     </div>
                     <div class="modal-body">
-                        <p>${message}</p>
                         <div class="d-flex align-items-center mb-3">
                             <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
                             <span class="text-muted">当前导出进度：<span id="currentExportStatus">处理中...</span></span>
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-allow-during-export="true">继续导出</button>
-                        <button type="button" class="btn btn-danger" onclick="forceStopExport()" data-allow-during-export="true">取消导出</button>
+                        <button type="button" class="btn btn-secondary" onclick="continueExport()" data-allow-during-export="true">取消</button>
+                        <button type="button" class="btn btn-danger" onclick="confirmStopExport()" data-allow-during-export="true">确定</button>
                     </div>
                 </div>
             </div>
@@ -2756,17 +2795,52 @@ function updateBlockingDialogStatus() {
     }
 }
 
-// 强制停止导出
-function forceStopExport() {
-    if (currentExportRequestId) {
-        cancelExport(currentExportRequestId);
-    }
-    
+// 继续导出（用户选择"取消"按钮）
+function continueExport() {
     // 隐藏阻塞对话框
     const modal = bootstrap.Modal.getInstance(document.getElementById('exportBlockingModal'));
     if (modal) {
         modal.hide();
     }
+    
+    // 移除模态框DOM元素
+    const modalElement = document.getElementById('exportBlockingModal');
+    if (modalElement) {
+        modalElement.remove();
+    }
+    
+    // 确保进度模态框重新显示
+    const progressModal = document.getElementById('progressModal');
+    if (progressModal && exportInProgress) {
+        const progressModalInstance = bootstrap.Modal.getInstance(progressModal) || new bootstrap.Modal(progressModal);
+        progressModalInstance.show();
+    }
+}
+
+// 确认停止导出（用户选择"确定"按钮）
+function confirmStopExport() {
+    // 隐藏阻塞对话框
+    const modal = bootstrap.Modal.getInstance(document.getElementById('exportBlockingModal'));
+    if (modal) {
+        modal.hide();
+    }
+    
+    // 移除模态框DOM元素
+    const modalElement = document.getElementById('exportBlockingModal');
+    if (modalElement) {
+        modalElement.remove();
+    }
+    
+    // 取消导出
+    if (currentExportRequestId) {
+        cancelExport(currentExportRequestId);
+    } else if (currentClassExportRequestId) {
+        // 如果是班级导出
+        cancelClassExport(currentClassExportRequestId);
+    }
+    
+    // 停止拦截器
+    stopExportInterceptor();
     
     // 重置状态
     exportInProgress = false;
@@ -2774,4 +2848,9 @@ function forceStopExport() {
     hideProgressModal();
     
     showNotification('导出已取消', 'warning');
+}
+
+// 强制停止导出（保留原函数以兼容）
+function forceStopExport() {
+    confirmStopExport();
 }
