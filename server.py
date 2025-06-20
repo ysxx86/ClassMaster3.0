@@ -1,77 +1,28 @@
 # -*- coding: utf-8 -*-
-# 自动安装所需依赖
-import sys
-import subprocess
+"""
+ClassMaster 2.2 - 智能班级管理系统主服务器
+重构后的版本，使用统一的配置和依赖管理
+"""
+
+# 使用新的依赖管理器
+from dependency_manager import install_required_packages
+
+# 检查并安装依赖
+install_required_packages()
+
+# 导入统一配置管理器
+from config_manager import config, DATABASE, UPLOAD_FOLDER, TEMPLATE_FOLDER, EXPORTS_FOLDER
+
 import os
 import json
 import argparse
 import re
-import random  # 添加random模块导入
+import random
 from functools import wraps
-import threading  # 添加threading模块以支持线程安全操作
+import threading
 from utils.excel_processor import ExcelProcessor
 
-# 配置
-UPLOAD_FOLDER = 'uploads'
-TEMPLATE_FOLDER = 'templates'
-EXPORTS_FOLDER = 'exports'
-DATABASE = 'students.db'
-
-# 确保所有必要的文件夹存在
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-os.makedirs(TEMPLATE_FOLDER, exist_ok=True)
-os.makedirs(EXPORTS_FOLDER, exist_ok=True)
-
-def check_and_install(package, version=None):
-    """检查并安装Python包"""
-    package_with_version = f"{package}=={version}" if version else package
-    
-    try:
-        # 尝试导入模块
-        __import__(package)
-        print(f"✓ {package} 已安装")
-    except ImportError:
-        print(f"! 未找到 {package} 模块，正在安装...")
-        try:
-            # 使用系统Python运行pip安装
-            subprocess.check_call([sys.executable, "-m", "pip", "install", 
-                                  package_with_version, "--no-cache-dir"])
-            print(f"✓ {package} 安装成功")
-        except Exception as e:
-            print(f"! {package} 安装失败: {str(e)}")
-            print(f"  请手动运行: pip install {package_with_version}")
-
-# 检查关键依赖
-print("检查并安装关键依赖...")
-REQUIRED_PACKAGES = [
-    ("flask", "3.0.2"),
-    ("flask_cors", "3.0.10"),
-    ("flask_login", "0.6.3"),  # 添加Flask-Login依赖
-    ("pandas", "2.2.1"),
-    ("openpyxl", "3.1.2"),
-    ("werkzeug", "2.3.0")
-]
-
-# 单独处理requests和reportlab
-try:
-    import requests
-    print("✓ requests 已安装")
-except ImportError:
-    print("! 未找到 requests 模块，评语AI生成功能将不可用")
-    print("  如需使用AI生成评语，请运行: pip install requests==2.31.0")
-
-try:
-    import reportlab
-    print("✓ reportlab 已安装")
-except ImportError:
-    print("! 未找到 reportlab 模块，PDF导出功能将不可用")
-    print("  如需使用PDF导出功能，请运行: pip install reportlab==4.1.0")
-
-# 安装基础依赖
-for package, version in REQUIRED_PACKAGES:
-    check_and_install(package, version)
-
-print("依赖检查完成，开始导入模块...\n")
+# 依赖检查已通过dependency_manager处理
 
 # 原始的导入语句
 from flask import Flask, request, jsonify, send_from_directory, render_template, url_for, send_file, make_response, redirect, flash, session
@@ -144,122 +95,9 @@ except ImportError:
     print("! 无法导入DeepSeekAPI，AI评语生成功能不可用")
     deepseek_api = None
 
-# 系统设置存储
-SYSTEM_SETTINGS = {
-    "deepseek_api_key": DEEPSEEK_API_KEY,
-    "deepseek_api_enabled": bool(DEEPSEEK_API_KEY)
-}
-
-# 从数据库加载系统设置
-def load_settings_from_db():
-    """从数据库加载系统设置"""
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        
-        # 检查系统设置表是否存在
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='system_settings'")
-        if not cursor.fetchone():
-            logger.info("系统设置表不存在，将使用默认设置")
-            conn.close()
-            return
-        
-        # 查询所有设置
-        cursor.execute("SELECT key, value FROM system_settings")
-        settings = cursor.fetchall()
-        
-        # 更新全局设置
-        for row in settings:
-            key, value = row['key'], row['value']
-            
-            # 尝试解析JSON值
-            try:
-                # 对于可能是JSON的值，尝试解析
-                if value and (value.startswith('{') or value.startswith('[')):
-                    SYSTEM_SETTINGS[key] = json.loads(value)
-                else:
-                    SYSTEM_SETTINGS[key] = value
-            except:
-                # 如果解析失败，直接使用字符串值
-                SYSTEM_SETTINGS[key] = value
-        
-        conn.close()
-        logger.info("从数据库加载系统设置成功")
-    except Exception as e:
-        logger.error(f"从数据库加载系统设置时出错: {str(e)}")
-
-# 将设置保存到数据库
-def save_setting_to_db(key, value, description=None):
-    """将单个设置保存到数据库"""
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        
-        # 检查系统设置表是否存在
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='system_settings'")
-        if not cursor.fetchone():
-            # 创建系统设置表
-            cursor.execute('''
-            CREATE TABLE IF NOT EXISTS system_settings (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                key TEXT UNIQUE NOT NULL,
-                value TEXT,
-                description TEXT,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-            ''')
-        
-        # 将值转换为字符串
-        if isinstance(value, (dict, list)):
-            value = json.dumps(value, ensure_ascii=False)
-        else:
-            value = str(value)
-        
-        # 更新或插入设置
-        if description:
-            cursor.execute('''
-            INSERT OR REPLACE INTO system_settings (key, value, description, updated_at)
-            VALUES (?, ?, ?, CURRENT_TIMESTAMP)
-            ''', (key, value, description))
-        else:
-            cursor.execute('''
-            INSERT OR REPLACE INTO system_settings (key, value, updated_at)
-            VALUES (?, ?, CURRENT_TIMESTAMP)
-            ''', (key, value))
-        
-        conn.commit()
-        conn.close()
-        
-        # 同时更新内存中的设置
-        SYSTEM_SETTINGS[key] = value
-        
-        return True
-    except Exception as e:
-        logger.error(f"保存设置到数据库时出错: {str(e)}")
-        return False
-
-# 添加配置文件更新函数
-def update_config_file():
-    """更新系统配置文件，保存当前的系统设置"""
-    try:
-        config_path = os.path.join(os.path.dirname(__file__), 'config.json')
-        with open(config_path, 'w', encoding='utf-8') as f:
-            json.dump(SYSTEM_SETTINGS, f, ensure_ascii=False, indent=2)
-        logger.info("系统配置文件已更新")
-        return True
-    except Exception as e:
-        logger.error(f"更新配置文件时出错: {str(e)}")
-        return False
-
-# 配置日志
-logging.basicConfig(
-    level=logging.DEBUG,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler("logs/root_server.log"),
-        logging.StreamHandler()
-    ]
-)
+# 使用统一配置管理器的系统设置
+SYSTEM_SETTINGS = config.system_settings
+DEEPSEEK_API_KEY = config.DEEPSEEK_API_KEY
 
 logger = logging.getLogger(__name__)
 logger.info("服务器启动")
@@ -272,36 +110,18 @@ app = Flask(__name__,
 CORS(app)  # 启用跨域资源共享
 
 # 设置密钥（用于会话安全）
-app.secret_key = os.environ.get("SECRET_KEY", "dev_secret_key")
-app.config['JSON_AS_ASCII'] = False  # 确保JSON响应支持中文
+app.secret_key = config.SECRET_KEY
+app.config['JSON_AS_ASCII'] = config.JSON_AS_ASCII
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False  # 禁用JSON美化，减少响应大小
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 限制上传文件大小为16MB
+app.config['UPLOAD_FOLDER'] = config.UPLOAD_FOLDER
+app.config['MAX_CONTENT_LENGTH'] = config.MAX_CONTENT_LENGTH
 
 # 初始化登录管理
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'users.login'  # 设置登录视图的端点
 
-# 从数据库加载系统设置
-try:
-    # 检查系统设置表是否存在，如果不存在则创建
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='system_settings'")
-    if not cursor.fetchone():
-        logger.info("系统设置表不存在，正在创建...")
-        # 导入并运行创建系统设置表的函数
-        from add_system_settings_table import add_system_settings_table
-        add_system_settings_table()
-    conn.close()
-    
-    # 加载系统设置
-    load_settings_from_db()
-    logger.info("系统设置已从数据库加载")
-except Exception as e:
-    logger.error(f"加载系统设置时出错: {str(e)}")
-    logger.info("将使用默认系统设置")
+# 系统设置已通过config_manager加载
 
 # 设置DeepSeek API实例
 if SYSTEM_SETTINGS.get('deepseek_api_enabled'):
@@ -373,20 +193,7 @@ def internal_server_error(e):
     # 对于普通请求，重定向到登录页面
     return redirect(url_for('users.login'))
 
-# 添加API方式的登出路由
-@app.route('/api/logout', methods=['POST', 'GET'])
-def api_logout():
-    """API方式的登出，用于前端AJAX调用"""
-    try:
-        if current_user.is_authenticated:
-            logout_user()
-            session.clear()
-            session.modified = True
-        
-        return jsonify({'status': 'ok', 'message': '已成功登出'})
-    except Exception as e:
-        app.logger.error(f"登出出错: {str(e)}")
-        return jsonify({'status': 'error', 'message': '登出过程中发生错误'}), 500
+# API登出已移动到system_api蓝图
 
 # 用户加载函数
 @login_manager.user_loader
@@ -430,6 +237,10 @@ app.register_blueprint(classes_bp)
 
 # 注册数据库备份模块蓝图
 app.register_blueprint(backup_bp)
+
+# 注册系统API蓝图
+from system_api import system_api_bp
+app.register_blueprint(system_api_bp)
 
 # 全局错误处理中间件
 @app.before_request
@@ -926,10 +737,7 @@ def unified_reset_password(user_id):
 # 创建数据库连接
 def get_db_connection():
     """获取数据库连接"""
-    conn = sqlite3.connect('students.db')
-    conn.row_factory = sqlite3.Row
-    conn.execute('PRAGMA foreign_keys = ON')  # 启用外键约束
-    return conn
+    return config.get_db_connection()
 
 # 初始化数据库
 def init_db():
@@ -1065,94 +873,9 @@ def serve_pages(path):
     return send_from_directory('pages', path)
 
 # 健康检查API
-@app.route('/api/health', methods=['GET'])
-def health_check():
-    return jsonify({'status': 'ok', 'message': '服务器正常运行中'})
+# 健康检查API已移动到system_api蓝图
 
-# API获取当前登录用户信息
-@app.route('/api/current-user', methods=['GET'])
-@login_required
-def get_current_user():
-    """获取当前用户信息"""
-    try:
-        # 使用直接的SQL查询获取用户及其班级信息
-        conn = get_db_connection()
-        conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
-        
-        # 记录当前用户基本信息，便于调试
-        logger.info(f"当前用户ID: {current_user.id}, 用户名: {current_user.username}, 班级ID: {current_user.class_id}")
-        
-        # 先获取用户信息
-        cursor.execute('SELECT id, username, is_admin, class_id FROM users WHERE id = ?', (current_user.id,))
-        user_data = cursor.fetchone()
-        
-        if not user_data:
-            logger.warning(f"未找到用户ID: {current_user.id}")
-            conn.close()
-            return jsonify({'status': 'error', 'message': '找不到用户信息'}), 404
-        
-        # 初始化班级名称为"暂无班级"
-        class_name = "暂无班级"
-        class_id = user_data['class_id']
-        
-        # 如果用户有班级ID，直接查询班级名称
-        if class_id:
-            # 将class_id转换为整数进行查询
-            try:
-                numeric_class_id = int(class_id)
-                logger.info(f"用户有班级ID: {class_id} (已转换为整数: {numeric_class_id}), 查询班级名称")
-                
-                # 使用参数化查询防止SQL注入
-                cursor.execute('SELECT class_name FROM classes WHERE id = ?', (numeric_class_id,))
-                class_data = cursor.fetchone()
-                
-                if class_data and class_data['class_name']:
-                    class_name = class_data['class_name']
-                    logger.info(f"找到班级名称: {class_name}")
-                else:
-                    logger.warning(f"未找到班级ID {class_id} 对应的班级名称")
-                    
-                    # 额外查询所有班级，用于调试
-                    cursor.execute('SELECT id, class_name FROM classes')
-                    all_classes = [dict(c) for c in cursor.fetchall()]
-                    logger.info(f"所有班级: {all_classes}")
-                    
-                    # 尝试使用字符串比较查找
-                    for cls in all_classes:
-                        if str(cls['id']) == str(class_id):
-                            class_name = cls['class_name']
-                            logger.info(f"通过字符串比较找到班级: ID={cls['id']}, 名称={class_name}")
-                            break
-            except (ValueError, TypeError):
-                logger.error(f"无法将班级ID转换为整数: {class_id}")
-        else:
-            logger.info("用户没有班级ID，显示'暂无班级'")
-        
-        conn.close()
-        
-        # 构建用户信息
-        user_info = {
-            'id': user_data['id'],
-            'username': user_data['username'],
-            'is_admin': bool(user_data['is_admin']),
-            'class_id': class_id,
-            'class_name': class_name,
-            'role': "admin" if bool(user_data['is_admin']) else "teacher"
-        }
-        
-        logger.info(f"返回用户信息: user={user_info['username']}, class_id={user_info['class_id']}, class_name={user_info['class_name']}")
-        logger.info(f"用户信息JSON: {json.dumps(user_info, ensure_ascii=False)}")
-        
-        return jsonify({
-            'status': 'ok',
-            'user': user_info
-        })
-        
-    except Exception as e:
-        logger.error(f"获取当前用户信息时出错: {str(e)}")
-        logger.error(traceback.format_exc())
-        return jsonify({'status': 'error', 'message': f'获取当前用户信息失败: {str(e)}'}), 500
+# 当前用户信息API已移动到system_api蓝图
 
 @login_required
 def download_template():
@@ -1550,40 +1273,7 @@ def reset_database_api():
             'message': message
         }), 500
 
-# 获取数据库信息API
-@app.route('/api/database-info', methods=['GET'])
-def database_info():
-    try:
-        # 获取数据库文件路径
-        db_path = os.path.abspath(DATABASE)
-        
-        # 获取文件修改时间
-        if os.path.exists(db_path):
-            last_modified = datetime.datetime.fromtimestamp(os.path.getmtime(db_path)).strftime('%Y-%m-%d %H:%M:%S')
-        else:
-            last_modified = '数据库文件不存在'
-        
-        # 获取学生数量
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute('SELECT COUNT(*) FROM students')
-        student_count = cursor.fetchone()[0]
-        conn.close()
-        
-        return jsonify({
-            'status': 'ok',
-            'path': db_path,
-            'last_modified': last_modified,
-            'student_count': student_count
-        })
-    except Exception as e:
-        print(f"获取数据库信息时出错: {e}")
-        import traceback
-        traceback.print_exc()
-        return jsonify({
-            'status': 'error',
-            'message': f'获取数据库信息时出错: {str(e)}'
-        }), 500
+# 数据库信息API已移动到system_api蓝图
 
 # 获取学生评语API - 已移至comments.py
 # @app.route('/api/comments/<student_id>', methods=['GET'], strict_slashes=False)

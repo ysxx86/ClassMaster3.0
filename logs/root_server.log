@@ -1554,3 +1554,1050 @@ PermissionError: [WinError 32] ÁíÒ»¸ö³ÌÐòÕýÔÚÊ¹ÓÃ´ËÎÄ¼þ£¬½ø³ÌÎÞ·¨·ÃÎÊ¡£: 'studen
 2025-03-18 03:35:04,911 - werkzeug - INFO -  * Restarting with stat
 2025-03-18 03:35:30,608 - werkzeug - INFO -  * Restarting with stat
 2025-03-18 03:35:48,146 - werkzeug - INFO -  * Restarting with stat
+2025-06-20 13:29:34,211 - utils.pdf_exporter_fixed - INFO - PDFµ¼³öÄ£¿é: ReportLab¿âÒÑ³É¹¦µ¼Èë
+2025-06-20 13:29:34,264 - utils.comment_processor - INFO - ReportLab¿âÒÑ³É¹¦µ¼Èë
+2025-06-20 13:29:34,465 - utils.deepseek_api - INFO - Ê¹ÓÃÄ¬ÈÏDeepSeek APIÃÜÔ¿
+2025-06-20 13:29:34,478 - __main__ - INFO - ·þÎñÆ÷Æô¶¯
+2025-06-20 13:29:34,479 - __main__ - ERROR - ¼ÓÔØÏµÍ³ÉèÖÃÊ±³ö´í: name 'get_db_connection' is not defined
+2025-06-20 13:29:34,479 - __main__ - INFO - ½«Ê¹ÓÃÄ¬ÈÏÏµÍ³ÉèÖÃ
+2025-06-20 13:29:34,517 - grades - INFO - ³õÊ¼»¯³É¼¨Ä£¿é
+2025-06-20 13:29:34,517 - grades - INFO - ³É¼¨Ä£¿é³õÊ¼»¯Íê³É
+2025-06-20 13:29:34,517 - deyu - INFO - ³õÊ¼»¯µÂÓýÎ¬¶ÈÄ£¿é
+2025-06-20 13:29:34,520 - deyu - INFO - ÏÖÓÐÊý¾Ý¿âÁÐ: ['id', 'name', 'gender', 'class', 'class_id', 'height', 'weight', 'chest_circumference', 'vital_capacity', 'dental_caries', 'vision_left', 'vision_right', 'physical_test_status', 'comments', 'created_at', 'updated_at', 'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'semester', 'pinzhi', 'xuexi', 'jiankang', 'shenmei', 'shijian', 'shenghuo', 'xinli']
+2025-06-20 13:29:34,520 - deyu - INFO - µÂÓýÎ¬¶ÈÄ£¿é³õÊ¼»¯Íê³É
+2025-06-20 13:29:34,520 - grade_analysis - INFO - ³õÊ¼»¯³É¼¨·ÖÎöÄ£¿é
+2025-06-20 13:29:34,529 - grade_analysis - INFO - ³É¼¨·ÖÎöÄ£¿é³õÊ¼»¯Íê³É
+2025-06-20 13:29:34,529 - users - INFO - ³õÊ¼»¯ÓÃ»§±í
+2025-06-20 13:29:34,531 - users - INFO - ÓÃ»§±íÏÖÓÐÁÐ: ['id', 'username', 'password_hash', 'is_admin', 'class_id', 'created_at', 'updated_at', 'reset_password']
+2025-06-20 13:29:34,532 - users - INFO - ÓÃ»§±í³õÊ¼»¯Íê³É
+2025-06-20 13:29:34,533 - classes - INFO - ³õÊ¼»¯°à¼¶±í
+2025-06-20 13:29:34,536 - classes - INFO - °à¼¶±í³õÊ¼»¯Íê³É
+2025-06-20 13:29:34,538 - database_backup - INFO - Êý¾Ý¿â±¸·ÝÄ£¿éÒÑ³õÊ¼»¯
+2025-06-20 13:29:34,559 - __main__ - INFO - ³õÊ¼»¯Êý¾Ý¿â
+2025-06-20 13:29:34,562 - __main__ - INFO - ÏÖÓÐÊý¾Ý¿âÁÐ: ['id', 'name', 'gender', 'class', 'class_id', 'height', 'weight', 'chest_circumference', 'vital_capacity', 'dental_caries', 'vision_left', 'vision_right', 'physical_test_status', 'comments', 'created_at', 'updated_at', 'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'semester', 'pinzhi', 'xuexi', 'jiankang', 'shenmei', 'shijian', 'shenghuo', 'xinli']
+2025-06-20 13:29:34,563 - __main__ - INFO - Êý¾Ý¿â³õÊ¼»¯Íê³É
+2025-06-20 13:29:34,586 - users - INFO - ³õÊ¼»¯ÓÃ»§±í
+2025-06-20 13:29:34,591 - users - INFO - ÓÃ»§±íÏÖÓÐÁÐ: ['id', 'username', 'password_hash', 'is_admin', 'class_id', 'created_at', 'updated_at', 'reset_password']
+2025-06-20 13:29:34,593 - users - INFO - ÓÃ»§±í³õÊ¼»¯Íê³É
+2025-06-20 13:29:34,593 - classes - INFO - ³õÊ¼»¯°à¼¶±í
+2025-06-20 13:29:34,598 - classes - INFO - °à¼¶±í³õÊ¼»¯Íê³É
+2025-06-20 13:29:34,610 - __main__ - INFO - ³õÊ¼»¯Êý¾Ý¿â
+2025-06-20 13:29:34,621 - __main__ - INFO - ÏÖÓÐÊý¾Ý¿âÁÐ: ['id', 'name', 'gender', 'class', 'class_id', 'height', 'weight', 'chest_circumference', 'vital_capacity', 'dental_caries', 'vision_left', 'vision_right', 'physical_test_status', 'comments', 'created_at', 'updated_at', 'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'semester', 'pinzhi', 'xuexi', 'jiankang', 'shenmei', 'shijian', 'shenghuo', 'xinli']
+2025-06-20 13:29:34,621 - __main__ - INFO - Êý¾Ý¿â³õÊ¼»¯Íê³É
+2025-06-20 13:29:34,621 - __main__ - INFO - Êý¾Ý¿â³õÊ¼»¯Íê³É£¬±£ÁôÒÑÓÐÊý¾Ý
+2025-06-20 13:29:34,641 - werkzeug - WARNING -  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2025-06-20 13:29:34,641 - werkzeug - INFO -  * Running on http://192.168.1.17:8080/ (Press CTRL+C to quit)
+2025-06-20 13:31:44,784 - utils.pdf_exporter_fixed - INFO - PDFµ¼³öÄ£¿é: ReportLab¿âÒÑ³É¹¦µ¼Èë
+2025-06-20 13:31:44,807 - utils.comment_processor - INFO - ReportLab¿âÒÑ³É¹¦µ¼Èë
+2025-06-20 13:31:45,061 - utils.deepseek_api - INFO - Ê¹ÓÃÄ¬ÈÏDeepSeek APIÃÜÔ¿
+2025-06-20 13:31:45,061 - server - INFO - ·þÎñÆ÷Æô¶¯
+2025-06-20 13:31:45,101 - grades - INFO - ³õÊ¼»¯³É¼¨Ä£¿é
+2025-06-20 13:31:45,101 - grades - INFO - ³É¼¨Ä£¿é³õÊ¼»¯Íê³É
+2025-06-20 13:31:45,101 - deyu - INFO - ³õÊ¼»¯µÂÓýÎ¬¶ÈÄ£¿é
+2025-06-20 13:31:45,101 - deyu - INFO - ÏÖÓÐÊý¾Ý¿âÁÐ: ['id', 'name', 'gender', 'class', 'class_id', 'height', 'weight', 'chest_circumference', 'vital_capacity', 'dental_caries', 'vision_left', 'vision_right', 'physical_test_status', 'comments', 'created_at', 'updated_at', 'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'semester', 'pinzhi', 'xuexi', 'jiankang', 'shenmei', 'shijian', 'shenghuo', 'xinli']
+2025-06-20 13:31:45,101 - deyu - INFO - µÂÓýÎ¬¶ÈÄ£¿é³õÊ¼»¯Íê³É
+2025-06-20 13:31:45,107 - grade_analysis - INFO - ³õÊ¼»¯³É¼¨·ÖÎöÄ£¿é
+2025-06-20 13:31:45,114 - grade_analysis - INFO - ³É¼¨·ÖÎöÄ£¿é³õÊ¼»¯Íê³É
+2025-06-20 13:31:45,114 - users - INFO - ³õÊ¼»¯ÓÃ»§±í
+2025-06-20 13:31:45,117 - users - INFO - ÓÃ»§±íÏÖÓÐÁÐ: ['id', 'username', 'password_hash', 'is_admin', 'class_id', 'created_at', 'updated_at', 'reset_password']
+2025-06-20 13:31:45,118 - users - INFO - ÓÃ»§±í³õÊ¼»¯Íê³É
+2025-06-20 13:31:45,118 - classes - INFO - ³õÊ¼»¯°à¼¶±í
+2025-06-20 13:31:45,120 - classes - INFO - °à¼¶±í³õÊ¼»¯Íê³É
+2025-06-20 13:31:45,121 - database_backup - INFO - Êý¾Ý¿â±¸·ÝÄ£¿éÒÑ³õÊ¼»¯
+2025-06-20 13:31:45,139 - server - INFO - ³õÊ¼»¯Êý¾Ý¿â
+2025-06-20 13:31:45,141 - server - INFO - ÏÖÓÐÊý¾Ý¿âÁÐ: ['id', 'name', 'gender', 'class', 'class_id', 'height', 'weight', 'chest_circumference', 'vital_capacity', 'dental_caries', 'vision_left', 'vision_right', 'physical_test_status', 'comments', 'created_at', 'updated_at', 'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'semester', 'pinzhi', 'xuexi', 'jiankang', 'shenmei', 'shijian', 'shenghuo', 'xinli']
+2025-06-20 13:31:45,143 - server - INFO - Êý¾Ý¿â³õÊ¼»¯Íê³É
+2025-06-20 13:31:45,163 - users - INFO - ³õÊ¼»¯ÓÃ»§±í
+2025-06-20 13:31:45,163 - users - INFO - ÓÃ»§±íÏÖÓÐÁÐ: ['id', 'username', 'password_hash', 'is_admin', 'class_id', 'created_at', 'updated_at', 'reset_password']
+2025-06-20 13:31:45,163 - users - INFO - ÓÃ»§±í³õÊ¼»¯Íê³É
+2025-06-20 13:31:45,163 - classes - INFO - ³õÊ¼»¯°à¼¶±í
+2025-06-20 13:31:45,171 - classes - INFO - °à¼¶±í³õÊ¼»¯Íê³É
+2025-06-20 13:35:04,137 - utils.pdf_exporter_fixed - INFO - PDFµ¼³öÄ£¿é: ReportLab¿âÒÑ³É¹¦µ¼Èë
+2025-06-20 13:35:04,187 - utils.comment_processor - INFO - ReportLab¿âÒÑ³É¹¦µ¼Èë
+2025-06-20 13:35:04,462 - utils.deepseek_api - INFO - Ê¹ÓÃÄ¬ÈÏDeepSeek APIÃÜÔ¿
+2025-06-20 13:35:04,466 - server - INFO - ·þÎñÆ÷Æô¶¯
+2025-06-20 13:35:04,513 - grades - INFO - ³õÊ¼»¯³É¼¨Ä£¿é
+2025-06-20 13:35:04,513 - grades - INFO - ³É¼¨Ä£¿é³õÊ¼»¯Íê³É
+2025-06-20 13:35:04,513 - deyu - INFO - ³õÊ¼»¯µÂÓýÎ¬¶ÈÄ£¿é
+2025-06-20 13:35:04,513 - deyu - INFO - ÏÖÓÐÊý¾Ý¿âÁÐ: ['id', 'name', 'gender', 'class', 'class_id', 'height', 'weight', 'chest_circumference', 'vital_capacity', 'dental_caries', 'vision_left', 'vision_right', 'physical_test_status', 'comments', 'created_at', 'updated_at', 'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'semester', 'pinzhi', 'xuexi', 'jiankang', 'shenmei', 'shijian', 'shenghuo', 'xinli']
+2025-06-20 13:35:04,520 - deyu - INFO - µÂÓýÎ¬¶ÈÄ£¿é³õÊ¼»¯Íê³É
+2025-06-20 13:35:04,520 - grade_analysis - INFO - ³õÊ¼»¯³É¼¨·ÖÎöÄ£¿é
+2025-06-20 13:35:04,520 - grade_analysis - INFO - ³É¼¨·ÖÎöÄ£¿é³õÊ¼»¯Íê³É
+2025-06-20 13:35:04,520 - users - INFO - ³õÊ¼»¯ÓÃ»§±í
+2025-06-20 13:35:04,520 - users - INFO - ÓÃ»§±íÏÖÓÐÁÐ: ['id', 'username', 'password_hash', 'is_admin', 'class_id', 'created_at', 'updated_at', 'reset_password']
+2025-06-20 13:35:04,520 - users - INFO - ÓÃ»§±í³õÊ¼»¯Íê³É
+2025-06-20 13:35:04,520 - classes - INFO - ³õÊ¼»¯°à¼¶±í
+2025-06-20 13:35:04,531 - classes - INFO - °à¼¶±í³õÊ¼»¯Íê³É
+2025-06-20 13:35:04,531 - database_backup - INFO - Êý¾Ý¿â±¸·ÝÄ£¿éÒÑ³õÊ¼»¯
+2025-06-20 13:35:04,550 - server - INFO - ³õÊ¼»¯Êý¾Ý¿â
+2025-06-20 13:35:04,550 - server - INFO - ÏÖÓÐÊý¾Ý¿âÁÐ: ['id', 'name', 'gender', 'class', 'class_id', 'height', 'weight', 'chest_circumference', 'vital_capacity', 'dental_caries', 'vision_left', 'vision_right', 'physical_test_status', 'comments', 'created_at', 'updated_at', 'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'semester', 'pinzhi', 'xuexi', 'jiankang', 'shenmei', 'shijian', 'shenghuo', 'xinli']
+2025-06-20 13:35:04,550 - server - INFO - Êý¾Ý¿â³õÊ¼»¯Íê³É
+2025-06-20 13:35:04,573 - users - INFO - ³õÊ¼»¯ÓÃ»§±í
+2025-06-20 13:35:04,575 - users - INFO - ÓÃ»§±íÏÖÓÐÁÐ: ['id', 'username', 'password_hash', 'is_admin', 'class_id', 'created_at', 'updated_at', 'reset_password']
+2025-06-20 13:35:04,576 - users - INFO - ÓÃ»§±í³õÊ¼»¯Íê³É
+2025-06-20 13:35:04,576 - classes - INFO - ³õÊ¼»¯°à¼¶±í
+2025-06-20 13:35:04,584 - classes - INFO - °à¼¶±í³õÊ¼»¯Íê³É
+2025-06-20 13:35:24,349 - utils.pdf_exporter_fixed - INFO - PDFµ¼³öÄ£¿é: ReportLab¿âÒÑ³É¹¦µ¼Èë
+2025-06-20 13:35:24,363 - utils.comment_processor - INFO - ReportLab¿âÒÑ³É¹¦µ¼Èë
+2025-06-20 13:35:24,581 - utils.deepseek_api - INFO - Ê¹ÓÃÄ¬ÈÏDeepSeek APIÃÜÔ¿
+2025-06-20 13:35:24,581 - __main__ - INFO - ·þÎñÆ÷Æô¶¯
+2025-06-20 13:35:24,621 - grades - INFO - ³õÊ¼»¯³É¼¨Ä£¿é
+2025-06-20 13:35:24,621 - grades - INFO - ³É¼¨Ä£¿é³õÊ¼»¯Íê³É
+2025-06-20 13:35:24,621 - deyu - INFO - ³õÊ¼»¯µÂÓýÎ¬¶ÈÄ£¿é
+2025-06-20 13:35:24,628 - deyu - INFO - ÏÖÓÐÊý¾Ý¿âÁÐ: ['id', 'name', 'gender', 'class', 'class_id', 'height', 'weight', 'chest_circumference', 'vital_capacity', 'dental_caries', 'vision_left', 'vision_right', 'physical_test_status', 'comments', 'created_at', 'updated_at', 'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'semester', 'pinzhi', 'xuexi', 'jiankang', 'shenmei', 'shijian', 'shenghuo', 'xinli']
+2025-06-20 13:35:24,631 - deyu - INFO - µÂÓýÎ¬¶ÈÄ£¿é³õÊ¼»¯Íê³É
+2025-06-20 13:35:24,632 - grade_analysis - INFO - ³õÊ¼»¯³É¼¨·ÖÎöÄ£¿é
+2025-06-20 13:35:24,634 - grade_analysis - INFO - ³É¼¨·ÖÎöÄ£¿é³õÊ¼»¯Íê³É
+2025-06-20 13:35:24,635 - users - INFO - ³õÊ¼»¯ÓÃ»§±í
+2025-06-20 13:35:24,637 - users - INFO - ÓÃ»§±íÏÖÓÐÁÐ: ['id', 'username', 'password_hash', 'is_admin', 'class_id', 'created_at', 'updated_at', 'reset_password']
+2025-06-20 13:35:24,637 - users - INFO - ÓÃ»§±í³õÊ¼»¯Íê³É
+2025-06-20 13:35:24,639 - classes - INFO - ³õÊ¼»¯°à¼¶±í
+2025-06-20 13:35:24,641 - classes - INFO - °à¼¶±í³õÊ¼»¯Íê³É
+2025-06-20 13:35:24,641 - database_backup - INFO - Êý¾Ý¿â±¸·ÝÄ£¿éÒÑ³õÊ¼»¯
+2025-06-20 13:35:24,657 - __main__ - INFO - ³õÊ¼»¯Êý¾Ý¿â
+2025-06-20 13:35:24,660 - __main__ - INFO - ÏÖÓÐÊý¾Ý¿âÁÐ: ['id', 'name', 'gender', 'class', 'class_id', 'height', 'weight', 'chest_circumference', 'vital_capacity', 'dental_caries', 'vision_left', 'vision_right', 'physical_test_status', 'comments', 'created_at', 'updated_at', 'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'semester', 'pinzhi', 'xuexi', 'jiankang', 'shenmei', 'shijian', 'shenghuo', 'xinli']
+2025-06-20 13:35:24,661 - __main__ - INFO - Êý¾Ý¿â³õÊ¼»¯Íê³É
+2025-06-20 13:35:24,676 - users - INFO - ³õÊ¼»¯ÓÃ»§±í
+2025-06-20 13:35:24,678 - users - INFO - ÓÃ»§±íÏÖÓÐÁÐ: ['id', 'username', 'password_hash', 'is_admin', 'class_id', 'created_at', 'updated_at', 'reset_password']
+2025-06-20 13:35:24,681 - users - INFO - ÓÃ»§±í³õÊ¼»¯Íê³É
+2025-06-20 13:35:24,681 - classes - INFO - ³õÊ¼»¯°à¼¶±í
+2025-06-20 13:35:24,681 - classes - INFO - °à¼¶±í³õÊ¼»¯Íê³É
+2025-06-20 13:35:24,696 - __main__ - INFO - ³õÊ¼»¯Êý¾Ý¿â
+2025-06-20 13:35:24,705 - __main__ - INFO - ÏÖÓÐÊý¾Ý¿âÁÐ: ['id', 'name', 'gender', 'class', 'class_id', 'height', 'weight', 'chest_circumference', 'vital_capacity', 'dental_caries', 'vision_left', 'vision_right', 'physical_test_status', 'comments', 'created_at', 'updated_at', 'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'semester', 'pinzhi', 'xuexi', 'jiankang', 'shenmei', 'shijian', 'shenghuo', 'xinli']
+2025-06-20 13:35:24,706 - __main__ - INFO - Êý¾Ý¿â³õÊ¼»¯Íê³É
+2025-06-20 13:35:24,706 - __main__ - INFO - Êý¾Ý¿â³õÊ¼»¯Íê³É£¬±£ÁôÒÑÓÐÊý¾Ý
+2025-06-20 13:35:24,722 - werkzeug - WARNING -  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2025-06-20 13:35:24,722 - werkzeug - INFO -  * Running on http://192.168.1.17:8080/ (Press CTRL+C to quit)
+2025-06-20 22:16:10,969 - utils.pdf_exporter_fixed - INFO - PDFµ¼³öÄ£¿é: ReportLab¿âÒÑ³É¹¦µ¼Èë
+2025-06-20 22:16:11,042 - utils.comment_processor - INFO - ReportLab¿âÒÑ³É¹¦µ¼Èë
+2025-06-20 22:16:11,457 - utils.deepseek_api - INFO - Ê¹ÓÃÄ¬ÈÏDeepSeek APIÃÜÔ¿
+2025-06-20 22:16:11,461 - __main__ - INFO - ·þÎñÆ÷Æô¶¯
+2025-06-20 22:16:11,544 - grades - INFO - ³õÊ¼»¯³É¼¨Ä£¿é
+2025-06-20 22:16:11,545 - grades - INFO - ³É¼¨Ä£¿é³õÊ¼»¯Íê³É
+2025-06-20 22:16:11,545 - deyu - INFO - ³õÊ¼»¯µÂÓýÎ¬¶ÈÄ£¿é
+2025-06-20 22:16:11,549 - deyu - INFO - ÏÖÓÐÊý¾Ý¿âÁÐ: ['id', 'name', 'gender', 'class', 'class_id', 'height', 'weight', 'chest_circumference', 'vital_capacity', 'dental_caries', 'vision_left', 'vision_right', 'physical_test_status', 'comments', 'created_at', 'updated_at', 'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'semester', 'pinzhi', 'xuexi', 'jiankang', 'shenmei', 'shijian', 'shenghuo', 'xinli']
+2025-06-20 22:16:11,550 - deyu - INFO - µÂÓýÎ¬¶ÈÄ£¿é³õÊ¼»¯Íê³É
+2025-06-20 22:16:11,550 - grade_analysis - INFO - ³õÊ¼»¯³É¼¨·ÖÎöÄ£¿é
+2025-06-20 22:16:11,552 - grade_analysis - INFO - ³É¼¨·ÖÎöÄ£¿é³õÊ¼»¯Íê³É
+2025-06-20 22:16:11,554 - users - INFO - ³õÊ¼»¯ÓÃ»§±í
+2025-06-20 22:16:11,566 - users - INFO - ÓÃ»§±íÏÖÓÐÁÐ: ['id', 'username', 'password_hash', 'is_admin', 'class_id', 'created_at', 'updated_at', 'reset_password']
+2025-06-20 22:16:11,573 - users - INFO - ÓÃ»§±í³õÊ¼»¯Íê³É
+2025-06-20 22:16:11,575 - classes - INFO - ³õÊ¼»¯°à¼¶±í
+2025-06-20 22:16:11,582 - classes - INFO - °à¼¶±í³õÊ¼»¯Íê³É
+2025-06-20 22:16:11,585 - database_backup - INFO - Êý¾Ý¿â±¸·ÝÄ£¿éÒÑ³õÊ¼»¯
+2025-06-20 22:16:11,607 - __main__ - INFO - ³õÊ¼»¯Êý¾Ý¿â
+2025-06-20 22:16:11,615 - __main__ - INFO - ÏÖÓÐÊý¾Ý¿âÁÐ: ['id', 'name', 'gender', 'class', 'class_id', 'height', 'weight', 'chest_circumference', 'vital_capacity', 'dental_caries', 'vision_left', 'vision_right', 'physical_test_status', 'comments', 'created_at', 'updated_at', 'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'semester', 'pinzhi', 'xuexi', 'jiankang', 'shenmei', 'shijian', 'shenghuo', 'xinli']
+2025-06-20 22:16:11,617 - __main__ - INFO - Êý¾Ý¿â³õÊ¼»¯Íê³É
+2025-06-20 22:16:11,634 - users - INFO - ³õÊ¼»¯ÓÃ»§±í
+2025-06-20 22:16:11,647 - users - INFO - ÓÃ»§±íÏÖÓÐÁÐ: ['id', 'username', 'password_hash', 'is_admin', 'class_id', 'created_at', 'updated_at', 'reset_password']
+2025-06-20 22:16:11,648 - users - INFO - ÓÃ»§±í³õÊ¼»¯Íê³É
+2025-06-20 22:16:11,650 - classes - INFO - ³õÊ¼»¯°à¼¶±í
+2025-06-20 22:16:11,651 - classes - INFO - °à¼¶±í³õÊ¼»¯Íê³É
+2025-06-20 22:16:11,675 - __main__ - INFO - ³õÊ¼»¯Êý¾Ý¿â
+2025-06-20 22:16:11,680 - __main__ - INFO - ÏÖÓÐÊý¾Ý¿âÁÐ: ['id', 'name', 'gender', 'class', 'class_id', 'height', 'weight', 'chest_circumference', 'vital_capacity', 'dental_caries', 'vision_left', 'vision_right', 'physical_test_status', 'comments', 'created_at', 'updated_at', 'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'semester', 'pinzhi', 'xuexi', 'jiankang', 'shenmei', 'shijian', 'shenghuo', 'xinli']
+2025-06-20 22:16:11,680 - __main__ - INFO - Êý¾Ý¿â³õÊ¼»¯Íê³É
+2025-06-20 22:16:11,681 - __main__ - INFO - Êý¾Ý¿â³õÊ¼»¯Íê³É£¬±£ÁôÒÑÓÐÊý¾Ý
+2025-06-20 22:16:11,746 - werkzeug - WARNING -  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2025-06-20 22:16:11,746 - werkzeug - INFO -  * Running on http://192.168.1.17:8080/ (Press CTRL+C to quit)
+2025-06-20 22:16:11,827 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:11] "GET /api/export-progress?request_id=1750428847316 HTTP/1.1" 200 -
+2025-06-20 22:16:11,894 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:11] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:12,039 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:12] "GET /api/export-progress?request_id=1750428847316 HTTP/1.1" 200 -
+2025-06-20 22:16:12,141 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:12] "GET /api/export-progress?request_id=1750428847316 HTTP/1.1" 200 -
+2025-06-20 22:16:12,154 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:12] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:12,215 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:12] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:12,369 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:12] "GET /api/export-progress?request_id=1750428847316 HTTP/1.1" 200 -
+2025-06-20 22:16:12,459 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:12] "GET /api/export-progress?request_id=1750428847316 HTTP/1.1" 200 -
+2025-06-20 22:16:12,481 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:12] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:12,546 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:12] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:12,707 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:12] "GET /api/export-progress?request_id=1750428847316 HTTP/1.1" 200 -
+2025-06-20 22:16:12,802 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:12] "GET /api/export-progress?request_id=1750428847316 HTTP/1.1" 200 -
+2025-06-20 22:16:12,807 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:12] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:12,872 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:12] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:13,020 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:13] "GET /api/export-progress?request_id=1750428847316 HTTP/1.1" 200 -
+2025-06-20 22:16:13,141 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:13] "GET /api/export-progress?request_id=1750428847316 HTTP/1.1" 200 -
+2025-06-20 22:16:13,154 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:13] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:13,365 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:13] "GET /api/export-progress?request_id=1750428847316 HTTP/1.1" 200 -
+2025-06-20 22:16:13,418 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:13] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:13,473 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:13] "GET /api/export-progress?request_id=1750428847316 HTTP/1.1" 200 -
+2025-06-20 22:16:13,696 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:13] "GET /api/export-progress?request_id=1750428847316 HTTP/1.1" 200 -
+2025-06-20 22:16:13,908 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:13] "GET /api/export-progress?request_id=1750428847316 HTTP/1.1" 200 -
+2025-06-20 22:16:14,092 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:14] "GET /api/export-progress?request_id=1750428847316 HTTP/1.1" 200 -
+2025-06-20 22:16:14,245 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:14] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:14,257 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:14] "GET /api/export-progress?request_id=1750428847316 HTTP/1.1" 200 -
+2025-06-20 22:16:14,444 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:14] "GET /api/export-progress?request_id=1750428847316 HTTP/1.1" 200 -
+2025-06-20 22:16:14,522 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:14] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:14,577 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:14] "GET /api/export-progress?request_id=1750428847316 HTTP/1.1" 200 -
+2025-06-20 22:16:14,759 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:14] "GET /api/export-progress?request_id=1750428847316 HTTP/1.1" 200 -
+2025-06-20 22:16:14,891 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:14] "GET /api/export-progress?request_id=1750428847316 HTTP/1.1" 200 -
+2025-06-20 22:16:15,073 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:15] "GET /api/export-progress?request_id=1750428847316 HTTP/1.1" 200 -
+2025-06-20 22:16:15,270 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:15] "GET /api/export-progress?request_id=1750428847316 HTTP/1.1" 200 -
+2025-06-20 22:16:15,420 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:15] "GET /api/export-progress?request_id=1750428847316 HTTP/1.1" 200 -
+2025-06-20 22:16:15,461 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:15] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:15,841 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:15] "GET /api/export-progress?request_id=1750428847316 HTTP/1.1" 200 -
+2025-06-20 22:16:16,653 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:16] "GET /api/export-progress?request_id=1750428847316 HTTP/1.1" 200 -
+2025-06-20 22:16:16,744 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:16] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:16,923 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:16] "GET /api/export-progress?request_id=1750428847316 HTTP/1.1" 200 -
+2025-06-20 22:16:17,646 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:17] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:18,731 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:18] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:19,427 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:19] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:20,731 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:20] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:21,421 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:21] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:22,226 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:22] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:22,477 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:22] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:22,909 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:22] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:23,720 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:23] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:23,974 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:23] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:24,403 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:24] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:25,746 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:25] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:26,431 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:26] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:27,568 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:27] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:27,816 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:27] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:27,900 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:27] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:28,715 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:28] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:28,969 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:28] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:29,401 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:29] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:30,211 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:30] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:30,461 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:30] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:30,911 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:30] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:31,708 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:31] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:31,971 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:31] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:32,411 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:32] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:33,227 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:33] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:33,471 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:33] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:33,913 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:33] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:34,720 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:34] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:34,986 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:34] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:35,477 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:35] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:36,211 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:36] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:36,461 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:36] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:36,904 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:36] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:37,701 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:37] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:37,971 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:37] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:38,402 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:38] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:39,221 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:39] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:39,471 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:39] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:39,901 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:39] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:40,712 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:40] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:40,971 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:40] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:41,401 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:41] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:42,221 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:42] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:42,501 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:42] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:42,901 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:42] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:43,714 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:43] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:43,976 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:43] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:44,400 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:44] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:45,202 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:45] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:45,473 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:45] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:45,896 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:45] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:46,702 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:46] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:46,960 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:46] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:47,401 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:47] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:48,210 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:48] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:48,463 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:48] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:48,908 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:48] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:49,716 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:49] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:49,963 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:49] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:50,404 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:50] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:51,214 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:51] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:51,464 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:51] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:51,903 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:51] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:52,717 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:52] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:52,963 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:52] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:53,399 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:53] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:54,210 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:54] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:54,462 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:54] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:54,894 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:54] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:55,711 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:55] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:55,972 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:55] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:56,401 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:56] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:57,214 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:57] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:57,477 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:57] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:57,904 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:57] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:58,715 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:58] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:58,974 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:58] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:16:59,408 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:16:59] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:17:00,207 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:17:00] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:17:00,471 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:17:00] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:17:00,901 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:17:00] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:17:01,722 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:17:01] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:17:01,971 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:17:01] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:17:02,410 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:17:02] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:17:03,215 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:17:03] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:17:03,477 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:17:03] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:17:03,904 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:17:03] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:17:04,713 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:17:04] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:17:05,432 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:17:05] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:17:06,428 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:17:06] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:17:06,677 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:17:06] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:17:06,896 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:17:06] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:17:07,715 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:17:07] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:17:07,961 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:17:07] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:17:08,395 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:17:08] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:17:09,201 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:17:09] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:17:09,452 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:17:09] "GET /api/export-progress?request_id=1750428093387 HTTP/1.1" 200 -
+2025-06-20 22:25:29,661 - users - INFO - ÓÃ»§ ÁÖ»ÝÁá µÇÂ¼³É¹¦£¬ÒÑ¸üÐÂreset_password
+2025-06-20 22:25:29,693 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:29] "[32mPOST /login HTTP/1.1[0m" 302 -
+2025-06-20 22:25:29,711 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:29] "GET / HTTP/1.1" 200 -
+2025-06-20 22:25:29,758 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:29] "[36mGET /css/tutorial.css HTTP/1.1[0m" 304 -
+2025-06-20 22:25:30,061 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:30] "[36mGET /css/main.css HTTP/1.1[0m" 304 -
+2025-06-20 22:25:30,061 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:30] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-20 22:25:30,071 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:30] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-20 22:25:30,076 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:30] "[36mGET /js/session-timeout.js HTTP/1.1[0m" 304 -
+2025-06-20 22:25:30,078 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:30] "[36mGET /img/logo.png HTTP/1.1[0m" 304 -
+2025-06-20 22:25:30,079 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:30] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-20 22:25:30,411 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:30] "GET /pages/students.html HTTP/1.1" 200 -
+2025-06-20 22:25:30,411 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:30] "GET /pages/grades.html HTTP/1.1" 200 -
+2025-06-20 22:25:30,411 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:30] "GET /pages/comments.html HTTP/1.1" 200 -
+2025-06-20 22:25:30,411 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:30] "GET /pages/home.html HTTP/1.1" 200 -
+2025-06-20 22:25:30,421 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:30] "GET /pages/deyu.html HTTP/1.1" 200 -
+2025-06-20 22:25:30,421 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:30] "GET /pages/grade_analysis.html HTTP/1.1" 200 -
+2025-06-20 22:25:30,731 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:30] "GET /pages/export.html HTTP/1.1" 200 -
+2025-06-20 22:25:30,738 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:30] "[36mGET /fonts/boxicons.woff2 HTTP/1.1[0m" 304 -
+2025-06-20 22:25:30,744 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:30] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-20 22:25:30,747 - __main__ - WARNING - ÓÃ»§ ÁÖ»ÝÁá (ID: 29) ³¢ÊÔ·ÃÎÊ¹ÜÀíÒ³Ãæ admin.html£¬µ«È¨ÏÞ²»×ã
+2025-06-20 22:25:30,747 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:30] "GET /pages/settings.html HTTP/1.1" 200 -
+2025-06-20 22:25:30,748 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:30] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-20 22:25:30,748 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:30] "[32mGET /pages/admin.html HTTP/1.1[0m" 302 -
+2025-06-20 22:25:31,047 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:31] "[36mGET /css/comments.css HTTP/1.1[0m" 304 -
+2025-06-20 22:25:31,051 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:31] "[36mGET /css/home.css HTTP/1.1[0m" 304 -
+2025-06-20 22:25:31,051 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:31] "[36mGET /css/grade_analysis.css HTTP/1.1[0m" 304 -
+2025-06-20 22:25:31,056 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:31] "[36mGET /css/main.css HTTP/1.1[0m" 304 -
+2025-06-20 22:25:31,056 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:31] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-20 22:25:31,058 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:31] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-20 22:25:31,371 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:31] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-20 22:25:31,374 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:31] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-20 22:25:31,377 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:31] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-20 22:25:31,384 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:31] "[36mGET /js/students.js HTTP/1.1[0m" 304 -
+2025-06-20 22:25:31,385 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:31] "[36mGET /js/grades.js HTTP/1.1[0m" 304 -
+2025-06-20 22:25:31,388 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:31] "GET / HTTP/1.1" 200 -
+2025-06-20 22:25:31,681 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:31] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-20 22:25:31,692 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:31] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-20 22:25:31,694 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:31] "[36mGET /css/main.css HTTP/1.1[0m" 304 -
+2025-06-20 22:25:31,701 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:31] "[36mGET /css/tutorial.css HTTP/1.1[0m" 304 -
+2025-06-20 22:25:31,711 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:31] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-20 22:25:31,714 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:31] "[36mGET /js/comments.js HTTP/1.1[0m" 304 -
+2025-06-20 22:25:31,986 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:31] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-20 22:25:32,007 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:32] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-20 22:25:32,008 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:32] "[36mGET /fonts/boxicons.woff2 HTTP/1.1[0m" 304 -
+2025-06-20 22:25:32,032 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:32] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-20 22:25:32,032 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:32] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-20 22:25:32,033 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:32] "[36mGET /js/libs/chart.js HTTP/1.1[0m" 304 -
+2025-06-20 22:25:32,293 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:32] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-20 22:25:32,324 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:32] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-20 22:25:32,325 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:32] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-20 22:25:32,342 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:32] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-20 22:25:32,342 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:32] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-20 22:25:32,351 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:32] "[36mGET /js/home.js HTTP/1.1[0m" 304 -
+2025-06-20 22:25:32,609 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:32] "[36mGET /js/deyu.js HTTP/1.1[0m" 304 -
+2025-06-20 22:25:32,645 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:32] "[36mGET /js/libs/jquery.min.js HTTP/1.1[0m" 304 -
+2025-06-20 22:25:32,647 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:32] "[36mGET /js/grade_analysis.js HTTP/1.1[0m" 304 -
+2025-06-20 22:25:32,661 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:32] "[36mGET /libs/pizzip.min.js HTTP/1.1[0m" 304 -
+2025-06-20 22:25:32,666 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:32] "[36mGET /libs/docxtemplater.js HTTP/1.1[0m" 304 -
+2025-06-20 22:25:32,668 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:32] "[36mGET /libs/jszip.min.js HTTP/1.1[0m" 304 -
+2025-06-20 22:25:32,923 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:32] "GET /js/export.js HTTP/1.1" 200 -
+2025-06-20 22:25:32,961 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:32] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-20 22:25:32,961 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:32] "[36mGET /js/session-timeout.js HTTP/1.1[0m" 304 -
+2025-06-20 22:25:32,974 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:32] "[36mGET /js/libs/chart.js HTTP/1.1[0m" 304 -
+2025-06-20 22:25:32,980 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:32] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-20 22:25:32,981 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:32] "GET /js/data.js HTTP/1.1" 200 -
+2025-06-20 22:25:33,253 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:33] "[36mGET /pages/home.html HTTP/1.1[0m" 304 -
+2025-06-20 22:25:33,288 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:33] "[36mGET /pages/comments.html HTTP/1.1[0m" 304 -
+2025-06-20 22:25:33,297 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:33] "[36mGET /pages/students.html HTTP/1.1[0m" 304 -
+2025-06-20 22:25:33,301 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:33] "[36mGET /pages/grades.html HTTP/1.1[0m" 304 -
+2025-06-20 22:25:33,303 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:33] "[36mGET /pages/deyu.html HTTP/1.1[0m" 304 -
+2025-06-20 22:25:33,306 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:33] "[36mGET /pages/grade_analysis.html HTTP/1.1[0m" 304 -
+2025-06-20 22:25:33,576 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:33] "[36mGET /pages/export.html HTTP/1.1[0m" 304 -
+2025-06-20 22:25:33,598 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:33] "[36mGET /pages/settings.html HTTP/1.1[0m" 304 -
+2025-06-20 22:25:33,615 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:33] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-20 22:25:33,616 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:33] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-20 22:25:33,619 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:33] "[36mGET /css/home.css HTTP/1.1[0m" 304 -
+2025-06-20 22:25:33,620 - __main__ - WARNING - ÓÃ»§ ÁÖ»ÝÁá (ID: 29) ³¢ÊÔ·ÃÎÊ¹ÜÀíÒ³Ãæ admin.html£¬µ«È¨ÏÞ²»×ã
+2025-06-20 22:25:33,621 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:33] "[32mGET /pages/admin.html HTTP/1.1[0m" 302 -
+2025-06-20 22:25:33,897 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:33] "[36mGET /css/comments.css HTTP/1.1[0m" 304 -
+2025-06-20 22:25:33,911 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:33] "[36mGET /css/grade_analysis.css HTTP/1.1[0m" 304 -
+2025-06-20 22:25:33,925 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:33] "[36mGET /css/main.css HTTP/1.1[0m" 304 -
+2025-06-20 22:25:33,935 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:33] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-20 22:25:33,938 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:33] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-20 22:25:33,943 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:33] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-20 22:25:34,211 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:34] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-20 22:25:34,225 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:34] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-20 22:25:34,231 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:34] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-20 22:25:34,251 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:34] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-20 22:25:34,251 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:34] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-06-20 22:25:34,251 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:34] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-20 22:25:34,531 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:34] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-20 22:25:34,537 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:34] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-20 22:25:34,542 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:34] "[36mGET /js/libs/chart.js HTTP/1.1[0m" 304 -
+2025-06-20 22:25:34,576 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:34] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-20 22:25:34,581 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:34] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-20 22:25:34,581 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:34] "[36mGET /js/home.js HTTP/1.1[0m" 304 -
+2025-06-20 22:25:34,844 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:34] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-20 22:25:34,851 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:34] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-20 22:25:34,851 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:34] "[36mGET /js/comments.js HTTP/1.1[0m" 304 -
+2025-06-20 22:25:34,881 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:34] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-20 22:25:34,895 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:34] "[36mGET /js/students.js HTTP/1.1[0m" 304 -
+2025-06-20 22:25:34,895 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:34] "[36mGET /js/grades.js HTTP/1.1[0m" 304 -
+2025-06-20 22:25:35,155 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:35] "[36mGET /js/deyu.js HTTP/1.1[0m" 304 -
+2025-06-20 22:25:35,162 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:35] "[36mGET /js/libs/jquery.min.js HTTP/1.1[0m" 304 -
+2025-06-20 22:25:35,162 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:35] "[36mGET /js/grade_analysis.js HTTP/1.1[0m" 304 -
+2025-06-20 22:25:35,195 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:35] "[36mGET /libs/pizzip.min.js HTTP/1.1[0m" 304 -
+2025-06-20 22:25:35,201 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:35] "[36mGET /libs/docxtemplater.js HTTP/1.1[0m" 304 -
+2025-06-20 22:25:35,206 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:25:35] "[36mGET /libs/jszip.min.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:21,088 - utils.pdf_exporter_fixed - INFO - PDFµ¼³öÄ£¿é: ReportLab¿âÒÑ³É¹¦µ¼Èë
+2025-06-20 22:29:21,116 - utils.comment_processor - INFO - ReportLab¿âÒÑ³É¹¦µ¼Èë
+2025-06-20 22:29:21,361 - utils.deepseek_api - INFO - Ê¹ÓÃÄ¬ÈÏDeepSeek APIÃÜÔ¿
+2025-06-20 22:29:21,361 - __main__ - INFO - ·þÎñÆ÷Æô¶¯
+2025-06-20 22:29:21,408 - grades - INFO - ³õÊ¼»¯³É¼¨Ä£¿é
+2025-06-20 22:29:21,409 - grades - INFO - ³É¼¨Ä£¿é³õÊ¼»¯Íê³É
+2025-06-20 22:29:21,409 - deyu - INFO - ³õÊ¼»¯µÂÓýÎ¬¶ÈÄ£¿é
+2025-06-20 22:29:21,412 - deyu - INFO - ÏÖÓÐÊý¾Ý¿âÁÐ: ['id', 'name', 'gender', 'class', 'class_id', 'height', 'weight', 'chest_circumference', 'vital_capacity', 'dental_caries', 'vision_left', 'vision_right', 'physical_test_status', 'comments', 'created_at', 'updated_at', 'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'semester', 'pinzhi', 'xuexi', 'jiankang', 'shenmei', 'shijian', 'shenghuo', 'xinli']
+2025-06-20 22:29:21,413 - deyu - INFO - µÂÓýÎ¬¶ÈÄ£¿é³õÊ¼»¯Íê³É
+2025-06-20 22:29:21,413 - grade_analysis - INFO - ³õÊ¼»¯³É¼¨·ÖÎöÄ£¿é
+2025-06-20 22:29:21,421 - grade_analysis - INFO - ³É¼¨·ÖÎöÄ£¿é³õÊ¼»¯Íê³É
+2025-06-20 22:29:21,421 - users - INFO - ³õÊ¼»¯ÓÃ»§±í
+2025-06-20 22:29:21,423 - users - INFO - ÓÃ»§±íÏÖÓÐÁÐ: ['id', 'username', 'password_hash', 'is_admin', 'class_id', 'created_at', 'updated_at', 'reset_password']
+2025-06-20 22:29:21,424 - users - INFO - ÓÃ»§±í³õÊ¼»¯Íê³É
+2025-06-20 22:29:21,424 - classes - INFO - ³õÊ¼»¯°à¼¶±í
+2025-06-20 22:29:21,426 - classes - INFO - °à¼¶±í³õÊ¼»¯Íê³É
+2025-06-20 22:29:21,428 - database_backup - INFO - Êý¾Ý¿â±¸·ÝÄ£¿éÒÑ³õÊ¼»¯
+2025-06-20 22:29:21,442 - __main__ - INFO - ³õÊ¼»¯Êý¾Ý¿â
+2025-06-20 22:29:21,444 - __main__ - INFO - ÏÖÓÐÊý¾Ý¿âÁÐ: ['id', 'name', 'gender', 'class', 'class_id', 'height', 'weight', 'chest_circumference', 'vital_capacity', 'dental_caries', 'vision_left', 'vision_right', 'physical_test_status', 'comments', 'created_at', 'updated_at', 'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'semester', 'pinzhi', 'xuexi', 'jiankang', 'shenmei', 'shijian', 'shenghuo', 'xinli']
+2025-06-20 22:29:21,445 - __main__ - INFO - Êý¾Ý¿â³õÊ¼»¯Íê³É
+2025-06-20 22:29:21,461 - users - INFO - ³õÊ¼»¯ÓÃ»§±í
+2025-06-20 22:29:21,465 - users - INFO - ÓÃ»§±íÏÖÓÐÁÐ: ['id', 'username', 'password_hash', 'is_admin', 'class_id', 'created_at', 'updated_at', 'reset_password']
+2025-06-20 22:29:21,466 - users - INFO - ÓÃ»§±í³õÊ¼»¯Íê³É
+2025-06-20 22:29:21,466 - classes - INFO - ³õÊ¼»¯°à¼¶±í
+2025-06-20 22:29:21,469 - classes - INFO - °à¼¶±í³õÊ¼»¯Íê³É
+2025-06-20 22:29:21,481 - __main__ - INFO - ³õÊ¼»¯Êý¾Ý¿â
+2025-06-20 22:29:21,481 - __main__ - INFO - ÏÖÓÐÊý¾Ý¿âÁÐ: ['id', 'name', 'gender', 'class', 'class_id', 'height', 'weight', 'chest_circumference', 'vital_capacity', 'dental_caries', 'vision_left', 'vision_right', 'physical_test_status', 'comments', 'created_at', 'updated_at', 'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'semester', 'pinzhi', 'xuexi', 'jiankang', 'shenmei', 'shijian', 'shenghuo', 'xinli']
+2025-06-20 22:29:21,485 - __main__ - INFO - Êý¾Ý¿â³õÊ¼»¯Íê³É
+2025-06-20 22:29:21,487 - __main__ - INFO - Êý¾Ý¿â³õÊ¼»¯Íê³É£¬±£ÁôÒÑÓÐÊý¾Ý
+2025-06-20 22:29:21,503 - werkzeug - WARNING -  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2025-06-20 22:29:21,503 - werkzeug - INFO -  * Running on http://192.168.1.17:8080/ (Press CTRL+C to quit)
+2025-06-20 22:29:23,701 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:23] "[36mGET / HTTP/1.1[0m" 304 -
+2025-06-20 22:29:23,842 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:23] "[36mGET /css/tutorial.css HTTP/1.1[0m" 304 -
+2025-06-20 22:29:23,936 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:23] "[36mGET /css/main.css HTTP/1.1[0m" 304 -
+2025-06-20 22:29:24,171 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:24] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-20 22:29:24,171 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:24] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-20 22:29:24,171 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:24] "[36mGET /js/session-timeout.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:24,181 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:24] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:24,181 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:24] "[36mGET /img/logo.png HTTP/1.1[0m" 304 -
+2025-06-20 22:29:24,855 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:24] "[36mGET /pages/comments.html HTTP/1.1[0m" 304 -
+2025-06-20 22:29:24,890 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:24] "[36mGET /pages/grades.html HTTP/1.1[0m" 304 -
+2025-06-20 22:29:24,903 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:24] "[36mGET /pages/grade_analysis.html HTTP/1.1[0m" 304 -
+2025-06-20 22:29:24,954 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:24] "[36mGET /pages/home.html HTTP/1.1[0m" 304 -
+2025-06-20 22:29:24,992 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:24] "[36mGET /pages/settings.html HTTP/1.1[0m" 304 -
+2025-06-20 22:29:24,996 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:24] "GET /pages/export.html HTTP/1.1" 200 -
+2025-06-20 22:29:25,198 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:25] "[36mGET /pages/students.html HTTP/1.1[0m" 304 -
+2025-06-20 22:29:25,205 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:25] "[36mGET /pages/deyu.html HTTP/1.1[0m" 304 -
+2025-06-20 22:29:25,346 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:25] "[36mGET /fonts/boxicons.woff2 HTTP/1.1[0m" 304 -
+2025-06-20 22:29:25,348 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:25] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-20 22:29:25,363 - __main__ - WARNING - ÓÃ»§ ÁºæÃæÃ (ID: 28) ³¢ÊÔ·ÃÎÊ¹ÜÀíÒ³Ãæ admin.html£¬µ«È¨ÏÞ²»×ã
+2025-06-20 22:29:25,364 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:25] "[32mGET /pages/admin.html HTTP/1.1[0m" 302 -
+2025-06-20 22:29:25,696 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:25] "[36mGET /css/home.css HTTP/1.1[0m" 304 -
+2025-06-20 22:29:25,708 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:25] "[36mGET /css/main.css HTTP/1.1[0m" 304 -
+2025-06-20 22:29:25,711 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:25] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-20 22:29:25,723 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:25] "[36mGET /css/comments.css HTTP/1.1[0m" 304 -
+2025-06-20 22:29:25,726 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:25] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-20 22:29:25,855 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:25] "[36mGET /css/grade_analysis.css HTTP/1.1[0m" 304 -
+2025-06-20 22:29:26,030 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:26] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-20 22:29:26,039 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:26] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-20 22:29:26,060 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:26] "[36mGET / HTTP/1.1[0m" 304 -
+2025-06-20 22:29:26,062 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:26] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:26,064 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:26] "[36mGET /js/comments.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:26,172 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:26] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-20 22:29:26,357 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:26] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-20 22:29:26,357 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:26] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-20 22:29:26,374 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:26] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-20 22:29:26,375 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:26] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-20 22:29:26,414 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:26] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-20 22:29:26,479 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:26] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-20 22:29:26,673 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:26] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-20 22:29:26,674 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:26] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-20 22:29:26,680 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:26] "[36mGET /css/main.css HTTP/1.1[0m" 304 -
+2025-06-20 22:29:26,681 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:26] "[36mGET /css/tutorial.css HTTP/1.1[0m" 304 -
+2025-06-20 22:29:26,742 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:26] "[36mGET /fonts/boxicons.woff2 HTTP/1.1[0m" 304 -
+2025-06-20 22:29:26,799 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:26] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-20 22:29:26,982 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:26] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-20 22:29:26,982 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:26] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-20 22:29:26,986 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:26] "[36mGET /js/grades.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:27,001 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:27] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-20 22:29:27,061 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:27] "[36mGET /libs/pizzip.min.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:27,113 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:27] "[36mGET /libs/docxtemplater.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:27,298 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:27] "[36mGET /libs/jszip.min.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:27,304 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:27] "GET /js/export.js HTTP/1.1" 200 -
+2025-06-20 22:29:27,305 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:27] "[36mGET /js/libs/chart.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:27,388 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:27] "[36mGET /js/libs/jquery.min.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:27,392 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:27] "[36mGET /js/grade_analysis.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:27,428 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:27] "[36mGET /js/home.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:27,612 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:27] "[36mGET /js/deyu.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:27,616 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:27] "[36mGET /js/students.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:27,639 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:27] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:27,710 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:27] "[36mGET /js/libs/chart.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:27,717 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:27] "[36mGET /js/session-timeout.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:27,758 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:27] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:27,941 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:27] "[36mGET /pages/students.html HTTP/1.1[0m" 304 -
+2025-06-20 22:29:27,943 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:27] "[36mGET /pages/home.html HTTP/1.1[0m" 304 -
+2025-06-20 22:29:27,962 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:27] "[36mGET /pages/comments.html HTTP/1.1[0m" 304 -
+2025-06-20 22:29:28,043 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:28] "[36mGET /pages/deyu.html HTTP/1.1[0m" 304 -
+2025-06-20 22:29:28,044 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:28] "[36mGET /pages/grades.html HTTP/1.1[0m" 304 -
+2025-06-20 22:29:28,073 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:28] "[36mGET /pages/grade_analysis.html HTTP/1.1[0m" 304 -
+2025-06-20 22:29:28,257 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:28] "[36mGET /pages/export.html HTTP/1.1[0m" 304 -
+2025-06-20 22:29:28,275 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:28] "[36mGET /pages/settings.html HTTP/1.1[0m" 304 -
+2025-06-20 22:29:28,304 - __main__ - WARNING - ÓÃ»§ ÁºæÃæÃ (ID: 28) ³¢ÊÔ·ÃÎÊ¹ÜÀíÒ³Ãæ admin.html£¬µ«È¨ÏÞ²»×ã
+2025-06-20 22:29:28,307 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:28] "[32mGET /pages/admin.html HTTP/1.1[0m" 302 -
+2025-06-20 22:29:28,371 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:28] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-20 22:29:28,373 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:28] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-20 22:29:28,405 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:28] "[36mGET /css/home.css HTTP/1.1[0m" 304 -
+2025-06-20 22:29:28,573 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:28] "[36mGET /css/comments.css HTTP/1.1[0m" 304 -
+2025-06-20 22:29:28,584 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:28] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-20 22:29:28,619 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:28] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-20 22:29:28,681 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:28] "[36mGET /css/grade_analysis.css HTTP/1.1[0m" 304 -
+2025-06-20 22:29:28,682 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:28] "[36mGET /css/main.css HTTP/1.1[0m" 304 -
+2025-06-20 22:29:28,711 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:28] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-20 22:29:28,883 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:28] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-20 22:29:28,897 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:28] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-20 22:29:28,941 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:28] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-20 22:29:29,035 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:29] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-20 22:29:29,044 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:29] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-20 22:29:29,046 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:29] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:29,198 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:29] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-20 22:29:29,203 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:29] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-20 22:29:29,248 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:29] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-20 22:29:29,346 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:29] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-20 22:29:29,365 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:29] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-20 22:29:29,366 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:29] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-20 22:29:29,503 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:29] "[36mGET /js/students.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:29,511 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:29] "[36mGET /js/libs/chart.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:29,565 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:29] "[36mGET /js/home.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:29,665 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:29] "[36mGET /js/comments.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:29,673 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:29] "[36mGET /js/deyu.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:29,673 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:29] "[36mGET /js/grades.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:29,811 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:29] "[36mGET /js/libs/jquery.min.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:29,819 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:29] "[36mGET /js/grade_analysis.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:29,884 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:29] "[36mGET /libs/pizzip.min.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:29,970 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:29] "[36mGET /libs/docxtemplater.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:29,983 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:29] "[36mGET /libs/jszip.min.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:29,983 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:29] "[36mGET /js/export.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:30,138 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:30] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:30,164 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:30] "GET /api/dashboard/comments HTTP/1.1" 200 -
+2025-06-20 22:29:30,214 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:30] "GET /api/dashboard/activities HTTP/1.1" 200 -
+2025-06-20 22:29:30,301 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:30] "GET /api/dashboard/todos HTTP/1.1" 200 -
+2025-06-20 22:29:30,338 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:30] "GET /api/dashboard/grade-distribution HTTP/1.1" 200 -
+2025-06-20 22:29:30,369 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:30] "GET /api/dashboard/info HTTP/1.1" 200 -
+2025-06-20 22:29:30,449 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:30] "[36mGET /js/libs/chart.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:30,478 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:30] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:30,537 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:30] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-20 22:29:30,631 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:30] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:30,652 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:30] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:30,706 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:30] "GET /api/classes/26 HTTP/1.1" 200 -
+2025-06-20 22:29:30,827 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:30] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:30,835 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:30] "GET /api/exams?class_id=26 HTTP/1.1" 200 -
+2025-06-20 22:29:30,848 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:30] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:30,950 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:30] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:30,963 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:30] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:31,083 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:31] "GET /api/dashboard/info HTTP/1.1" 200 -
+2025-06-20 22:29:31,154 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:31] "GET /api/dashboard/grade-distribution HTTP/1.1" 200 -
+2025-06-20 22:29:31,157 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:31] "GET /api/dashboard/todos HTTP/1.1" 200 -
+2025-06-20 22:29:31,170 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:31] "GET /api/dashboard/comments HTTP/1.1" 200 -
+2025-06-20 22:29:31,271 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:31] "GET /api/dashboard/activities HTTP/1.1" 200 -
+2025-06-20 22:29:31,278 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:31] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:31,398 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:31] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:31,481 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:31] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:31,485 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:31] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:31,487 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:31] "GET /js/main.js HTTP/1.1" 200 -
+2025-06-20 22:29:31,581 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:31] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:31,586 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:31] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:31,717 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:31] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-20 22:29:31,795 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:31] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:31,804 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:31] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:31,833 - students - INFO - ½ö»ñÈ¡°à¼¶ 26 µÄÑ§Éú
+2025-06-20 22:29:31,853 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:31] "GET /api/students HTTP/1.1" 200 -
+2025-06-20 22:29:31,891 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:31] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:31,907 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:31] "GET /api/classes/26 HTTP/1.1" 200 -
+2025-06-20 22:29:32,043 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:32] "GET /api/exams?class_id=26 HTTP/1.1" 200 -
+2025-06-20 22:29:32,119 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:32] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:32,154 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:32] "GET /api/grades?semester=2024-2025Ñ§ÄêÏÂÑ§ÆÚ HTTP/1.1" 200 -
+2025-06-20 22:29:32,191 - __main__ - ERROR - »ñÈ¡ÏµÍ³ÉèÖÃÊ±³ö´í: name 'load_settings_from_db' is not defined
+2025-06-20 22:29:32,192 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:32] "[35m[1mGET /api/settings HTTP/1.1[0m" 500 -
+2025-06-20 22:29:32,204 - students - INFO - ½ö»ñÈ¡°à¼¶ 26 µÄÑ§Éú
+2025-06-20 22:29:32,215 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:32] "GET /api/students HTTP/1.1" 200 -
+2025-06-20 22:29:32,218 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:32] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:32,368 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:32] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-20 22:29:32,437 - __main__ - ERROR - »ñÈ¡ÏµÍ³ÉèÖÃÊ±³ö´í: name 'load_settings_from_db' is not defined
+2025-06-20 22:29:32,438 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:32] "[35m[1mGET /api/settings HTTP/1.1[0m" 500 -
+2025-06-20 22:29:32,478 - students - INFO - ½ö»ñÈ¡°à¼¶ 26 µÄÑ§Éú
+2025-06-20 22:29:32,501 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:32] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:32,519 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:32] "GET /api/students HTTP/1.1" 200 -
+2025-06-20 22:29:32,530 - deyu - INFO - ÊÕµ½»ñÈ¡µÂÓýÎ¬¶ÈÊý¾ÝÇëÇó: class_id=26, semester=2024-2025Ñ§ÄêÏÂÑ§ÆÚ
+2025-06-20 22:29:32,533 - deyu - INFO - µ±Ç°ÓÃ»§: ÁºæÃæÃ, ID: 28, ½ÇÉ«: ÆÕÍ¨ÓÃ»§, ¹ØÁª°à¼¶: 26
+2025-06-20 22:29:32,536 - deyu - INFO - ÇëÇó²ÎÊý: ImmutableMultiDict([('semester', '2024-2025Ñ§ÄêÏÂÑ§ÆÚ'), ('class_id', '26')])
+2025-06-20 22:29:32,536 - deyu - INFO - ·Ç¹ÜÀíÔ±ÓÃ»§£¬Ê¹ÓÃÆä°à¼¶ID: 26
+2025-06-20 22:29:32,536 - deyu - INFO - Ê¹ÓÃµÄ°à¼¶ID²ÎÊý: 26
+2025-06-20 22:29:32,538 - deyu - INFO - students±íÁÐÃû: ['id', 'name', 'gender', 'class', 'class_id', 'height', 'weight', 'chest_circumference', 'vital_capacity', 'dental_caries', 'vision_left', 'vision_right', 'physical_test_status', 'comments', 'created_at', 'updated_at', 'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'semester', 'pinzhi', 'xuexi', 'jiankang', 'shenmei', 'shijian', 'shenghuo', 'xinli']
+2025-06-20 22:29:32,538 - deyu - INFO - students±í×Ü¼ÇÂ¼Êý: 1344
+2025-06-20 22:29:32,538 - deyu - INFO - Ê¹ÓÃ°à¼¶ID²éÑ¯: 26
+2025-06-20 22:29:32,539 - deyu - INFO - °´°à¼¶ID²éÑ¯½á¹û: ÕÒµ½36ÃûÑ§Éú
+2025-06-20 22:29:32,539 - deyu - INFO - Ê×¸öÑ§ÉúÑù±¾: {'id': '1', 'name': '²ÌìÏ°²', 'class': 'ÎåÄê¼¶3°à', 'class_id': 26, 'pinzhi': 30, 'xuexi': 18, 'jiankang': 20, 'shenmei': 10, 'shijian': 10, 'shenghuo': 10}
+2025-06-20 22:29:32,539 - deyu - INFO - ½øÐÐÁË1´Î²éÑ¯³¢ÊÔ
+2025-06-20 22:29:32,540 - deyu - INFO - ¿ªÊ¼´¦Àí²éÑ¯½á¹û£¬×ª»» 36 ÃûÑ§ÉúµÄµÂÓýÎ¬¶ÈÊý¾Ý
+2025-06-20 22:29:32,540 - deyu - INFO - ½á¹ûÑù±¾ (3 Ìõ):
+2025-06-20 22:29:32,540 - deyu - INFO -   {'student_id': '1', 'name': '²ÌìÏ°²', 'class': 'ÎåÄê¼¶3°à', 'class_id': 26, 'pinzhi': 30, 'xuexi': 18, 'jiankang': 20, 'shenmei': 10, 'shijian': 10, 'shenghuo': 10}
+2025-06-20 22:29:32,540 - deyu - INFO -   {'student_id': '10', 'name': 'ËÕ¿¡Ãô', 'class': 'ÎåÄê¼¶3°à', 'class_id': 26, 'pinzhi': 30, 'xuexi': 20, 'jiankang': 20, 'shenmei': 10, 'shijian': 10, 'shenghuo': 10}
+2025-06-20 22:29:32,540 - deyu - INFO -   {'student_id': '11', 'name': 'ÕÅìÏ·æ', 'class': 'ÎåÄê¼¶3°à', 'class_id': 26, 'pinzhi': 30, 'xuexi': 18, 'jiankang': 20, 'shenmei': 10, 'shijian': 10, 'shenghuo': 9}
+2025-06-20 22:29:32,541 - deyu - INFO - ³É¹¦»ñÈ¡°à¼¶ 26 µÄËùÓÐÑ§ÉúµÂÓýÎ¬¶ÈÊý¾Ý£¬¹² 36 Ìõ¼ÇÂ¼
+2025-06-20 22:29:32,541 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:32] "GET /api/deyu?semester=2024-2025Ñ§ÄêÏÂÑ§ÆÚ&class_id=26 HTTP/1.1" 200 -
+2025-06-20 22:29:32,545 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:32] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-20 22:29:32,725 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:32] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:32,760 - students - INFO - ½ö»ñÈ¡°à¼¶ 26 µÄÑ§Éú
+2025-06-20 22:29:32,773 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:32] "GET /api/students HTTP/1.1" 200 -
+2025-06-20 22:29:32,824 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:32] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:32,829 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:32] "GET /js/tutorial.js HTTP/1.1" 200 -
+2025-06-20 22:29:32,865 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:32] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:32,866 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:32] "[36mGET /img/logo.png HTTP/1.1[0m" 304 -
+2025-06-20 22:29:33,047 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:33] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:33,099 - students - INFO - ½ö»ñÈ¡°à¼¶ 26 µÄÑ§Éú
+2025-06-20 22:29:33,109 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:33] "GET /api/students HTTP/1.1" 200 -
+2025-06-20 22:29:33,155 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:33] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:33,160 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:33] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-20 22:29:33,191 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:33] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-20 22:29:33,201 - students - INFO - ½ö»ñÈ¡°à¼¶ 26 µÄÑ§Éú
+2025-06-20 22:29:33,212 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:33] "GET /api/students HTTP/1.1" 200 -
+2025-06-20 22:29:33,357 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:33] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-20 22:29:33,455 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:33] "[36mGET /img/vx.jpg HTTP/1.1[0m" 304 -
+2025-06-20 22:29:33,462 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:33] "[36mGET /js/settings.js HTTP/1.1[0m" 304 -
+2025-06-20 22:29:33,565 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:33] "GET /api/classes/26 HTTP/1.1" 200 -
+2025-06-20 22:29:33,628 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:33] "GET /api/carousel/settings HTTP/1.1" 200 -
+2025-06-20 22:29:33,636 - __main__ - ERROR - »ñÈ¡ÏµÍ³ÉèÖÃÊ±³ö´í: name 'load_settings_from_db' is not defined
+2025-06-20 22:29:33,638 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:33] "[35m[1mGET /api/settings HTTP/1.1[0m" 500 -
+2025-06-20 22:29:33,689 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:33] "GET /api/carousel/images HTTP/1.1" 200 -
+2025-06-20 22:29:33,946 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:33] "GET /api/carousel/settings HTTP/1.1" 200 -
+2025-06-20 22:29:33,949 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:33] "[36mGET /favicon.ico HTTP/1.1[0m" 304 -
+2025-06-20 22:29:33,951 - __main__ - ERROR - »ñÈ¡ÏµÍ³ÉèÖÃÊ±³ö´í: name 'load_settings_from_db' is not defined
+2025-06-20 22:29:33,952 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:33] "[35m[1mGET /api/settings HTTP/1.1[0m" 500 -
+2025-06-20 22:29:33,993 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:33] "GET /api/carousel/images HTTP/1.1" 200 -
+2025-06-20 22:29:34,097 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:34] "[36mGET /img/backgrounds/bg01.jpg HTTP/1.1[0m" 304 -
+2025-06-20 22:29:35,261 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:35] "[36mGET /fonts/boxicons.woff2 HTTP/1.1[0m" 304 -
+2025-06-20 22:29:37,081 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:37] "GET /api/student/2?class_id=26 HTTP/1.1" 200 -
+2025-06-20 22:29:39,576 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:39] "GET /api/student/2?class_id=26 HTTP/1.1" 200 -
+2025-06-20 22:29:43,661 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:43] "PUT /api/student/2/comments HTTP/1.1" 200 -
+2025-06-20 22:29:43,694 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:43] "PUT /api/student/2/comments HTTP/1.1" 200 -
+2025-06-20 22:29:45,111 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:29:45] "GET /api/student/2?class_id=26 HTTP/1.1" 200 -
+2025-06-20 22:29:54,569 - comments - INFO - ÊÕµ½ÆÀÓïÉú³ÉÇëÇó: {'student_id': '2', 'class_id': '26', 'style': '¹ÄÀøÐÔµÄ', 'tone': 'ÕýÊ½µÄ', 'max_length': 260, 'min_length': 200, 'personality': '', 'study_performance': '', 'hobbies': '', 'improvement': '', 'additional_instructions': ''}
+2025-06-20 22:29:54,569 - utils.deepseek_api - INFO - Ê¹ÓÃÄ¬ÈÏDeepSeek APIÃÜÔ¿
+2025-06-20 22:29:54,569 - comments - INFO - Éú³ÉÆÀÓï²ÎÊý: Ñ§ÉúID=2 (ÀàÐÍ: <class 'str'>), °à¼¶ID=26 (ÀàÐÍ: <class 'str'>)
+2025-06-20 22:29:54,585 - comments - INFO - ÕýÔÚÎªÑ§Éú ³ÂÔóÑ«(ID: 2, °à¼¶ID: 26) Éú³ÉÆÀÓï
+2025-06-20 22:29:54,585 - utils.comment_generator - INFO - ¿ªÊ¼ÎªÑ§Éú ³ÂÔóÑ« Éú³ÉÆÀÓï
+2025-06-20 22:29:54,585 - utils.comment_generator - INFO - Éú³É²ÎÊý: style=¹ÄÀøÐÔµÄ, tone=ÕýÊ½µÄ, max_length=50000, min_length=200
+2025-06-20 22:29:54,585 - utils.deepseek_api - INFO - ¿ªÊ¼ÎªÑ§Éú ³ÂÔóÑ« Éú³ÉÆÀÓï
+2025-06-20 22:29:54,586 - utils.deepseek_api - INFO - Ñ§ÉúÌØÕ÷ÐÅÏ¢: ¸öÐÔÌØµã=, Ñ§Ï°±íÏÖ=, °®ºÃ=, ´ý¸Ä½ø=
+2025-06-20 22:29:54,586 - utils.deepseek_api - INFO - ÕýÔÚµ÷ÓÃDeepSeek APIÉú³ÉÆÀÓï£¨³¢ÊÔ 1/3£¬³¬Ê±ÉèÖÃ: 270.0Ãë£©...
+2025-06-20 22:29:54,601 - urllib3.connectionpool - DEBUG - Starting new HTTPS connection (1): api.deepseek.com:443
+2025-06-20 22:29:55,782 - urllib3.connectionpool - DEBUG - https://api.deepseek.com:443 "POST /chat/completions HTTP/1.1" 200 None
+2025-06-20 22:30:41,319 - utils.deepseek_api - INFO - ³É¹¦»ñÈ¡ÆÀÓï£¬ÆÀÓï³¤¶È: 272×Ö
+2025-06-20 22:30:41,319 - utils.deepseek_api - WARNING - ÆÀÓï³¬³ö×î´ó³¤¶ÈÏÞÖÆ£¬µ±Ç°³¤¶È: 272£¬×î´óÔÊÐí: 260
+2025-06-20 22:30:41,321 - utils.deepseek_api - INFO - ½Ø¶ÏºóÆÀÓï³¤¶È: 243×Ö
+2025-06-20 22:30:41,326 - utils.comment_generator - INFO - ³É¹¦Éú³ÉÆÀÓï£¬³¤¶È: 243 ×Ö·û
+2025-06-20 22:30:41,326 - comments - INFO - ÆÀÓïÉú³É½á¹û(Ñ§ÉúID: 2, °à¼¶ID: 26): ok
+2025-06-20 22:30:41,326 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:30:41] "POST /api/generate-comment HTTP/1.1" 200 -
+2025-06-20 22:32:53,495 - comments - INFO - ÊÕµ½±£´æÆÀÓïÇëÇó: {'studentId': '2', 'classId': '26', 'content': '³ÂÔóÑ«Í¬Ñ§£¬ÄãÔÚ±¾Ñ§ÆÚÕ¹ÏÖ³öÁËÐí¶àÁîÈËÐÀÏ²µÄÆ·ÖÊ¡£ÐÔ¸ñ¿ªÀÊ¡¢ÀÖÓÚÖúÈË£¬×ÜÄÜÖ÷¶¯¹ØÐÄÍ¬Ñ§£¬ÓªÔì³ö»ý¼«µÄ°à¼¶·ÕÎ§¡£Ñ§Ï°ÉÏ£¬ÄãÌ¬¶ÈÈÏÕæ£¬ÇÚ·Ü¿Ì¿à£¬ÓÈÆäÔÚÊýÑ§ÁìÓò±íÏÖÍ»³ö£¬³É¼¨ÎÈ²½ÌáÉý£¬ÌåÏÖÁËÄãµÄÂß¼­Ë¼Î¬ºÍ½âÌâÄÜÁ¦¡£¿ÎÍâ»î¶¯ÖÐ£¬ÄãÈÈ°®ÀºÇò£¬»ý¼«²ÎÓëÐ£¶ÓÑµÁ·ºÍ±ÈÈü£¬²»½ö¶ÍÁ¶ÁËÌåÆÇ£¬»¹ÅàÑøÁËÍÅ¶ÓÐ­×÷¾«Éñ£¬ÕâÐ©Å¬Á¦ÖµµÃ¸ß¶È¿Ï¶¨¡£²»¹ý£¬ÔÚ¿ÎÌÃ×¨×¢Á¦ºÍ×÷ÒµÐ§ÂÊ·½Ãæ£¬»¹ÓÐÌáÉý¿Õ¼ä£»½¨ÒéÄã³¢ÊÔÖÆ¶¨Ã¿ÈÕÑ§Ï°¼Æ»®£¬¼ÓÇ¿Ê±¼ä¹ÜÀí£¬È·±£ÖªÊ¶ÎüÊÕ¸üÔúÊµ¡£ÀÏÊ¦ÉîÐÅ£¬ÒÔÄãµÄÇ±Á¦ºÍÈÍÐÔ£¬¶¨ÄÜ²»¶ÏÍ»ÆÆ×ÔÎÒ£¬ÊµÏÖ¸ü´ó·ÉÔ¾¡£', 'isAIComment': True}
+2025-06-20 22:32:53,498 - comments - INFO - ±£´æÑ§ÉúÆÀÓï, Ñ§ÉúID: 2 (ÀàÐÍ: <class 'str'>), °à¼¶ID: 26 (ÀàÐÍ: <class 'str'>), ×·¼ÓÄ£Ê½: False
+2025-06-20 22:32:53,502 - comments - INFO - ÆÀÓï±£´æ³É¹¦: Ñ§ÉúID=2, °à¼¶ID=26
+2025-06-20 22:32:53,507 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:32:53] "POST /api/comments HTTP/1.1" 200 -
+2025-06-20 22:32:53,757 - students - INFO - ½ö»ñÈ¡°à¼¶ 26 µÄÑ§Éú
+2025-06-20 22:32:53,816 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:32:53] "GET /api/students HTTP/1.1" 200 -
+2025-06-20 22:32:53,850 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:32:53] "GET /api/grades?semester=2024-2025Ñ§ÄêÏÂÑ§ÆÚ HTTP/1.1" 200 -
+2025-06-20 22:32:53,955 - students - INFO - ½ö»ñÈ¡°à¼¶ 26 µÄÑ§Éú
+2025-06-20 22:32:53,966 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:32:53] "GET /api/students HTTP/1.1" 200 -
+2025-06-20 22:32:53,974 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:32:53] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-20 22:32:53,990 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:32:53] "GET /api/dashboard/info HTTP/1.1" 200 -
+2025-06-20 22:32:54,151 - deyu - INFO - ÊÕµ½»ñÈ¡µÂÓýÎ¬¶ÈÊý¾ÝÇëÇó: class_id=26, semester=2024-2025Ñ§ÄêÏÂÑ§ÆÚ
+2025-06-20 22:32:54,151 - deyu - INFO - µ±Ç°ÓÃ»§: ÁºæÃæÃ, ID: 28, ½ÇÉ«: ÆÕÍ¨ÓÃ»§, ¹ØÁª°à¼¶: 26
+2025-06-20 22:32:54,151 - deyu - INFO - ÇëÇó²ÎÊý: ImmutableMultiDict([('semester', '2024-2025Ñ§ÄêÏÂÑ§ÆÚ'), ('class_id', '26')])
+2025-06-20 22:32:54,151 - deyu - INFO - ·Ç¹ÜÀíÔ±ÓÃ»§£¬Ê¹ÓÃÆä°à¼¶ID: 26
+2025-06-20 22:32:54,151 - deyu - INFO - Ê¹ÓÃµÄ°à¼¶ID²ÎÊý: 26
+2025-06-20 22:32:54,151 - deyu - INFO - students±íÁÐÃû: ['id', 'name', 'gender', 'class', 'class_id', 'height', 'weight', 'chest_circumference', 'vital_capacity', 'dental_caries', 'vision_left', 'vision_right', 'physical_test_status', 'comments', 'created_at', 'updated_at', 'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'semester', 'pinzhi', 'xuexi', 'jiankang', 'shenmei', 'shijian', 'shenghuo', 'xinli']
+2025-06-20 22:32:54,151 - deyu - INFO - students±í×Ü¼ÇÂ¼Êý: 1344
+2025-06-20 22:32:54,151 - deyu - INFO - Ê¹ÓÃ°à¼¶ID²éÑ¯: 26
+2025-06-20 22:32:54,155 - deyu - INFO - °´°à¼¶ID²éÑ¯½á¹û: ÕÒµ½36ÃûÑ§Éú
+2025-06-20 22:32:54,155 - deyu - INFO - Ê×¸öÑ§ÉúÑù±¾: {'id': '1', 'name': '²ÌìÏ°²', 'class': 'ÎåÄê¼¶3°à', 'class_id': 26, 'pinzhi': 30, 'xuexi': 18, 'jiankang': 20, 'shenmei': 10, 'shijian': 10, 'shenghuo': 10}
+2025-06-20 22:32:54,155 - deyu - INFO - ½øÐÐÁË1´Î²éÑ¯³¢ÊÔ
+2025-06-20 22:32:54,155 - deyu - INFO - ¿ªÊ¼´¦Àí²éÑ¯½á¹û£¬×ª»» 36 ÃûÑ§ÉúµÄµÂÓýÎ¬¶ÈÊý¾Ý
+2025-06-20 22:32:54,155 - deyu - INFO - ½á¹ûÑù±¾ (3 Ìõ):
+2025-06-20 22:32:54,155 - deyu - INFO -   {'student_id': '1', 'name': '²ÌìÏ°²', 'class': 'ÎåÄê¼¶3°à', 'class_id': 26, 'pinzhi': 30, 'xuexi': 18, 'jiankang': 20, 'shenmei': 10, 'shijian': 10, 'shenghuo': 10}
+2025-06-20 22:32:54,155 - deyu - INFO -   {'student_id': '10', 'name': 'ËÕ¿¡Ãô', 'class': 'ÎåÄê¼¶3°à', 'class_id': 26, 'pinzhi': 30, 'xuexi': 20, 'jiankang': 20, 'shenmei': 10, 'shijian': 10, 'shenghuo': 10}
+2025-06-20 22:32:54,155 - deyu - INFO -   {'student_id': '11', 'name': 'ÕÅìÏ·æ', 'class': 'ÎåÄê¼¶3°à', 'class_id': 26, 'pinzhi': 30, 'xuexi': 18, 'jiankang': 20, 'shenmei': 10, 'shijian': 10, 'shenghuo': 9}
+2025-06-20 22:32:54,155 - deyu - INFO - ³É¹¦»ñÈ¡°à¼¶ 26 µÄËùÓÐÑ§ÉúµÂÓýÎ¬¶ÈÊý¾Ý£¬¹² 36 Ìõ¼ÇÂ¼
+2025-06-20 22:32:54,155 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:32:54] "GET /api/deyu?semester=2024-2025Ñ§ÄêÏÂÑ§ÆÚ&class_id=26 HTTP/1.1" 200 -
+2025-06-20 22:32:54,837 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:32:54] "GET /api/dashboard/info HTTP/1.1" 200 -
+2025-06-20 22:32:56,639 - students - INFO - ½ö»ñÈ¡°à¼¶ 26 µÄÑ§Éú
+2025-06-20 22:32:56,644 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:32:56] "GET /api/students HTTP/1.1" 200 -
+2025-06-20 22:32:57,259 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:32:57] "GET /api/grades?semester=2024-2025Ñ§ÄêÏÂÑ§ÆÚ HTTP/1.1" 200 -
+2025-06-20 22:32:57,293 - students - INFO - ½ö»ñÈ¡°à¼¶ 26 µÄÑ§Éú
+2025-06-20 22:32:57,299 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:32:57] "GET /api/students HTTP/1.1" 200 -
+2025-06-20 22:32:57,505 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:32:57] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-20 22:32:57,569 - deyu - INFO - ÊÕµ½»ñÈ¡µÂÓýÎ¬¶ÈÊý¾ÝÇëÇó: class_id=26, semester=2024-2025Ñ§ÄêÏÂÑ§ÆÚ
+2025-06-20 22:32:57,569 - deyu - INFO - µ±Ç°ÓÃ»§: ÁºæÃæÃ, ID: 28, ½ÇÉ«: ÆÕÍ¨ÓÃ»§, ¹ØÁª°à¼¶: 26
+2025-06-20 22:32:57,569 - deyu - INFO - ÇëÇó²ÎÊý: ImmutableMultiDict([('semester', '2024-2025Ñ§ÄêÏÂÑ§ÆÚ'), ('class_id', '26')])
+2025-06-20 22:32:57,571 - deyu - INFO - ·Ç¹ÜÀíÔ±ÓÃ»§£¬Ê¹ÓÃÆä°à¼¶ID: 26
+2025-06-20 22:32:57,571 - deyu - INFO - Ê¹ÓÃµÄ°à¼¶ID²ÎÊý: 26
+2025-06-20 22:32:57,574 - deyu - INFO - students±íÁÐÃû: ['id', 'name', 'gender', 'class', 'class_id', 'height', 'weight', 'chest_circumference', 'vital_capacity', 'dental_caries', 'vision_left', 'vision_right', 'physical_test_status', 'comments', 'created_at', 'updated_at', 'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'semester', 'pinzhi', 'xuexi', 'jiankang', 'shenmei', 'shijian', 'shenghuo', 'xinli']
+2025-06-20 22:32:57,574 - deyu - INFO - students±í×Ü¼ÇÂ¼Êý: 1344
+2025-06-20 22:32:57,574 - deyu - INFO - Ê¹ÓÃ°à¼¶ID²éÑ¯: 26
+2025-06-20 22:32:57,575 - deyu - INFO - °´°à¼¶ID²éÑ¯½á¹û: ÕÒµ½36ÃûÑ§Éú
+2025-06-20 22:32:57,575 - deyu - INFO - Ê×¸öÑ§ÉúÑù±¾: {'id': '1', 'name': '²ÌìÏ°²', 'class': 'ÎåÄê¼¶3°à', 'class_id': 26, 'pinzhi': 30, 'xuexi': 18, 'jiankang': 20, 'shenmei': 10, 'shijian': 10, 'shenghuo': 10}
+2025-06-20 22:32:57,575 - deyu - INFO - ½øÐÐÁË1´Î²éÑ¯³¢ÊÔ
+2025-06-20 22:32:57,576 - deyu - INFO - ¿ªÊ¼´¦Àí²éÑ¯½á¹û£¬×ª»» 36 ÃûÑ§ÉúµÄµÂÓýÎ¬¶ÈÊý¾Ý
+2025-06-20 22:32:57,576 - deyu - INFO - ½á¹ûÑù±¾ (3 Ìõ):
+2025-06-20 22:32:57,576 - deyu - INFO -   {'student_id': '1', 'name': '²ÌìÏ°²', 'class': 'ÎåÄê¼¶3°à', 'class_id': 26, 'pinzhi': 30, 'xuexi': 18, 'jiankang': 20, 'shenmei': 10, 'shijian': 10, 'shenghuo': 10}
+2025-06-20 22:32:57,576 - deyu - INFO -   {'student_id': '10', 'name': 'ËÕ¿¡Ãô', 'class': 'ÎåÄê¼¶3°à', 'class_id': 26, 'pinzhi': 30, 'xuexi': 20, 'jiankang': 20, 'shenmei': 10, 'shijian': 10, 'shenghuo': 10}
+2025-06-20 22:32:57,576 - deyu - INFO -   {'student_id': '11', 'name': 'ÕÅìÏ·æ', 'class': 'ÎåÄê¼¶3°à', 'class_id': 26, 'pinzhi': 30, 'xuexi': 18, 'jiankang': 20, 'shenmei': 10, 'shijian': 10, 'shenghuo': 9}
+2025-06-20 22:32:57,576 - deyu - INFO - ³É¹¦»ñÈ¡°à¼¶ 26 µÄËùÓÐÑ§ÉúµÂÓýÎ¬¶ÈÊý¾Ý£¬¹² 36 Ìõ¼ÇÂ¼
+2025-06-20 22:32:57,576 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:32:57] "GET /api/deyu?semester=2024-2025Ñ§ÄêÏÂÑ§ÆÚ&class_id=26 HTTP/1.1" 200 -
+2025-06-20 22:33:01,842 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:01] "[36mGET /fonts/boxicons.woff2 HTTP/1.1[0m" 304 -
+2025-06-20 22:33:02,472 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:02] "[36mGET /fonts/boxicons.woff2 HTTP/1.1[0m" 304 -
+2025-06-20 22:33:05,223 - grade_analysis - INFO - °à¼¶ ÎåÄê¼¶3°à(ID:26) µÄÊµ¼ÊÑ§Éú×ÜÊý: 36
+2025-06-20 22:33:05,240 - grade_analysis - INFO - ¿¼ÊÔID: 4, °à¼¶ID: 26 µÄ×Ü³É¼¨¼ÇÂ¼Êý: 2471
+2025-06-20 22:33:05,241 - grade_analysis - INFO - Êµ¼Ê²Î¼Ó¿¼ÊÔµÄÑ§ÉúÊý: 36, Ñ§ÉúIDÁÐ±í: {'1', '25', '20', '7', '33', '21', '28', '14', '2', '8', '22', '10', '9', '35', '19', '4', '17', '11', '6', '27', '5', '12', '30', '15', '29', '16', '26', '23', '24', '13', '18', '34', '3', '32', '36', '31'}
+2025-06-20 22:33:05,242 - grade_analysis - INFO - ¹²ÓÐ 2 ¸öÑ§¿ÆµÄ³É¼¨
+2025-06-20 22:33:05,243 - grade_analysis - INFO - Ñ§¿Æ: ÊýÑ§, ¼ÇÂ¼Êý: 1218, È¥ÖØºóÑ§ÉúÊý: 35
+2025-06-20 22:33:05,258 - grade_analysis - INFO - È¥ÖØºó ÊýÑ§ ¿ÆÄ¿µÄ¼ÇÂ¼Êý: 35
+2025-06-20 22:33:05,258 - grade_analysis - INFO - Ñ§¿Æ: ÓïÎÄ, ¼ÇÂ¼Êý: 1253, È¥ÖØºóÑ§ÉúÊý: 36
+2025-06-20 22:33:05,263 - grade_analysis - INFO - È¥ÖØºó ÓïÎÄ ¿ÆÄ¿µÄ¼ÇÂ¼Êý: 36
+2025-06-20 22:33:05,263 - grade_analysis - INFO - ¿ÆÄ¿ ÊýÑ§ µÄÓ¦¿¼ÈËÊý: 35, Êµ¿¼ÈËÊý: 33, Çë¼ÙÈËÊý: 2
+2025-06-20 22:33:05,263 - grade_analysis - INFO - ¿ÆÄ¿: ÊýÑ§, Êµ¿¼ÈËÊý: 33, Çë¼ÙÈËÊý: 2
+2025-06-20 22:33:05,263 - grade_analysis - INFO -   0-59·Ö: 1ÈË
+2025-06-20 22:33:05,263 - grade_analysis - INFO -   60-69·Ö: 1ÈË
+2025-06-20 22:33:05,263 - grade_analysis - INFO -   70-79·Ö: 3ÈË
+2025-06-20 22:33:05,263 - grade_analysis - INFO -   80-89·Ö: 11ÈË
+2025-06-20 22:33:05,263 - grade_analysis - INFO -   90-100·Ö: 17ÈË
+2025-06-20 22:33:05,263 - grade_analysis - INFO - ¿ÆÄ¿ ÓïÎÄ µÄÓ¦¿¼ÈËÊý: 36, Êµ¿¼ÈËÊý: 34, Çë¼ÙÈËÊý: 2
+2025-06-20 22:33:05,263 - grade_analysis - INFO - ¿ÆÄ¿: ÓïÎÄ, Êµ¿¼ÈËÊý: 34, Çë¼ÙÈËÊý: 2
+2025-06-20 22:33:05,263 - grade_analysis - INFO -   0-59·Ö: 2ÈË
+2025-06-20 22:33:05,263 - grade_analysis - INFO -   60-69·Ö: 3ÈË
+2025-06-20 22:33:05,263 - grade_analysis - INFO -   70-79·Ö: 8ÈË
+2025-06-20 22:33:05,263 - grade_analysis - INFO -   80-89·Ö: 14ÈË
+2025-06-20 22:33:05,263 - grade_analysis - INFO -   90-100·Ö: 7ÈË
+2025-06-20 22:33:05,281 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:05] "GET /api/exams/4 HTTP/1.1" 200 -
+2025-06-20 22:33:05,484 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:05] "GET /api/classes/26 HTTP/1.1" 200 -
+2025-06-20 22:33:11,439 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:11] "[36mGET /fonts/boxicons.woff2 HTTP/1.1[0m" 304 -
+2025-06-20 22:33:28,208 - comments - INFO - ÊÕµ½µ¼³ö±¨¸æÇëÇó [ÇëÇóID: 1750430007889]: {'studentIds': ['1', '2', '3', '4', '5'], 'templateId': 'ÈªÖÝ¶«º£ÍåÊµÑéÑ§Ð£×ÛºÏËØÖÊ·¢Õ¹±¨¸æµ¥', 'settings': {'schoolYear': '2024-2025', 'semester': 'µÚ¶þÑ§ÆÚ', 'fileNameFormat': 'id_name', 'startDate': '2025-03-01', 'schoolName': '', 'className': '', 'teacherName': 'Ð¤ÀÏÊ¦', 'exportType': 'pdf'}}
+2025-06-20 22:33:28,208 - comments - INFO - µ¼³öÀàÐÍ: pdf
+2025-06-20 22:33:28,208 - comments - INFO - µ¼³öÑ§Éú: ['1', '2', '3', '4', '5'], Ä£°åID: ÈªÖÝ¶«º£ÍåÊµÑéÑ§Ð£×ÛºÏËØÖÊ·¢Õ¹±¨¸æµ¥, Ê¹ÓÃÄÚÖÃÄ¬ÈÏÄ£°å: False, ÉèÖÃ: {'schoolYear': '2024-2025', 'semester': 'µÚ¶þÑ§ÆÚ', 'fileNameFormat': 'id_name', 'startDate': '2025-03-01', 'schoolName': '', 'className': '', 'teacherName': 'Ð¤ÀÏÊ¦', 'exportType': 'pdf'}
+2025-06-20 22:33:28,411 - utils.report_exporter - INFO - ³É¹¦´´½¨ÄÚÖÃÄ¬ÈÏÄ£°å
+2025-06-20 22:33:28,411 - comments - INFO - ³õÊ¼»¯ReportExporter³É¹¦
+2025-06-20 22:33:28,411 - comments - INFO - Ä£°åÂ·¾¶: templates/docx\ÈªÖÝ¶«º£ÍåÊµÑéÑ§Ð£×ÛºÏËØÖÊ·¢Õ¹±¨¸æµ¥.docx, Ä£°åÊÇ·ñ´æÔÚ: True
+2025-06-20 22:33:28,416 - comments - INFO - ÕÒµ½ 5 ÃûÑ§ÉúµÄÊý¾Ý (ÇëÇóÁË 5 ÃûÑ§Éú)
+2025-06-20 22:33:28,421 - comments - INFO - µ¼³öÇ°½øÐÐÊý¾ÝÍêÕûÐÔÑéÖ¤...
+2025-06-20 22:33:28,421 - comments - INFO - Êý¾ÝÑéÖ¤Í¨¹ý£¬¼ÌÐøµ¼³ö±¨¸æ...
+2025-06-20 22:33:28,470 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:28] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:28,813 - comments - INFO - ÒÀÀµ¼ì²é: docxtplºÍdocx¿âÒÑ°²×°
+2025-06-20 22:33:28,920 - comments - INFO - ÒÀÀµ¼ì²é: docx2pdf¿âÒÑ°²×°
+2025-06-20 22:33:28,922 - comments - INFO - ¿ªÊ¼Éú³É±¨¸æ£¬Ñ§ÉúÊýÁ¿: 5
+2025-06-20 22:33:28,923 - comments - INFO - Ñ§ÉúÊý¾ÝÊ¾Àý: {'id': '1', 'name': '²ÌìÏ°²', 'gender': 'ÄÐ', 'class': 'ÎåÄê¼¶3°à', 'class_id': 26, 'height': 152.0, 'weight': 48.6, 'chest_circumference': 77.0, 'vital_capacity': 2206.0, 'dental_caries': '3', 'vision_left': 4.9, 'vision_right': 4.8, 'physical_test_status': '½¡¿µ', 'comments': "ÁºÀÏÊ¦ËÍÄãÒ»¸öµ¥´Ê£ºDeginner's Mind£¨³õÐÄµÄ£©¡£²Ì¼ÒÄÐº¢³ÏÊµÉÏ½ø£¬ÕùÈ¡½ø²½¡£ìÏ°²ëïÌó£¬²»¶àÑÔÓï£¬ÊØ¼ÍÂÉ£¬°®ÀÍ¶¯£¬×ÜÊÇ´ø×ÅÕæ³ÏµÄÎ¢Ð¦ÓëÈËÏà´¦£¬Õâ·ÝÎÂÅ¯µÄ´ýÈËÖ®µÀÈÃ°à¼¶³äÂúÑô¹â¡£¿ÎÌÃÉÏ×¨×¢µÄÑÛÉñ¼ûÖ¤×ÅÄãµÄÇÚÃã£¬Õâ·Ý½ÅÌ¤ÊµµØµÄÌ¬¶ÈÊÇ³É¹¦µÄ»ùÊ¯¡£ÈôÄÜ³¢ÊÔÔÚ¿ÎÌÃÉÏ»ý¼«·¢ÑÔ£¬»áÈÃÄãµÄË¼Î¬»ð»¨ÕÕÁÁ¸ü¶àÈË¡£ÆÚ´ý¿´µ½ÄãÔÚ±£³ÖÇ«Ñ·Æ·¸ñµÄÍ¬Ê±£¬Ò²ÄÜÓÂ¸ÒÕ¹ÏÖÄÚÐÄ·á¸»µÄÏë·¨£¬¾ÍÏñÏªÁ÷¼È±£³ÖÇå³º£¬Ò²Òª¼¤µ´³öÊôÓÚ×Ô¼ºµÄÀË2»¨¡£", 'created_at': '2025-05-16 15:55:05', 'updated_at': '2025-06-19 23:00:25', 'daof': 'ÓÅ', 'yuwen': '¼°¸ñ', 'shuxue': 'ÓÅ', 'yingyu': 'ÓÅ', 'laodong': 'ÓÅ', 'tiyu': 'ÓÅ', 'yinyue': 'ÓÅ', 'meishu': 'Á¼', 'kexue': '¼°¸ñ', 'zonghe': 'ÓÅ', 'xinxi': 'ÓÅ', 'shufa': 'ÓÅ', 'semester': None, 'pinzhi': 30, 'xuexi': 18, 'jiankang': 20, 'shenmei': 10, 'shijian': 10, 'shenghuo': 10, 'xinli': 'ÓÅ'}
+2025-06-20 22:33:28,924 - comments - INFO - ÆÀÓïÊý¾Ý: {'1': {'studentId': '1', 'studentName': '²ÌìÏ°²', 'content': "ÁºÀÏÊ¦ËÍÄãÒ»¸öµ¥´Ê£ºDeginner's Mind£¨³õÐÄµÄ£©¡£²Ì¼ÒÄÐº¢³ÏÊµÉÏ½ø£¬ÕùÈ¡½ø²½¡£ìÏ°²ëïÌó£¬²»¶àÑÔÓï£¬ÊØ¼ÍÂÉ£¬°®ÀÍ¶¯£¬×ÜÊÇ´ø×ÅÕæ³ÏµÄÎ¢Ð¦ÓëÈËÏà´¦£¬Õâ·ÝÎÂÅ¯µÄ´ýÈËÖ®µÀÈÃ°à¼¶³äÂúÑô¹â¡£¿ÎÌÃÉÏ×¨×¢µÄÑÛÉñ¼ûÖ¤×ÅÄãµÄÇÚÃã£¬Õâ·Ý½ÅÌ¤ÊµµØµÄÌ¬¶ÈÊÇ³É¹¦µÄ»ùÊ¯¡£ÈôÄÜ³¢ÊÔÔÚ¿ÎÌÃÉÏ»ý¼«·¢ÑÔ£¬»áÈÃÄãµÄË¼Î¬»ð»¨ÕÕÁÁ¸ü¶àÈË¡£ÆÚ´ý¿´µ½ÄãÔÚ±£³ÖÇ«Ñ·Æ·¸ñµÄÍ¬Ê±£¬Ò²ÄÜÓÂ¸ÒÕ¹ÏÖÄÚÐÄ·á¸»µÄÏë·¨£¬¾ÍÏñÏªÁ÷¼È±£³ÖÇå³º£¬Ò²Òª¼¤µ´³öÊôÓÚ×Ô¼ºµÄÀË2»¨¡£"}, '2': {'studentId': '2', 'studentName': '³ÂÔóÑ«', 'content': '³ÂÔóÑ«Í¬Ñ§£¬ÄãÔÚ±¾Ñ§ÆÚÕ¹ÏÖ³öÁËÐí¶àÁîÈËÐÀÏ²µÄÆ·ÖÊ¡£ÐÔ¸ñ¿ªÀÊ¡¢ÀÖÓÚÖúÈË£¬×ÜÄÜÖ÷¶¯¹ØÐÄÍ¬Ñ§£¬ÓªÔì³ö»ý¼«µÄ°à¼¶·ÕÎ§¡£Ñ§Ï°ÉÏ£¬ÄãÌ¬¶ÈÈÏÕæ£¬ÇÚ·Ü¿Ì¿à£¬ÓÈÆäÔÚÊýÑ§ÁìÓò±íÏÖÍ»³ö£¬³É¼¨ÎÈ²½ÌáÉý£¬ÌåÏÖÁËÄãµÄÂß¼­Ë¼Î¬ºÍ½âÌâÄÜÁ¦¡£¿ÎÍâ»î¶¯ÖÐ£¬ÄãÈÈ°®ÀºÇò£¬»ý¼«²ÎÓëÐ£¶ÓÑµÁ·ºÍ±ÈÈü£¬²»½ö¶ÍÁ¶ÁËÌåÆÇ£¬»¹ÅàÑøÁËÍÅ¶ÓÐ­×÷¾«Éñ£¬ÕâÐ©Å¬Á¦ÖµµÃ¸ß¶È¿Ï¶¨¡£²»¹ý£¬ÔÚ¿ÎÌÃ×¨×¢Á¦ºÍ×÷ÒµÐ§ÂÊ·½Ãæ£¬»¹ÓÐÌáÉý¿Õ¼ä£»½¨ÒéÄã³¢ÊÔÖÆ¶¨Ã¿ÈÕÑ§Ï°¼Æ»®£¬¼ÓÇ¿Ê±¼ä¹ÜÀí£¬È·±£ÖªÊ¶ÎüÊÕ¸üÔúÊµ¡£ÀÏÊ¦ÉîÐÅ£¬ÒÔÄãµÄÇ±Á¦ºÍÈÍÐÔ£¬¶¨ÄÜ²»¶ÏÍ»ÆÆ×ÔÎÒ£¬ÊµÏÖ¸ü´ó·ÉÔ¾¡£'}, '3': {'studentId': '3', 'studentName': '³Âè÷Ðù', 'content': 'ÁºÀÏÊ¦ËÍÄãÒ»¸öµ¥´Ê£ºBalanced£¨¾ùºâµÄ£©¡£³Â¼ÒÄÐº¢¸»ÓÐ³¯Æø£¬´ýÈËÓÑÉÆ¡£è÷Ðù×ÜÊÇÏñËÉ°Ø°ãÄ¬Ä¬Ôú¸ùÉú³¤£¬ÐÔ¸ñÌ¤ÊµÎÈÖØ¡£¿ÎÌÃÉÏ×¨×¢µÄÑÛÉñºÍ¹¤ÕûµÄ×÷Òµ±¾¼ûÖ¤×ÅÄãµÄ×ÔÂÉ£¬ÂÌÒð³¡ÉÏÄÇ¸öÈ«Éñ¹á×¢µÄÉíÓ°£¬Õ¹ÏÖ×ÅÄãÊØ»¤ÍÅ¶ÓµÄµ£µ±¾«Éñ¡£ÈôÄÜÏñÇò³¡ÉÏÄÇÑùÖ÷¶¯Óë¶ÓÓÑÅäºÏ£¬Óöµ½ÄÑÌâÊ±¼°Ê±Çë½ÌÀÏÊ¦Í¬Ñ§£¬¶¨ÄÜÍ»ÆÆÑ§Ï°Æ¿¾±¡£¼Ç×¡"ÎÊÇþÄÇµÃÇåÈçÐí"µÄ¹ÅÑµ£¬°Ñ×ãÇò³¡ÉÏÄÇ·ÝÖ´×Å×êÑÐµÄ¾¢Í··ÖÐ©µ½¿ÎÒµÖÐ£¬ÆÚ´ý¿´µ½¸ü×ÔÐÅ±í´ïÏë·¨µÄÄã¡£¼ÌÐø±£³ÖÕâ·Ý²»½¾²»ÔêµÄÆ·ÐÔ£¬ÄãÖÕ½«Ó­À´ºñ»ý±¡·¢µÄÊ±¿Ì¡£'}, '4': {'studentId': '4', 'studentName': 'ºé½¡³Ç', 'content': 'ÁºÀÏÊ¦ËÍÄãÒ»¸öµ¥´Ê£ºKind-hearted£¨¼áÈÍµÄ£©¡£ºé¼ÒÄÐº¢»îÆÃºÃ¶¯£¬¿ìÀÖ¿É°®¡£"ÉÙÄê¸º×³Æø£¬·ÜÁÒ×ÔÓÐÊ±"ÕýÊÇÄãµÄÐ´ÕÕ¡£½¡³Ç¿ÎÌÃÉÏË¼Î¬Ãô½Ý£¬»Ø´ðÎÊÌâ×Ü´ø×Å¶ÀÌØ¼û½â£¬ÄÇ·Ý¿ÊÍû±»¿Ï¶¨µÄÑÛÉñÈÃÀÏÊ¦Ó¡ÏóÉî¿Ì¡£ÔÄ¶ÁÊÇÄãµÄ¾«ÉñÀÖÔ°£¬¹ã²©µÄÉæÁÔÊ¹ÄãµÄ±í´ï³£´øÊé¾íÜ°Ïã¡£ÈôÄÜÒÔÔÄ¶ÁµÄ×¨×¢Í¶ÈëÃ¿ÏîÑ§Ï°ÖÐ£¬ÔÚ×÷ÒµÍê³ÉÊ±¶à¼á³ÖÎå·ÖÖÓ·´¸´¼ì²é£¬ÔÚÓöµ½ÄÑÌâÊ±¶à³¢ÊÔÁ½ÖÖ½â·¨£¬ÄãµÄÇ±Á¦¶¨»áÏñÆÆÍÁÐÂÖñ°ã½Ú½ÚÅÊÉý¡£ÆÚ´ý¿´µ½ÄãÓÃÊµ¼ÊÐÐ¶¯Ö¤Ã÷£ºµ±ÇÚ·ÜÓëÌì¸³ÏàÓö£¬±Ø½«ÕÀ·Å×îÒ«ÑÛµÄ¹âÃ¢¡£'}, '5': {'studentId': '5', 'studentName': '»ÆïØÒÕ', 'content': 'ÁºÀÏÊ¦ËÍÄãÒ»¸öµ¥´Ê£ºResilient£¨¼áÈÍµÄ£©¡£»Æ¼ÒÄÐº¢×ðÊ¦°®ÓÑ£¬ÍÅ½áÍ¬Ñ§¡£ïØÒÕ»îÆÃºÃ¶¯£¬Ë¼Î¬»îÔ¾ÊÇÄã×î´óµÄÓÅµã¡£×÷Îª°à¼¶"»¤»¨Ê¹Õß"£¬ÄãÕÕÁÏÂÌÖ²µÄ×¨×¢ÈÃÈËÏëÆð"¼³ÈªÑøÖ®ÇÚ£¬ÐãÉ«ÖÕÄêÐÂ"µÄÔ°¶¡¾«Éñ¡£ÈôÄÜ½«Õâ·ÝÏ¸ÖÂÇ¨ÒÆµ½Ñ§Ï°ÖÐ£¬°´Ê±Íê³É×÷Òµ¡¢ÊéÐ´¸ü¹æ·¶£¬¿ÎÌÃ×¨×¢Ìý½²ÉÙ·ÖÐÄ£¬¶¨ÄÜÊµÏÖ¸ü´óÍ»ÆÆ¡£ÆÚ´ý¿´µ½Äã¹¤ÕûµÄ×÷Òµ±¾ºÍ¸ü³ÁÎÈµÄ¿ÎÌÃ±íÏÖ£¬ÏàÐÅÒÔÄãµÄÔðÈÎÐÄ£¬¶¨ÄÜÔÚÑ§ÒµÓëÐËÈ¤¼äÕÒµ½Æ½ºâÖ§µã£¬¼ÌÐø±£³ÖÕâ·Ý³à³ÏÓëÈÈ³À£¡'}}
+2025-06-20 22:33:28,924 - comments - INFO - ³É¼¨Êý¾Ý: {'1': {'grades': {'daof': 'ÓÅ', 'yuwen': '¼°¸ñ', 'shuxue': 'ÓÅ', 'yingyu': 'ÓÅ', 'laodong': 'ÓÅ', 'tiyu': 'ÓÅ', 'yinyue': 'ÓÅ', 'meishu': 'Á¼', 'kexue': '¼°¸ñ', 'zonghe': 'ÓÅ', 'xinxi': 'ÓÅ', 'shufa': 'ÓÅ'}}, '2': {'grades': {'daof': 'ÓÅ', 'yuwen': 'ÓÅ', 'shuxue': 'ÓÅ', 'yingyu': 'ÓÅ', 'laodong': 'ÓÅ', 'tiyu': 'ÓÅ', 'yinyue': 'ÓÅ', 'meishu': 'ÓÅ', 'kexue': 'ÓÅ', 'zonghe': 'ÓÅ', 'xinxi': 'ÓÅ', 'shufa': 'Á¼'}}, '3': {'grades': {'daof': 'ÓÅ', 'yuwen': 'ÓÅ', 'shuxue': 'ÓÅ', 'yingyu': 'ÓÅ', 'laodong': 'ÓÅ', 'tiyu': 'ÓÅ', 'yinyue': 'ÓÅ', 'meishu': 'ÓÅ', 'kexue': 'ÓÅ', 'zonghe': 'ÓÅ', 'xinxi': 'ÓÅ', 'shufa': 'Á¼'}}, '4': {'grades': {'daof': 'ÓÅ', 'yuwen': 'Á¼', 'shuxue': 'ÓÅ', 'yingyu': 'ÓÅ', 'laodong': 'ÓÅ', 'tiyu': 'ÓÅ', 'yinyue': 'Á¼', 'meishu': 'Á¼', 'kexue': 'ÓÅ', 'zonghe': 'ÓÅ', 'xinxi': 'ÓÅ', 'shufa': 'Á¼'}}, '5': {'grades': {'daof': 'ÓÅ', 'yuwen': 'ÓÅ', 'shuxue': 'ÓÅ', 'yingyu': 'ÓÅ', 'laodong': 'ÓÅ', 'tiyu': 'ÓÅ', 'yinyue': 'Á¼', 'meishu': 'ÓÅ', 'kexue': 'Á¼', 'zonghe': 'ÓÅ', 'xinxi': 'ÓÅ', 'shufa': 'Á¼'}}}
+2025-06-20 22:33:28,927 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:28] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:29,011 - utils.report_exporter - INFO - ³É¹¦´´½¨ÄÚÖÃÄ¬ÈÏÄ£°å
+2025-06-20 22:33:29,011 - utils.report_exporter - INFO - ¿ªÊ¼ÅúÁ¿µ¼³ö±¨¸æ£¬Ñ§ÉúÊýÁ¿: 5, Ê¹ÓÃÄ£°å: ÈªÖÝ¶«º£ÍåÊµÑéÑ§Ð£×ÛºÏËØÖÊ·¢Õ¹±¨¸æµ¥
+2025-06-20 22:33:29,016 - utils.report_exporter - INFO - Ä£°åÂ·¾¶: templates/docx\ÈªÖÝ¶«º£ÍåÊµÑéÑ§Ð£×ÛºÏËØÖÊ·¢Õ¹±¨¸æµ¥.docx
+2025-06-20 22:33:29,021 - utils.report_exporter - INFO - ´¦ÀíµÚ 1/5 ¸öÑ§Éú: ID=1, ÐÕÃû=²ÌìÏ°²
+2025-06-20 22:33:29,022 - utils.report_exporter - INFO - ÎªÑ§Éú 1 Éú³É±¨¸æ...
+2025-06-20 22:33:29,022 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=1, ÐÕÃû=²ÌìÏ°²
+2025-06-20 22:33:29,023 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-20 22:33:29,160 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 1_²ÌìÏ°².docx
+2025-06-20 22:33:29,162 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 1 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-20 22:33:29,162 - utils.report_exporter - INFO - ´¦ÀíµÚ 2/5 ¸öÑ§Éú: ID=2, ÐÕÃû=³ÂÔóÑ«
+2025-06-20 22:33:29,162 - utils.report_exporter - INFO - ÎªÑ§Éú 2 Éú³É±¨¸æ...
+2025-06-20 22:33:29,162 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=2, ÐÕÃû=³ÂÔóÑ«
+2025-06-20 22:33:29,162 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-20 22:33:29,301 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 2_³ÂÔóÑ«.docx
+2025-06-20 22:33:29,304 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 2 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-20 22:33:29,305 - utils.report_exporter - INFO - ´¦ÀíµÚ 3/5 ¸öÑ§Éú: ID=3, ÐÕÃû=³Âè÷Ðù
+2025-06-20 22:33:29,305 - utils.report_exporter - INFO - ÎªÑ§Éú 3 Éú³É±¨¸æ...
+2025-06-20 22:33:29,305 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=3, ÐÕÃû=³Âè÷Ðù
+2025-06-20 22:33:29,305 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-20 22:33:29,418 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 3_³Âè÷Ðù.docx
+2025-06-20 22:33:29,421 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 3 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-20 22:33:29,421 - utils.report_exporter - INFO - ´¦ÀíµÚ 4/5 ¸öÑ§Éú: ID=4, ÐÕÃû=ºé½¡³Ç
+2025-06-20 22:33:29,421 - utils.report_exporter - INFO - ÎªÑ§Éú 4 Éú³É±¨¸æ...
+2025-06-20 22:33:29,421 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=4, ÐÕÃû=ºé½¡³Ç
+2025-06-20 22:33:29,421 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-20 22:33:29,521 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 4_ºé½¡³Ç.docx
+2025-06-20 22:33:29,527 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 4 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-20 22:33:29,527 - utils.report_exporter - INFO - ´¦ÀíµÚ 5/5 ¸öÑ§Éú: ID=5, ÐÕÃû=»ÆïØÒÕ
+2025-06-20 22:33:29,527 - utils.report_exporter - INFO - ÎªÑ§Éú 5 Éú³É±¨¸æ...
+2025-06-20 22:33:29,527 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=5, ÐÕÃû=»ÆïØÒÕ
+2025-06-20 22:33:29,527 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-20 22:33:29,621 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 5_»ÆïØÒÕ.docx
+2025-06-20 22:33:29,621 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 5 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-20 22:33:29,631 - utils.report_exporter - INFO - Éú³ÉZIPÎÄ¼þ: C:\Users\ADMINI~1\AppData\Local\Temp\tmpjweiu2q5\student_reports.zip
+2025-06-20 22:33:29,632 - utils.report_exporter - INFO - ³É¹¦µ¼³ö 5/5 ¸öÑ§Éú±¨¸æ
+2025-06-20 22:33:29,661 - root - INFO - ¿ªÊ¼PDFµ¼³öÁ÷³Ì
+2025-06-20 22:33:29,661 - comments - INFO - ¿ªÊ¼¼ì²éÎÄµµ×ª»»Èí¼þÊÇ·ñ°²×°
+2025-06-20 22:33:29,661 - comments - INFO - µ±Ç°²Ù×÷ÏµÍ³: Windows
+2025-06-20 22:33:29,667 - comments - INFO - Í¨¹ý×¢²á±íÈ·ÈÏMicrosoft WordÒÑ°²×°
+2025-06-20 22:33:29,669 - comments - INFO - ¼ì²âµ½Microsoft Word£¬½«¼ÌÐøPDF×ª»»
+2025-06-20 22:33:29,669 - comments - INFO - ±£´æZIPÎÄ¼þµ½ÁÙÊ±Ä¿Â¼: C:\Users\ADMINI~1\AppData\Local\Temp\tmpaklxzet3\word_reports.zip
+2025-06-20 22:33:29,671 - comments - INFO - ½âÑ¹ZIPÎÄ¼þµ½: C:\Users\ADMINI~1\AppData\Local\Temp\tmpaklxzet3\extracted
+2025-06-20 22:33:29,671 - comments - INFO - ZIPÎÄ¼þÖÐ°üº¬µÄÎÄ¼þ: ['1_²ÌìÏ°².docx', '2_³ÂÔóÑ«.docx', '3_³Âè÷Ðù.docx', '4_ºé½¡³Ç.docx', '5_»ÆïØÒÕ.docx']
+2025-06-20 22:33:29,677 - comments - INFO - ½âÑ¹ºóµÄÎÄ¼þÁÐ±í: ['1_²ÌìÏ°².docx', '2_³ÂÔóÑ«.docx', '3_³Âè÷Ðù.docx', '4_ºé½¡³Ç.docx', '5_»ÆïØÒÕ.docx']
+2025-06-20 22:33:29,682 - comments - INFO - ´´½¨PDFÊä³öÄ¿Â¼: C:\Users\ADMINI~1\AppData\Local\Temp\tmpaklxzet3\pdf
+2025-06-20 22:33:29,684 - comments - INFO - ´´½¨Ñ§ÉúÎÄ¼þÃûÓ³Éä: {'1_²ÌìÏ°².docx': '²ÌìÏ°²', '2_³ÂÔóÑ«.docx': '³ÂÔóÑ«', '3_³Âè÷Ðù.docx': '³Âè÷Ðù', '4_ºé½¡³Ç.docx': 'ºé½¡³Ç', '5_»ÆïØÒÕ.docx': '»ÆïØÒÕ'}
+2025-06-20 22:33:29,685 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:28, ÇëÇó:1750430007889]: ÕýÔÚµ¼³öÑ§Éú±¨¸æ: ²ÌìÏ°² (1/5) (16%)
+2025-06-20 22:33:29,685 - comments - INFO - ÕýÔÚµ¼³öÑ§Éú±¨¸æ: ²ÌìÏ°² (1/5)
+2025-06-20 22:33:29,685 - comments - INFO - ¿ªÊ¼×ª»» [1/5]: C:\Users\ADMINI~1\AppData\Local\Temp\tmpaklxzet3\extracted\1_²ÌìÏ°².docx -> C:\Users\ADMINI~1\AppData\Local\Temp\tmpaklxzet3\pdf\1_²ÌìÏ°².pdf
+2025-06-20 22:33:29,686 - comments - INFO - µ±Ç°²Ù×÷ÏµÍ³: Windows
+2025-06-20 22:33:29,686 - comments - INFO - ÎªÎÄ¼þ 1_²ÌìÏ°².docx ³õÊ¼»¯COM»·¾³
+2025-06-20 22:33:29,703 - comments - INFO - Ê¹ÓÃwin32comÖ±½Ó×ª»»: C:\Users\ADMINI~1\AppData\Local\Temp\tmpaklxzet3\extracted\1_²ÌìÏ°².docx -> C:\Users\ADMINI~1\AppData\Local\Temp\tmpaklxzet3\pdf\1_²ÌìÏ°².pdf
+2025-06-20 22:33:29,721 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:29] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:30,211 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:30] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:30,717 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:30] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:31,221 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:31] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:31,721 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:31] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:32,221 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:32] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:32,717 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:32] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:33,217 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:33] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:33,710 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:33] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:34,215 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:34] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:34,709 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:34] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:35,209 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:35] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:35,715 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:35] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:36,206 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:36] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:36,708 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:36] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:37,227 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:37] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:37,469 - comments - INFO - WordÓ¦ÓÃ³ÌÐòÊµÀý´´½¨³É¹¦
+2025-06-20 22:33:37,718 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:37] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:38,214 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:38] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:38,721 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:38] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:39,221 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:39] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:39,710 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:39] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:39,716 - comments - INFO - ³É¹¦´ò¿ªÎÄµµ: C:\Users\ADMINI~1\AppData\Local\Temp\tmpaklxzet3\extracted\1_²ÌìÏ°².docx
+2025-06-20 22:33:40,213 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:40] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:40,716 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:40] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:41,221 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:41] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:41,720 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:41] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:42,215 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:42] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:42,711 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:42] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:43,082 - comments - INFO - Ê¹ÓÃFileFormat=17³É¹¦±£´æPDF: C:\Users\ADMINI~1\AppData\Local\Temp\tmpaklxzet3\pdf\1_²ÌìÏ°².pdf
+2025-06-20 22:33:43,209 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:43] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:43,458 - comments - INFO - ÎÄµµÒÑ¹Ø±Õ
+2025-06-20 22:33:43,601 - comments - INFO - WordÓ¦ÓÃÒÑÍË³ö
+2025-06-20 22:33:43,601 - comments - INFO - ³É¹¦×ª»»ÎÄ¼þÎªPDF: C:\Users\ADMINI~1\AppData\Local\Temp\tmpaklxzet3\pdf\1_²ÌìÏ°².pdf, ÎÄ¼þ´óÐ¡: 292187 ×Ö½Ú
+2025-06-20 22:33:43,601 - comments - INFO - ÊÍ·ÅÎÄ¼þ 1_²ÌìÏ°².docx µÄCOM×ÊÔ´
+2025-06-20 22:33:43,717 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:43] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:43,824 - comments - INFO - ×ª»»³É¹¦ (³¢ÊÔ 1): 1_²ÌìÏ°².docx
+2025-06-20 22:33:43,824 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:28, ÇëÇó:1750430007889]: ÕýÔÚµ¼³öÑ§Éú±¨¸æ: ³ÂÔóÑ« (2/5) (32%)
+2025-06-20 22:33:43,824 - comments - INFO - ÕýÔÚµ¼³öÑ§Éú±¨¸æ: ³ÂÔóÑ« (2/5)
+2025-06-20 22:33:43,830 - comments - INFO - ¿ªÊ¼×ª»» [2/5]: C:\Users\ADMINI~1\AppData\Local\Temp\tmpaklxzet3\extracted\2_³ÂÔóÑ«.docx -> C:\Users\ADMINI~1\AppData\Local\Temp\tmpaklxzet3\pdf\2_³ÂÔóÑ«.pdf
+2025-06-20 22:33:43,830 - comments - INFO - µ±Ç°²Ù×÷ÏµÍ³: Windows
+2025-06-20 22:33:43,830 - comments - INFO - ÎªÎÄ¼þ 2_³ÂÔóÑ«.docx ³õÊ¼»¯COM»·¾³
+2025-06-20 22:33:43,830 - comments - INFO - Ê¹ÓÃwin32comÖ±½Ó×ª»»: C:\Users\ADMINI~1\AppData\Local\Temp\tmpaklxzet3\extracted\2_³ÂÔóÑ«.docx -> C:\Users\ADMINI~1\AppData\Local\Temp\tmpaklxzet3\pdf\2_³ÂÔóÑ«.pdf
+2025-06-20 22:33:43,831 - comments - INFO - WordÓ¦ÓÃ³ÌÐòÊµÀý´´½¨³É¹¦
+2025-06-20 22:33:44,233 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:44] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:44,716 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:44] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:45,211 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:45] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:45,432 - comments - INFO - ³É¹¦´ò¿ªÎÄµµ: C:\Users\ADMINI~1\AppData\Local\Temp\tmpaklxzet3\extracted\2_³ÂÔóÑ«.docx
+2025-06-20 22:33:45,713 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:45] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:45,962 - comments - INFO - Ê¹ÓÃFileFormat=17³É¹¦±£´æPDF: C:\Users\ADMINI~1\AppData\Local\Temp\tmpaklxzet3\pdf\2_³ÂÔóÑ«.pdf
+2025-06-20 22:33:45,978 - comments - INFO - ÎÄµµÒÑ¹Ø±Õ
+2025-06-20 22:33:45,981 - comments - INFO - WordÓ¦ÓÃÒÑÍË³ö
+2025-06-20 22:33:45,981 - comments - INFO - ³É¹¦×ª»»ÎÄ¼þÎªPDF: C:\Users\ADMINI~1\AppData\Local\Temp\tmpaklxzet3\pdf\2_³ÂÔóÑ«.pdf, ÎÄ¼þ´óÐ¡: 287176 ×Ö½Ú
+2025-06-20 22:33:45,981 - comments - INFO - ÊÍ·ÅÎÄ¼þ 2_³ÂÔóÑ«.docx µÄCOM×ÊÔ´
+2025-06-20 22:33:45,984 - comments - INFO - ×ª»»³É¹¦ (³¢ÊÔ 1): 2_³ÂÔóÑ«.docx
+2025-06-20 22:33:45,984 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:28, ÇëÇó:1750430007889]: ÕýÔÚµ¼³öÑ§Éú±¨¸æ: ³Âè÷Ðù (3/5) (48%)
+2025-06-20 22:33:45,984 - comments - INFO - ÕýÔÚµ¼³öÑ§Éú±¨¸æ: ³Âè÷Ðù (3/5)
+2025-06-20 22:33:45,984 - comments - INFO - ¿ªÊ¼×ª»» [3/5]: C:\Users\ADMINI~1\AppData\Local\Temp\tmpaklxzet3\extracted\3_³Âè÷Ðù.docx -> C:\Users\ADMINI~1\AppData\Local\Temp\tmpaklxzet3\pdf\3_³Âè÷Ðù.pdf
+2025-06-20 22:33:45,984 - comments - INFO - µ±Ç°²Ù×÷ÏµÍ³: Windows
+2025-06-20 22:33:45,984 - comments - INFO - ÎªÎÄ¼þ 3_³Âè÷Ðù.docx ³õÊ¼»¯COM»·¾³
+2025-06-20 22:33:45,986 - comments - INFO - Ê¹ÓÃwin32comÖ±½Ó×ª»»: C:\Users\ADMINI~1\AppData\Local\Temp\tmpaklxzet3\extracted\3_³Âè÷Ðù.docx -> C:\Users\ADMINI~1\AppData\Local\Temp\tmpaklxzet3\pdf\3_³Âè÷Ðù.pdf
+2025-06-20 22:33:46,211 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:46] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:46,718 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:46] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:47,223 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:47] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:47,711 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:47] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:48,221 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:48] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:48,718 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:48] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:49,214 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:49] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:49,711 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:49] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:50,211 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:50] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:50,711 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:50] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:51,212 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:51] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:51,723 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:51] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:52,225 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:52] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:52,711 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:52] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:53,208 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:53] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:53,438 - comments - INFO - WordÓ¦ÓÃ³ÌÐòÊµÀý´´½¨³É¹¦
+2025-06-20 22:33:53,717 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:53] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:54,708 - comments - INFO - ³É¹¦´ò¿ªÎÄµµ: C:\Users\ADMINI~1\AppData\Local\Temp\tmpaklxzet3\extracted\3_³Âè÷Ðù.docx
+2025-06-20 22:33:54,734 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:54] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:55,674 - comments - INFO - Ê¹ÓÃFileFormat=17³É¹¦±£´æPDF: C:\Users\ADMINI~1\AppData\Local\Temp\tmpaklxzet3\pdf\3_³Âè÷Ðù.pdf
+2025-06-20 22:33:55,733 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:55] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:55,917 - comments - INFO - ÎÄµµÒÑ¹Ø±Õ
+2025-06-20 22:33:55,920 - comments - INFO - WordÓ¦ÓÃÒÑÍË³ö
+2025-06-20 22:33:55,921 - comments - INFO - ³É¹¦×ª»»ÎÄ¼þÎªPDF: C:\Users\ADMINI~1\AppData\Local\Temp\tmpaklxzet3\pdf\3_³Âè÷Ðù.pdf, ÎÄ¼þ´óÐ¡: 295243 ×Ö½Ú
+2025-06-20 22:33:55,921 - comments - INFO - ÊÍ·ÅÎÄ¼þ 3_³Âè÷Ðù.docx µÄCOM×ÊÔ´
+2025-06-20 22:33:56,035 - comments - INFO - ×ª»»³É¹¦ (³¢ÊÔ 1): 3_³Âè÷Ðù.docx
+2025-06-20 22:33:56,035 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:28, ÇëÇó:1750430007889]: ÕýÔÚµ¼³öÑ§Éú±¨¸æ: ºé½¡³Ç (4/5) (64%)
+2025-06-20 22:33:56,036 - comments - INFO - ÕýÔÚµ¼³öÑ§Éú±¨¸æ: ºé½¡³Ç (4/5)
+2025-06-20 22:33:56,036 - comments - INFO - ¿ªÊ¼×ª»» [4/5]: C:\Users\ADMINI~1\AppData\Local\Temp\tmpaklxzet3\extracted\4_ºé½¡³Ç.docx -> C:\Users\ADMINI~1\AppData\Local\Temp\tmpaklxzet3\pdf\4_ºé½¡³Ç.pdf
+2025-06-20 22:33:56,036 - comments - INFO - µ±Ç°²Ù×÷ÏµÍ³: Windows
+2025-06-20 22:33:56,036 - comments - INFO - ÎªÎÄ¼þ 4_ºé½¡³Ç.docx ³õÊ¼»¯COM»·¾³
+2025-06-20 22:33:56,036 - comments - INFO - Ê¹ÓÃwin32comÖ±½Ó×ª»»: C:\Users\ADMINI~1\AppData\Local\Temp\tmpaklxzet3\extracted\4_ºé½¡³Ç.docx -> C:\Users\ADMINI~1\AppData\Local\Temp\tmpaklxzet3\pdf\4_ºé½¡³Ç.pdf
+2025-06-20 22:33:56,040 - comments - INFO - WordÓ¦ÓÃ³ÌÐòÊµÀý´´½¨³É¹¦
+2025-06-20 22:33:56,738 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:56] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:57,509 - comments - INFO - ³É¹¦´ò¿ªÎÄµµ: C:\Users\ADMINI~1\AppData\Local\Temp\tmpaklxzet3\extracted\4_ºé½¡³Ç.docx
+2025-06-20 22:33:57,748 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:57] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:58,231 - comments - INFO - Ê¹ÓÃFileFormat=17³É¹¦±£´æPDF: C:\Users\ADMINI~1\AppData\Local\Temp\tmpaklxzet3\pdf\4_ºé½¡³Ç.pdf
+2025-06-20 22:33:58,301 - comments - INFO - ÎÄµµÒÑ¹Ø±Õ
+2025-06-20 22:33:58,301 - comments - INFO - WordÓ¦ÓÃÒÑÍË³ö
+2025-06-20 22:33:58,301 - comments - INFO - ³É¹¦×ª»»ÎÄ¼þÎªPDF: C:\Users\ADMINI~1\AppData\Local\Temp\tmpaklxzet3\pdf\4_ºé½¡³Ç.pdf, ÎÄ¼þ´óÐ¡: 300682 ×Ö½Ú
+2025-06-20 22:33:58,301 - comments - INFO - ÊÍ·ÅÎÄ¼þ 4_ºé½¡³Ç.docx µÄCOM×ÊÔ´
+2025-06-20 22:33:58,307 - comments - INFO - ×ª»»³É¹¦ (³¢ÊÔ 1): 4_ºé½¡³Ç.docx
+2025-06-20 22:33:58,307 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:28, ÇëÇó:1750430007889]: ÕýÔÚµ¼³öÑ§Éú±¨¸æ: »ÆïØÒÕ (5/5) (80%)
+2025-06-20 22:33:58,307 - comments - INFO - ÕýÔÚµ¼³öÑ§Éú±¨¸æ: »ÆïØÒÕ (5/5)
+2025-06-20 22:33:58,307 - comments - INFO - ¿ªÊ¼×ª»» [5/5]: C:\Users\ADMINI~1\AppData\Local\Temp\tmpaklxzet3\extracted\5_»ÆïØÒÕ.docx -> C:\Users\ADMINI~1\AppData\Local\Temp\tmpaklxzet3\pdf\5_»ÆïØÒÕ.pdf
+2025-06-20 22:33:58,309 - comments - INFO - µ±Ç°²Ù×÷ÏµÍ³: Windows
+2025-06-20 22:33:58,309 - comments - INFO - ÎªÎÄ¼þ 5_»ÆïØÒÕ.docx ³õÊ¼»¯COM»·¾³
+2025-06-20 22:33:58,309 - comments - INFO - Ê¹ÓÃwin32comÖ±½Ó×ª»»: C:\Users\ADMINI~1\AppData\Local\Temp\tmpaklxzet3\extracted\5_»ÆïØÒÕ.docx -> C:\Users\ADMINI~1\AppData\Local\Temp\tmpaklxzet3\pdf\5_»ÆïØÒÕ.pdf
+2025-06-20 22:33:58,311 - comments - INFO - WordÓ¦ÓÃ³ÌÐòÊµÀý´´½¨³É¹¦
+2025-06-20 22:33:58,861 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:58] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:33:59,733 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:33:59] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:34:00,762 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:34:00] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:34:01,730 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:34:01] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:34:02,731 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:34:02] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:34:03,733 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:34:03] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:34:04,691 - comments - INFO - ³É¹¦´ò¿ªÎÄµµ: C:\Users\ADMINI~1\AppData\Local\Temp\tmpaklxzet3\extracted\5_»ÆïØÒÕ.docx
+2025-06-20 22:34:04,696 - comments - WARNING - Ê¹ÓÃFileFormat=17±£´æÊ§°Ü: Open.SaveAs£¬³¢ÊÔÊ¹ÓÃwdFormatPDF
+2025-06-20 22:34:04,697 - comments - ERROR - ËùÓÐ±£´æ·½·¨¶¼Ê§°Ü: Open.SaveAs
+2025-06-20 22:34:04,697 - comments - ERROR - ±£´æPDFÊ±³ö´í: Open.SaveAs
+2025-06-20 22:34:04,697 - comments - WARNING - ¹Ø±ÕÎÄµµÊ±³ö´í
+2025-06-20 22:34:04,697 - comments - ERROR - ×ª»»ÎÄ¼þ 5_»ÆïØÒÕ.docx Ê§°Ü: Open.Close
+2025-06-20 22:34:04,705 - comments - ERROR - ´íÎóÏêÇé: Traceback (most recent call last):
+  File "D:\360MoveData\Users\Administrator\Desktop\ClassMaster2.2\comments.py", line 1034, in convert_docx_to_pdf
+    doc.SaveAs(output_file_abs, FileFormat=17)
+    ^^^^^^^^^^
+  File "D:\360MoveData\Users\Administrator\Desktop\ClassMaster2.2\venv\Lib\site-packages\win32com\client\dynamic.py", line 638, in __getattr__
+    raise AttributeError("%s.%s" % (self._username_, attr))
+AttributeError: Open.SaveAs
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\360MoveData\Users\Administrator\Desktop\ClassMaster2.2\comments.py", line 1040, in convert_docx_to_pdf
+    doc.SaveAs(output_file_abs, FileFormat=constants.wdFormatPDF)
+    ^^^^^^^^^^
+  File "D:\360MoveData\Users\Administrator\Desktop\ClassMaster2.2\venv\Lib\site-packages\win32com\client\dynamic.py", line 638, in __getattr__
+    raise AttributeError("%s.%s" % (self._username_, attr))
+AttributeError: Open.SaveAs
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\360MoveData\Users\Administrator\Desktop\ClassMaster2.2\comments.py", line 1047, in convert_docx_to_pdf
+    doc.Close(False)  # ²»±£´æ¸ü¸Ä
+    ^^^^^^^^^
+  File "D:\360MoveData\Users\Administrator\Desktop\ClassMaster2.2\venv\Lib\site-packages\win32com\client\dynamic.py", line 638, in __getattr__
+    raise AttributeError("%s.%s" % (self._username_, attr))
+AttributeError: Open.Close
+
+2025-06-20 22:34:04,705 - comments - INFO - ÊÍ·ÅÎÄ¼þ 5_»ÆïØÒÕ.docx µÄCOM×ÊÔ´
+2025-06-20 22:34:04,707 - comments - INFO - ÖØÊÔµÚ2´Î×ª»»: 5_»ÆïØÒÕ.docx
+2025-06-20 22:34:04,708 - comments - INFO - µ±Ç°²Ù×÷ÏµÍ³: Windows
+2025-06-20 22:34:04,708 - comments - INFO - ÎªÎÄ¼þ 5_»ÆïØÒÕ.docx ³õÊ¼»¯COM»·¾³
+2025-06-20 22:34:04,708 - comments - INFO - Ê¹ÓÃwin32comÖ±½Ó×ª»»: C:\Users\ADMINI~1\AppData\Local\Temp\tmpaklxzet3\extracted\5_»ÆïØÒÕ.docx -> C:\Users\ADMINI~1\AppData\Local\Temp\tmpaklxzet3\pdf\5_»ÆïØÒÕ.pdf
+2025-06-20 22:34:04,739 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:34:04] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:34:05,762 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:34:05] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:34:06,737 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:34:06] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:34:07,757 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:34:07] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:34:08,776 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:34:08] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:34:09,735 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:34:09] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:34:10,424 - comments - INFO - WordÓ¦ÓÃ³ÌÐòÊµÀý´´½¨³É¹¦
+2025-06-20 22:34:10,721 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:34:10] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:34:11,464 - comments - INFO - ³É¹¦´ò¿ªÎÄµµ: C:\Users\ADMINI~1\AppData\Local\Temp\tmpaklxzet3\extracted\5_»ÆïØÒÕ.docx
+2025-06-20 22:34:11,723 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:34:11] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:34:12,735 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:34:12] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:34:13,748 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:34:13] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:34:14,731 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:34:14] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:34:15,827 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:34:15] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:34:16,123 - comments - INFO - Ê¹ÓÃFileFormat=17³É¹¦±£´æPDF: C:\Users\ADMINI~1\AppData\Local\Temp\tmpaklxzet3\pdf\5_»ÆïØÒÕ.pdf
+2025-06-20 22:34:16,331 - comments - INFO - ÎÄµµÒÑ¹Ø±Õ
+2025-06-20 22:34:16,416 - comments - INFO - WordÓ¦ÓÃÒÑÍË³ö
+2025-06-20 22:34:16,417 - comments - INFO - ³É¹¦×ª»»ÎÄ¼þÎªPDF: C:\Users\ADMINI~1\AppData\Local\Temp\tmpaklxzet3\pdf\5_»ÆïØÒÕ.pdf, ÎÄ¼þ´óÐ¡: 290525 ×Ö½Ú
+2025-06-20 22:34:16,418 - comments - INFO - ÊÍ·ÅÎÄ¼þ 5_»ÆïØÒÕ.docx µÄCOM×ÊÔ´
+2025-06-20 22:34:16,536 - comments - INFO - ×ª»»³É¹¦ (³¢ÊÔ 2): 5_»ÆïØÒÕ.docx
+2025-06-20 22:34:16,536 - comments - INFO - Íê³É×ª»»: ³É¹¦ 5/5 ÎÄ¼þ
+2025-06-20 22:34:16,658 - comments - INFO - ³É¹¦µ¼ÈëPyPDF2
+2025-06-20 22:34:16,658 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:28, ÇëÇó:1750430007889]: ÕýÔÚºÏ²¢ 5 ¸öPDFÎÄ¼þ... (90%)
+2025-06-20 22:34:16,659 - comments - INFO - ÕýÔÚºÏ²¢ 5 ¸öPDFÎÄ¼þ...
+2025-06-20 22:34:16,664 - comments - ERROR - »ñÈ¡°à¼¶Ãû³ÆÊ±³ö´í: no such column: name
+2025-06-20 22:34:16,664 - comments - INFO - ´ÓÑ§Éú¼ÇÂ¼»ñÈ¡°à¼¶Ãû³Æ: 'ÎåÄê¼¶3°à'
+2025-06-20 22:34:16,664 - comments - INFO - Ê¹ÓÃ°à¼¶Ãû³Æ 'ÎåÄê¼¶3°à' Éú³ÉºÏ²¢PDFÎÄ¼þÃû: ÎåÄê¼¶3°àºÏ²¢.pdf
+2025-06-20 22:34:16,667 - comments - INFO - °´Ñ§ºÅË³ÐòÅÅÐòºóµÄPDFÎÄ¼þÁÐ±í: ['1_²ÌìÏ°².pdf', '2_³ÂÔóÑ«.pdf', '3_³Âè÷Ðù.pdf', '4_ºé½¡³Ç.pdf', '5_»ÆïØÒÕ.pdf']
+2025-06-20 22:34:16,683 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:28, ÇëÇó:1750430007889]: ÕýÔÚºÏ²¢PDFÎÄ¼þ (1/5) (91%)
+2025-06-20 22:34:16,683 - comments - INFO - ³É¹¦Ìí¼ÓPDFÎÄ¼þµ½ºÏ²¢Æ÷: 1_²ÌìÏ°².pdf
+2025-06-20 22:34:16,695 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:28, ÇëÇó:1750430007889]: ÕýÔÚºÏ²¢PDFÎÄ¼þ (2/5) (92%)
+2025-06-20 22:34:16,696 - comments - INFO - ³É¹¦Ìí¼ÓPDFÎÄ¼þµ½ºÏ²¢Æ÷: 2_³ÂÔóÑ«.pdf
+2025-06-20 22:34:16,703 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:28, ÇëÇó:1750430007889]: ÕýÔÚºÏ²¢PDFÎÄ¼þ (3/5) (93%)
+2025-06-20 22:34:16,703 - comments - INFO - ³É¹¦Ìí¼ÓPDFÎÄ¼þµ½ºÏ²¢Æ÷: 3_³Âè÷Ðù.pdf
+2025-06-20 22:34:16,720 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:28, ÇëÇó:1750430007889]: ÕýÔÚºÏ²¢PDFÎÄ¼þ (4/5) (94%)
+2025-06-20 22:34:16,721 - comments - INFO - ³É¹¦Ìí¼ÓPDFÎÄ¼þµ½ºÏ²¢Æ÷: 4_ºé½¡³Ç.pdf
+2025-06-20 22:34:16,730 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:28, ÇëÇó:1750430007889]: ÕýÔÚºÏ²¢PDFÎÄ¼þ (5/5) (95%)
+2025-06-20 22:34:16,731 - comments - INFO - ³É¹¦Ìí¼ÓPDFÎÄ¼þµ½ºÏ²¢Æ÷: 5_»ÆïØÒÕ.pdf
+2025-06-20 22:34:16,732 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:34:16] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:34:16,732 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:28, ÇëÇó:1750430007889]: ÕýÔÚÉú³ÉºÏ²¢ºóµÄPDFÎÄ¼þ... (95%)
+2025-06-20 22:34:17,428 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:28, ÇëÇó:1750430007889]: PDFÎÄ¼þºÏ²¢Íê³É (98%)
+2025-06-20 22:34:17,429 - comments - INFO - ³É¹¦´´½¨ºÏ²¢µÄPDFÎÄ¼þ: C:\Users\ADMINI~1\AppData\Local\Temp\tmpaklxzet3\pdf\ÎåÄê¼¶3°àºÏ²¢.pdf
+2025-06-20 22:34:17,429 - comments - INFO - ´´½¨PDF ZIPÎÄ¼þ: C:\Users\ADMINI~1\AppData\Local\Temp\tmpaklxzet3\pdf_reports.zip
+2025-06-20 22:34:17,431 - comments - INFO - Ìí¼ÓPDFµ½ZIP: C:\Users\ADMINI~1\AppData\Local\Temp\tmpaklxzet3\pdf\1_²ÌìÏ°².pdf -> 1_²ÌìÏ°².pdf
+2025-06-20 22:34:17,432 - comments - INFO - Ìí¼ÓPDFµ½ZIP: C:\Users\ADMINI~1\AppData\Local\Temp\tmpaklxzet3\pdf\2_³ÂÔóÑ«.pdf -> 2_³ÂÔóÑ«.pdf
+2025-06-20 22:34:17,435 - comments - INFO - Ìí¼ÓPDFµ½ZIP: C:\Users\ADMINI~1\AppData\Local\Temp\tmpaklxzet3\pdf\3_³Âè÷Ðù.pdf -> 3_³Âè÷Ðù.pdf
+2025-06-20 22:34:17,436 - comments - INFO - Ìí¼ÓPDFµ½ZIP: C:\Users\ADMINI~1\AppData\Local\Temp\tmpaklxzet3\pdf\4_ºé½¡³Ç.pdf -> 4_ºé½¡³Ç.pdf
+2025-06-20 22:34:17,437 - comments - INFO - Ìí¼ÓPDFµ½ZIP: C:\Users\ADMINI~1\AppData\Local\Temp\tmpaklxzet3\pdf\5_»ÆïØÒÕ.pdf -> 5_»ÆïØÒÕ.pdf
+2025-06-20 22:34:17,438 - comments - INFO - Ìí¼ÓPDFµ½ZIP: C:\Users\ADMINI~1\AppData\Local\Temp\tmpaklxzet3\pdf\ÎåÄê¼¶3°àºÏ²¢.pdf -> ÎåÄê¼¶3°àºÏ²¢.pdf
+2025-06-20 22:34:17,445 - comments - INFO - PDF×ª»»³É¹¦£¬ZIPÎÄ¼þ´óÐ¡: 2835106 ×Ö½Ú
+2025-06-20 22:34:17,449 - comments - INFO - Ê¹ÓÃÖ±½ÓÏÂÔØÄ£Ê½
+2025-06-20 22:34:17,451 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:34:17] "POST /api/export-reports HTTP/1.1" 200 -
+2025-06-20 22:34:17,734 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:34:17] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:34:18,728 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:34:18] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:34:19,441 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:34:19] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:34:20,761 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:34:20] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:34:21,433 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:34:21] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:34:22,743 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:34:22] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:34:23,424 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:34:23] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:34:24,743 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:34:24] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:34:25,421 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:34:25] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:34:26,755 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:34:26] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:34:27,421 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:34:27] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:34:28,738 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:34:28] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:34:29,433 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:34:29] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:34:30,741 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:34:30] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:34:31,426 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:34:31] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:34:32,736 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:34:32] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:34:33,431 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:34:33] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:34:34,733 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:34:34] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:34:35,415 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:34:35] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:34:36,738 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:34:36] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:34:37,426 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:34:37] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:34:38,725 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:34:38] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:34:39,423 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:34:39] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:34:40,735 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:34:40] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:34:41,423 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:34:41] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:34:42,738 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:34:42] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:34:43,419 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:34:43] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:34:44,722 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:34:44] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:34:45,423 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:34:45] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:34:46,726 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:34:46] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:34:47,426 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:34:47] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:34:48,732 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:34:48] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:34:49,424 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:34:49] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:34:50,729 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:34:50] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:34:51,426 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:34:51] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:34:52,732 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:34:52] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:34:53,423 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:34:53] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:35:28,744 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:35:28] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:36:28,423 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:36:28] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
+2025-06-20 22:37:28,725 - werkzeug - INFO - 127.0.0.1 - - [20/Jun/2025 22:37:28] "GET /api/export-progress?request_id=1750430007889 HTTP/1.1" 200 -
