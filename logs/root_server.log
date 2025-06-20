@@ -6631,3 +6631,1898 @@ UnicodeEncodeError: 'latin-1' codec can't encode characters in position 43-46: o
 2025-06-21 02:01:28,957 - werkzeug - WARNING -  * Running on all addresses.
    WARNING: This is a development server. Do not use it in a production deployment.
 2025-06-21 02:01:28,958 - werkzeug - INFO -  * Running on http://192.168.1.17:8080/ (Press CTRL+C to quit)
+2025-06-21 02:02:32,585 - utils.pdf_exporter_fixed - INFO - PDFµ¼³öÄ£¿é: ReportLab¿âÒÑ³É¹¦µ¼Èë
+2025-06-21 02:02:32,599 - utils.comment_processor - INFO - ReportLab¿âÒÑ³É¹¦µ¼Èë
+2025-06-21 02:02:32,782 - utils.deepseek_api - INFO - Ê¹ÓÃÄ¬ÈÏDeepSeek APIÃÜÔ¿
+2025-06-21 02:02:32,782 - __main__ - INFO - ·þÎñÆ÷Æô¶¯
+2025-06-21 02:02:32,826 - grades - INFO - ³õÊ¼»¯³É¼¨Ä£¿é
+2025-06-21 02:02:32,826 - grades - INFO - ³É¼¨Ä£¿é³õÊ¼»¯Íê³É
+2025-06-21 02:02:32,827 - deyu - INFO - ³õÊ¼»¯µÂÓýÎ¬¶ÈÄ£¿é
+2025-06-21 02:02:32,828 - deyu - INFO - ÏÖÓÐÊý¾Ý¿âÁÐ: ['id', 'name', 'gender', 'class', 'class_id', 'height', 'weight', 'chest_circumference', 'vital_capacity', 'dental_caries', 'vision_left', 'vision_right', 'physical_test_status', 'comments', 'created_at', 'updated_at', 'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'semester', 'pinzhi', 'xuexi', 'jiankang', 'shenmei', 'shijian', 'shenghuo', 'xinli']
+2025-06-21 02:02:32,828 - deyu - INFO - µÂÓýÎ¬¶ÈÄ£¿é³õÊ¼»¯Íê³É
+2025-06-21 02:02:32,829 - grade_analysis - INFO - ³õÊ¼»¯³É¼¨·ÖÎöÄ£¿é
+2025-06-21 02:02:32,830 - grade_analysis - INFO - ³É¼¨·ÖÎöÄ£¿é³õÊ¼»¯Íê³É
+2025-06-21 02:02:32,830 - users - INFO - ³õÊ¼»¯ÓÃ»§±í
+2025-06-21 02:02:32,832 - users - INFO - ÓÃ»§±íÏÖÓÐÁÐ: ['id', 'username', 'password_hash', 'is_admin', 'class_id', 'created_at', 'updated_at', 'reset_password']
+2025-06-21 02:02:32,832 - users - INFO - ÓÃ»§±í³õÊ¼»¯Íê³É
+2025-06-21 02:02:32,832 - classes - INFO - ³õÊ¼»¯°à¼¶±í
+2025-06-21 02:02:32,833 - classes - INFO - °à¼¶±í³õÊ¼»¯Íê³É
+2025-06-21 02:02:32,833 - database_backup - INFO - Êý¾Ý¿â±¸·ÝÄ£¿éÒÑ³õÊ¼»¯
+2025-06-21 02:02:32,882 - __main__ - INFO - ³õÊ¼»¯Êý¾Ý¿â
+2025-06-21 02:02:32,886 - __main__ - INFO - ÏÖÓÐÊý¾Ý¿âÁÐ: ['id', 'name', 'gender', 'class', 'class_id', 'height', 'weight', 'chest_circumference', 'vital_capacity', 'dental_caries', 'vision_left', 'vision_right', 'physical_test_status', 'comments', 'created_at', 'updated_at', 'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'semester', 'pinzhi', 'xuexi', 'jiankang', 'shenmei', 'shijian', 'shenghuo', 'xinli']
+2025-06-21 02:02:32,920 - __main__ - INFO - Êý¾Ý¿â³õÊ¼»¯Íê³É
+2025-06-21 02:02:32,987 - users - INFO - ³õÊ¼»¯ÓÃ»§±í
+2025-06-21 02:02:33,007 - users - INFO - ÓÃ»§±íÏÖÓÐÁÐ: ['id', 'username', 'password_hash', 'is_admin', 'class_id', 'created_at', 'updated_at', 'reset_password']
+2025-06-21 02:02:33,017 - users - INFO - ÓÃ»§±í³õÊ¼»¯Íê³É
+2025-06-21 02:02:33,029 - classes - INFO - ³õÊ¼»¯°à¼¶±í
+2025-06-21 02:02:33,035 - classes - INFO - °à¼¶±í³õÊ¼»¯Íê³É
+2025-06-21 02:02:33,050 - __main__ - INFO - ³õÊ¼»¯Êý¾Ý¿â
+2025-06-21 02:02:33,051 - __main__ - INFO - ÏÖÓÐÊý¾Ý¿âÁÐ: ['id', 'name', 'gender', 'class', 'class_id', 'height', 'weight', 'chest_circumference', 'vital_capacity', 'dental_caries', 'vision_left', 'vision_right', 'physical_test_status', 'comments', 'created_at', 'updated_at', 'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'semester', 'pinzhi', 'xuexi', 'jiankang', 'shenmei', 'shijian', 'shenghuo', 'xinli']
+2025-06-21 02:02:33,051 - __main__ - INFO - Êý¾Ý¿â³õÊ¼»¯Íê³É
+2025-06-21 02:02:33,051 - __main__ - INFO - Êý¾Ý¿â³õÊ¼»¯Íê³É£¬±£ÁôÒÑÓÐÊý¾Ý
+2025-06-21 02:02:33,068 - werkzeug - WARNING -  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2025-06-21 02:02:33,069 - werkzeug - INFO -  * Running on http://192.168.1.17:8080/ (Press CTRL+C to quit)
+2025-06-21 02:02:37,058 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:37] "[36mGET / HTTP/1.1[0m" 304 -
+2025-06-21 02:02:43,167 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:43] "[36mGET /css/main.css HTTP/1.1[0m" 304 -
+2025-06-21 02:02:43,167 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:43] "[36mGET /css/tutorial.css HTTP/1.1[0m" 304 -
+2025-06-21 02:02:43,492 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:43] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-21 02:02:43,492 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:43] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-21 02:02:43,500 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:43] "[36mGET /js/session-timeout.js HTTP/1.1[0m" 304 -
+2025-06-21 02:02:43,507 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:43] "[36mGET /img/logo.png HTTP/1.1[0m" 304 -
+2025-06-21 02:02:43,509 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:43] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-21 02:02:43,847 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:43] "[36mGET /fonts/boxicons.woff2 HTTP/1.1[0m" 304 -
+2025-06-21 02:02:43,852 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:43] "[36mGET /pages/home.html HTTP/1.1[0m" 304 -
+2025-06-21 02:02:43,856 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:43] "[36mGET /pages/students.html HTTP/1.1[0m" 304 -
+2025-06-21 02:02:43,873 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:43] "[36mGET /pages/comments.html HTTP/1.1[0m" 304 -
+2025-06-21 02:02:43,918 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:43] "[36mGET /pages/grades.html HTTP/1.1[0m" 304 -
+2025-06-21 02:02:43,924 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:43] "[36mGET /pages/deyu.html HTTP/1.1[0m" 304 -
+2025-06-21 02:02:44,174 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:44] "[36mGET /pages/grade_analysis.html HTTP/1.1[0m" 304 -
+2025-06-21 02:02:44,176 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:44] "[36mGET /pages/settings.html HTTP/1.1[0m" 304 -
+2025-06-21 02:02:44,179 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:44] "[36mGET /pages/export.html HTTP/1.1[0m" 304 -
+2025-06-21 02:02:44,184 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:44] "[36mGET /pages/admin.html HTTP/1.1[0m" 304 -
+2025-06-21 02:02:44,236 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:44] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-21 02:02:44,238 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:44] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-21 02:02:44,488 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:44] "[36mGET /css/home.css HTTP/1.1[0m" 304 -
+2025-06-21 02:02:44,497 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:44] "[36mGET /css/grade_analysis.css HTTP/1.1[0m" 304 -
+2025-06-21 02:02:44,501 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:44] "[36mGET /css/comments.css HTTP/1.1[0m" 304 -
+2025-06-21 02:02:44,503 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:44] "[36mGET /css/main.css HTTP/1.1[0m" 304 -
+2025-06-21 02:02:44,552 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:44] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-21 02:02:44,552 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:44] "[36mGET /css/admin.css HTTP/1.1[0m" 304 -
+2025-06-21 02:02:44,823 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:44] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-21 02:02:44,827 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:44] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-21 02:02:44,827 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:44] "[36mGET /js/libs/chart.js HTTP/1.1[0m" 304 -
+2025-06-21 02:02:44,827 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:44] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-21 02:02:44,869 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:44] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-21 02:02:44,875 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:44] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-21 02:02:45,158 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:45] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-21 02:02:45,162 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:45] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-21 02:02:45,170 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:45] "[36mGET /js/home.js HTTP/1.1[0m" 304 -
+2025-06-21 02:02:45,177 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:45] "[36mGET /js/students.js HTTP/1.1[0m" 304 -
+2025-06-21 02:02:45,206 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:45] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-21 02:02:45,217 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:45] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-21 02:02:45,472 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:45] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-21 02:02:45,472 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:45] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-21 02:02:45,478 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:45] "[36mGET /js/comments.js HTTP/1.1[0m" 304 -
+2025-06-21 02:02:45,491 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:45] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-21 02:02:45,537 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:45] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-21 02:02:45,537 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:45] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-21 02:02:45,785 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:45] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-21 02:02:45,789 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:45] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-21 02:02:45,791 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:45] "[36mGET /js/grades.js HTTP/1.1[0m" 304 -
+2025-06-21 02:02:45,800 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:45] "[36mGET /js/deyu.js HTTP/1.1[0m" 304 -
+2025-06-21 02:02:45,851 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:45] "[36mGET /js/libs/jquery.min.js HTTP/1.1[0m" 304 -
+2025-06-21 02:02:45,855 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:45] "[36mGET /js/grade_analysis.js HTTP/1.1[0m" 304 -
+2025-06-21 02:02:46,107 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:46] "[36mGET /libs/docxtemplater.js HTTP/1.1[0m" 304 -
+2025-06-21 02:02:46,107 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:46] "[36mGET /libs/pizzip.min.js HTTP/1.1[0m" 304 -
+2025-06-21 02:02:46,107 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:46] "[36mGET /js/export.js HTTP/1.1[0m" 304 -
+2025-06-21 02:02:46,114 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:46] "[36mGET /libs/jszip.min.js HTTP/1.1[0m" 304 -
+2025-06-21 02:02:46,169 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:46] "[36mGET /js/admin.js HTTP/1.1[0m" 304 -
+2025-06-21 02:02:46,174 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:46] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-21 02:02:46,444 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:46] "[36mGET /js/libs/chart.js HTTP/1.1[0m" 304 -
+2025-06-21 02:02:46,465 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:46] "GET /api/dashboard/comments HTTP/1.1" 200 -
+2025-06-21 02:02:46,488 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:46] "GET /api/dashboard/todos HTTP/1.1" 200 -
+2025-06-21 02:02:46,506 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:46] "GET /api/dashboard/grade-distribution HTTP/1.1" 200 -
+2025-06-21 02:02:46,509 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:46] "GET /api/dashboard/activities HTTP/1.1" 200 -
+2025-06-21 02:02:46,557 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:46] "GET /api/dashboard/info HTTP/1.1" 200 -
+2025-06-21 02:02:46,767 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:46] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-21 02:02:46,800 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:46] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-21 02:02:46,807 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:46] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-06-21 02:02:46,830 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:46] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-21 02:02:46,842 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:46] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-06-21 02:02:46,869 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:46] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-21 02:02:47,083 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:47] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-06-21 02:02:47,122 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:47] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-21 02:02:47,127 - students - INFO - »ñÈ¡ËùÓÐÑ§Éú
+2025-06-21 02:02:47,159 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:47] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-21 02:02:47,161 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:47] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-06-21 02:02:47,266 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:47] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-21 02:02:47,271 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:47] "GET /api/students HTTP/1.1" 200 -
+2025-06-21 02:02:47,399 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:47] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-21 02:02:47,438 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:47] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-06-21 02:02:47,482 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:47] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-21 02:02:47,529 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:47] "GET /api/grades?semester=2024-2025Ñ§ÄêÏÂÑ§ÆÚ HTTP/1.1" 200 -
+2025-06-21 02:02:47,578 - students - INFO - »ñÈ¡ËùÓÐÑ§Éú
+2025-06-21 02:02:47,601 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:47] "GET /api/users HTTP/1.1" 200 -
+2025-06-21 02:02:47,689 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:47] "GET /api/students HTTP/1.1" 200 -
+2025-06-21 02:02:47,714 - classes - INFO - === CLASSES BLUEPRINT: ½ÓÊÕµ½»ñÈ¡°à¼¶ÁÐ±íÇëÇó ===
+2025-06-21 02:02:47,716 - classes - INFO - ´ÓÊý¾Ý¿â»ñÈ¡µ½ 55 ¸ö°à¼¶
+2025-06-21 02:02:47,729 - classes - INFO - »ñÈ¡µ½ 55 ¸ö°à¼¶£¬×¼±¸·µ»Ø
+2025-06-21 02:02:47,731 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:47] "GET /api/classes HTTP/1.1" 200 -
+2025-06-21 02:02:47,748 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:47] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-21 02:02:47,798 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:47] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-06-21 02:02:47,849 - students - INFO - »ñÈ¡ËùÓÐÑ§Éú
+2025-06-21 02:02:47,952 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:47] "GET /api/students HTTP/1.1" 200 -
+2025-06-21 02:02:47,954 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:47] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-21 02:02:48,010 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:48] "[36mGET /js/main.js HTTP/1.1[0m" 304 -
+2025-06-21 02:02:48,047 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:48] "[36mGET /js/tutorial.js HTTP/1.1[0m" 304 -
+2025-06-21 02:02:48,056 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:48] "[36mGET /img/logo.png HTTP/1.1[0m" 304 -
+2025-06-21 02:02:48,112 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:48] "[36mGET /img/vx.jpg HTTP/1.1[0m" 304 -
+2025-06-21 02:02:48,263 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:48] "[36mGET /js/settings.js HTTP/1.1[0m" 304 -
+2025-06-21 02:02:52,877 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:52] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-21 02:02:53,195 - __main__ - ERROR - »ñÈ¡ÏµÍ³ÉèÖÃÊ±³ö´í: name 'load_settings_from_db' is not defined
+2025-06-21 02:02:53,196 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:53] "[35m[1mGET /api/settings HTTP/1.1[0m" 500 -
+2025-06-21 02:02:54,965 - students - INFO - »ñÈ¡ËùÓÐÑ§Éú
+2025-06-21 02:02:54,967 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:54] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-21 02:02:54,970 - deyu - INFO - ÊÕµ½»ñÈ¡µÂÓýÎ¬¶ÈÊý¾ÝÇëÇó: class_id=, semester=2024-2025Ñ§ÄêÏÂÑ§ÆÚ
+2025-06-21 02:02:54,971 - deyu - INFO - µ±Ç°ÓÃ»§: admin, ID: 1, ½ÇÉ«: ¹ÜÀíÔ±, ¹ØÁª°à¼¶: None
+2025-06-21 02:02:54,971 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:54] "GET /api/carousel/settings HTTP/1.1" 200 -
+2025-06-21 02:02:54,971 - deyu - INFO - ÇëÇó²ÎÊý: ImmutableMultiDict([('semester', '2024-2025Ñ§ÄêÏÂÑ§ÆÚ')])
+2025-06-21 02:02:54,972 - deyu - WARNING - Î´Ìá¹©°à¼¶ID
+2025-06-21 02:02:54,972 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:54] "GET /api/deyu?semester=2024-2025Ñ§ÄêÏÂÑ§ÆÚ HTTP/1.1" 200 -
+2025-06-21 02:02:54,976 - __main__ - ERROR - »ñÈ¡ÏµÍ³ÉèÖÃÊ±³ö´í: name 'load_settings_from_db' is not defined
+2025-06-21 02:02:54,978 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:54] "[35m[1mGET /api/settings HTTP/1.1[0m" 500 -
+2025-06-21 02:02:54,988 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:54] "GET /api/carousel/images HTTP/1.1" 200 -
+2025-06-21 02:02:55,087 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:55] "GET /api/students HTTP/1.1" 200 -
+2025-06-21 02:02:55,277 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:55] "GET /api/carousel/settings HTTP/1.1" 200 -
+2025-06-21 02:02:55,277 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:55] "[36mGET /favicon.ico HTTP/1.1[0m" 304 -
+2025-06-21 02:02:55,277 - __main__ - ERROR - »ñÈ¡ÏµÍ³ÉèÖÃÊ±³ö´í: name 'load_settings_from_db' is not defined
+2025-06-21 02:02:55,287 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:55] "[35m[1mGET /api/settings HTTP/1.1[0m" 500 -
+2025-06-21 02:02:55,291 - classes - INFO - === CLASSES BLUEPRINT: ½ÓÊÕµ½»ñÈ¡°à¼¶ÁÐ±íÇëÇó ===
+2025-06-21 02:02:55,291 - classes - INFO - ´ÓÊý¾Ý¿â»ñÈ¡µ½ 55 ¸ö°à¼¶
+2025-06-21 02:02:55,309 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:55] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-21 02:02:55,318 - classes - INFO - »ñÈ¡µ½ 55 ¸ö°à¼¶£¬×¼±¸·µ»Ø
+2025-06-21 02:02:55,318 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:55] "GET /api/classes HTTP/1.1" 200 -
+2025-06-21 02:02:55,410 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:55] "GET /api/carousel/images HTTP/1.1" 200 -
+2025-06-21 02:02:55,598 - __main__ - ERROR - »ñÈ¡ÏµÍ³ÉèÖÃÊ±³ö´í: name 'load_settings_from_db' is not defined
+2025-06-21 02:02:55,598 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:55] "[36mGET /img/backgrounds/bg01.jpg HTTP/1.1[0m" 304 -
+2025-06-21 02:02:55,598 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:55] "[35m[1mGET /api/settings HTTP/1.1[0m" 500 -
+2025-06-21 02:02:55,611 - students - INFO - »ñÈ¡ËùÓÐÑ§Éú
+2025-06-21 02:02:55,793 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:55] "GET /api/students HTTP/1.1" 200 -
+2025-06-21 02:02:55,802 - students - INFO - »ñÈ¡ËùÓÐÑ§Éú
+2025-06-21 02:02:55,913 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:55] "GET /api/students HTTP/1.1" 200 -
+2025-06-21 02:02:57,422 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:02:57] "[36mGET /fonts/boxicons.woff2 HTTP/1.1[0m" 304 -
+2025-06-21 02:03:08,981 - class_export - INFO - ¹ÜÀíÔ± admin ¿ªÊ¼°´°à¼¶µ¼³ö±¨¸æ£¬Ñ¡ÔñÁË 2 ¸ö°à¼¶
+2025-06-21 02:03:08,982 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [5%] ¿ªÊ¼µ¼³ö 2 ¸ö°à¼¶µÄ±¨¸æ... (5%)
+2025-06-21 02:03:08,983 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [10%] ³õÊ¼»¯±¨¸æµ¼³öÆ÷... (10%)
+2025-06-21 02:03:09,271 - utils.report_exporter - INFO - ³É¹¦´´½¨ÄÚÖÃÄ¬ÈÏÄ£°å
+2025-06-21 02:03:09,272 - class_export - INFO - ³õÊ¼»¯ReportExporter³É¹¦
+2025-06-21 02:03:09,272 - class_export - INFO - Ê¹ÓÃÄ£°å: ÈªÖÝ¶«º£ÍåÊµÑéÑ§Ð£×ÛºÏËØÖÊ·¢Õ¹±¨¸æµ¥, Â·¾¶: templates/docx\ÈªÖÝ¶«º£ÍåÊµÑéÑ§Ð£×ÛºÏËØÖÊ·¢Õ¹±¨¸æµ¥.docx
+2025-06-21 02:03:09,273 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [15%] ×¼±¸µ¼³öÎÄ¼þ... (15%)
+2025-06-21 02:03:09,275 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [15%] ÕýÔÚ´¦Àí°à¼¶: ÈýÄê¼¶4°à (1/2) (15.0%)
+2025-06-21 02:03:09,275 - class_export - INFO - ¿ªÊ¼´¦Àí°à¼¶: ÈýÄê¼¶4°à (ID: 15)
+2025-06-21 02:03:09,284 - class_export - INFO - °à¼¶ ÈýÄê¼¶4°à ÕÒµ½ 35 ÃûÑ§Éú
+2025-06-21 02:03:09,284 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [15%] °à¼¶ ÈýÄê¼¶4°à: ÕýÔÚ×¼±¸ 35 ÃûÑ§ÉúµÄÊý¾Ý... (15.0%)
+2025-06-21 02:03:09,285 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [15%] °à¼¶ ÈýÄê¼¶4°à: ÕýÔÚ´¦ÀíÑ§Éú ¹ù¿¡öÎ (1/35) (15.0%)
+2025-06-21 02:03:09,285 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [16%] °à¼¶ ÈýÄê¼¶4°à: ÕýÔÚ´¦ÀíÑ§Éú »ÆÈÙÃ¯ (6/35) (15.0%)
+2025-06-21 02:03:09,285 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [16%] °à¼¶ ÈýÄê¼¶4°à: ÕýÔÚ´¦ÀíÑ§Éú Ð¤ãüÓî (11/35) (15.0%)
+2025-06-21 02:03:09,286 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [17%] °à¼¶ ÈýÄê¼¶4°à: ÕýÔÚ´¦ÀíÑ§Éú ³Â¶«öª (16/35) (15.0%)
+2025-06-21 02:03:09,286 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [18%] °à¼¶ ÈýÄê¼¶4°à: ÕýÔÚ´¦ÀíÑ§Éú »ÆÐÅÓî (21/35) (15.0%)
+2025-06-21 02:03:09,289 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [19%] °à¼¶ ÈýÄê¼¶4°à: ÕýÔÚ´¦ÀíÑ§Éú »ÆÊ«º­ (26/35) (15.0%)
+2025-06-21 02:03:09,291 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [19%] °à¼¶ ÈýÄê¼¶4°à: ÕýÔÚ´¦ÀíÑ§Éú Ö£ÒÔÎõ (31/35) (15.0%)
+2025-06-21 02:03:09,291 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [15%] °à¼¶ ÈýÄê¼¶4°à: ÕýÔÚ»ñÈ¡°àÖ÷ÈÎÐÅÏ¢... (15.0%)
+2025-06-21 02:03:09,295 - class_export - INFO - °à¼¶ ÈýÄê¼¶4°à µÄ°àÖ÷ÈÎ: Ö£ÏþÐÀ
+2025-06-21 02:03:09,296 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [15%] °à¼¶ ÈýÄê¼¶4°à: ÕýÔÚÉú³É 35 ·Ý±¨¸æ... (15.0%)
+2025-06-21 02:03:09,300 - utils.report_exporter - INFO - ¿ªÊ¼ÅúÁ¿µ¼³ö±¨¸æ£¬Ñ§ÉúÊýÁ¿: 35, Ê¹ÓÃÄ£°å: ÈªÖÝ¶«º£ÍåÊµÑéÑ§Ð£×ÛºÏËØÖÊ·¢Õ¹±¨¸æµ¥
+2025-06-21 02:03:09,303 - utils.report_exporter - INFO - Ä£°åÂ·¾¶: templates/docx\ÈªÖÝ¶«º£ÍåÊµÑéÑ§Ð£×ÛºÏËØÖÊ·¢Õ¹±¨¸æµ¥.docx
+2025-06-21 02:03:09,307 - utils.report_exporter - INFO - ´¦ÀíµÚ 1/35 ¸öÑ§Éú: ID=1, ÐÕÃû=¹ù¿¡öÎ
+2025-06-21 02:03:09,308 - utils.report_exporter - INFO - ÎªÑ§Éú 1 Éú³É±¨¸æ...
+2025-06-21 02:03:09,308 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=1, ÐÕÃû=¹ù¿¡öÎ
+2025-06-21 02:03:09,697 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:03:09,883 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 1_¹ù¿¡öÎ.docx
+2025-06-21 02:03:09,887 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 1 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:03:09,887 - utils.report_exporter - INFO - ´¦ÀíµÚ 2/35 ¸öÑ§Éú: ID=2, ÐÕÃû=ÁøÇÇÂõ
+2025-06-21 02:03:09,887 - utils.report_exporter - INFO - ÎªÑ§Éú 2 Éú³É±¨¸æ...
+2025-06-21 02:03:09,887 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=2, ÐÕÃû=ÁøÇÇÂõ
+2025-06-21 02:03:09,887 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:03:10,053 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 2_ÁøÇÇÂõ.docx
+2025-06-21 02:03:10,057 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 2 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:03:10,057 - utils.report_exporter - INFO - ´¦ÀíµÚ 3/35 ¸öÑ§Éú: ID=3, ÐÕÃû=Íõ¼ÒÑó
+2025-06-21 02:03:10,057 - utils.report_exporter - INFO - ÎªÑ§Éú 3 Éú³É±¨¸æ...
+2025-06-21 02:03:10,057 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=3, ÐÕÃû=Íõ¼ÒÑó
+2025-06-21 02:03:10,063 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:03:10,266 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 3_Íõ¼ÒÑó.docx
+2025-06-21 02:03:10,267 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 3 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:03:10,267 - utils.report_exporter - INFO - ´¦ÀíµÚ 4/35 ¸öÑ§Éú: ID=4, ÐÕÃû=ÁÖ½õå«
+2025-06-21 02:03:10,267 - utils.report_exporter - INFO - ÎªÑ§Éú 4 Éú³É±¨¸æ...
+2025-06-21 02:03:10,267 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=4, ÐÕÃû=ÁÖ½õå«
+2025-06-21 02:03:10,267 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:03:10,469 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 4_ÁÖ½õå«.docx
+2025-06-21 02:03:10,481 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 4 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:03:10,482 - utils.report_exporter - INFO - ´¦ÀíµÚ 5/35 ¸öÑ§Éú: ID=5, ÐÕÃû=»ÆÔóÒï
+2025-06-21 02:03:10,482 - utils.report_exporter - INFO - ÎªÑ§Éú 5 Éú³É±¨¸æ...
+2025-06-21 02:03:10,483 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=5, ÐÕÃû=»ÆÔóÒï
+2025-06-21 02:03:10,485 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:03:10,707 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 5_»ÆÔóÒï.docx
+2025-06-21 02:03:10,710 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 5 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:03:10,713 - utils.report_exporter - INFO - ´¦ÀíµÚ 6/35 ¸öÑ§Éú: ID=6, ÐÕÃû=»ÆÈÙÃ¯
+2025-06-21 02:03:10,713 - utils.report_exporter - INFO - ÎªÑ§Éú 6 Éú³É±¨¸æ...
+2025-06-21 02:03:10,713 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=6, ÐÕÃû=»ÆÈÙÃ¯
+2025-06-21 02:03:10,714 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:03:10,940 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 6_»ÆÈÙÃ¯.docx
+2025-06-21 02:03:10,941 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 6 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:03:10,943 - utils.report_exporter - INFO - ´¦ÀíµÚ 7/35 ¸öÑ§Éú: ID=7, ÐÕÃû=»Æè÷ñ´
+2025-06-21 02:03:10,943 - utils.report_exporter - INFO - ÎªÑ§Éú 7 Éú³É±¨¸æ...
+2025-06-21 02:03:10,944 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=7, ÐÕÃû=»Æè÷ñ´
+2025-06-21 02:03:10,946 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:03:11,187 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 7_»Æè÷ñ´.docx
+2025-06-21 02:03:11,187 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 7 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:03:11,187 - utils.report_exporter - INFO - ´¦ÀíµÚ 8/35 ¸öÑ§Éú: ID=8, ÐÕÃû=ÍõÔóéÅ
+2025-06-21 02:03:11,187 - utils.report_exporter - INFO - ÎªÑ§Éú 8 Éú³É±¨¸æ...
+2025-06-21 02:03:11,193 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=8, ÐÕÃû=ÍõÔóéÅ
+2025-06-21 02:03:11,195 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:03:11,438 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 8_ÍõÔóéÅ.docx
+2025-06-21 02:03:11,441 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 8 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:03:11,442 - utils.report_exporter - INFO - ´¦ÀíµÚ 9/35 ¸öÑ§Éú: ID=9, ÐÕÃû=ÕÅÓîÑï
+2025-06-21 02:03:11,442 - utils.report_exporter - INFO - ÎªÑ§Éú 9 Éú³É±¨¸æ...
+2025-06-21 02:03:11,442 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=9, ÐÕÃû=ÕÅÓîÑï
+2025-06-21 02:03:11,445 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:03:11,607 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 9_ÕÅÓîÑï.docx
+2025-06-21 02:03:11,614 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 9 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:03:11,614 - utils.report_exporter - INFO - ´¦ÀíµÚ 10/35 ¸öÑ§Éú: ID=10, ÐÕÃû=Îâ¿£Ãú
+2025-06-21 02:03:11,615 - utils.report_exporter - INFO - ÎªÑ§Éú 10 Éú³É±¨¸æ...
+2025-06-21 02:03:11,615 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=10, ÐÕÃû=Îâ¿£Ãú
+2025-06-21 02:03:11,618 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:03:11,812 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 10_Îâ¿£Ãú.docx
+2025-06-21 02:03:11,818 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 10 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:03:11,818 - utils.report_exporter - INFO - ´¦ÀíµÚ 11/35 ¸öÑ§Éú: ID=11, ÐÕÃû=Ð¤ãüÓî
+2025-06-21 02:03:11,818 - utils.report_exporter - INFO - ÎªÑ§Éú 11 Éú³É±¨¸æ...
+2025-06-21 02:03:11,818 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=11, ÐÕÃû=Ð¤ãüÓî
+2025-06-21 02:03:11,818 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:03:12,029 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 11_Ð¤ãüÓî.docx
+2025-06-21 02:03:12,033 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 11 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:03:12,033 - utils.report_exporter - INFO - ´¦ÀíµÚ 12/35 ¸öÑ§Éú: ID=12, ÐÕÃû=½¯ÔóÐÂ
+2025-06-21 02:03:12,033 - utils.report_exporter - INFO - ÎªÑ§Éú 12 Éú³É±¨¸æ...
+2025-06-21 02:03:12,033 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=12, ÐÕÃû=½¯ÔóÐÂ
+2025-06-21 02:03:12,036 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:03:12,246 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 12_½¯ÔóÐÂ.docx
+2025-06-21 02:03:12,248 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 12 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:03:12,248 - utils.report_exporter - INFO - ´¦ÀíµÚ 13/35 ¸öÑ§Éú: ID=13, ÐÕÃû=ÀµÖ¾³É
+2025-06-21 02:03:12,248 - utils.report_exporter - INFO - ÎªÑ§Éú 13 Éú³É±¨¸æ...
+2025-06-21 02:03:12,248 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=13, ÐÕÃû=ÀµÖ¾³É
+2025-06-21 02:03:12,253 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:03:12,517 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 13_ÀµÖ¾³É.docx
+2025-06-21 02:03:12,517 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 13 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:03:12,517 - utils.report_exporter - INFO - ´¦ÀíµÚ 14/35 ¸öÑ§Éú: ID=14, ÐÕÃû=ÀîêÅÑ«
+2025-06-21 02:03:12,517 - utils.report_exporter - INFO - ÎªÑ§Éú 14 Éú³É±¨¸æ...
+2025-06-21 02:03:12,517 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=14, ÐÕÃû=ÀîêÅÑ«
+2025-06-21 02:03:12,517 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:03:12,729 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 14_ÀîêÅÑ«.docx
+2025-06-21 02:03:12,734 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 14 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:03:12,734 - utils.report_exporter - INFO - ´¦ÀíµÚ 15/35 ¸öÑ§Éú: ID=15, ÐÕÃû=ÁõÎÄ²©
+2025-06-21 02:03:12,734 - utils.report_exporter - INFO - ÎªÑ§Éú 15 Éú³É±¨¸æ...
+2025-06-21 02:03:12,734 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=15, ÐÕÃû=ÁõÎÄ²©
+2025-06-21 02:03:12,734 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:03:12,931 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 15_ÁõÎÄ²©.docx
+2025-06-21 02:03:12,933 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 15 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:03:12,933 - utils.report_exporter - INFO - ´¦ÀíµÚ 16/35 ¸öÑ§Éú: ID=16, ÐÕÃû=³Â¶«öª
+2025-06-21 02:03:12,933 - utils.report_exporter - INFO - ÎªÑ§Éú 16 Éú³É±¨¸æ...
+2025-06-21 02:03:12,933 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=16, ÐÕÃû=³Â¶«öª
+2025-06-21 02:03:12,933 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:03:13,149 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 16_³Â¶«öª.docx
+2025-06-21 02:03:13,149 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 16 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:03:13,149 - utils.report_exporter - INFO - ´¦ÀíµÚ 17/35 ¸öÑ§Éú: ID=17, ÐÕÃû=ÅËÐÅ
+2025-06-21 02:03:13,149 - utils.report_exporter - INFO - ÎªÑ§Éú 17 Éú³É±¨¸æ...
+2025-06-21 02:03:13,149 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=17, ÐÕÃû=ÅËÐÅ
+2025-06-21 02:03:13,149 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:03:13,367 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 17_ÅËÐÅ.docx
+2025-06-21 02:03:13,367 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 17 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:03:13,367 - utils.report_exporter - INFO - ´¦ÀíµÚ 18/35 ¸öÑ§Éú: ID=18, ÐÕÃû=ÁÖ·²ä¿
+2025-06-21 02:03:13,367 - utils.report_exporter - INFO - ÎªÑ§Éú 18 Éú³É±¨¸æ...
+2025-06-21 02:03:13,367 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=18, ÐÕÃû=ÁÖ·²ä¿
+2025-06-21 02:03:13,367 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:03:13,628 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 18_ÁÖ·²ä¿.docx
+2025-06-21 02:03:13,631 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 18 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:03:13,631 - utils.report_exporter - INFO - ´¦ÀíµÚ 19/35 ¸öÑ§Éú: ID=19, ÐÕÃû=»Æ¼ÎÐÀ
+2025-06-21 02:03:13,631 - utils.report_exporter - INFO - ÎªÑ§Éú 19 Éú³É±¨¸æ...
+2025-06-21 02:03:13,631 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=19, ÐÕÃû=»Æ¼ÎÐÀ
+2025-06-21 02:03:13,631 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:03:13,827 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 19_»Æ¼ÎÐÀ.docx
+2025-06-21 02:03:13,833 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 19 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:03:13,833 - utils.report_exporter - INFO - ´¦ÀíµÚ 20/35 ¸öÑ§Éú: ID=20, ÐÕÃû=³Â¿¡Ù¤
+2025-06-21 02:03:13,833 - utils.report_exporter - INFO - ÎªÑ§Éú 20 Éú³É±¨¸æ...
+2025-06-21 02:03:13,833 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=20, ÐÕÃû=³Â¿¡Ù¤
+2025-06-21 02:03:13,833 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:03:14,046 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 20_³Â¿¡Ù¤.docx
+2025-06-21 02:03:14,047 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 20 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:03:14,047 - utils.report_exporter - INFO - ´¦ÀíµÚ 21/35 ¸öÑ§Éú: ID=21, ÐÕÃû=»ÆÐÅÓî
+2025-06-21 02:03:14,047 - utils.report_exporter - INFO - ÎªÑ§Éú 21 Éú³É±¨¸æ...
+2025-06-21 02:03:14,047 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=21, ÐÕÃû=»ÆÐÅÓî
+2025-06-21 02:03:14,047 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:03:14,204 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 21_»ÆÐÅÓî.docx
+2025-06-21 02:03:14,210 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 21 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:03:14,210 - utils.report_exporter - INFO - ´¦ÀíµÚ 22/35 ¸öÑ§Éú: ID=22, ÐÕÃû=ÍõÏæÓñ
+2025-06-21 02:03:14,212 - utils.report_exporter - INFO - ÎªÑ§Éú 22 Éú³É±¨¸æ...
+2025-06-21 02:03:14,212 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=22, ÐÕÃû=ÍõÏæÓñ
+2025-06-21 02:03:14,214 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:03:14,417 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 22_ÍõÏæÓñ.docx
+2025-06-21 02:03:14,417 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 22 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:03:14,417 - utils.report_exporter - INFO - ´¦ÀíµÚ 23/35 ¸öÑ§Éú: ID=23, ÐÕÃû=³ÂìÏèå
+2025-06-21 02:03:14,417 - utils.report_exporter - INFO - ÎªÑ§Éú 23 Éú³É±¨¸æ...
+2025-06-21 02:03:14,417 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=23, ÐÕÃû=³ÂìÏèå
+2025-06-21 02:03:14,426 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:03:14,681 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 23_³ÂìÏèå.docx
+2025-06-21 02:03:14,681 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 23 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:03:14,687 - utils.report_exporter - INFO - ´¦ÀíµÚ 24/35 ¸öÑ§Éú: ID=24, ÐÕÃû=ÁÎÎâº­
+2025-06-21 02:03:14,687 - utils.report_exporter - INFO - ÎªÑ§Éú 24 Éú³É±¨¸æ...
+2025-06-21 02:03:14,687 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=24, ÐÕÃû=ÁÎÎâº­
+2025-06-21 02:03:14,687 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:03:14,907 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 24_ÁÎÎâº­.docx
+2025-06-21 02:03:14,913 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 24 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:03:14,914 - utils.report_exporter - INFO - ´¦ÀíµÚ 25/35 ¸öÑ§Éú: ID=25, ÐÕÃû=Ôøº­îÚ
+2025-06-21 02:03:14,915 - utils.report_exporter - INFO - ÎªÑ§Éú 25 Éú³É±¨¸æ...
+2025-06-21 02:03:14,915 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=25, ÐÕÃû=Ôøº­îÚ
+2025-06-21 02:03:14,915 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:03:15,128 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 25_Ôøº­îÚ.docx
+2025-06-21 02:03:15,128 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 25 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:03:15,128 - utils.report_exporter - INFO - ´¦ÀíµÚ 26/35 ¸öÑ§Éú: ID=26, ÐÕÃû=»ÆÊ«º­
+2025-06-21 02:03:15,128 - utils.report_exporter - INFO - ÎªÑ§Éú 26 Éú³É±¨¸æ...
+2025-06-21 02:03:15,128 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=26, ÐÕÃû=»ÆÊ«º­
+2025-06-21 02:03:15,128 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:03:15,363 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 26_»ÆÊ«º­.docx
+2025-06-21 02:03:15,367 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 26 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:03:15,367 - utils.report_exporter - INFO - ´¦ÀíµÚ 27/35 ¸öÑ§Éú: ID=27, ÐÕÃû=¶ÅèÙ×Ó
+2025-06-21 02:03:15,367 - utils.report_exporter - INFO - ÎªÑ§Éú 27 Éú³É±¨¸æ...
+2025-06-21 02:03:15,367 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=27, ÐÕÃû=¶ÅèÙ×Ó
+2025-06-21 02:03:15,367 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:03:15,567 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 27_¶ÅèÙ×Ó.docx
+2025-06-21 02:03:15,567 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 27 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:03:15,567 - utils.report_exporter - INFO - ´¦ÀíµÚ 28/35 ¸öÑ§Éú: ID=28, ÐÕÃû=³ÂÐ¡Âú
+2025-06-21 02:03:15,573 - utils.report_exporter - INFO - ÎªÑ§Éú 28 Éú³É±¨¸æ...
+2025-06-21 02:03:15,573 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=28, ÐÕÃû=³ÂÐ¡Âú
+2025-06-21 02:03:15,574 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:03:15,779 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 28_³ÂÐ¡Âú.docx
+2025-06-21 02:03:15,781 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 28 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:03:15,781 - utils.report_exporter - INFO - ´¦ÀíµÚ 29/35 ¸öÑ§Éú: ID=29, ÐÕÃû=Àµè÷Ðù
+2025-06-21 02:03:15,781 - utils.report_exporter - INFO - ÎªÑ§Éú 29 Éú³É±¨¸æ...
+2025-06-21 02:03:15,781 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=29, ÐÕÃû=Àµè÷Ðù
+2025-06-21 02:03:15,781 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:03:15,997 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 29_Àµè÷Ðù.docx
+2025-06-21 02:03:15,997 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 29 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:03:15,997 - utils.report_exporter - INFO - ´¦ÀíµÚ 30/35 ¸öÑ§Éú: ID=30, ÐÕÃû=Ð»âýÇç
+2025-06-21 02:03:15,997 - utils.report_exporter - INFO - ÎªÑ§Éú 30 Éú³É±¨¸æ...
+2025-06-21 02:03:15,997 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=30, ÐÕÃû=Ð»âýÇç
+2025-06-21 02:03:15,997 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:03:16,223 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 30_Ð»âýÇç.docx
+2025-06-21 02:03:16,230 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 30 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:03:16,230 - utils.report_exporter - INFO - ´¦ÀíµÚ 31/35 ¸öÑ§Éú: ID=31, ÐÕÃû=Ö£ÒÔÎõ
+2025-06-21 02:03:16,231 - utils.report_exporter - INFO - ÎªÑ§Éú 31 Éú³É±¨¸æ...
+2025-06-21 02:03:16,231 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=31, ÐÕÃû=Ö£ÒÔÎõ
+2025-06-21 02:03:16,231 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:03:16,430 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 31_Ö£ÒÔÎõ.docx
+2025-06-21 02:03:16,439 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 31 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:03:16,440 - utils.report_exporter - INFO - ´¦ÀíµÚ 32/35 ¸öÑ§Éú: ID=32, ÐÕÃû=³Â½¨¼ª
+2025-06-21 02:03:16,441 - utils.report_exporter - INFO - ÎªÑ§Éú 32 Éú³É±¨¸æ...
+2025-06-21 02:03:16,442 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=32, ÐÕÃû=³Â½¨¼ª
+2025-06-21 02:03:16,444 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:03:16,644 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 32_³Â½¨¼ª.docx
+2025-06-21 02:03:16,647 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 32 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:03:16,647 - utils.report_exporter - INFO - ´¦ÀíµÚ 33/35 ¸öÑ§Éú: ID=33, ÐÕÃû=Îâî£æ¼
+2025-06-21 02:03:16,647 - utils.report_exporter - INFO - ÎªÑ§Éú 33 Éú³É±¨¸æ...
+2025-06-21 02:03:16,647 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=33, ÐÕÃû=Îâî£æ¼
+2025-06-21 02:03:16,647 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:03:16,842 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 33_Îâî£æ¼.docx
+2025-06-21 02:03:16,847 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 33 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:03:16,847 - utils.report_exporter - INFO - ´¦ÀíµÚ 34/35 ¸öÑ§Éú: ID=34, ÐÕÃû=ÖÜóãè©
+2025-06-21 02:03:16,847 - utils.report_exporter - INFO - ÎªÑ§Éú 34 Éú³É±¨¸æ...
+2025-06-21 02:03:16,847 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=34, ÐÕÃû=ÖÜóãè©
+2025-06-21 02:03:16,847 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:03:17,009 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 34_ÖÜóãè©.docx
+2025-06-21 02:03:17,011 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 34 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:03:17,013 - utils.report_exporter - INFO - ´¦ÀíµÚ 35/35 ¸öÑ§Éú: ID=35, ÐÕÃû=ÀîÃÀçù
+2025-06-21 02:03:17,013 - utils.report_exporter - INFO - ÎªÑ§Éú 35 Éú³É±¨¸æ...
+2025-06-21 02:03:17,013 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=35, ÐÕÃû=ÀîÃÀçù
+2025-06-21 02:03:17,015 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:03:17,207 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 35_ÀîÃÀçù.docx
+2025-06-21 02:03:17,207 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 35 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:03:17,207 - utils.report_exporter - INFO - Éú³ÉZIPÎÄ¼þ: C:\Users\ADMINI~1\AppData\Local\Temp\tmpz545mbmx\student_reports.zip
+2025-06-21 02:03:17,217 - utils.report_exporter - INFO - ³É¹¦µ¼³ö 35/35 ¸öÑ§Éú±¨¸æ
+2025-06-21 02:03:17,317 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [15%] °à¼¶ ÈýÄê¼¶4°à: ÕýÔÚ×ª»» 35 ¸öWordÎÄµµÎªPDF... (15.0%)
+2025-06-21 02:03:17,317 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [15%] °à¼¶ ÈýÄê¼¶4°à: ÕýÔÚ×ª»»PDF 10_Îâ¿£Ãú.docx (1/35) (15.0%)
+2025-06-21 02:03:30,137 - class_export - INFO - ³É¹¦×ª»»PDF: 10_Îâ¿£Ãú.docx -> 10_Îâ¿£Ãú.pdf
+2025-06-21 02:03:31,173 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 10_Îâ¿£Ãú.docx
+2025-06-21 02:03:31,471 - class_export - DEBUG - WordÓ¦ÓÃ³ÌÐòÒÑÍË³ö
+2025-06-21 02:03:31,879 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:03:31,880 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [15%] °à¼¶ ÈýÄê¼¶4°à: ÕýÔÚ×ª»»PDF 11_Ð¤ãüÓî.docx (2/35) (15.0%)
+2025-06-21 02:03:34,770 - class_export - INFO - ³É¹¦×ª»»PDF: 11_Ð¤ãüÓî.docx -> 11_Ð¤ãüÓî.pdf
+2025-06-21 02:03:34,811 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 11_Ð¤ãüÓî.docx
+2025-06-21 02:03:39,195 - class_export - WARNING - ÍË³öWordÓ¦ÓÃ³ÌÐòÊ±³ö´í: Word.Application.Quit
+2025-06-21 02:03:39,196 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:03:39,196 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [16%] °à¼¶ ÈýÄê¼¶4°à: ÕýÔÚ×ª»»PDF 12_½¯ÔóÐÂ.docx (3/35) (15.0%)
+2025-06-21 02:03:44,435 - class_export - INFO - ³É¹¦×ª»»PDF: 12_½¯ÔóÐÂ.docx -> 12_½¯ÔóÐÂ.pdf
+2025-06-21 02:03:44,663 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 12_½¯ÔóÐÂ.docx
+2025-06-21 02:03:44,667 - class_export - DEBUG - WordÓ¦ÓÃ³ÌÐòÒÑÍË³ö
+2025-06-21 02:03:44,798 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:03:44,799 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [16%] °à¼¶ ÈýÄê¼¶4°à: ÕýÔÚ×ª»»PDF 13_ÀµÖ¾³É.docx (4/35) (15.0%)
+2025-06-21 02:03:46,736 - class_export - INFO - ³É¹¦×ª»»PDF: 13_ÀµÖ¾³É.docx -> 13_ÀµÖ¾³É.pdf
+2025-06-21 02:03:46,750 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 13_ÀµÖ¾³É.docx
+2025-06-21 02:03:49,507 - class_export - WARNING - ÍË³öWordÓ¦ÓÃ³ÌÐòÊ±³ö´í: Word.Application.Quit
+2025-06-21 02:03:49,508 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:03:49,508 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [16%] °à¼¶ ÈýÄê¼¶4°à: ÕýÔÚ×ª»»PDF 14_ÀîêÅÑ«.docx (5/35) (15.0%)
+2025-06-21 02:03:56,086 - class_export - INFO - ³É¹¦×ª»»PDF: 14_ÀîêÅÑ«.docx -> 14_ÀîêÅÑ«.pdf
+2025-06-21 02:03:56,366 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 14_ÀîêÅÑ«.docx
+2025-06-21 02:03:56,431 - class_export - DEBUG - WordÓ¦ÓÃ³ÌÐòÒÑÍË³ö
+2025-06-21 02:03:56,555 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:03:56,557 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [16%] °à¼¶ ÈýÄê¼¶4°à: ÕýÔÚ×ª»»PDF 15_ÁõÎÄ²©.docx (6/35) (15.0%)
+2025-06-21 02:03:58,619 - class_export - INFO - ³É¹¦×ª»»PDF: 15_ÁõÎÄ²©.docx -> 15_ÁõÎÄ²©.pdf
+2025-06-21 02:03:58,634 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 15_ÁõÎÄ²©.docx
+2025-06-21 02:04:01,516 - class_export - WARNING - ÍË³öWordÓ¦ÓÃ³ÌÐòÊ±³ö´í: Word.Application.Quit
+2025-06-21 02:04:01,520 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:04:01,520 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [17%] °à¼¶ ÈýÄê¼¶4°à: ÕýÔÚ×ª»»PDF 16_³Â¶«öª.docx (7/35) (15.0%)
+2025-06-21 02:04:06,027 - class_export - INFO - ³É¹¦×ª»»PDF: 16_³Â¶«öª.docx -> 16_³Â¶«öª.pdf
+2025-06-21 02:04:06,200 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 16_³Â¶«öª.docx
+2025-06-21 02:04:06,233 - class_export - DEBUG - WordÓ¦ÓÃ³ÌÐòÒÑÍË³ö
+2025-06-21 02:04:06,238 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:04:06,240 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [17%] °à¼¶ ÈýÄê¼¶4°à: ÕýÔÚ×ª»»PDF 17_ÅËÐÅ.docx (8/35) (15.0%)
+2025-06-21 02:04:07,932 - class_export - INFO - ³É¹¦×ª»»PDF: 17_ÅËÐÅ.docx -> 17_ÅËÐÅ.pdf
+2025-06-21 02:04:07,945 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 17_ÅËÐÅ.docx
+2025-06-21 02:04:33,195 - class_export - WARNING - ÍË³öWordÓ¦ÓÃ³ÌÐòÊ±³ö´í: Word.Application.Quit
+2025-06-21 02:04:33,196 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:04:33,196 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [17%] °à¼¶ ÈýÄê¼¶4°à: ÕýÔÚ×ª»»PDF 18_ÁÖ·²ä¿.docx (9/35) (15.0%)
+2025-06-21 02:04:37,452 - class_export - INFO - ³É¹¦×ª»»PDF: 18_ÁÖ·²ä¿.docx -> 18_ÁÖ·²ä¿.pdf
+2025-06-21 02:04:37,642 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 18_ÁÖ·²ä¿.docx
+2025-06-21 02:04:37,701 - class_export - DEBUG - WordÓ¦ÓÃ³ÌÐòÒÑÍË³ö
+2025-06-21 02:04:37,810 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:04:37,810 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [18%] °à¼¶ ÈýÄê¼¶4°à: ÕýÔÚ×ª»»PDF 19_»Æ¼ÎÐÀ.docx (10/35) (15.0%)
+2025-06-21 02:04:39,412 - class_export - INFO - ³É¹¦×ª»»PDF: 19_»Æ¼ÎÐÀ.docx -> 19_»Æ¼ÎÐÀ.pdf
+2025-06-21 02:04:39,432 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 19_»Æ¼ÎÐÀ.docx
+2025-06-21 02:04:42,102 - class_export - WARNING - ÍË³öWordÓ¦ÓÃ³ÌÐòÊ±³ö´í: Word.Application.Quit
+2025-06-21 02:04:42,104 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:04:42,104 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [18%] °à¼¶ ÈýÄê¼¶4°à: ÕýÔÚ×ª»»PDF 1_¹ù¿¡öÎ.docx (11/35) (15.0%)
+2025-06-21 02:04:46,263 - class_export - INFO - ³É¹¦×ª»»PDF: 1_¹ù¿¡öÎ.docx -> 1_¹ù¿¡öÎ.pdf
+2025-06-21 02:04:46,509 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 1_¹ù¿¡öÎ.docx
+2025-06-21 02:04:46,608 - class_export - DEBUG - WordÓ¦ÓÃ³ÌÐòÒÑÍË³ö
+2025-06-21 02:04:46,743 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:04:46,745 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [18%] °à¼¶ ÈýÄê¼¶4°à: ÕýÔÚ×ª»»PDF 20_³Â¿¡Ù¤.docx (12/35) (15.0%)
+2025-06-21 02:04:48,557 - class_export - INFO - ³É¹¦×ª»»PDF: 20_³Â¿¡Ù¤.docx -> 20_³Â¿¡Ù¤.pdf
+2025-06-21 02:04:48,575 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 20_³Â¿¡Ù¤.docx
+2025-06-21 02:04:51,151 - class_export - WARNING - ÍË³öWordÓ¦ÓÃ³ÌÐòÊ±³ö´í: Word.Application.Quit
+2025-06-21 02:04:51,153 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:04:51,154 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [18%] °à¼¶ ÈýÄê¼¶4°à: ÕýÔÚ×ª»»PDF 21_»ÆÐÅÓî.docx (13/35) (15.0%)
+2025-06-21 02:04:55,358 - class_export - INFO - ³É¹¦×ª»»PDF: 21_»ÆÐÅÓî.docx -> 21_»ÆÐÅÓî.pdf
+2025-06-21 02:04:55,549 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 21_»ÆÐÅÓî.docx
+2025-06-21 02:04:55,580 - class_export - DEBUG - WordÓ¦ÓÃ³ÌÐòÒÑÍË³ö
+2025-06-21 02:04:55,689 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:04:55,690 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [19%] °à¼¶ ÈýÄê¼¶4°à: ÕýÔÚ×ª»»PDF 22_ÍõÏæÓñ.docx (14/35) (15.0%)
+2025-06-21 02:04:57,265 - class_export - INFO - ³É¹¦×ª»»PDF: 22_ÍõÏæÓñ.docx -> 22_ÍõÏæÓñ.pdf
+2025-06-21 02:04:57,284 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 22_ÍõÏæÓñ.docx
+2025-06-21 02:04:59,949 - class_export - WARNING - ÍË³öWordÓ¦ÓÃ³ÌÐòÊ±³ö´í: Word.Application.Quit
+2025-06-21 02:04:59,951 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:04:59,951 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [19%] °à¼¶ ÈýÄê¼¶4°à: ÕýÔÚ×ª»»PDF 23_³ÂìÏèå.docx (15/35) (15.0%)
+2025-06-21 02:05:04,123 - class_export - INFO - ³É¹¦×ª»»PDF: 23_³ÂìÏèå.docx -> 23_³ÂìÏèå.pdf
+2025-06-21 02:05:04,298 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 23_³ÂìÏèå.docx
+2025-06-21 02:05:04,350 - class_export - DEBUG - WordÓ¦ÓÃ³ÌÐòÒÑÍË³ö
+2025-06-21 02:05:04,450 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:05:04,450 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [19%] °à¼¶ ÈýÄê¼¶4°à: ÕýÔÚ×ª»»PDF 24_ÁÎÎâº­.docx (16/35) (15.0%)
+2025-06-21 02:05:06,227 - class_export - INFO - ³É¹¦×ª»»PDF: 24_ÁÎÎâº­.docx -> 24_ÁÎÎâº­.pdf
+2025-06-21 02:05:06,241 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 24_ÁÎÎâº­.docx
+2025-06-21 02:05:08,822 - class_export - WARNING - ÍË³öWordÓ¦ÓÃ³ÌÐòÊ±³ö´í: Word.Application.Quit
+2025-06-21 02:05:08,823 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:05:08,824 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [20%] °à¼¶ ÈýÄê¼¶4°à: ÕýÔÚ×ª»»PDF 25_Ôøº­îÚ.docx (17/35) (15.0%)
+2025-06-21 02:05:12,998 - class_export - INFO - ³É¹¦×ª»»PDF: 25_Ôøº­îÚ.docx -> 25_Ôøº­îÚ.pdf
+2025-06-21 02:05:13,176 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 25_Ôøº­îÚ.docx
+2025-06-21 02:05:13,179 - class_export - DEBUG - WordÓ¦ÓÃ³ÌÐòÒÑÍË³ö
+2025-06-21 02:05:13,294 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:05:13,294 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [20%] °à¼¶ ÈýÄê¼¶4°à: ÕýÔÚ×ª»»PDF 26_»ÆÊ«º­.docx (18/35) (15.0%)
+2025-06-21 02:05:15,071 - class_export - INFO - ³É¹¦×ª»»PDF: 26_»ÆÊ«º­.docx -> 26_»ÆÊ«º­.pdf
+2025-06-21 02:05:15,084 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 26_»ÆÊ«º­.docx
+2025-06-21 02:05:17,652 - class_export - WARNING - ÍË³öWordÓ¦ÓÃ³ÌÐòÊ±³ö´í: Word.Application.Quit
+2025-06-21 02:05:17,652 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:05:17,654 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [20%] °à¼¶ ÈýÄê¼¶4°à: ÕýÔÚ×ª»»PDF 27_¶ÅèÙ×Ó.docx (19/35) (15.0%)
+2025-06-21 02:05:21,825 - class_export - INFO - ³É¹¦×ª»»PDF: 27_¶ÅèÙ×Ó.docx -> 27_¶ÅèÙ×Ó.pdf
+2025-06-21 02:05:22,005 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 27_¶ÅèÙ×Ó.docx
+2025-06-21 02:05:22,008 - class_export - DEBUG - WordÓ¦ÓÃ³ÌÐòÒÑÍË³ö
+2025-06-21 02:05:22,147 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:05:22,148 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [20%] °à¼¶ ÈýÄê¼¶4°à: ÕýÔÚ×ª»»PDF 28_³ÂÐ¡Âú.docx (20/35) (15.0%)
+2025-06-21 02:05:23,877 - class_export - INFO - ³É¹¦×ª»»PDF: 28_³ÂÐ¡Âú.docx -> 28_³ÂÐ¡Âú.pdf
+2025-06-21 02:05:23,892 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 28_³ÂÐ¡Âú.docx
+2025-06-21 02:05:26,483 - class_export - WARNING - ÍË³öWordÓ¦ÓÃ³ÌÐòÊ±³ö´í: Word.Application.Quit
+2025-06-21 02:05:26,485 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:05:26,488 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [21%] °à¼¶ ÈýÄê¼¶4°à: ÕýÔÚ×ª»»PDF 29_Àµè÷Ðù.docx (21/35) (15.0%)
+2025-06-21 02:05:30,649 - class_export - INFO - ³É¹¦×ª»»PDF: 29_Àµè÷Ðù.docx -> 29_Àµè÷Ðù.pdf
+2025-06-21 02:05:30,837 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 29_Àµè÷Ðù.docx
+2025-06-21 02:05:30,839 - class_export - DEBUG - WordÓ¦ÓÃ³ÌÐòÒÑÍË³ö
+2025-06-21 02:05:30,969 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:05:30,969 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [21%] °à¼¶ ÈýÄê¼¶4°à: ÕýÔÚ×ª»»PDF 2_ÁøÇÇÂõ.docx (22/35) (15.0%)
+2025-06-21 02:05:32,779 - class_export - INFO - ³É¹¦×ª»»PDF: 2_ÁøÇÇÂõ.docx -> 2_ÁøÇÇÂõ.pdf
+2025-06-21 02:05:32,791 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 2_ÁøÇÇÂõ.docx
+2025-06-21 02:05:35,494 - class_export - WARNING - ÍË³öWordÓ¦ÓÃ³ÌÐòÊ±³ö´í: Word.Application.Quit
+2025-06-21 02:05:35,500 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:05:35,500 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [21%] °à¼¶ ÈýÄê¼¶4°à: ÕýÔÚ×ª»»PDF 30_Ð»âýÇç.docx (23/35) (15.0%)
+2025-06-21 02:05:39,606 - class_export - INFO - ³É¹¦×ª»»PDF: 30_Ð»âýÇç.docx -> 30_Ð»âýÇç.pdf
+2025-06-21 02:05:39,796 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 30_Ð»âýÇç.docx
+2025-06-21 02:05:39,799 - class_export - DEBUG - WordÓ¦ÓÃ³ÌÐòÒÑÍË³ö
+2025-06-21 02:05:39,920 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:05:39,920 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [22%] °à¼¶ ÈýÄê¼¶4°à: ÕýÔÚ×ª»»PDF 31_Ö£ÒÔÎõ.docx (24/35) (15.0%)
+2025-06-21 02:05:41,665 - class_export - INFO - ³É¹¦×ª»»PDF: 31_Ö£ÒÔÎõ.docx -> 31_Ö£ÒÔÎõ.pdf
+2025-06-21 02:05:41,679 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 31_Ö£ÒÔÎõ.docx
+2025-06-21 02:05:44,297 - class_export - WARNING - ÍË³öWordÓ¦ÓÃ³ÌÐòÊ±³ö´í: Word.Application.Quit
+2025-06-21 02:05:44,301 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:05:44,301 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [22%] °à¼¶ ÈýÄê¼¶4°à: ÕýÔÚ×ª»»PDF 32_³Â½¨¼ª.docx (25/35) (15.0%)
+2025-06-21 02:05:48,765 - class_export - INFO - ³É¹¦×ª»»PDF: 32_³Â½¨¼ª.docx -> 32_³Â½¨¼ª.pdf
+2025-06-21 02:05:48,953 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 32_³Â½¨¼ª.docx
+2025-06-21 02:05:48,955 - class_export - DEBUG - WordÓ¦ÓÃ³ÌÐòÒÑÍË³ö
+2025-06-21 02:05:49,088 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:05:49,088 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [22%] °à¼¶ ÈýÄê¼¶4°à: ÕýÔÚ×ª»»PDF 33_Îâî£æ¼.docx (26/35) (15.0%)
+2025-06-21 02:05:50,909 - class_export - INFO - ³É¹¦×ª»»PDF: 33_Îâî£æ¼.docx -> 33_Îâî£æ¼.pdf
+2025-06-21 02:05:50,957 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 33_Îâî£æ¼.docx
+2025-06-21 02:05:53,575 - class_export - WARNING - ÍË³öWordÓ¦ÓÃ³ÌÐòÊ±³ö´í: Word.Application.Quit
+2025-06-21 02:05:53,576 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:05:53,577 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [22%] °à¼¶ ÈýÄê¼¶4°à: ÕýÔÚ×ª»»PDF 34_ÖÜóãè©.docx (27/35) (15.0%)
+2025-06-21 02:05:57,798 - class_export - INFO - ³É¹¦×ª»»PDF: 34_ÖÜóãè©.docx -> 34_ÖÜóãè©.pdf
+2025-06-21 02:05:57,963 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 34_ÖÜóãè©.docx
+2025-06-21 02:05:58,045 - class_export - DEBUG - WordÓ¦ÓÃ³ÌÐòÒÑÍË³ö
+2025-06-21 02:05:58,153 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:05:58,153 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [23%] °à¼¶ ÈýÄê¼¶4°à: ÕýÔÚ×ª»»PDF 35_ÀîÃÀçù.docx (28/35) (15.0%)
+2025-06-21 02:05:59,784 - class_export - INFO - ³É¹¦×ª»»PDF: 35_ÀîÃÀçù.docx -> 35_ÀîÃÀçù.pdf
+2025-06-21 02:05:59,799 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 35_ÀîÃÀçù.docx
+2025-06-21 02:06:02,433 - class_export - WARNING - ÍË³öWordÓ¦ÓÃ³ÌÐòÊ±³ö´í: Word.Application.Quit
+2025-06-21 02:06:02,434 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:06:02,434 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [23%] °à¼¶ ÈýÄê¼¶4°à: ÕýÔÚ×ª»»PDF 3_Íõ¼ÒÑó.docx (29/35) (15.0%)
+2025-06-21 02:06:06,571 - class_export - INFO - ³É¹¦×ª»»PDF: 3_Íõ¼ÒÑó.docx -> 3_Íõ¼ÒÑó.pdf
+2025-06-21 02:06:06,741 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 3_Íõ¼ÒÑó.docx
+2025-06-21 02:06:06,803 - class_export - DEBUG - WordÓ¦ÓÃ³ÌÐòÒÑÍË³ö
+2025-06-21 02:06:06,906 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:06:06,906 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [23%] °à¼¶ ÈýÄê¼¶4°à: ÕýÔÚ×ª»»PDF 4_ÁÖ½õå«.docx (30/35) (15.0%)
+2025-06-21 02:06:08,665 - class_export - INFO - ³É¹¦×ª»»PDF: 4_ÁÖ½õå«.docx -> 4_ÁÖ½õå«.pdf
+2025-06-21 02:06:08,679 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 4_ÁÖ½õå«.docx
+2025-06-21 02:06:11,276 - class_export - WARNING - ÍË³öWordÓ¦ÓÃ³ÌÐòÊ±³ö´í: Word.Application.Quit
+2025-06-21 02:06:11,278 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:06:11,279 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [24%] °à¼¶ ÈýÄê¼¶4°à: ÕýÔÚ×ª»»PDF 5_»ÆÔóÒï.docx (31/35) (15.0%)
+2025-06-21 02:06:15,439 - class_export - INFO - ³É¹¦×ª»»PDF: 5_»ÆÔóÒï.docx -> 5_»ÆÔóÒï.pdf
+2025-06-21 02:06:15,622 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 5_»ÆÔóÒï.docx
+2025-06-21 02:06:15,678 - class_export - DEBUG - WordÓ¦ÓÃ³ÌÐòÒÑÍË³ö
+2025-06-21 02:06:15,782 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:06:15,782 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [24%] °à¼¶ ÈýÄê¼¶4°à: ÕýÔÚ×ª»»PDF 6_»ÆÈÙÃ¯.docx (32/35) (15.0%)
+2025-06-21 02:06:17,557 - class_export - INFO - ³É¹¦×ª»»PDF: 6_»ÆÈÙÃ¯.docx -> 6_»ÆÈÙÃ¯.pdf
+2025-06-21 02:06:17,570 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 6_»ÆÈÙÃ¯.docx
+2025-06-21 02:06:20,372 - class_export - WARNING - ÍË³öWordÓ¦ÓÃ³ÌÐòÊ±³ö´í: Word.Application.Quit
+2025-06-21 02:06:20,374 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:06:20,375 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [24%] °à¼¶ ÈýÄê¼¶4°à: ÕýÔÚ×ª»»PDF 7_»Æè÷ñ´.docx (33/35) (15.0%)
+2025-06-21 02:06:24,613 - class_export - INFO - ³É¹¦×ª»»PDF: 7_»Æè÷ñ´.docx -> 7_»Æè÷ñ´.pdf
+2025-06-21 02:06:24,803 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 7_»Æè÷ñ´.docx
+2025-06-21 02:06:24,855 - class_export - DEBUG - WordÓ¦ÓÃ³ÌÐòÒÑÍË³ö
+2025-06-21 02:06:24,957 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:06:24,958 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [24%] °à¼¶ ÈýÄê¼¶4°à: ÕýÔÚ×ª»»PDF 8_ÍõÔóéÅ.docx (34/35) (15.0%)
+2025-06-21 02:06:26,726 - class_export - INFO - ³É¹¦×ª»»PDF: 8_ÍõÔóéÅ.docx -> 8_ÍõÔóéÅ.pdf
+2025-06-21 02:06:26,745 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 8_ÍõÔóéÅ.docx
+2025-06-21 02:06:29,347 - class_export - WARNING - ÍË³öWordÓ¦ÓÃ³ÌÐòÊ±³ö´í: Word.Application.Quit
+2025-06-21 02:06:29,349 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:06:29,349 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [25%] °à¼¶ ÈýÄê¼¶4°à: ÕýÔÚ×ª»»PDF 9_ÕÅÓîÑï.docx (35/35) (15.0%)
+2025-06-21 02:06:33,508 - class_export - INFO - ³É¹¦×ª»»PDF: 9_ÕÅÓîÑï.docx -> 9_ÕÅÓîÑï.pdf
+2025-06-21 02:06:33,683 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 9_ÕÅÓîÑï.docx
+2025-06-21 02:06:33,737 - class_export - DEBUG - WordÓ¦ÓÃ³ÌÐòÒÑÍË³ö
+2025-06-21 02:06:33,848 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:06:33,848 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [15%] °à¼¶ ÈýÄê¼¶4°à: ÕýÔÚºÏ²¢ 35 ¸öPDFÎÄ¼þ... (15.0%)
+2025-06-21 02:06:34,699 - class_export - INFO - ³É¹¦ºÏ²¢ 35 ¸öPDFÎÄ¼þµ½ C:\Users\ADMINI~1\AppData\Local\Temp\tmpl_g_iga1\ÈýÄê¼¶4°à\ÈýÄê¼¶4°à_ºÏ²¢±¨¸æ.pdf
+2025-06-21 02:06:34,705 - class_export - INFO - °à¼¶ ÈýÄê¼¶4°à µ¼³ö³É¹¦
+2025-06-21 02:06:34,706 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [50%] ÕýÔÚ´¦Àí°à¼¶: ¶þÄê¼¶2°à (2/2) (50.0%)
+2025-06-21 02:06:34,706 - class_export - INFO - ¿ªÊ¼´¦Àí°à¼¶: ¶þÄê¼¶2°à (ID: 7)
+2025-06-21 02:06:34,707 - class_export - INFO - °à¼¶ ¶þÄê¼¶2°à ÕÒµ½ 35 ÃûÑ§Éú
+2025-06-21 02:06:34,707 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [50%] °à¼¶ ¶þÄê¼¶2°à: ÕýÔÚ×¼±¸ 35 ÃûÑ§ÉúµÄÊý¾Ý... (50.0%)
+2025-06-21 02:06:34,707 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [50%] °à¼¶ ¶þÄê¼¶2°à: ÕýÔÚ´¦ÀíÑ§Éú ²Ì¿ÂÄ½ (1/35) (50.0%)
+2025-06-21 02:06:34,707 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [51%] °à¼¶ ¶þÄê¼¶2°à: ÕýÔÚ´¦ÀíÑ§Éú ÁÖÃú½Ü (6/35) (50.0%)
+2025-06-21 02:06:34,708 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [51%] °à¼¶ ¶þÄê¼¶2°à: ÕýÔÚ´¦ÀíÑ§Éú ¿ÂÕÜå« (11/35) (50.0%)
+2025-06-21 02:06:34,708 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [52%] °à¼¶ ¶þÄê¼¶2°à: ÕýÔÚ´¦ÀíÑ§Éú ÅíèóÎõ (16/35) (50.0%)
+2025-06-21 02:06:34,708 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [53%] °à¼¶ ¶þÄê¼¶2°à: ÕýÔÚ´¦ÀíÑ§Éú Îâºêèº (21/35) (50.0%)
+2025-06-21 02:06:34,709 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [54%] °à¼¶ ¶þÄê¼¶2°à: ÕýÔÚ´¦ÀíÑ§Éú Ðì°²ç÷ (26/35) (50.0%)
+2025-06-21 02:06:34,709 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [54%] °à¼¶ ¶þÄê¼¶2°à: ÕýÔÚ´¦ÀíÑ§Éú ÕÅ´¿Îõ (31/35) (50.0%)
+2025-06-21 02:06:34,709 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [50%] °à¼¶ ¶þÄê¼¶2°à: ÕýÔÚ»ñÈ¡°àÖ÷ÈÎÐÅÏ¢... (50.0%)
+2025-06-21 02:06:34,710 - class_export - INFO - °à¼¶ ¶þÄê¼¶2°à µÄ°àÖ÷ÈÎ: ³ÌÃÀÏ¼
+2025-06-21 02:06:34,712 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [50%] °à¼¶ ¶þÄê¼¶2°à: ÕýÔÚÉú³É 35 ·Ý±¨¸æ... (50.0%)
+2025-06-21 02:06:34,715 - utils.report_exporter - INFO - ¿ªÊ¼ÅúÁ¿µ¼³ö±¨¸æ£¬Ñ§ÉúÊýÁ¿: 35, Ê¹ÓÃÄ£°å: ÈªÖÝ¶«º£ÍåÊµÑéÑ§Ð£×ÛºÏËØÖÊ·¢Õ¹±¨¸æµ¥
+2025-06-21 02:06:34,715 - utils.report_exporter - INFO - Ä£°åÂ·¾¶: templates/docx\ÈªÖÝ¶«º£ÍåÊµÑéÑ§Ð£×ÛºÏËØÖÊ·¢Õ¹±¨¸æµ¥.docx
+2025-06-21 02:06:34,717 - utils.report_exporter - INFO - ´¦ÀíµÚ 1/35 ¸öÑ§Éú: ID=1, ÐÕÃû=²Ì¿ÂÄ½
+2025-06-21 02:06:34,717 - utils.report_exporter - INFO - ÎªÑ§Éú 1 Éú³É±¨¸æ...
+2025-06-21 02:06:34,717 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=1, ÐÕÃû=²Ì¿ÂÄ½
+2025-06-21 02:06:34,719 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:06:34,815 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 1_²Ì¿ÂÄ½.docx
+2025-06-21 02:06:34,824 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 1 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:06:34,824 - utils.report_exporter - INFO - ´¦ÀíµÚ 2/35 ¸öÑ§Éú: ID=2, ÐÕÃû=³ÂÈÕÖÒ
+2025-06-21 02:06:34,824 - utils.report_exporter - INFO - ÎªÑ§Éú 2 Éú³É±¨¸æ...
+2025-06-21 02:06:34,825 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=2, ÐÕÃû=³ÂÈÕÖÒ
+2025-06-21 02:06:34,825 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:06:34,916 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 2_³ÂÈÕÖÒ.docx
+2025-06-21 02:06:34,918 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 2 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:06:34,919 - utils.report_exporter - INFO - ´¦ÀíµÚ 3/35 ¸öÑ§Éú: ID=3, ÐÕÃû=ÍôÐÇÒÙ
+2025-06-21 02:06:34,919 - utils.report_exporter - INFO - ÎªÑ§Éú 3 Éú³É±¨¸æ...
+2025-06-21 02:06:34,919 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=3, ÐÕÃû=ÍôÐÇÒÙ
+2025-06-21 02:06:34,920 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:06:35,026 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 3_ÍôÐÇÒÙ.docx
+2025-06-21 02:06:35,029 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 3 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:06:35,029 - utils.report_exporter - INFO - ´¦ÀíµÚ 4/35 ¸öÑ§Éú: ID=4, ÐÕÃû=ÁõÒàÑ«
+2025-06-21 02:06:35,030 - utils.report_exporter - INFO - ÎªÑ§Éú 4 Éú³É±¨¸æ...
+2025-06-21 02:06:35,030 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=4, ÐÕÃû=ÁõÒàÑ«
+2025-06-21 02:06:35,030 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:06:35,131 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 4_ÁõÒàÑ«.docx
+2025-06-21 02:06:35,132 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 4 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:06:35,132 - utils.report_exporter - INFO - ´¦ÀíµÚ 5/35 ¸öÑ§Éú: ID=5, ÐÕÃû=³ÂÌ©Óî
+2025-06-21 02:06:35,132 - utils.report_exporter - INFO - ÎªÑ§Éú 5 Éú³É±¨¸æ...
+2025-06-21 02:06:35,133 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=5, ÐÕÃû=³ÂÌ©Óî
+2025-06-21 02:06:35,133 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:06:35,229 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 5_³ÂÌ©Óî.docx
+2025-06-21 02:06:35,232 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 5 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:06:35,232 - utils.report_exporter - INFO - ´¦ÀíµÚ 6/35 ¸öÑ§Éú: ID=6, ÐÕÃû=ÁÖÃú½Ü
+2025-06-21 02:06:35,233 - utils.report_exporter - INFO - ÎªÑ§Éú 6 Éú³É±¨¸æ...
+2025-06-21 02:06:35,233 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=6, ÐÕÃû=ÁÖÃú½Ü
+2025-06-21 02:06:35,233 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:06:35,333 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 6_ÁÖÃú½Ü.docx
+2025-06-21 02:06:35,336 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 6 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:06:35,336 - utils.report_exporter - INFO - ´¦ÀíµÚ 7/35 ¸öÑ§Éú: ID=7, ÐÕÃû=³ÂÞÈèª
+2025-06-21 02:06:35,337 - utils.report_exporter - INFO - ÎªÑ§Éú 7 Éú³É±¨¸æ...
+2025-06-21 02:06:35,338 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=7, ÐÕÃû=³ÂÞÈèª
+2025-06-21 02:06:35,338 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:06:35,436 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 7_³ÂÞÈèª.docx
+2025-06-21 02:06:35,438 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 7 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:06:35,438 - utils.report_exporter - INFO - ´¦ÀíµÚ 8/35 ¸öÑ§Éú: ID=8, ÐÕÃû=³ÂÞÈÁØ
+2025-06-21 02:06:35,439 - utils.report_exporter - INFO - ÎªÑ§Éú 8 Éú³É±¨¸æ...
+2025-06-21 02:06:35,439 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=8, ÐÕÃû=³ÂÞÈÁØ
+2025-06-21 02:06:35,440 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:06:35,531 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 8_³ÂÞÈÁØ.docx
+2025-06-21 02:06:35,533 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 8 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:06:35,534 - utils.report_exporter - INFO - ´¦ÀíµÚ 9/35 ¸öÑ§Éú: ID=9, ÐÕÃû=»ÆêÉ¶÷
+2025-06-21 02:06:35,535 - utils.report_exporter - INFO - ÎªÑ§Éú 9 Éú³É±¨¸æ...
+2025-06-21 02:06:35,535 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=9, ÐÕÃû=»ÆêÉ¶÷
+2025-06-21 02:06:35,536 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:06:35,622 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 9_»ÆêÉ¶÷.docx
+2025-06-21 02:06:35,624 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 9 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:06:35,682 - utils.report_exporter - INFO - ´¦ÀíµÚ 10/35 ¸öÑ§Éú: ID=10, ÐÕÃû=³ÂÑåî£
+2025-06-21 02:06:35,684 - utils.report_exporter - INFO - ÎªÑ§Éú 10 Éú³É±¨¸æ...
+2025-06-21 02:06:35,684 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=10, ÐÕÃû=³ÂÑåî£
+2025-06-21 02:06:35,684 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:06:35,776 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 10_³ÂÑåî£.docx
+2025-06-21 02:06:35,778 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 10 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:06:35,778 - utils.report_exporter - INFO - ´¦ÀíµÚ 11/35 ¸öÑ§Éú: ID=11, ÐÕÃû=¿ÂÕÜå«
+2025-06-21 02:06:35,778 - utils.report_exporter - INFO - ÎªÑ§Éú 11 Éú³É±¨¸æ...
+2025-06-21 02:06:35,779 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=11, ÐÕÃû=¿ÂÕÜå«
+2025-06-21 02:06:35,779 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:06:35,874 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 11_¿ÂÕÜå«.docx
+2025-06-21 02:06:35,877 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 11 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:06:35,877 - utils.report_exporter - INFO - ´¦ÀíµÚ 12/35 ¸öÑ§Éú: ID=12, ÐÕÃû=´÷Í¯Ðù
+2025-06-21 02:06:35,878 - utils.report_exporter - INFO - ÎªÑ§Éú 12 Éú³É±¨¸æ...
+2025-06-21 02:06:35,879 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=12, ÐÕÃû=´÷Í¯Ðù
+2025-06-21 02:06:35,879 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:06:35,968 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 12_´÷Í¯Ðù.docx
+2025-06-21 02:06:35,971 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 12 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:06:35,971 - utils.report_exporter - INFO - ´¦ÀíµÚ 13/35 ¸öÑ§Éú: ID=13, ÐÕÃû=ÁÖ³ÐÒÕ
+2025-06-21 02:06:35,971 - utils.report_exporter - INFO - ÎªÑ§Éú 13 Éú³É±¨¸æ...
+2025-06-21 02:06:35,971 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=13, ÐÕÃû=ÁÖ³ÐÒÕ
+2025-06-21 02:06:35,973 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:06:36,065 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 13_ÁÖ³ÐÒÕ.docx
+2025-06-21 02:06:36,067 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 13 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:06:36,067 - utils.report_exporter - INFO - ´¦ÀíµÚ 14/35 ¸öÑ§Éú: ID=14, ÐÕÃû=»Æè÷ºÀ
+2025-06-21 02:06:36,068 - utils.report_exporter - INFO - ÎªÑ§Éú 14 Éú³É±¨¸æ...
+2025-06-21 02:06:36,068 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=14, ÐÕÃû=»Æè÷ºÀ
+2025-06-21 02:06:36,068 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:06:36,160 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 14_»Æè÷ºÀ.docx
+2025-06-21 02:06:36,162 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 14 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:06:36,162 - utils.report_exporter - INFO - ´¦ÀíµÚ 15/35 ¸öÑ§Éú: ID=15, ÐÕÃû=»Æ°ØÓî
+2025-06-21 02:06:36,163 - utils.report_exporter - INFO - ÎªÑ§Éú 15 Éú³É±¨¸æ...
+2025-06-21 02:06:36,163 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=15, ÐÕÃû=»Æ°ØÓî
+2025-06-21 02:06:36,163 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:06:36,251 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 15_»Æ°ØÓî.docx
+2025-06-21 02:06:36,253 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 15 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:06:36,254 - utils.report_exporter - INFO - ´¦ÀíµÚ 16/35 ¸öÑ§Éú: ID=16, ÐÕÃû=ÅíèóÎõ
+2025-06-21 02:06:36,254 - utils.report_exporter - INFO - ÎªÑ§Éú 16 Éú³É±¨¸æ...
+2025-06-21 02:06:36,254 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=16, ÐÕÃû=ÅíèóÎõ
+2025-06-21 02:06:36,255 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:06:36,351 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 16_ÅíèóÎõ.docx
+2025-06-21 02:06:36,353 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 16 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:06:36,354 - utils.report_exporter - INFO - ´¦ÀíµÚ 17/35 ¸öÑ§Éú: ID=17, ÐÕÃû=»ÆÐ­Á¦
+2025-06-21 02:06:36,355 - utils.report_exporter - INFO - ÎªÑ§Éú 17 Éú³É±¨¸æ...
+2025-06-21 02:06:36,355 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=17, ÐÕÃû=»ÆÐ­Á¦
+2025-06-21 02:06:36,355 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:06:36,454 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 17_»ÆÐ­Á¦.docx
+2025-06-21 02:06:36,456 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 17 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:06:36,457 - utils.report_exporter - INFO - ´¦ÀíµÚ 18/35 ¸öÑ§Éú: ID=18, ÐÕÃû=ÁÖì¿¶°
+2025-06-21 02:06:36,457 - utils.report_exporter - INFO - ÎªÑ§Éú 18 Éú³É±¨¸æ...
+2025-06-21 02:06:36,457 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=18, ÐÕÃû=ÁÖì¿¶°
+2025-06-21 02:06:36,458 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:06:36,552 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 18_ÁÖì¿¶°.docx
+2025-06-21 02:06:36,554 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 18 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:06:36,554 - utils.report_exporter - INFO - ´¦ÀíµÚ 19/35 ¸öÑ§Éú: ID=19, ÐÕÃû=ÅËÔóèª
+2025-06-21 02:06:36,555 - utils.report_exporter - INFO - ÎªÑ§Éú 19 Éú³É±¨¸æ...
+2025-06-21 02:06:36,555 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=19, ÐÕÃû=ÅËÔóèª
+2025-06-21 02:06:36,555 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:06:36,650 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 19_ÅËÔóèª.docx
+2025-06-21 02:06:36,653 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 19 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:06:36,654 - utils.report_exporter - INFO - ´¦ÀíµÚ 20/35 ¸öÑ§Éú: ID=20, ÐÕÃû=»Æ¿¡Ôó
+2025-06-21 02:06:36,654 - utils.report_exporter - INFO - ÎªÑ§Éú 20 Éú³É±¨¸æ...
+2025-06-21 02:06:36,654 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=20, ÐÕÃû=»Æ¿¡Ôó
+2025-06-21 02:06:36,655 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:06:36,743 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 20_»Æ¿¡Ôó.docx
+2025-06-21 02:06:36,746 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 20 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:06:36,746 - utils.report_exporter - INFO - ´¦ÀíµÚ 21/35 ¸öÑ§Éú: ID=21, ÐÕÃû=Îâºêèº
+2025-06-21 02:06:36,747 - utils.report_exporter - INFO - ÎªÑ§Éú 21 Éú³É±¨¸æ...
+2025-06-21 02:06:36,747 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=21, ÐÕÃû=Îâºêèº
+2025-06-21 02:06:36,748 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:06:36,845 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 21_Îâºêèº.docx
+2025-06-21 02:06:36,848 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 21 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:06:36,848 - utils.report_exporter - INFO - ´¦ÀíµÚ 22/35 ¸öÑ§Éú: ID=22, ÐÕÃû=ÁõÓêº­
+2025-06-21 02:06:36,849 - utils.report_exporter - INFO - ÎªÑ§Éú 22 Éú³É±¨¸æ...
+2025-06-21 02:06:36,849 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=22, ÐÕÃû=ÁõÓêº­
+2025-06-21 02:06:36,849 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:06:36,941 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 22_ÁõÓêº­.docx
+2025-06-21 02:06:36,944 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 22 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:06:36,945 - utils.report_exporter - INFO - ´¦ÀíµÚ 23/35 ¸öÑ§Éú: ID=23, ÐÕÃû=Ð»¼ÒÍ©
+2025-06-21 02:06:36,945 - utils.report_exporter - INFO - ÎªÑ§Éú 23 Éú³É±¨¸æ...
+2025-06-21 02:06:36,945 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=23, ÐÕÃû=Ð»¼ÒÍ©
+2025-06-21 02:06:36,945 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:06:37,034 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 23_Ð»¼ÒÍ©.docx
+2025-06-21 02:06:37,036 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 23 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:06:37,036 - utils.report_exporter - INFO - ´¦ÀíµÚ 24/35 ¸öÑ§Éú: ID=24, ÐÕÃû=³ÂË¼Ó±
+2025-06-21 02:06:37,036 - utils.report_exporter - INFO - ÎªÑ§Éú 24 Éú³É±¨¸æ...
+2025-06-21 02:06:37,037 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=24, ÐÕÃû=³ÂË¼Ó±
+2025-06-21 02:06:37,037 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:06:37,134 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 24_³ÂË¼Ó±.docx
+2025-06-21 02:06:37,136 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 24 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:06:37,137 - utils.report_exporter - INFO - ´¦ÀíµÚ 25/35 ¸öÑ§Éú: ID=25, ÐÕÃû=ÎâÐÀåû
+2025-06-21 02:06:37,137 - utils.report_exporter - INFO - ÎªÑ§Éú 25 Éú³É±¨¸æ...
+2025-06-21 02:06:37,138 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=25, ÐÕÃû=ÎâÐÀåû
+2025-06-21 02:06:37,138 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:06:37,231 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 25_ÎâÐÀåû.docx
+2025-06-21 02:06:37,233 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 25 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:06:37,233 - utils.report_exporter - INFO - ´¦ÀíµÚ 26/35 ¸öÑ§Éú: ID=26, ÐÕÃû=Ðì°²ç÷
+2025-06-21 02:06:37,233 - utils.report_exporter - INFO - ÎªÑ§Éú 26 Éú³É±¨¸æ...
+2025-06-21 02:06:37,233 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=26, ÐÕÃû=Ðì°²ç÷
+2025-06-21 02:06:37,234 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:06:37,329 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 26_Ðì°²ç÷.docx
+2025-06-21 02:06:37,331 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 26 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:06:37,332 - utils.report_exporter - INFO - ´¦ÀíµÚ 27/35 ¸öÑ§Éú: ID=27, ÐÕÃû=ÀîÅæÈÝ
+2025-06-21 02:06:37,332 - utils.report_exporter - INFO - ÎªÑ§Éú 27 Éú³É±¨¸æ...
+2025-06-21 02:06:37,333 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=27, ÐÕÃû=ÀîÅæÈÝ
+2025-06-21 02:06:37,333 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:06:37,425 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 27_ÀîÅæÈÝ.docx
+2025-06-21 02:06:37,426 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 27 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:06:37,427 - utils.report_exporter - INFO - ´¦ÀíµÚ 28/35 ¸öÑ§Éú: ID=28, ÐÕÃû=ÀîÓêÐÀ
+2025-06-21 02:06:37,427 - utils.report_exporter - INFO - ÎªÑ§Éú 28 Éú³É±¨¸æ...
+2025-06-21 02:06:37,427 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=28, ÐÕÃû=ÀîÓêÐÀ
+2025-06-21 02:06:37,428 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:06:37,522 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 28_ÀîÓêÐÀ.docx
+2025-06-21 02:06:37,524 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 28 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:06:37,525 - utils.report_exporter - INFO - ´¦ÀíµÚ 29/35 ¸öÑ§Éú: ID=29, ÐÕÃû=ÍõÂåÒÁ
+2025-06-21 02:06:37,525 - utils.report_exporter - INFO - ÎªÑ§Éú 29 Éú³É±¨¸æ...
+2025-06-21 02:06:37,526 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=29, ÐÕÃû=ÍõÂåÒÁ
+2025-06-21 02:06:37,526 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:06:37,623 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 29_ÍõÂåÒÁ.docx
+2025-06-21 02:06:37,625 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 29 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:06:37,625 - utils.report_exporter - INFO - ´¦ÀíµÚ 30/35 ¸öÑ§Éú: ID=30, ÐÕÃû=»ÆÊ«ÁÖ
+2025-06-21 02:06:37,626 - utils.report_exporter - INFO - ÎªÑ§Éú 30 Éú³É±¨¸æ...
+2025-06-21 02:06:37,626 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=30, ÐÕÃû=»ÆÊ«ÁÖ
+2025-06-21 02:06:37,626 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:06:37,721 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 30_»ÆÊ«ÁÖ.docx
+2025-06-21 02:06:37,724 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 30 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:06:37,724 - utils.report_exporter - INFO - ´¦ÀíµÚ 31/35 ¸öÑ§Éú: ID=31, ÐÕÃû=ÕÅ´¿Îõ
+2025-06-21 02:06:37,724 - utils.report_exporter - INFO - ÎªÑ§Éú 31 Éú³É±¨¸æ...
+2025-06-21 02:06:37,725 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=31, ÐÕÃû=ÕÅ´¿Îõ
+2025-06-21 02:06:37,725 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:06:37,831 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 31_ÕÅ´¿Îõ.docx
+2025-06-21 02:06:37,833 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 31 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:06:37,833 - utils.report_exporter - INFO - ´¦ÀíµÚ 32/35 ¸öÑ§Éú: ID=32, ÐÕÃû=»Æ¾ýÈã
+2025-06-21 02:06:37,834 - utils.report_exporter - INFO - ÎªÑ§Éú 32 Éú³É±¨¸æ...
+2025-06-21 02:06:37,834 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=32, ÐÕÃû=»Æ¾ýÈã
+2025-06-21 02:06:37,835 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:06:37,928 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 32_»Æ¾ýÈã.docx
+2025-06-21 02:06:37,931 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 32 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:06:37,931 - utils.report_exporter - INFO - ´¦ÀíµÚ 33/35 ¸öÑ§Éú: ID=33, ÐÕÃû=»ÆèòÅµ
+2025-06-21 02:06:37,933 - utils.report_exporter - INFO - ÎªÑ§Éú 33 Éú³É±¨¸æ...
+2025-06-21 02:06:37,933 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=33, ÐÕÃû=»ÆèòÅµ
+2025-06-21 02:06:37,933 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:06:38,027 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 33_»ÆèòÅµ.docx
+2025-06-21 02:06:38,030 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 33 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:06:38,031 - utils.report_exporter - INFO - ´¦ÀíµÚ 34/35 ¸öÑ§Éú: ID=34, ÐÕÃû=ÕÔÐË¸£
+2025-06-21 02:06:38,031 - utils.report_exporter - INFO - ÎªÑ§Éú 34 Éú³É±¨¸æ...
+2025-06-21 02:06:38,031 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=34, ÐÕÃû=ÕÔÐË¸£
+2025-06-21 02:06:38,032 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:06:38,125 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 34_ÕÔÐË¸£.docx
+2025-06-21 02:06:38,128 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 34 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:06:38,128 - utils.report_exporter - INFO - ´¦ÀíµÚ 35/35 ¸öÑ§Éú: ID=35, ÐÕÃû=Íõœê¿
+2025-06-21 02:06:38,129 - utils.report_exporter - INFO - ÎªÑ§Éú 35 Éú³É±¨¸æ...
+2025-06-21 02:06:38,129 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=35, ÐÕÃû=Íõœê¿
+2025-06-21 02:06:38,129 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:06:38,223 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 35_Íõœê¿.docx
+2025-06-21 02:06:38,225 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 35 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:06:38,227 - utils.report_exporter - INFO - Éú³ÉZIPÎÄ¼þ: C:\Users\ADMINI~1\AppData\Local\Temp\tmpmqdyg3n7\student_reports.zip
+2025-06-21 02:06:38,228 - utils.report_exporter - INFO - ³É¹¦µ¼³ö 35/35 ¸öÑ§Éú±¨¸æ
+2025-06-21 02:06:38,307 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [50%] °à¼¶ ¶þÄê¼¶2°à: ÕýÔÚ×ª»» 35 ¸öWordÎÄµµÎªPDF... (50.0%)
+2025-06-21 02:06:38,307 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [50%] °à¼¶ ¶þÄê¼¶2°à: ÕýÔÚ×ª»»PDF 10_³ÂÑåî£.docx (1/35) (50.0%)
+2025-06-21 02:06:42,518 - class_export - INFO - ³É¹¦×ª»»PDF: 10_³ÂÑåî£.docx -> 10_³ÂÑåî£.pdf
+2025-06-21 02:06:42,713 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 10_³ÂÑåî£.docx
+2025-06-21 02:06:42,715 - class_export - DEBUG - WordÓ¦ÓÃ³ÌÐòÒÑÍË³ö
+2025-06-21 02:06:42,842 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:06:42,843 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [50%] °à¼¶ ¶þÄê¼¶2°à: ÕýÔÚ×ª»»PDF 11_¿ÂÕÜå«.docx (2/35) (50.0%)
+2025-06-21 02:06:44,647 - class_export - INFO - ³É¹¦×ª»»PDF: 11_¿ÂÕÜå«.docx -> 11_¿ÂÕÜå«.pdf
+2025-06-21 02:06:44,661 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 11_¿ÂÕÜå«.docx
+2025-06-21 02:06:47,246 - class_export - WARNING - ÍË³öWordÓ¦ÓÃ³ÌÐòÊ±³ö´í: Word.Application.Quit
+2025-06-21 02:06:47,249 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:06:47,249 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [51%] °à¼¶ ¶þÄê¼¶2°à: ÕýÔÚ×ª»»PDF 12_´÷Í¯Ðù.docx (3/35) (50.0%)
+2025-06-21 02:06:51,828 - class_export - INFO - ³É¹¦×ª»»PDF: 12_´÷Í¯Ðù.docx -> 12_´÷Í¯Ðù.pdf
+2025-06-21 02:06:52,006 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 12_´÷Í¯Ðù.docx
+2025-06-21 02:06:52,063 - class_export - DEBUG - WordÓ¦ÓÃ³ÌÐòÒÑÍË³ö
+2025-06-21 02:06:52,162 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:06:52,163 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [51%] °à¼¶ ¶þÄê¼¶2°à: ÕýÔÚ×ª»»PDF 13_ÁÖ³ÐÒÕ.docx (4/35) (50.0%)
+2025-06-21 02:06:53,764 - class_export - INFO - ³É¹¦×ª»»PDF: 13_ÁÖ³ÐÒÕ.docx -> 13_ÁÖ³ÐÒÕ.pdf
+2025-06-21 02:06:53,778 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 13_ÁÖ³ÐÒÕ.docx
+2025-06-21 02:06:56,398 - class_export - WARNING - ÍË³öWordÓ¦ÓÃ³ÌÐòÊ±³ö´í: Word.Application.Quit
+2025-06-21 02:06:56,401 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:06:56,401 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [51%] °à¼¶ ¶þÄê¼¶2°à: ÕýÔÚ×ª»»PDF 14_»Æè÷ºÀ.docx (5/35) (50.0%)
+2025-06-21 02:07:00,535 - class_export - INFO - ³É¹¦×ª»»PDF: 14_»Æè÷ºÀ.docx -> 14_»Æè÷ºÀ.pdf
+2025-06-21 02:07:00,714 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 14_»Æè÷ºÀ.docx
+2025-06-21 02:07:00,767 - class_export - DEBUG - WordÓ¦ÓÃ³ÌÐòÒÑÍË³ö
+2025-06-21 02:07:00,885 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:07:00,885 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [51%] °à¼¶ ¶þÄê¼¶2°à: ÕýÔÚ×ª»»PDF 15_»Æ°ØÓî.docx (6/35) (50.0%)
+2025-06-21 02:07:02,679 - class_export - INFO - ³É¹¦×ª»»PDF: 15_»Æ°ØÓî.docx -> 15_»Æ°ØÓî.pdf
+2025-06-21 02:07:02,699 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 15_»Æ°ØÓî.docx
+2025-06-21 02:07:05,240 - class_export - WARNING - ÍË³öWordÓ¦ÓÃ³ÌÐòÊ±³ö´í: Word.Application.Quit
+2025-06-21 02:07:05,242 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:07:05,242 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [52%] °à¼¶ ¶þÄê¼¶2°à: ÕýÔÚ×ª»»PDF 16_ÅíèóÎõ.docx (7/35) (50.0%)
+2025-06-21 02:07:09,414 - class_export - INFO - ³É¹¦×ª»»PDF: 16_ÅíèóÎõ.docx -> 16_ÅíèóÎõ.pdf
+2025-06-21 02:07:09,594 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 16_ÅíèóÎõ.docx
+2025-06-21 02:07:09,644 - class_export - DEBUG - WordÓ¦ÓÃ³ÌÐòÒÑÍË³ö
+2025-06-21 02:07:09,748 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:07:09,748 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [52%] °à¼¶ ¶þÄê¼¶2°à: ÕýÔÚ×ª»»PDF 17_»ÆÐ­Á¦.docx (8/35) (50.0%)
+2025-06-21 02:07:11,529 - class_export - INFO - ³É¹¦×ª»»PDF: 17_»ÆÐ­Á¦.docx -> 17_»ÆÐ­Á¦.pdf
+2025-06-21 02:07:11,542 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 17_»ÆÐ­Á¦.docx
+2025-06-21 02:07:14,169 - class_export - WARNING - ÍË³öWordÓ¦ÓÃ³ÌÐòÊ±³ö´í: Word.Application.Quit
+2025-06-21 02:07:14,170 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:07:14,171 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [52%] °à¼¶ ¶þÄê¼¶2°à: ÕýÔÚ×ª»»PDF 18_ÁÖì¿¶°.docx (9/35) (50.0%)
+2025-06-21 02:07:18,610 - class_export - INFO - ³É¹¦×ª»»PDF: 18_ÁÖì¿¶°.docx -> 18_ÁÖì¿¶°.pdf
+2025-06-21 02:07:18,782 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 18_ÁÖì¿¶°.docx
+2025-06-21 02:07:18,784 - class_export - DEBUG - WordÓ¦ÓÃ³ÌÐòÒÑÍË³ö
+2025-06-21 02:07:18,920 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:07:18,921 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [53%] °à¼¶ ¶þÄê¼¶2°à: ÕýÔÚ×ª»»PDF 19_ÅËÔóèª.docx (10/35) (50.0%)
+2025-06-21 02:07:20,749 - class_export - INFO - ³É¹¦×ª»»PDF: 19_ÅËÔóèª.docx -> 19_ÅËÔóèª.pdf
+2025-06-21 02:07:20,761 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 19_ÅËÔóèª.docx
+2025-06-21 02:07:23,395 - class_export - WARNING - ÍË³öWordÓ¦ÓÃ³ÌÐòÊ±³ö´í: Word.Application.Quit
+2025-06-21 02:07:23,396 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:07:23,398 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [53%] °à¼¶ ¶þÄê¼¶2°à: ÕýÔÚ×ª»»PDF 1_²Ì¿ÂÄ½.docx (11/35) (50.0%)
+2025-06-21 02:07:27,578 - class_export - INFO - ³É¹¦×ª»»PDF: 1_²Ì¿ÂÄ½.docx -> 1_²Ì¿ÂÄ½.pdf
+2025-06-21 02:07:27,772 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 1_²Ì¿ÂÄ½.docx
+2025-06-21 02:07:27,812 - class_export - DEBUG - WordÓ¦ÓÃ³ÌÐòÒÑÍË³ö
+2025-06-21 02:07:27,813 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:07:27,813 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [53%] °à¼¶ ¶þÄê¼¶2°à: ÕýÔÚ×ª»»PDF 20_»Æ¿¡Ôó.docx (12/35) (50.0%)
+2025-06-21 02:07:29,471 - class_export - INFO - ³É¹¦×ª»»PDF: 20_»Æ¿¡Ôó.docx -> 20_»Æ¿¡Ôó.pdf
+2025-06-21 02:07:29,491 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 20_»Æ¿¡Ôó.docx
+2025-06-21 02:07:32,007 - class_export - WARNING - ÍË³öWordÓ¦ÓÃ³ÌÐòÊ±³ö´í: Word.Application.Quit
+2025-06-21 02:07:32,008 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:07:32,009 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [53%] °à¼¶ ¶þÄê¼¶2°à: ÕýÔÚ×ª»»PDF 21_Îâºêèº.docx (13/35) (50.0%)
+2025-06-21 02:07:36,119 - class_export - INFO - ³É¹¦×ª»»PDF: 21_Îâºêèº.docx -> 21_Îâºêèº.pdf
+2025-06-21 02:07:36,300 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 21_Îâºêèº.docx
+2025-06-21 02:07:36,303 - class_export - DEBUG - WordÓ¦ÓÃ³ÌÐòÒÑÍË³ö
+2025-06-21 02:07:36,425 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:07:36,425 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [54%] °à¼¶ ¶þÄê¼¶2°à: ÕýÔÚ×ª»»PDF 22_ÁõÓêº­.docx (14/35) (50.0%)
+2025-06-21 02:07:38,195 - class_export - INFO - ³É¹¦×ª»»PDF: 22_ÁõÓêº­.docx -> 22_ÁõÓêº­.pdf
+2025-06-21 02:07:38,209 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 22_ÁõÓêº­.docx
+2025-06-21 02:07:40,884 - class_export - WARNING - ÍË³öWordÓ¦ÓÃ³ÌÐòÊ±³ö´í: Word.Application.Quit
+2025-06-21 02:07:40,887 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:07:40,887 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [54%] °à¼¶ ¶þÄê¼¶2°à: ÕýÔÚ×ª»»PDF 23_Ð»¼ÒÍ©.docx (15/35) (50.0%)
+2025-06-21 02:07:45,094 - class_export - INFO - ³É¹¦×ª»»PDF: 23_Ð»¼ÒÍ©.docx -> 23_Ð»¼ÒÍ©.pdf
+2025-06-21 02:07:45,280 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 23_Ð»¼ÒÍ©.docx
+2025-06-21 02:07:45,343 - class_export - DEBUG - WordÓ¦ÓÃ³ÌÐòÒÑÍË³ö
+2025-06-21 02:07:45,461 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:07:45,462 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [54%] °à¼¶ ¶þÄê¼¶2°à: ÕýÔÚ×ª»»PDF 24_³ÂË¼Ó±.docx (16/35) (50.0%)
+2025-06-21 02:07:47,237 - class_export - INFO - ³É¹¦×ª»»PDF: 24_³ÂË¼Ó±.docx -> 24_³ÂË¼Ó±.pdf
+2025-06-21 02:07:47,251 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 24_³ÂË¼Ó±.docx
+2025-06-21 02:07:48,251 - class_export - WARNING - ÍË³öWordÓ¦ÓÃ³ÌÐòÊ±³ö´í: Word.Application.Quit
+2025-06-21 02:07:48,253 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:07:48,253 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [55%] °à¼¶ ¶þÄê¼¶2°à: ÕýÔÚ×ª»»PDF 25_ÎâÐÀåû.docx (17/35) (50.0%)
+2025-06-21 02:07:52,652 - class_export - INFO - ³É¹¦×ª»»PDF: 25_ÎâÐÀåû.docx -> 25_ÎâÐÀåû.pdf
+2025-06-21 02:07:52,855 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 25_ÎâÐÀåû.docx
+2025-06-21 02:07:52,905 - class_export - DEBUG - WordÓ¦ÓÃ³ÌÐòÒÑÍË³ö
+2025-06-21 02:07:53,019 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:07:53,019 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [55%] °à¼¶ ¶þÄê¼¶2°à: ÕýÔÚ×ª»»PDF 26_Ðì°²ç÷.docx (18/35) (50.0%)
+2025-06-21 02:07:54,774 - class_export - INFO - ³É¹¦×ª»»PDF: 26_Ðì°²ç÷.docx -> 26_Ðì°²ç÷.pdf
+2025-06-21 02:07:54,788 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 26_Ðì°²ç÷.docx
+2025-06-21 02:07:57,561 - class_export - WARNING - ÍË³öWordÓ¦ÓÃ³ÌÐòÊ±³ö´í: Word.Application.Quit
+2025-06-21 02:07:57,563 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:07:57,563 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [55%] °à¼¶ ¶þÄê¼¶2°à: ÕýÔÚ×ª»»PDF 27_ÀîÅæÈÝ.docx (19/35) (50.0%)
+2025-06-21 02:08:01,715 - class_export - INFO - ³É¹¦×ª»»PDF: 27_ÀîÅæÈÝ.docx -> 27_ÀîÅæÈÝ.pdf
+2025-06-21 02:08:01,901 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 27_ÀîÅæÈÝ.docx
+2025-06-21 02:08:01,903 - class_export - DEBUG - WordÓ¦ÓÃ³ÌÐòÒÑÍË³ö
+2025-06-21 02:08:02,028 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:08:02,030 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [55%] °à¼¶ ¶þÄê¼¶2°à: ÕýÔÚ×ª»»PDF 28_ÀîÓêÐÀ.docx (20/35) (50.0%)
+2025-06-21 02:08:03,795 - class_export - INFO - ³É¹¦×ª»»PDF: 28_ÀîÓêÐÀ.docx -> 28_ÀîÓêÐÀ.pdf
+2025-06-21 02:08:03,815 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 28_ÀîÓêÐÀ.docx
+2025-06-21 02:08:06,635 - class_export - WARNING - ÍË³öWordÓ¦ÓÃ³ÌÐòÊ±³ö´í: Word.Application.Quit
+2025-06-21 02:08:06,636 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:08:06,637 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [56%] °à¼¶ ¶þÄê¼¶2°à: ÕýÔÚ×ª»»PDF 29_ÍõÂåÒÁ.docx (21/35) (50.0%)
+2025-06-21 02:08:11,336 - class_export - INFO - ³É¹¦×ª»»PDF: 29_ÍõÂåÒÁ.docx -> 29_ÍõÂåÒÁ.pdf
+2025-06-21 02:08:11,506 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 29_ÍõÂåÒÁ.docx
+2025-06-21 02:08:11,510 - class_export - DEBUG - WordÓ¦ÓÃ³ÌÐòÒÑÍË³ö
+2025-06-21 02:08:11,645 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:08:11,645 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [56%] °à¼¶ ¶þÄê¼¶2°à: ÕýÔÚ×ª»»PDF 2_³ÂÈÕÖÒ.docx (22/35) (50.0%)
+2025-06-21 02:08:13,419 - class_export - INFO - ³É¹¦×ª»»PDF: 2_³ÂÈÕÖÒ.docx -> 2_³ÂÈÕÖÒ.pdf
+2025-06-21 02:08:13,436 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 2_³ÂÈÕÖÒ.docx
+2025-06-21 02:08:16,164 - class_export - WARNING - ÍË³öWordÓ¦ÓÃ³ÌÐòÊ±³ö´í: Word.Application.Quit
+2025-06-21 02:08:16,166 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:08:16,167 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [56%] °à¼¶ ¶þÄê¼¶2°à: ÕýÔÚ×ª»»PDF 30_»ÆÊ«ÁÖ.docx (23/35) (50.0%)
+2025-06-21 02:08:20,398 - class_export - INFO - ³É¹¦×ª»»PDF: 30_»ÆÊ«ÁÖ.docx -> 30_»ÆÊ«ÁÖ.pdf
+2025-06-21 02:08:20,594 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 30_»ÆÊ«ÁÖ.docx
+2025-06-21 02:08:20,651 - class_export - DEBUG - WordÓ¦ÓÃ³ÌÐòÒÑÍË³ö
+2025-06-21 02:08:20,758 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:08:20,758 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [57%] °à¼¶ ¶þÄê¼¶2°à: ÕýÔÚ×ª»»PDF 31_ÕÅ´¿Îõ.docx (24/35) (50.0%)
+2025-06-21 02:08:22,343 - class_export - INFO - ³É¹¦×ª»»PDF: 31_ÕÅ´¿Îõ.docx -> 31_ÕÅ´¿Îõ.pdf
+2025-06-21 02:08:22,361 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 31_ÕÅ´¿Îõ.docx
+2025-06-21 02:08:25,136 - class_export - WARNING - ÍË³öWordÓ¦ÓÃ³ÌÐòÊ±³ö´í: Word.Application.Quit
+2025-06-21 02:08:25,139 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:08:25,140 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [57%] °à¼¶ ¶þÄê¼¶2°à: ÕýÔÚ×ª»»PDF 32_»Æ¾ýÈã.docx (25/35) (50.0%)
+2025-06-21 02:08:29,289 - class_export - INFO - ³É¹¦×ª»»PDF: 32_»Æ¾ýÈã.docx -> 32_»Æ¾ýÈã.pdf
+2025-06-21 02:08:29,476 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 32_»Æ¾ýÈã.docx
+2025-06-21 02:08:29,481 - class_export - DEBUG - WordÓ¦ÓÃ³ÌÐòÒÑÍË³ö
+2025-06-21 02:08:29,603 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:08:29,603 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [57%] °à¼¶ ¶þÄê¼¶2°à: ÕýÔÚ×ª»»PDF 33_»ÆèòÅµ.docx (26/35) (50.0%)
+2025-06-21 02:08:31,376 - class_export - INFO - ³É¹¦×ª»»PDF: 33_»ÆèòÅµ.docx -> 33_»ÆèòÅµ.pdf
+2025-06-21 02:08:31,390 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 33_»ÆèòÅµ.docx
+2025-06-21 02:08:34,133 - class_export - WARNING - ÍË³öWordÓ¦ÓÃ³ÌÐòÊ±³ö´í: Word.Application.Quit
+2025-06-21 02:08:34,136 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:08:34,136 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [57%] °à¼¶ ¶þÄê¼¶2°à: ÕýÔÚ×ª»»PDF 34_ÕÔÐË¸£.docx (27/35) (50.0%)
+2025-06-21 02:08:38,269 - class_export - INFO - ³É¹¦×ª»»PDF: 34_ÕÔÐË¸£.docx -> 34_ÕÔÐË¸£.pdf
+2025-06-21 02:08:38,463 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 34_ÕÔÐË¸£.docx
+2025-06-21 02:08:38,502 - class_export - DEBUG - WordÓ¦ÓÃ³ÌÐòÒÑÍË³ö
+2025-06-21 02:08:38,615 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:08:38,615 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [58%] °à¼¶ ¶þÄê¼¶2°à: ÕýÔÚ×ª»»PDF 35_Íõœê¿.docx (28/35) (50.0%)
+2025-06-21 02:08:40,218 - class_export - INFO - ³É¹¦×ª»»PDF: 35_Íõœê¿.docx -> 35_Íõœê¿.pdf
+2025-06-21 02:08:40,231 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 35_Íõœê¿.docx
+2025-06-21 02:09:05,498 - class_export - WARNING - ÍË³öWordÓ¦ÓÃ³ÌÐòÊ±³ö´í: Word.Application.Quit
+2025-06-21 02:09:05,499 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:09:05,500 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [58%] °à¼¶ ¶þÄê¼¶2°à: ÕýÔÚ×ª»»PDF 3_ÍôÐÇÒÙ.docx (29/35) (50.0%)
+2025-06-21 02:09:09,692 - class_export - INFO - ³É¹¦×ª»»PDF: 3_ÍôÐÇÒÙ.docx -> 3_ÍôÐÇÒÙ.pdf
+2025-06-21 02:09:09,867 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 3_ÍôÐÇÒÙ.docx
+2025-06-21 02:09:09,921 - class_export - DEBUG - WordÓ¦ÓÃ³ÌÐòÒÑÍË³ö
+2025-06-21 02:09:10,023 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:09:10,023 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [58%] °à¼¶ ¶þÄê¼¶2°à: ÕýÔÚ×ª»»PDF 4_ÁõÒàÑ«.docx (30/35) (50.0%)
+2025-06-21 02:09:11,764 - class_export - INFO - ³É¹¦×ª»»PDF: 4_ÁõÒàÑ«.docx -> 4_ÁõÒàÑ«.pdf
+2025-06-21 02:09:11,776 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 4_ÁõÒàÑ«.docx
+2025-06-21 02:09:14,567 - class_export - WARNING - ÍË³öWordÓ¦ÓÃ³ÌÐòÊ±³ö´í: Word.Application.Quit
+2025-06-21 02:09:14,569 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:09:14,570 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [59%] °à¼¶ ¶þÄê¼¶2°à: ÕýÔÚ×ª»»PDF 5_³ÂÌ©Óî.docx (31/35) (50.0%)
+2025-06-21 02:09:18,745 - class_export - INFO - ³É¹¦×ª»»PDF: 5_³ÂÌ©Óî.docx -> 5_³ÂÌ©Óî.pdf
+2025-06-21 02:09:18,919 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 5_³ÂÌ©Óî.docx
+2025-06-21 02:09:18,979 - class_export - DEBUG - WordÓ¦ÓÃ³ÌÐòÒÑÍË³ö
+2025-06-21 02:09:19,086 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:09:19,087 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [59%] °à¼¶ ¶þÄê¼¶2°à: ÕýÔÚ×ª»»PDF 6_ÁÖÃú½Ü.docx (32/35) (50.0%)
+2025-06-21 02:09:20,691 - class_export - INFO - ³É¹¦×ª»»PDF: 6_ÁÖÃú½Ü.docx -> 6_ÁÖÃú½Ü.pdf
+2025-06-21 02:09:20,705 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 6_ÁÖÃú½Ü.docx
+2025-06-21 02:09:23,454 - class_export - WARNING - ÍË³öWordÓ¦ÓÃ³ÌÐòÊ±³ö´í: Word.Application.Quit
+2025-06-21 02:09:23,455 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:09:23,456 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [59%] °à¼¶ ¶þÄê¼¶2°à: ÕýÔÚ×ª»»PDF 7_³ÂÞÈèª.docx (33/35) (50.0%)
+2025-06-21 02:09:27,575 - class_export - INFO - ³É¹¦×ª»»PDF: 7_³ÂÞÈèª.docx -> 7_³ÂÞÈèª.pdf
+2025-06-21 02:09:27,778 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 7_³ÂÞÈèª.docx
+2025-06-21 02:09:27,834 - class_export - DEBUG - WordÓ¦ÓÃ³ÌÐòÒÑÍË³ö
+2025-06-21 02:09:27,939 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:09:27,940 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [59%] °à¼¶ ¶þÄê¼¶2°à: ÕýÔÚ×ª»»PDF 8_³ÂÞÈÁØ.docx (34/35) (50.0%)
+2025-06-21 02:09:29,555 - class_export - INFO - ³É¹¦×ª»»PDF: 8_³ÂÞÈÁØ.docx -> 8_³ÂÞÈÁØ.pdf
+2025-06-21 02:09:29,568 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 8_³ÂÞÈÁØ.docx
+2025-06-21 02:09:30,612 - class_export - WARNING - ÍË³öWordÓ¦ÓÃ³ÌÐòÊ±³ö´í: Word.Application.Quit
+2025-06-21 02:09:30,613 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:09:30,614 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [60%] °à¼¶ ¶þÄê¼¶2°à: ÕýÔÚ×ª»»PDF 9_»ÆêÉ¶÷.docx (35/35) (50.0%)
+2025-06-21 02:09:34,753 - class_export - INFO - ³É¹¦×ª»»PDF: 9_»ÆêÉ¶÷.docx -> 9_»ÆêÉ¶÷.pdf
+2025-06-21 02:09:34,931 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 9_»ÆêÉ¶÷.docx
+2025-06-21 02:09:34,992 - class_export - DEBUG - WordÓ¦ÓÃ³ÌÐòÒÑÍË³ö
+2025-06-21 02:09:35,098 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:09:35,099 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [50%] °à¼¶ ¶þÄê¼¶2°à: ÕýÔÚºÏ²¢ 35 ¸öPDFÎÄ¼þ... (50.0%)
+2025-06-21 02:09:36,070 - class_export - INFO - ³É¹¦ºÏ²¢ 35 ¸öPDFÎÄ¼þµ½ C:\Users\ADMINI~1\AppData\Local\Temp\tmpl_g_iga1\¶þÄê¼¶2°à\¶þÄê¼¶2°à_ºÏ²¢±¨¸æ.pdf
+2025-06-21 02:09:36,079 - class_export - INFO - °à¼¶ ¶þÄê¼¶2°à µ¼³ö³É¹¦
+2025-06-21 02:09:36,080 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [90%] ÕýÔÚ´ò°ü 2 ¸ö°à¼¶µÄµ¼³öÎÄ¼þ... (90%)
+2025-06-21 02:09:37,244 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [100%] µ¼³öÍê³É£¡³É¹¦´¦Àí 2 ¸ö°à¼¶ (100%)
+2025-06-21 02:09:37,273 - class_export - INFO - °à¼¶µ¼³öÍê³É£¬¹²´¦Àí 2 ¸ö°à¼¶£¬ÎÄ¼þ´óÐ¡: 36742075 ×Ö½Ú
+2025-06-21 02:09:37,311 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:09:37] "POST /api/export-class-reports HTTP/1.1" 200 -
+2025-06-21 02:17:41,470 - utils.pdf_exporter_fixed - INFO - PDFµ¼³öÄ£¿é: ReportLab¿âÒÑ³É¹¦µ¼Èë
+2025-06-21 02:17:41,502 - utils.comment_processor - INFO - ReportLab¿âÒÑ³É¹¦µ¼Èë
+2025-06-21 02:17:41,718 - utils.deepseek_api - INFO - Ê¹ÓÃÄ¬ÈÏDeepSeek APIÃÜÔ¿
+2025-06-21 02:17:41,718 - __main__ - INFO - ·þÎñÆ÷Æô¶¯
+2025-06-21 02:17:41,767 - grades - INFO - ³õÊ¼»¯³É¼¨Ä£¿é
+2025-06-21 02:17:41,767 - grades - INFO - ³É¼¨Ä£¿é³õÊ¼»¯Íê³É
+2025-06-21 02:17:41,767 - deyu - INFO - ³õÊ¼»¯µÂÓýÎ¬¶ÈÄ£¿é
+2025-06-21 02:17:41,767 - deyu - INFO - ÏÖÓÐÊý¾Ý¿âÁÐ: ['id', 'name', 'gender', 'class', 'class_id', 'height', 'weight', 'chest_circumference', 'vital_capacity', 'dental_caries', 'vision_left', 'vision_right', 'physical_test_status', 'comments', 'created_at', 'updated_at', 'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'semester', 'pinzhi', 'xuexi', 'jiankang', 'shenmei', 'shijian', 'shenghuo', 'xinli']
+2025-06-21 02:17:41,777 - deyu - INFO - µÂÓýÎ¬¶ÈÄ£¿é³õÊ¼»¯Íê³É
+2025-06-21 02:17:41,778 - grade_analysis - INFO - ³õÊ¼»¯³É¼¨·ÖÎöÄ£¿é
+2025-06-21 02:17:41,781 - grade_analysis - INFO - ³É¼¨·ÖÎöÄ£¿é³õÊ¼»¯Íê³É
+2025-06-21 02:17:41,782 - users - INFO - ³õÊ¼»¯ÓÃ»§±í
+2025-06-21 02:17:41,783 - users - INFO - ÓÃ»§±íÏÖÓÐÁÐ: ['id', 'username', 'password_hash', 'is_admin', 'class_id', 'created_at', 'updated_at', 'reset_password']
+2025-06-21 02:17:41,783 - users - INFO - ÓÃ»§±í³õÊ¼»¯Íê³É
+2025-06-21 02:17:41,784 - classes - INFO - ³õÊ¼»¯°à¼¶±í
+2025-06-21 02:17:41,785 - classes - INFO - °à¼¶±í³õÊ¼»¯Íê³É
+2025-06-21 02:17:41,785 - database_backup - INFO - Êý¾Ý¿â±¸·ÝÄ£¿éÒÑ³õÊ¼»¯
+2025-06-21 02:17:41,795 - __main__ - INFO - ³õÊ¼»¯Êý¾Ý¿â
+2025-06-21 02:17:41,797 - __main__ - INFO - ÏÖÓÐÊý¾Ý¿âÁÐ: ['id', 'name', 'gender', 'class', 'class_id', 'height', 'weight', 'chest_circumference', 'vital_capacity', 'dental_caries', 'vision_left', 'vision_right', 'physical_test_status', 'comments', 'created_at', 'updated_at', 'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'semester', 'pinzhi', 'xuexi', 'jiankang', 'shenmei', 'shijian', 'shenghuo', 'xinli']
+2025-06-21 02:17:41,802 - __main__ - INFO - Êý¾Ý¿â³õÊ¼»¯Íê³É
+2025-06-21 02:17:41,814 - users - INFO - ³õÊ¼»¯ÓÃ»§±í
+2025-06-21 02:17:41,816 - users - INFO - ÓÃ»§±íÏÖÓÐÁÐ: ['id', 'username', 'password_hash', 'is_admin', 'class_id', 'created_at', 'updated_at', 'reset_password']
+2025-06-21 02:17:41,817 - users - INFO - ÓÃ»§±í³õÊ¼»¯Íê³É
+2025-06-21 02:17:41,817 - classes - INFO - ³õÊ¼»¯°à¼¶±í
+2025-06-21 02:17:41,817 - classes - INFO - °à¼¶±í³õÊ¼»¯Íê³É
+2025-06-21 02:17:41,829 - __main__ - INFO - ³õÊ¼»¯Êý¾Ý¿â
+2025-06-21 02:17:41,831 - __main__ - INFO - ÏÖÓÐÊý¾Ý¿âÁÐ: ['id', 'name', 'gender', 'class', 'class_id', 'height', 'weight', 'chest_circumference', 'vital_capacity', 'dental_caries', 'vision_left', 'vision_right', 'physical_test_status', 'comments', 'created_at', 'updated_at', 'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'semester', 'pinzhi', 'xuexi', 'jiankang', 'shenmei', 'shijian', 'shenghuo', 'xinli']
+2025-06-21 02:17:41,831 - __main__ - INFO - Êý¾Ý¿â³õÊ¼»¯Íê³É
+2025-06-21 02:17:41,831 - __main__ - INFO - Êý¾Ý¿â³õÊ¼»¯Íê³É£¬±£ÁôÒÑÓÐÊý¾Ý
+2025-06-21 02:17:41,851 - werkzeug - WARNING -  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2025-06-21 02:17:41,853 - werkzeug - INFO -  * Running on http://192.168.1.17:8080/ (Press CTRL+C to quit)
+2025-06-21 02:20:35,861 - utils.pdf_exporter_fixed - INFO - PDFµ¼³öÄ£¿é: ReportLab¿âÒÑ³É¹¦µ¼Èë
+2025-06-21 02:20:35,874 - utils.comment_processor - INFO - ReportLab¿âÒÑ³É¹¦µ¼Èë
+2025-06-21 02:20:36,052 - utils.deepseek_api - INFO - Ê¹ÓÃÄ¬ÈÏDeepSeek APIÃÜÔ¿
+2025-06-21 02:20:36,053 - __main__ - INFO - ·þÎñÆ÷Æô¶¯
+2025-06-21 02:20:36,097 - grades - INFO - ³õÊ¼»¯³É¼¨Ä£¿é
+2025-06-21 02:20:36,097 - grades - INFO - ³É¼¨Ä£¿é³õÊ¼»¯Íê³É
+2025-06-21 02:20:36,097 - deyu - INFO - ³õÊ¼»¯µÂÓýÎ¬¶ÈÄ£¿é
+2025-06-21 02:20:36,098 - deyu - INFO - ÏÖÓÐÊý¾Ý¿âÁÐ: ['id', 'name', 'gender', 'class', 'class_id', 'height', 'weight', 'chest_circumference', 'vital_capacity', 'dental_caries', 'vision_left', 'vision_right', 'physical_test_status', 'comments', 'created_at', 'updated_at', 'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'semester', 'pinzhi', 'xuexi', 'jiankang', 'shenmei', 'shijian', 'shenghuo', 'xinli']
+2025-06-21 02:20:36,099 - deyu - INFO - µÂÓýÎ¬¶ÈÄ£¿é³õÊ¼»¯Íê³É
+2025-06-21 02:20:36,099 - grade_analysis - INFO - ³õÊ¼»¯³É¼¨·ÖÎöÄ£¿é
+2025-06-21 02:20:36,101 - grade_analysis - INFO - ³É¼¨·ÖÎöÄ£¿é³õÊ¼»¯Íê³É
+2025-06-21 02:20:36,102 - users - INFO - ³õÊ¼»¯ÓÃ»§±í
+2025-06-21 02:20:36,108 - users - INFO - ÓÃ»§±íÏÖÓÐÁÐ: ['id', 'username', 'password_hash', 'is_admin', 'class_id', 'created_at', 'updated_at', 'reset_password']
+2025-06-21 02:20:36,108 - users - INFO - ÓÃ»§±í³õÊ¼»¯Íê³É
+2025-06-21 02:20:36,108 - classes - INFO - ³õÊ¼»¯°à¼¶±í
+2025-06-21 02:20:36,109 - classes - INFO - °à¼¶±í³õÊ¼»¯Íê³É
+2025-06-21 02:20:36,111 - database_backup - INFO - Êý¾Ý¿â±¸·ÝÄ£¿éÒÑ³õÊ¼»¯
+2025-06-21 02:20:36,118 - __main__ - INFO - ³õÊ¼»¯Êý¾Ý¿â
+2025-06-21 02:20:36,118 - __main__ - INFO - ÏÖÓÐÊý¾Ý¿âÁÐ: ['id', 'name', 'gender', 'class', 'class_id', 'height', 'weight', 'chest_circumference', 'vital_capacity', 'dental_caries', 'vision_left', 'vision_right', 'physical_test_status', 'comments', 'created_at', 'updated_at', 'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'semester', 'pinzhi', 'xuexi', 'jiankang', 'shenmei', 'shijian', 'shenghuo', 'xinli']
+2025-06-21 02:20:36,118 - __main__ - INFO - Êý¾Ý¿â³õÊ¼»¯Íê³É
+2025-06-21 02:20:36,137 - users - INFO - ³õÊ¼»¯ÓÃ»§±í
+2025-06-21 02:20:36,138 - users - INFO - ÓÃ»§±íÏÖÓÐÁÐ: ['id', 'username', 'password_hash', 'is_admin', 'class_id', 'created_at', 'updated_at', 'reset_password']
+2025-06-21 02:20:36,138 - users - INFO - ÓÃ»§±í³õÊ¼»¯Íê³É
+2025-06-21 02:20:36,139 - classes - INFO - ³õÊ¼»¯°à¼¶±í
+2025-06-21 02:20:36,140 - classes - INFO - °à¼¶±í³õÊ¼»¯Íê³É
+2025-06-21 02:20:36,150 - __main__ - INFO - ³õÊ¼»¯Êý¾Ý¿â
+2025-06-21 02:20:36,152 - __main__ - INFO - ÏÖÓÐÊý¾Ý¿âÁÐ: ['id', 'name', 'gender', 'class', 'class_id', 'height', 'weight', 'chest_circumference', 'vital_capacity', 'dental_caries', 'vision_left', 'vision_right', 'physical_test_status', 'comments', 'created_at', 'updated_at', 'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'semester', 'pinzhi', 'xuexi', 'jiankang', 'shenmei', 'shijian', 'shenghuo', 'xinli']
+2025-06-21 02:20:36,155 - __main__ - INFO - Êý¾Ý¿â³õÊ¼»¯Íê³É
+2025-06-21 02:20:36,157 - __main__ - INFO - Êý¾Ý¿â³õÊ¼»¯Íê³É£¬±£ÁôÒÑÓÐÊý¾Ý
+2025-06-21 02:20:36,177 - werkzeug - WARNING -  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2025-06-21 02:20:36,177 - werkzeug - INFO -  * Running on http://192.168.1.17:8080/ (Press CTRL+C to quit)
+2025-06-21 02:20:39,955 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:39] "[36mGET / HTTP/1.1[0m" 304 -
+2025-06-21 02:20:43,386 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:43] "[36mGET /css/main.css HTTP/1.1[0m" 304 -
+2025-06-21 02:20:43,407 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:43] "[36mGET /css/tutorial.css HTTP/1.1[0m" 304 -
+2025-06-21 02:20:43,737 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:43] "[36mGET /js/session-timeout.js HTTP/1.1[0m" 304 -
+2025-06-21 02:20:43,737 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:43] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-21 02:20:43,747 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:43] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-21 02:20:43,752 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:43] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-21 02:20:43,753 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:43] "[36mGET /img/logo.png HTTP/1.1[0m" 304 -
+2025-06-21 02:20:44,077 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:44] "[36mGET /pages/students.html HTTP/1.1[0m" 304 -
+2025-06-21 02:20:44,077 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:44] "[36mGET /pages/home.html HTTP/1.1[0m" 304 -
+2025-06-21 02:20:44,087 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:44] "[36mGET /pages/comments.html HTTP/1.1[0m" 304 -
+2025-06-21 02:20:44,098 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:44] "[36mGET /pages/grades.html HTTP/1.1[0m" 304 -
+2025-06-21 02:20:44,107 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:44] "[36mGET /pages/grade_analysis.html HTTP/1.1[0m" 304 -
+2025-06-21 02:20:44,109 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:44] "[36mGET /pages/deyu.html HTTP/1.1[0m" 304 -
+2025-06-21 02:20:44,397 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:44] "GET /pages/export.html HTTP/1.1" 200 -
+2025-06-21 02:20:44,397 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:44] "[36mGET /pages/admin.html HTTP/1.1[0m" 304 -
+2025-06-21 02:20:44,407 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:44] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-21 02:20:44,413 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:44] "[36mGET /pages/settings.html HTTP/1.1[0m" 304 -
+2025-06-21 02:20:44,417 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:44] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-21 02:20:44,417 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:44] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-21 02:20:44,717 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:44] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-21 02:20:44,717 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:44] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-21 02:20:44,725 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:44] "[36mGET /css/home.css HTTP/1.1[0m" 304 -
+2025-06-21 02:20:44,729 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:44] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-21 02:20:44,729 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:44] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-06-21 02:20:44,729 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:44] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-21 02:20:45,035 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:45] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-21 02:20:45,035 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:45] "[36mGET /css/comments.css HTTP/1.1[0m" 304 -
+2025-06-21 02:20:45,047 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:45] "[36mGET /js/libs/chart.js HTTP/1.1[0m" 304 -
+2025-06-21 02:20:45,047 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:45] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-21 02:20:45,047 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:45] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-06-21 02:20:45,047 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:45] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-21 02:20:45,348 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:45] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-21 02:20:45,348 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:45] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-21 02:20:45,365 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:45] "[36mGET /js/students.js HTTP/1.1[0m" 304 -
+2025-06-21 02:20:45,365 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:45] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-21 02:20:45,367 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:45] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-06-21 02:20:45,371 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:45] "[36mGET /js/home.js HTTP/1.1[0m" 304 -
+2025-06-21 02:20:45,671 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:45] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-21 02:20:45,671 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:45] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-21 02:20:45,682 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:45] "[36mGET /css/grade_analysis.css HTTP/1.1[0m" 304 -
+2025-06-21 02:20:45,682 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:45] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-21 02:20:45,685 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:45] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-06-21 02:20:45,686 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:45] "[36mGET /js/grades.js HTTP/1.1[0m" 304 -
+2025-06-21 02:20:45,987 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:45] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-21 02:20:45,987 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:45] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-21 02:20:45,987 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:45] "[36mGET /fonts/boxicons.woff2 HTTP/1.1[0m" 304 -
+2025-06-21 02:20:46,007 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:46] "GET /api/dashboard/grade-distribution HTTP/1.1" 200 -
+2025-06-21 02:20:46,007 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:46] "GET /api/dashboard/comments HTTP/1.1" 200 -
+2025-06-21 02:20:46,039 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:46] "GET /api/dashboard/info HTTP/1.1" 200 -
+2025-06-21 02:20:46,309 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:46] "[36mGET /css/main.css HTTP/1.1[0m" 304 -
+2025-06-21 02:20:46,309 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:46] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-21 02:20:46,317 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:46] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-21 02:20:46,317 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:46] "[36mGET /fonts/boxicons.woff2 HTTP/1.1[0m" 304 -
+2025-06-21 02:20:46,317 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:46] "GET /api/dashboard/todos HTTP/1.1" 200 -
+2025-06-21 02:20:46,359 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:46] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-21 02:20:46,627 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:46] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-21 02:20:46,637 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:46] "[36mGET /css/admin.css HTTP/1.1[0m" 304 -
+2025-06-21 02:20:46,637 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:46] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-21 02:20:46,643 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:46] "GET /api/dashboard/activities HTTP/1.1" 200 -
+2025-06-21 02:20:46,643 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:46] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-06-21 02:20:46,684 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:46] "[36mGET /js/libs/chart.js HTTP/1.1[0m" 304 -
+2025-06-21 02:20:46,947 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:46] "[36mGET /js/comments.js HTTP/1.1[0m" 304 -
+2025-06-21 02:20:46,957 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:46] "[36mGET /libs/pizzip.min.js HTTP/1.1[0m" 304 -
+2025-06-21 02:20:46,957 - students - INFO - »ñÈ¡ËùÓÐÑ§Éú
+2025-06-21 02:20:46,957 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:46] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-21 02:20:47,000 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:47] "[36mGET /libs/docxtemplater.js HTTP/1.1[0m" 304 -
+2025-06-21 02:20:47,017 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:47] "GET /api/grades?semester=2024-2025Ñ§ÄêÏÂÑ§ÆÚ HTTP/1.1" 200 -
+2025-06-21 02:20:47,132 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:47] "GET /api/students HTTP/1.1" 200 -
+2025-06-21 02:20:47,261 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:47] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-21 02:20:47,277 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:47] "[36mGET /js/admin.js HTTP/1.1[0m" 304 -
+2025-06-21 02:20:47,277 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:47] "[36mGET /js/libs/jquery.min.js HTTP/1.1[0m" 304 -
+2025-06-21 02:20:47,313 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:47] "[36mGET /js/deyu.js HTTP/1.1[0m" 304 -
+2025-06-21 02:20:47,327 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:47] "[36mGET /js/grade_analysis.js HTTP/1.1[0m" 304 -
+2025-06-21 02:20:47,451 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:47] "[36mGET /libs/jszip.min.js HTTP/1.1[0m" 304 -
+2025-06-21 02:20:47,567 - students - INFO - »ñÈ¡ËùÓÐÑ§Éú
+2025-06-21 02:20:47,602 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:47] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-21 02:20:47,607 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:47] "[36mGET /js/main.js HTTP/1.1[0m" 304 -
+2025-06-21 02:20:47,709 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:47] "GET /api/students HTTP/1.1" 200 -
+2025-06-21 02:20:47,711 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:47] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-21 02:20:47,713 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:47] "[36mGET /js/tutorial.js HTTP/1.1[0m" 304 -
+2025-06-21 02:20:47,775 - students - INFO - »ñÈ¡ËùÓÐÑ§Éú
+2025-06-21 02:20:47,922 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:47] "GET /api/students HTTP/1.1" 200 -
+2025-06-21 02:20:47,924 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:47] "[36mGET /img/logo.png HTTP/1.1[0m" 304 -
+2025-06-21 02:20:48,019 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:48] "[36mGET /img/vx.jpg HTTP/1.1[0m" 304 -
+2025-06-21 02:20:49,476 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:49] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-06-21 02:20:49,483 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:49] "GET /js/export.js HTTP/1.1" 200 -
+2025-06-21 02:20:49,484 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:49] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-21 02:20:49,485 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:49] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-21 02:20:49,605 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:49] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-21 02:20:49,727 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:49] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-21 02:20:49,800 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:49] "GET /api/users HTTP/1.1" 200 -
+2025-06-21 02:20:49,974 - classes - INFO - === CLASSES BLUEPRINT: ½ÓÊÕµ½»ñÈ¡°à¼¶ÁÐ±íÇëÇó ===
+2025-06-21 02:20:49,992 - classes - INFO - ´ÓÊý¾Ý¿â»ñÈ¡µ½ 55 ¸ö°à¼¶
+2025-06-21 02:20:49,993 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:49] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-21 02:20:49,993 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:49] "[36mGET /js/settings.js HTTP/1.1[0m" 304 -
+2025-06-21 02:20:49,999 - classes - INFO - »ñÈ¡µ½ 55 ¸ö°à¼¶£¬×¼±¸·µ»Ø
+2025-06-21 02:20:50,000 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:50] "GET /api/classes HTTP/1.1" 200 -
+2025-06-21 02:20:51,377 - __main__ - ERROR - »ñÈ¡ÏµÍ³ÉèÖÃÊ±³ö´í: name 'load_settings_from_db' is not defined
+2025-06-21 02:20:51,387 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:51] "[35m[1mGET /api/settings HTTP/1.1[0m" 500 -
+2025-06-21 02:20:51,690 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:51] "GET /api/carousel/settings HTTP/1.1" 200 -
+2025-06-21 02:20:51,691 - deyu - INFO - ÊÕµ½»ñÈ¡µÂÓýÎ¬¶ÈÊý¾ÝÇëÇó: class_id=, semester=2024-2025Ñ§ÄêÏÂÑ§ÆÚ
+2025-06-21 02:20:51,691 - deyu - INFO - µ±Ç°ÓÃ»§: admin, ID: 1, ½ÇÉ«: ¹ÜÀíÔ±, ¹ØÁª°à¼¶: None
+2025-06-21 02:20:51,691 - deyu - INFO - ÇëÇó²ÎÊý: ImmutableMultiDict([('semester', '2024-2025Ñ§ÄêÏÂÑ§ÆÚ')])
+2025-06-21 02:20:51,691 - deyu - WARNING - Î´Ìá¹©°à¼¶ID
+2025-06-21 02:20:51,692 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:51] "GET /api/deyu?semester=2024-2025Ñ§ÄêÏÂÑ§ÆÚ HTTP/1.1" 200 -
+2025-06-21 02:20:51,709 - __main__ - ERROR - »ñÈ¡ÏµÍ³ÉèÖÃÊ±³ö´í: name 'load_settings_from_db' is not defined
+2025-06-21 02:20:51,710 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:51] "[35m[1mGET /api/settings HTTP/1.1[0m" 500 -
+2025-06-21 02:20:51,710 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:51] "GET /api/carousel/images HTTP/1.1" 200 -
+2025-06-21 02:20:51,710 - students - INFO - »ñÈ¡ËùÓÐÑ§Éú
+2025-06-21 02:20:51,720 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:51] "[36mGET /favicon.ico HTTP/1.1[0m" 304 -
+2025-06-21 02:20:51,797 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:51] "GET /api/students HTTP/1.1" 200 -
+2025-06-21 02:20:51,999 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:51] "GET /api/carousel/settings HTTP/1.1" 200 -
+2025-06-21 02:20:52,032 - __main__ - ERROR - »ñÈ¡ÏµÍ³ÉèÖÃÊ±³ö´í: name 'load_settings_from_db' is not defined
+2025-06-21 02:20:52,032 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:52] "[35m[1mGET /api/settings HTTP/1.1[0m" 500 -
+2025-06-21 02:20:53,454 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:53] "[36mGET /img/backgrounds/bg01.jpg HTTP/1.1[0m" 304 -
+2025-06-21 02:20:53,456 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:53] "GET /api/carousel/images HTTP/1.1" 200 -
+2025-06-21 02:20:53,456 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:53] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-21 02:20:53,731 - students - INFO - »ñÈ¡ËùÓÐÑ§Éú
+2025-06-21 02:20:53,819 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:20:53] "GET /api/students HTTP/1.1" 200 -
+2025-06-21 02:21:25,453 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:25] "[36mGET /fonts/boxicons.woff2 HTTP/1.1[0m" 304 -
+2025-06-21 02:21:43,670 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:43] "[32mGET /logout HTTP/1.1[0m" 302 -
+2025-06-21 02:21:43,692 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:43] "GET /login HTTP/1.1" 200 -
+2025-06-21 02:21:43,933 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:43] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-21 02:21:44,047 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:44] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-21 02:21:44,051 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:44] "[36mGET /img/logo.png HTTP/1.1[0m" 304 -
+2025-06-21 02:21:44,052 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:44] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-21 02:21:44,365 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:44] "[36mGET /img/backgrounds/bg01.jpg HTTP/1.1[0m" 304 -
+2025-06-21 02:21:49,197 - users - INFO - ÓÃ»§ admin µÇÂ¼³É¹¦£¬ÒÑ¸üÐÂreset_password
+2025-06-21 02:21:49,198 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:49] "[32mPOST /login HTTP/1.1[0m" 302 -
+2025-06-21 02:21:49,381 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:49] "GET / HTTP/1.1" 200 -
+2025-06-21 02:21:49,744 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:49] "[36mGET /css/tutorial.css HTTP/1.1[0m" 304 -
+2025-06-21 02:21:49,746 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:49] "[36mGET /js/session-timeout.js HTTP/1.1[0m" 304 -
+2025-06-21 02:21:49,747 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:49] "[36mGET /css/main.css HTTP/1.1[0m" 304 -
+2025-06-21 02:21:49,748 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:49] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-21 02:21:49,749 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:49] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-21 02:21:49,750 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:49] "[36mGET /img/logo.png HTTP/1.1[0m" 304 -
+2025-06-21 02:21:50,076 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:50] "GET /pages/students.html HTTP/1.1" 200 -
+2025-06-21 02:21:50,081 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:50] "GET /pages/grades.html HTTP/1.1" 200 -
+2025-06-21 02:21:50,081 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:50] "GET /pages/comments.html HTTP/1.1" 200 -
+2025-06-21 02:21:50,085 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:50] "GET /pages/home.html HTTP/1.1" 200 -
+2025-06-21 02:21:50,099 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:50] "GET /pages/deyu.html HTTP/1.1" 200 -
+2025-06-21 02:21:50,100 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:50] "GET /pages/grade_analysis.html HTTP/1.1" 200 -
+2025-06-21 02:21:50,399 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:50] "GET /pages/export.html HTTP/1.1" 200 -
+2025-06-21 02:21:50,411 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:50] "[36mGET /fonts/boxicons.woff2 HTTP/1.1[0m" 304 -
+2025-06-21 02:21:50,414 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:50] "GET /pages/settings.html HTTP/1.1" 200 -
+2025-06-21 02:21:50,415 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:50] "GET /pages/admin.html HTTP/1.1" 200 -
+2025-06-21 02:21:50,429 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:50] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-21 02:21:50,434 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:50] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-21 02:21:50,723 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:50] "[36mGET /css/comments.css HTTP/1.1[0m" 304 -
+2025-06-21 02:21:50,723 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:50] "[36mGET /css/home.css HTTP/1.1[0m" 304 -
+2025-06-21 02:21:50,741 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:50] "[36mGET /css/grade_analysis.css HTTP/1.1[0m" 304 -
+2025-06-21 02:21:50,745 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:50] "[36mGET /css/main.css HTTP/1.1[0m" 304 -
+2025-06-21 02:21:50,749 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:50] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-21 02:21:50,752 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:50] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-21 02:21:51,035 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:51] "[36mGET /css/admin.css HTTP/1.1[0m" 304 -
+2025-06-21 02:21:51,037 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:51] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-21 02:21:51,074 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:51] "[36mGET /js/grades.js HTTP/1.1[0m" 304 -
+2025-06-21 02:21:51,075 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:51] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-21 02:21:51,079 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:51] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-21 02:21:51,087 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:51] "[36mGET /js/comments.js HTTP/1.1[0m" 304 -
+2025-06-21 02:21:51,345 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:51] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-21 02:21:51,346 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:51] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-21 02:21:51,388 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:51] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-21 02:21:51,393 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:51] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-21 02:21:51,399 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:51] "[36mGET /fonts/boxicons.woff2 HTTP/1.1[0m" 304 -
+2025-06-21 02:21:51,401 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:51] "[36mGET /js/libs/chart.js HTTP/1.1[0m" 304 -
+2025-06-21 02:21:51,667 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:51] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-21 02:21:51,668 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:51] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-21 02:21:51,699 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:51] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-21 02:21:51,708 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:51] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-21 02:21:51,712 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:51] "[36mGET /js/home.js HTTP/1.1[0m" 304 -
+2025-06-21 02:21:51,717 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:51] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-21 02:21:51,979 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:51] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-21 02:21:51,979 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:51] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-21 02:21:52,013 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:52] "[36mGET /js/students.js HTTP/1.1[0m" 304 -
+2025-06-21 02:21:52,022 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:52] "[36mGET /js/libs/jquery.min.js HTTP/1.1[0m" 304 -
+2025-06-21 02:21:52,024 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:52] "[36mGET /js/grade_analysis.js HTTP/1.1[0m" 304 -
+2025-06-21 02:21:52,027 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:52] "[36mGET /js/deyu.js HTTP/1.1[0m" 304 -
+2025-06-21 02:21:52,289 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:52] "[36mGET /libs/pizzip.min.js HTTP/1.1[0m" 304 -
+2025-06-21 02:21:52,289 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:52] "[36mGET /libs/docxtemplater.js HTTP/1.1[0m" 304 -
+2025-06-21 02:21:52,336 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:52] "[36mGET /js/admin.js HTTP/1.1[0m" 304 -
+2025-06-21 02:21:52,337 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:52] "[36mGET /js/export.js HTTP/1.1[0m" 304 -
+2025-06-21 02:21:52,337 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:52] "[36mGET /js/libs/chart.js HTTP/1.1[0m" 304 -
+2025-06-21 02:21:52,338 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:52] "[36mGET /libs/jszip.min.js HTTP/1.1[0m" 304 -
+2025-06-21 02:21:52,602 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:52] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-21 02:21:52,678 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:52] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-06-21 02:21:52,718 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:52] "[36mGET /js/main.js HTTP/1.1[0m" 304 -
+2025-06-21 02:21:52,781 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:52] "[36mGET /js/tutorial.js HTTP/1.1[0m" 304 -
+2025-06-21 02:21:52,827 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:52] "[36mGET /img/logo.png HTTP/1.1[0m" 304 -
+2025-06-21 02:21:52,863 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:52] "[36mGET /img/vx.jpg HTTP/1.1[0m" 304 -
+2025-06-21 02:21:53,024 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:53] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-21 02:21:53,078 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:53] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-06-21 02:21:53,080 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:53] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-21 02:21:53,182 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:53] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-21 02:21:53,337 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:53] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-06-21 02:21:53,391 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:53] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-21 02:21:53,534 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:53] "GET /api/grades?semester=2024-2025Ñ§ÄêÏÂÑ§ÆÚ HTTP/1.1" 200 -
+2025-06-21 02:21:53,544 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:53] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-06-21 02:21:53,648 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:53] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-21 02:21:53,711 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:53] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-06-21 02:21:53,711 - students - INFO - »ñÈ¡ËùÓÐÑ§Éú
+2025-06-21 02:21:53,793 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:53] "GET /api/students HTTP/1.1" 200 -
+2025-06-21 02:21:53,864 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:53] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-21 02:21:53,956 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:53] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-06-21 02:21:54,019 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:54] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-21 02:21:54,169 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:54] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-21 02:21:54,336 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:54] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-21 02:21:54,487 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:54] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-21 02:21:54,656 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:54] "[36mGET /js/settings.js HTTP/1.1[0m" 304 -
+2025-06-21 02:21:57,602 - students - INFO - »ñÈ¡ËùÓÐÑ§Éú
+2025-06-21 02:21:57,603 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:57] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-21 02:21:57,686 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:57] "GET /api/students HTTP/1.1" 200 -
+2025-06-21 02:21:59,603 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:59] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-21 02:21:59,920 - __main__ - ERROR - »ñÈ¡ÏµÍ³ÉèÖÃÊ±³ö´í: name 'load_settings_from_db' is not defined
+2025-06-21 02:21:59,922 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:59] "[35m[1mGET /api/settings HTTP/1.1[0m" 500 -
+2025-06-21 02:21:59,923 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:59] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-21 02:21:59,924 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:59] "GET /api/carousel/settings HTTP/1.1" 200 -
+2025-06-21 02:21:59,980 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:21:59] "GET /api/dashboard/info HTTP/1.1" 200 -
+2025-06-21 02:22:00,186 - classes - INFO - === CLASSES BLUEPRINT: ½ÓÊÕµ½»ñÈ¡°à¼¶ÁÐ±íÇëÇó ===
+2025-06-21 02:22:00,187 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:22:00] "GET /api/users HTTP/1.1" 200 -
+2025-06-21 02:22:00,188 - classes - INFO - ´ÓÊý¾Ý¿â»ñÈ¡µ½ 55 ¸ö°à¼¶
+2025-06-21 02:22:00,194 - classes - INFO - »ñÈ¡µ½ 55 ¸ö°à¼¶£¬×¼±¸·µ»Ø
+2025-06-21 02:22:00,196 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:22:00] "GET /api/classes HTTP/1.1" 200 -
+2025-06-21 02:22:00,238 - students - INFO - »ñÈ¡ËùÓÐÑ§Éú
+2025-06-21 02:22:00,245 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:22:00] "GET /api/dashboard/comments HTTP/1.1" 200 -
+2025-06-21 02:22:00,259 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:22:00] "GET /api/dashboard/grade-distribution HTTP/1.1" 200 -
+2025-06-21 02:22:00,333 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:22:00] "GET /api/dashboard/todos HTTP/1.1" 200 -
+2025-06-21 02:22:00,336 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:22:00] "GET /api/students HTTP/1.1" 200 -
+2025-06-21 02:22:00,502 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:22:00] "GET /api/carousel/images HTTP/1.1" 200 -
+2025-06-21 02:22:00,504 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:22:00] "GET /api/dashboard/activities HTTP/1.1" 200 -
+2025-06-21 02:22:00,563 - __main__ - ERROR - »ñÈ¡ÏµÍ³ÉèÖÃÊ±³ö´í: name 'load_settings_from_db' is not defined
+2025-06-21 02:22:00,564 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:22:00] "[35m[1mGET /api/settings HTTP/1.1[0m" 500 -
+2025-06-21 02:22:00,567 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:22:00] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-21 02:22:00,640 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:22:00] "GET /api/carousel/settings HTTP/1.1" 200 -
+2025-06-21 02:22:00,657 - deyu - INFO - ÊÕµ½»ñÈ¡µÂÓýÎ¬¶ÈÊý¾ÝÇëÇó: class_id=, semester=2024-2025Ñ§ÄêÏÂÑ§ÆÚ
+2025-06-21 02:22:00,658 - deyu - INFO - µ±Ç°ÓÃ»§: admin, ID: 1, ½ÇÉ«: ¹ÜÀíÔ±, ¹ØÁª°à¼¶: None
+2025-06-21 02:22:00,658 - deyu - INFO - ÇëÇó²ÎÊý: ImmutableMultiDict([('semester', '2024-2025Ñ§ÄêÏÂÑ§ÆÚ')])
+2025-06-21 02:22:00,658 - deyu - WARNING - Î´Ìá¹©°à¼¶ID
+2025-06-21 02:22:00,660 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:22:00] "GET /api/deyu?semester=2024-2025Ñ§ÄêÏÂÑ§ÆÚ HTTP/1.1" 200 -
+2025-06-21 02:22:00,817 - students - INFO - »ñÈ¡ËùÓÐÑ§Éú
+2025-06-21 02:22:00,818 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:22:00] "GET /api/carousel/images HTTP/1.1" 200 -
+2025-06-21 02:22:00,882 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:22:00] "GET /api/students HTTP/1.1" 200 -
+2025-06-21 02:22:00,890 - __main__ - ERROR - »ñÈ¡ÏµÍ³ÉèÖÃÊ±³ö´í: name 'load_settings_from_db' is not defined
+2025-06-21 02:22:00,891 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:22:00] "[35m[1mGET /api/settings HTTP/1.1[0m" 500 -
+2025-06-21 02:22:00,891 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:22:00] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-21 02:22:00,961 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:22:00] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-21 02:22:01,201 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:22:01] "[36mGET /img/backgrounds/bg01.jpg HTTP/1.1[0m" 304 -
+2025-06-21 02:22:01,560 - students - INFO - »ñÈ¡ËùÓÐÑ§Éú
+2025-06-21 02:22:01,709 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:22:01] "GET /api/students HTTP/1.1" 200 -
+2025-06-21 02:22:04,383 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:22:04] "[36mGET /fonts/boxicons.woff2 HTTP/1.1[0m" 304 -
+2025-06-21 02:22:16,296 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:22:16] "[36mGET /fonts/boxicons.woff2 HTTP/1.1[0m" 304 -
+2025-06-21 02:22:17,421 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:22:17] "[36mGET /fonts/boxicons.woff2 HTTP/1.1[0m" 304 -
+2025-06-21 02:28:14,361 - utils.pdf_exporter_fixed - INFO - PDFµ¼³öÄ£¿é: ReportLab¿âÒÑ³É¹¦µ¼Èë
+2025-06-21 02:28:14,417 - utils.comment_processor - INFO - ReportLab¿âÒÑ³É¹¦µ¼Èë
+2025-06-21 02:28:14,611 - utils.deepseek_api - INFO - Ê¹ÓÃÄ¬ÈÏDeepSeek APIÃÜÔ¿
+2025-06-21 02:28:14,611 - __main__ - INFO - ·þÎñÆ÷Æô¶¯
+2025-06-21 02:28:14,672 - grades - INFO - ³õÊ¼»¯³É¼¨Ä£¿é
+2025-06-21 02:28:14,672 - grades - INFO - ³É¼¨Ä£¿é³õÊ¼»¯Íê³É
+2025-06-21 02:28:14,672 - deyu - INFO - ³õÊ¼»¯µÂÓýÎ¬¶ÈÄ£¿é
+2025-06-21 02:28:14,672 - deyu - INFO - ÏÖÓÐÊý¾Ý¿âÁÐ: ['id', 'name', 'gender', 'class', 'class_id', 'height', 'weight', 'chest_circumference', 'vital_capacity', 'dental_caries', 'vision_left', 'vision_right', 'physical_test_status', 'comments', 'created_at', 'updated_at', 'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'semester', 'pinzhi', 'xuexi', 'jiankang', 'shenmei', 'shijian', 'shenghuo', 'xinli']
+2025-06-21 02:28:14,672 - deyu - INFO - µÂÓýÎ¬¶ÈÄ£¿é³õÊ¼»¯Íê³É
+2025-06-21 02:28:14,672 - grade_analysis - INFO - ³õÊ¼»¯³É¼¨·ÖÎöÄ£¿é
+2025-06-21 02:28:14,677 - grade_analysis - INFO - ³É¼¨·ÖÎöÄ£¿é³õÊ¼»¯Íê³É
+2025-06-21 02:28:14,679 - users - INFO - ³õÊ¼»¯ÓÃ»§±í
+2025-06-21 02:28:14,681 - users - INFO - ÓÃ»§±íÏÖÓÐÁÐ: ['id', 'username', 'password_hash', 'is_admin', 'class_id', 'created_at', 'updated_at', 'reset_password']
+2025-06-21 02:28:14,683 - users - INFO - ÓÃ»§±í³õÊ¼»¯Íê³É
+2025-06-21 02:28:14,683 - classes - INFO - ³õÊ¼»¯°à¼¶±í
+2025-06-21 02:28:14,683 - classes - INFO - °à¼¶±í³õÊ¼»¯Íê³É
+2025-06-21 02:28:14,684 - database_backup - INFO - Êý¾Ý¿â±¸·ÝÄ£¿éÒÑ³õÊ¼»¯
+2025-06-21 02:28:14,699 - __main__ - INFO - ³õÊ¼»¯Êý¾Ý¿â
+2025-06-21 02:28:14,703 - __main__ - INFO - ÏÖÓÐÊý¾Ý¿âÁÐ: ['id', 'name', 'gender', 'class', 'class_id', 'height', 'weight', 'chest_circumference', 'vital_capacity', 'dental_caries', 'vision_left', 'vision_right', 'physical_test_status', 'comments', 'created_at', 'updated_at', 'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'semester', 'pinzhi', 'xuexi', 'jiankang', 'shenmei', 'shijian', 'shenghuo', 'xinli']
+2025-06-21 02:28:14,703 - __main__ - INFO - Êý¾Ý¿â³õÊ¼»¯Íê³É
+2025-06-21 02:28:14,725 - users - INFO - ³õÊ¼»¯ÓÃ»§±í
+2025-06-21 02:28:14,729 - users - INFO - ÓÃ»§±íÏÖÓÐÁÐ: ['id', 'username', 'password_hash', 'is_admin', 'class_id', 'created_at', 'updated_at', 'reset_password']
+2025-06-21 02:28:14,731 - users - INFO - ÓÃ»§±í³õÊ¼»¯Íê³É
+2025-06-21 02:28:14,732 - classes - INFO - ³õÊ¼»¯°à¼¶±í
+2025-06-21 02:28:14,735 - classes - INFO - °à¼¶±í³õÊ¼»¯Íê³É
+2025-06-21 02:28:14,747 - __main__ - INFO - ³õÊ¼»¯Êý¾Ý¿â
+2025-06-21 02:28:14,747 - __main__ - INFO - ÏÖÓÐÊý¾Ý¿âÁÐ: ['id', 'name', 'gender', 'class', 'class_id', 'height', 'weight', 'chest_circumference', 'vital_capacity', 'dental_caries', 'vision_left', 'vision_right', 'physical_test_status', 'comments', 'created_at', 'updated_at', 'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'semester', 'pinzhi', 'xuexi', 'jiankang', 'shenmei', 'shijian', 'shenghuo', 'xinli']
+2025-06-21 02:28:14,747 - __main__ - INFO - Êý¾Ý¿â³õÊ¼»¯Íê³É
+2025-06-21 02:28:14,747 - __main__ - INFO - Êý¾Ý¿â³õÊ¼»¯Íê³É£¬±£ÁôÒÑÓÐÊý¾Ý
+2025-06-21 02:28:14,771 - werkzeug - WARNING -  * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+2025-06-21 02:28:14,771 - werkzeug - INFO -  * Running on http://192.168.1.17:8080/ (Press CTRL+C to quit)
+2025-06-21 02:28:18,737 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:18] "[36mGET / HTTP/1.1[0m" 304 -
+2025-06-21 02:28:20,430 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:20] "[36mGET /css/main.css HTTP/1.1[0m" 304 -
+2025-06-21 02:28:20,441 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:20] "[36mGET /js/session-timeout.js HTTP/1.1[0m" 304 -
+2025-06-21 02:28:20,747 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:20] "[36mGET /css/tutorial.css HTTP/1.1[0m" 304 -
+2025-06-21 02:28:20,747 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:20] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-21 02:28:20,747 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:20] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-21 02:28:20,757 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:20] "[36mGET /img/logo.png HTTP/1.1[0m" 304 -
+2025-06-21 02:28:20,762 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:20] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-21 02:28:21,087 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:21] "[36mGET /pages/home.html HTTP/1.1[0m" 304 -
+2025-06-21 02:28:21,097 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:21] "[36mGET /pages/students.html HTTP/1.1[0m" 304 -
+2025-06-21 02:28:21,097 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:21] "[36mGET /pages/comments.html HTTP/1.1[0m" 304 -
+2025-06-21 02:28:21,111 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:21] "[36mGET /pages/grades.html HTTP/1.1[0m" 304 -
+2025-06-21 02:28:21,113 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:21] "[36mGET /pages/deyu.html HTTP/1.1[0m" 304 -
+2025-06-21 02:28:21,117 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:21] "[36mGET /pages/grade_analysis.html HTTP/1.1[0m" 304 -
+2025-06-21 02:28:21,407 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:21] "GET /pages/export.html HTTP/1.1" 200 -
+2025-06-21 02:28:21,413 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:21] "[36mGET /pages/settings.html HTTP/1.1[0m" 304 -
+2025-06-21 02:28:21,413 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:21] "[36mGET /pages/admin.html HTTP/1.1[0m" 304 -
+2025-06-21 02:28:21,420 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:21] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-06-21 02:28:21,480 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:21] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-21 02:28:21,481 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:21] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-21 02:28:21,759 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:21] "[36mGET /css/home.css HTTP/1.1[0m" 304 -
+2025-06-21 02:28:21,763 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:21] "[36mGET /css/comments.css HTTP/1.1[0m" 304 -
+2025-06-21 02:28:21,764 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:21] "[36mGET /css/grade_analysis.css HTTP/1.1[0m" 304 -
+2025-06-21 02:28:21,768 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:21] "[36mGET /css/main.css HTTP/1.1[0m" 304 -
+2025-06-21 02:28:21,800 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:21] "[36mGET /css/admin.css HTTP/1.1[0m" 304 -
+2025-06-21 02:28:21,800 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:21] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-21 02:28:22,071 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:22] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-21 02:28:22,077 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:22] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-21 02:28:22,079 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:22] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-21 02:28:22,079 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:22] "[36mGET /js/libs/chart.js HTTP/1.1[0m" 304 -
+2025-06-21 02:28:22,108 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:22] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-21 02:28:22,108 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:22] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-21 02:28:22,391 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:22] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-21 02:28:22,391 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:22] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-21 02:28:22,391 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:22] "[36mGET /js/home.js HTTP/1.1[0m" 304 -
+2025-06-21 02:28:22,397 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:22] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-06-21 02:28:22,422 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:22] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-21 02:28:22,427 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:22] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-21 02:28:22,714 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:22] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-21 02:28:22,717 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:22] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-21 02:28:22,718 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:22] "[36mGET /fonts/boxicons.woff2 HTTP/1.1[0m" 304 -
+2025-06-21 02:28:22,722 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:22] "[36mGET /js/students.js HTTP/1.1[0m" 304 -
+2025-06-21 02:28:22,736 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:22] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-21 02:28:22,739 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:22] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-21 02:28:23,040 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:23] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-21 02:28:23,040 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:23] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-21 02:28:23,040 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:23] "[36mGET /js/comments.js HTTP/1.1[0m" 304 -
+2025-06-21 02:28:23,047 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:23] "[36mGET /js/grades.js HTTP/1.1[0m" 304 -
+2025-06-21 02:28:23,056 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:23] "[36mGET /js/deyu.js HTTP/1.1[0m" 304 -
+2025-06-21 02:28:23,060 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:23] "[36mGET /js/grade_analysis.js HTTP/1.1[0m" 304 -
+2025-06-21 02:28:23,360 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:23] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-21 02:28:23,360 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:23] "[36mGET /libs/docxtemplater.js HTTP/1.1[0m" 304 -
+2025-06-21 02:28:23,367 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:23] "[36mGET /libs/jszip.min.js HTTP/1.1[0m" 304 -
+2025-06-21 02:28:23,368 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:23] "[36mGET /libs/pizzip.min.js HTTP/1.1[0m" 304 -
+2025-06-21 02:28:23,377 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:23] "GET /js/export.js HTTP/1.1" 200 -
+2025-06-21 02:28:23,377 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:23] "[36mGET /js/admin.js HTTP/1.1[0m" 304 -
+2025-06-21 02:28:23,686 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:23] "[36mGET /js/libs/jquery.min.js HTTP/1.1[0m" 304 -
+2025-06-21 02:28:23,686 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:23] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-21 02:28:23,686 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:23] "[36mGET /js/libs/chart.js HTTP/1.1[0m" 304 -
+2025-06-21 02:28:23,686 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:23] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-06-21 02:28:23,712 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:23] "GET /api/dashboard/grade-distribution HTTP/1.1" 200 -
+2025-06-21 02:28:23,747 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:23] "GET /api/dashboard/info HTTP/1.1" 200 -
+2025-06-21 02:28:23,995 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:23] "GET /api/dashboard/todos HTTP/1.1" 200 -
+2025-06-21 02:28:24,006 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:24] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-21 02:28:24,006 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:24] "GET /api/dashboard/comments HTTP/1.1" 200 -
+2025-06-21 02:28:24,006 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:24] "GET /api/dashboard/activities HTTP/1.1" 200 -
+2025-06-21 02:28:24,029 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:24] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-06-21 02:28:24,058 - students - INFO - »ñÈ¡ËùÓÐÑ§Éú
+2025-06-21 02:28:24,180 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:24] "GET /api/students HTTP/1.1" 200 -
+2025-06-21 02:28:24,319 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:24] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-21 02:28:24,325 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:24] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-06-21 02:28:24,326 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:24] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-21 02:28:24,328 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:24] "[36mGET /js/main.js HTTP/1.1[0m" 304 -
+2025-06-21 02:28:24,341 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:24] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-21 02:28:24,497 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:24] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-06-21 02:28:24,641 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:24] "[36mGET /js/tutorial.js HTTP/1.1[0m" 304 -
+2025-06-21 02:28:24,643 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:24] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-21 02:28:24,643 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:24] "[36mGET /img/vx.jpg HTTP/1.1[0m" 304 -
+2025-06-21 02:28:24,643 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:24] "[36mGET /img/logo.png HTTP/1.1[0m" 304 -
+2025-06-21 02:28:24,663 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:24] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-21 02:28:24,966 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:24] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-21 02:28:25,030 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:25] "GET /api/grades?semester=2024-2025Ñ§ÄêÏÂÑ§ÆÚ HTTP/1.1" 200 -
+2025-06-21 02:28:25,082 - students - INFO - »ñÈ¡ËùÓÐÑ§Éú
+2025-06-21 02:28:25,174 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:25] "GET /api/students HTTP/1.1" 200 -
+2025-06-21 02:28:25,179 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:25] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-21 02:28:25,181 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:25] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-21 02:28:25,285 - __main__ - ERROR - »ñÈ¡ÏµÍ³ÉèÖÃÊ±³ö´í: name 'load_settings_from_db' is not defined
+2025-06-21 02:28:25,286 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:25] "[35m[1mGET /api/settings HTTP/1.1[0m" 500 -
+2025-06-21 02:28:25,380 - students - INFO - »ñÈ¡ËùÓÐÑ§Éú
+2025-06-21 02:28:25,607 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:25] "GET /api/students HTTP/1.1" 200 -
+2025-06-21 02:28:25,609 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:25] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-21 02:28:25,625 - __main__ - ERROR - »ñÈ¡ÏµÍ³ÉèÖÃÊ±³ö´í: name 'load_settings_from_db' is not defined
+2025-06-21 02:28:25,643 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:25] "[36mGET /js/settings.js HTTP/1.1[0m" 304 -
+2025-06-21 02:28:25,645 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:25] "[35m[1mGET /api/settings HTTP/1.1[0m" 500 -
+2025-06-21 02:28:25,928 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:25] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-21 02:28:25,928 - students - INFO - »ñÈ¡ËùÓÐÑ§Éú
+2025-06-21 02:28:26,023 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:26] "GET /api/students HTTP/1.1" 200 -
+2025-06-21 02:28:26,252 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:26] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-21 02:28:26,334 - students - INFO - »ñÈ¡ËùÓÐÑ§Éú
+2025-06-21 02:28:26,473 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:26] "GET /api/students HTTP/1.1" 200 -
+2025-06-21 02:28:34,596 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:34] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-21 02:28:34,760 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:34] "GET /api/users HTTP/1.1" 200 -
+2025-06-21 02:28:34,860 - classes - INFO - === CLASSES BLUEPRINT: ½ÓÊÕµ½»ñÈ¡°à¼¶ÁÐ±íÇëÇó ===
+2025-06-21 02:28:34,870 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:34] "GET /api/carousel/settings HTTP/1.1" 200 -
+2025-06-21 02:28:34,879 - deyu - INFO - ÊÕµ½»ñÈ¡µÂÓýÎ¬¶ÈÊý¾ÝÇëÇó: class_id=, semester=2024-2025Ñ§ÄêÏÂÑ§ÆÚ
+2025-06-21 02:28:34,880 - classes - INFO - ´ÓÊý¾Ý¿â»ñÈ¡µ½ 55 ¸ö°à¼¶
+2025-06-21 02:28:34,880 - deyu - INFO - µ±Ç°ÓÃ»§: admin, ID: 1, ½ÇÉ«: ¹ÜÀíÔ±, ¹ØÁª°à¼¶: None
+2025-06-21 02:28:34,880 - deyu - INFO - ÇëÇó²ÎÊý: ImmutableMultiDict([('semester', '2024-2025Ñ§ÄêÏÂÑ§ÆÚ')])
+2025-06-21 02:28:34,880 - deyu - WARNING - Î´Ìá¹©°à¼¶ID
+2025-06-21 02:28:34,881 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:34] "GET /api/deyu?semester=2024-2025Ñ§ÄêÏÂÑ§ÆÚ HTTP/1.1" 200 -
+2025-06-21 02:28:34,884 - classes - INFO - »ñÈ¡µ½ 55 ¸ö°à¼¶£¬×¼±¸·µ»Ø
+2025-06-21 02:28:34,891 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:34] "GET /api/classes HTTP/1.1" 200 -
+2025-06-21 02:28:34,891 - __main__ - ERROR - »ñÈ¡ÏµÍ³ÉèÖÃÊ±³ö´í: name 'load_settings_from_db' is not defined
+2025-06-21 02:28:34,891 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:34] "[35m[1mGET /api/settings HTTP/1.1[0m" 500 -
+2025-06-21 02:28:34,935 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:34] "GET /api/carousel/images HTTP/1.1" 200 -
+2025-06-21 02:28:35,191 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:35] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-21 02:28:35,192 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:35] "GET /api/carousel/settings HTTP/1.1" 200 -
+2025-06-21 02:28:35,202 - classes - INFO - === CLASSES BLUEPRINT: ½ÓÊÕµ½»ñÈ¡°à¼¶ÁÐ±íÇëÇó ===
+2025-06-21 02:28:35,206 - classes - INFO - ´ÓÊý¾Ý¿â»ñÈ¡µ½ 55 ¸ö°à¼¶
+2025-06-21 02:28:35,206 - __main__ - ERROR - »ñÈ¡ÏµÍ³ÉèÖÃÊ±³ö´í: name 'load_settings_from_db' is not defined
+2025-06-21 02:28:35,215 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:35] "[35m[1mGET /api/settings HTTP/1.1[0m" 500 -
+2025-06-21 02:28:35,229 - classes - INFO - »ñÈ¡µ½ 55 ¸ö°à¼¶£¬×¼±¸·µ»Ø
+2025-06-21 02:28:35,231 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:35] "GET /api/classes HTTP/1.1" 200 -
+2025-06-21 02:28:35,363 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:35] "[36mGET /favicon.ico HTTP/1.1[0m" 304 -
+2025-06-21 02:28:35,384 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:35] "GET /api/carousel/images HTTP/1.1" 200 -
+2025-06-21 02:28:35,514 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:35] "[36mGET /img/backgrounds/bg01.jpg HTTP/1.1[0m" 304 -
+2025-06-21 02:28:35,514 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:35] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-21 02:28:35,654 - students - INFO - »ñÈ¡ËùÓÐÑ§Éú
+2025-06-21 02:28:35,758 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:35] "GET /api/students HTTP/1.1" 200 -
+2025-06-21 02:28:37,883 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:28:37] "[36mGET /fonts/boxicons.woff2 HTTP/1.1[0m" 304 -
+2025-06-21 02:29:01,450 - class_export - INFO - ¹ÜÀíÔ± admin ¿ªÊ¼°´°à¼¶µ¼³ö±¨¸æ£¬Ñ¡ÔñÁË 1 ¸ö°à¼¶
+2025-06-21 02:29:01,450 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [5%] ¿ªÊ¼µ¼³ö 1 ¸ö°à¼¶µÄ±¨¸æ... (5%)
+2025-06-21 02:29:01,455 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [10%] ³õÊ¼»¯±¨¸æµ¼³öÆ÷... (10%)
+2025-06-21 02:29:02,130 - utils.report_exporter - INFO - ³É¹¦´´½¨ÄÚÖÃÄ¬ÈÏÄ£°å
+2025-06-21 02:29:02,130 - class_export - INFO - ³õÊ¼»¯ReportExporter³É¹¦
+2025-06-21 02:29:02,130 - class_export - INFO - Ê¹ÓÃÄ£°å: ÈªÖÝ¶«º£ÍåÊµÑéÑ§Ð£×ÛºÏËØÖÊ·¢Õ¹±¨¸æµ¥, Â·¾¶: templates/docx\ÈªÖÝ¶«º£ÍåÊµÑéÑ§Ð£×ÛºÏËØÖÊ·¢Õ¹±¨¸æµ¥.docx
+2025-06-21 02:29:02,130 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [15%] ×¼±¸µ¼³öÎÄ¼þ... (15%)
+2025-06-21 02:29:02,146 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [15%] ÕýÔÚ´¦Àí°à¼¶: ÈýÄê¼¶6°à (1/1) (15.0%)
+2025-06-21 02:29:02,147 - class_export - INFO - ¿ªÊ¼´¦Àí°à¼¶: ÈýÄê¼¶6°à (ID: 17)
+2025-06-21 02:29:02,147 - class_export - INFO - °à¼¶ ÈýÄê¼¶6°à ÕÒµ½ 36 ÃûÑ§Éú
+2025-06-21 02:29:02,147 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [15%] °à¼¶ ÈýÄê¼¶6°à: ÕýÔÚ×¼±¸ 36 ÃûÑ§ÉúµÄÊý¾Ý... (15.0%)
+2025-06-21 02:29:02,147 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [15%] °à¼¶ ÈýÄê¼¶6°à: ÕýÔÚ´¦ÀíÑ§Éú ÐíÒ»Åµ (1/36) (15.0%)
+2025-06-21 02:29:02,155 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [16%] °à¼¶ ÈýÄê¼¶6°à: ÕýÔÚ´¦ÀíÑ§Éú Àîå«ï¿ (6/36) (15.0%)
+2025-06-21 02:29:02,157 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [16%] °à¼¶ ÈýÄê¼¶6°à: ÕýÔÚ´¦ÀíÑ§Éú »ÆÈðÐù (11/36) (15.0%)
+2025-06-21 02:29:02,158 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [17%] °à¼¶ ÈýÄê¼¶6°à: ÕýÔÚ´¦ÀíÑ§Éú ÎâÎ°ÇÕ (16/36) (15.0%)
+2025-06-21 02:29:02,161 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [18%] °à¼¶ ÈýÄê¼¶6°à: ÕýÔÚ´¦ÀíÑ§Éú ÁÖºë´ï (21/36) (15.0%)
+2025-06-21 02:29:02,162 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [18%] °à¼¶ ÈýÄê¼¶6°à: ÕýÔÚ´¦ÀíÑ§Éú ÁÖÎõäÞ (26/36) (15.0%)
+2025-06-21 02:29:02,163 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [19%] °à¼¶ ÈýÄê¼¶6°à: ÕýÔÚ´¦ÀíÑ§Éú ÂÀÔóÈã (31/36) (15.0%)
+2025-06-21 02:29:02,163 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [20%] °à¼¶ ÈýÄê¼¶6°à: ÕýÔÚ´¦ÀíÑ§Éú ×¯ÆôÊ« (36/36) (15.0%)
+2025-06-21 02:29:02,163 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [15%] °à¼¶ ÈýÄê¼¶6°à: ÕýÔÚ»ñÈ¡°àÖ÷ÈÎÐÅÏ¢... (15.0%)
+2025-06-21 02:29:02,164 - class_export - INFO - °à¼¶ ÈýÄê¼¶6°à µÄ°àÖ÷ÈÎ: ÕÅæ­æÃ
+2025-06-21 02:29:02,164 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [15%] °à¼¶ ÈýÄê¼¶6°à: ÕýÔÚÉú³É 36 ·Ý±¨¸æ... (15.0%)
+2025-06-21 02:29:02,164 - utils.report_exporter - INFO - ¿ªÊ¼ÅúÁ¿µ¼³ö±¨¸æ£¬Ñ§ÉúÊýÁ¿: 36, Ê¹ÓÃÄ£°å: ÈªÖÝ¶«º£ÍåÊµÑéÑ§Ð£×ÛºÏËØÖÊ·¢Õ¹±¨¸æµ¥
+2025-06-21 02:29:02,164 - utils.report_exporter - INFO - Ä£°åÂ·¾¶: templates/docx\ÈªÖÝ¶«º£ÍåÊµÑéÑ§Ð£×ÛºÏËØÖÊ·¢Õ¹±¨¸æµ¥.docx
+2025-06-21 02:29:02,167 - utils.report_exporter - INFO - ´¦ÀíµÚ 1/36 ¸öÑ§Éú: ID=1, ÐÕÃû=ÐíÒ»Åµ
+2025-06-21 02:29:02,167 - utils.report_exporter - INFO - ÎªÑ§Éú 1 Éú³É±¨¸æ...
+2025-06-21 02:29:02,167 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=1, ÐÕÃû=ÐíÒ»Åµ
+2025-06-21 02:29:03,562 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:29:03,794 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 1_ÐíÒ»Åµ.docx
+2025-06-21 02:29:03,796 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 1 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:29:03,796 - utils.report_exporter - INFO - ´¦ÀíµÚ 2/36 ¸öÑ§Éú: ID=2, ÐÕÃû=ÕÅÖÇÃú
+2025-06-21 02:29:03,796 - utils.report_exporter - INFO - ÎªÑ§Éú 2 Éú³É±¨¸æ...
+2025-06-21 02:29:03,796 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=2, ÐÕÃû=ÕÅÖÇÃú
+2025-06-21 02:29:03,796 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:29:04,010 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 2_ÕÅÖÇÃú.docx
+2025-06-21 02:29:04,024 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 2 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:29:04,028 - utils.report_exporter - INFO - ´¦ÀíµÚ 3/36 ¸öÑ§Éú: ID=3, ÐÕÃû=Õ²×ÓÆ½
+2025-06-21 02:29:04,029 - utils.report_exporter - INFO - ÎªÑ§Éú 3 Éú³É±¨¸æ...
+2025-06-21 02:29:04,029 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=3, ÐÕÃû=Õ²×ÓÆ½
+2025-06-21 02:29:04,029 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:29:04,254 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 3_Õ²×ÓÆ½.docx
+2025-06-21 02:29:04,261 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 3 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:29:04,262 - utils.report_exporter - INFO - ´¦ÀíµÚ 4/36 ¸öÑ§Éú: ID=4, ÐÕÃû=ÉÛ½õÁú
+2025-06-21 02:29:04,262 - utils.report_exporter - INFO - ÎªÑ§Éú 4 Éú³É±¨¸æ...
+2025-06-21 02:29:04,262 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=4, ÐÕÃû=ÉÛ½õÁú
+2025-06-21 02:29:04,262 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:29:04,470 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 4_ÉÛ½õÁú.docx
+2025-06-21 02:29:04,478 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 4 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:29:04,478 - utils.report_exporter - INFO - ´¦ÀíµÚ 5/36 ¸öÑ§Éú: ID=5, ÐÕÃû=Àîºº´Ï
+2025-06-21 02:29:04,478 - utils.report_exporter - INFO - ÎªÑ§Éú 5 Éú³É±¨¸æ...
+2025-06-21 02:29:04,478 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=5, ÐÕÃû=Àîºº´Ï
+2025-06-21 02:29:04,478 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:29:04,677 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 5_Àîºº´Ï.docx
+2025-06-21 02:29:04,687 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 5 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:29:04,689 - utils.report_exporter - INFO - ´¦ÀíµÚ 6/36 ¸öÑ§Éú: ID=6, ÐÕÃû=Àîå«ï¿
+2025-06-21 02:29:04,689 - utils.report_exporter - INFO - ÎªÑ§Éú 6 Éú³É±¨¸æ...
+2025-06-21 02:29:04,691 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=6, ÐÕÃû=Àîå«ï¿
+2025-06-21 02:29:04,694 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:29:04,877 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 6_Àîå«ï¿.docx
+2025-06-21 02:29:04,883 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 6 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:29:04,887 - utils.report_exporter - INFO - ´¦ÀíµÚ 7/36 ¸öÑ§Éú: ID=7, ÐÕÃû=ÐíÒ¢ï¿
+2025-06-21 02:29:04,892 - utils.report_exporter - INFO - ÎªÑ§Éú 7 Éú³É±¨¸æ...
+2025-06-21 02:29:04,895 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=7, ÐÕÃû=ÐíÒ¢ï¿
+2025-06-21 02:29:04,896 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:29:05,181 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 7_ÐíÒ¢ï¿.docx
+2025-06-21 02:29:05,184 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 7 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:29:05,185 - utils.report_exporter - INFO - ´¦ÀíµÚ 8/36 ¸öÑ§Éú: ID=8, ÐÕÃû=ÁõÐ¢Óî
+2025-06-21 02:29:05,185 - utils.report_exporter - INFO - ÎªÑ§Éú 8 Éú³É±¨¸æ...
+2025-06-21 02:29:05,186 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=8, ÐÕÃû=ÁõÐ¢Óî
+2025-06-21 02:29:05,186 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:29:05,356 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 8_ÁõÐ¢Óî.docx
+2025-06-21 02:29:05,358 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 8 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:29:05,358 - utils.report_exporter - INFO - ´¦ÀíµÚ 9/36 ¸öÑ§Éú: ID=9, ÐÕÃû=ÁÖÓñ»Ê
+2025-06-21 02:29:05,358 - utils.report_exporter - INFO - ÎªÑ§Éú 9 Éú³É±¨¸æ...
+2025-06-21 02:29:05,358 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=9, ÐÕÃû=ÁÖÓñ»Ê
+2025-06-21 02:29:05,358 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:29:05,556 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 9_ÁÖÓñ»Ê.docx
+2025-06-21 02:29:05,565 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 9 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:29:05,565 - utils.report_exporter - INFO - ´¦ÀíµÚ 10/36 ¸öÑ§Éú: ID=10, ÐÕÃû=ÖÜÔÊºè
+2025-06-21 02:29:05,565 - utils.report_exporter - INFO - ÎªÑ§Éú 10 Éú³É±¨¸æ...
+2025-06-21 02:29:05,567 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=10, ÐÕÃû=ÖÜÔÊºè
+2025-06-21 02:29:05,573 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:29:05,752 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 10_ÖÜÔÊºè.docx
+2025-06-21 02:29:05,757 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 10 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:29:05,759 - utils.report_exporter - INFO - ´¦ÀíµÚ 11/36 ¸öÑ§Éú: ID=11, ÐÕÃû=»ÆÈðÐù
+2025-06-21 02:29:05,759 - utils.report_exporter - INFO - ÎªÑ§Éú 11 Éú³É±¨¸æ...
+2025-06-21 02:29:05,759 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=11, ÐÕÃû=»ÆÈðÐù
+2025-06-21 02:29:05,759 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:29:05,938 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 11_»ÆÈðÐù.docx
+2025-06-21 02:29:05,940 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 11 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:29:05,940 - utils.report_exporter - INFO - ´¦ÀíµÚ 12/36 ¸öÑ§Éú: ID=12, ÐÕÃû=Â¬Ê«¿­
+2025-06-21 02:29:05,940 - utils.report_exporter - INFO - ÎªÑ§Éú 12 Éú³É±¨¸æ...
+2025-06-21 02:29:05,942 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=12, ÐÕÃû=Â¬Ê«¿­
+2025-06-21 02:29:05,942 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:29:06,175 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 12_Â¬Ê«¿­.docx
+2025-06-21 02:29:06,178 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 12 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:29:06,178 - utils.report_exporter - INFO - ´¦ÀíµÚ 13/36 ¸öÑ§Éú: ID=13, ÐÕÃû=ÖÜØ¹·²
+2025-06-21 02:29:06,178 - utils.report_exporter - INFO - ÎªÑ§Éú 13 Éú³É±¨¸æ...
+2025-06-21 02:29:06,178 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=13, ÐÕÃû=ÖÜØ¹·²
+2025-06-21 02:29:06,182 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:29:06,458 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 13_ÖÜØ¹·².docx
+2025-06-21 02:29:06,471 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 13 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:29:06,471 - utils.report_exporter - INFO - ´¦ÀíµÚ 14/36 ¸öÑ§Éú: ID=14, ÐÕÃû=ÖÓÑ§Áº
+2025-06-21 02:29:06,471 - utils.report_exporter - INFO - ÎªÑ§Éú 14 Éú³É±¨¸æ...
+2025-06-21 02:29:06,471 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=14, ÐÕÃû=ÖÓÑ§Áº
+2025-06-21 02:29:06,473 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:29:06,702 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 14_ÖÓÑ§Áº.docx
+2025-06-21 02:29:06,703 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 14 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:29:06,705 - utils.report_exporter - INFO - ´¦ÀíµÚ 15/36 ¸öÑ§Éú: ID=15, ÐÕÃû=ÅË¾´Ðù
+2025-06-21 02:29:06,705 - utils.report_exporter - INFO - ÎªÑ§Éú 15 Éú³É±¨¸æ...
+2025-06-21 02:29:06,705 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=15, ÐÕÃû=ÅË¾´Ðù
+2025-06-21 02:29:06,705 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:29:06,846 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 15_ÅË¾´Ðù.docx
+2025-06-21 02:29:06,846 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 15 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:29:06,846 - utils.report_exporter - INFO - ´¦ÀíµÚ 16/36 ¸öÑ§Éú: ID=16, ÐÕÃû=ÎâÎ°ÇÕ
+2025-06-21 02:29:06,846 - utils.report_exporter - INFO - ÎªÑ§Éú 16 Éú³É±¨¸æ...
+2025-06-21 02:29:06,846 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=16, ÐÕÃû=ÎâÎ°ÇÕ
+2025-06-21 02:29:06,846 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:29:07,007 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 16_ÎâÎ°ÇÕ.docx
+2025-06-21 02:29:07,007 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 16 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:29:07,007 - utils.report_exporter - INFO - ´¦ÀíµÚ 17/36 ¸öÑ§Éú: ID=17, ÐÕÃû=²Ì›vË³
+2025-06-21 02:29:07,007 - utils.report_exporter - INFO - ÎªÑ§Éú 17 Éú³É±¨¸æ...
+2025-06-21 02:29:07,007 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=17, ÐÕÃû=²Ì›vË³
+2025-06-21 02:29:07,007 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:29:07,217 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 17_²Ì›vË³.docx
+2025-06-21 02:29:07,217 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 17 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:29:07,217 - utils.report_exporter - INFO - ´¦ÀíµÚ 18/36 ¸öÑ§Éú: ID=18, ÐÕÃû=³ÂÒÕÑï
+2025-06-21 02:29:07,217 - utils.report_exporter - INFO - ÎªÑ§Éú 18 Éú³É±¨¸æ...
+2025-06-21 02:29:07,217 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=18, ÐÕÃû=³ÂÒÕÑï
+2025-06-21 02:29:07,217 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:29:07,387 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 18_³ÂÒÕÑï.docx
+2025-06-21 02:29:07,387 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 18 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:29:07,387 - utils.report_exporter - INFO - ´¦ÀíµÚ 19/36 ¸öÑ§Éú: ID=19, ÐÕÃû=³ÂÇ§¹ã
+2025-06-21 02:29:07,387 - utils.report_exporter - INFO - ÎªÑ§Éú 19 Éú³É±¨¸æ...
+2025-06-21 02:29:07,391 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=19, ÐÕÃû=³ÂÇ§¹ã
+2025-06-21 02:29:07,394 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:29:07,667 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 19_³ÂÇ§¹ã.docx
+2025-06-21 02:29:07,677 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 19 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:29:07,677 - utils.report_exporter - INFO - ´¦ÀíµÚ 20/36 ¸öÑ§Éú: ID=20, ÐÕÃû=µËÖÇÓî
+2025-06-21 02:29:07,677 - utils.report_exporter - INFO - ÎªÑ§Éú 20 Éú³É±¨¸æ...
+2025-06-21 02:29:07,677 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=20, ÐÕÃû=µËÖÇÓî
+2025-06-21 02:29:07,677 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:29:07,918 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 20_µËÖÇÓî.docx
+2025-06-21 02:29:07,927 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 20 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:29:07,927 - utils.report_exporter - INFO - ´¦ÀíµÚ 21/36 ¸öÑ§Éú: ID=21, ÐÕÃû=ÁÖºë´ï
+2025-06-21 02:29:07,927 - utils.report_exporter - INFO - ÎªÑ§Éú 21 Éú³É±¨¸æ...
+2025-06-21 02:29:07,927 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=21, ÐÕÃû=ÁÖºë´ï
+2025-06-21 02:29:07,927 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:29:08,250 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 21_ÁÖºë´ï.docx
+2025-06-21 02:29:08,257 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 21 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:29:08,257 - utils.report_exporter - INFO - ´¦ÀíµÚ 22/36 ¸öÑ§Éú: ID=22, ÐÕÃû=ÕÔ²©³¬
+2025-06-21 02:29:08,257 - utils.report_exporter - INFO - ÎªÑ§Éú 22 Éú³É±¨¸æ...
+2025-06-21 02:29:08,257 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=22, ÐÕÃû=ÕÔ²©³¬
+2025-06-21 02:29:08,257 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:29:08,511 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 22_ÕÔ²©³¬.docx
+2025-06-21 02:29:08,513 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 22 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:29:08,517 - utils.report_exporter - INFO - ´¦ÀíµÚ 23/36 ¸öÑ§Éú: ID=23, ÐÕÃû=´÷°²°²
+2025-06-21 02:29:08,517 - utils.report_exporter - INFO - ÎªÑ§Éú 23 Éú³É±¨¸æ...
+2025-06-21 02:29:08,517 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=23, ÐÕÃû=´÷°²°²
+2025-06-21 02:29:08,517 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:29:08,732 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 23_´÷°²°².docx
+2025-06-21 02:29:08,737 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 23 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:29:08,737 - utils.report_exporter - INFO - ´¦ÀíµÚ 24/36 ¸öÑ§Éú: ID=24, ÐÕÃû=ÕÅÜ¿Ï©
+2025-06-21 02:29:08,739 - utils.report_exporter - INFO - ÎªÑ§Éú 24 Éú³É±¨¸æ...
+2025-06-21 02:29:08,739 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=24, ÐÕÃû=ÕÅÜ¿Ï©
+2025-06-21 02:29:08,739 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:29:08,918 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 24_ÕÅÜ¿Ï©.docx
+2025-06-21 02:29:08,921 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 24 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:29:08,923 - utils.report_exporter - INFO - ´¦ÀíµÚ 25/36 ¸öÑ§Éú: ID=25, ÐÕÃû=¹ùÐ¾Ù×
+2025-06-21 02:29:08,923 - utils.report_exporter - INFO - ÎªÑ§Éú 25 Éú³É±¨¸æ...
+2025-06-21 02:29:08,923 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=25, ÐÕÃû=¹ùÐ¾Ù×
+2025-06-21 02:29:08,925 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:29:09,158 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 25_¹ùÐ¾Ù×.docx
+2025-06-21 02:29:09,162 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 25 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:29:09,163 - utils.report_exporter - INFO - ´¦ÀíµÚ 26/36 ¸öÑ§Éú: ID=26, ÐÕÃû=ÁÖÎõäÞ
+2025-06-21 02:29:09,163 - utils.report_exporter - INFO - ÎªÑ§Éú 26 Éú³É±¨¸æ...
+2025-06-21 02:29:09,165 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=26, ÐÕÃû=ÁÖÎõäÞ
+2025-06-21 02:29:09,168 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:29:09,389 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 26_ÁÖÎõäÞ.docx
+2025-06-21 02:29:09,404 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 26 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:29:09,406 - utils.report_exporter - INFO - ´¦ÀíµÚ 27/36 ¸öÑ§Éú: ID=27, ÐÕÃû=Âæ×Óæ«
+2025-06-21 02:29:09,406 - utils.report_exporter - INFO - ÎªÑ§Éú 27 Éú³É±¨¸æ...
+2025-06-21 02:29:09,407 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=27, ÐÕÃû=Âæ×Óæ«
+2025-06-21 02:29:09,407 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:29:09,606 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 27_Âæ×Óæ«.docx
+2025-06-21 02:29:09,610 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 27 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:29:09,610 - utils.report_exporter - INFO - ´¦ÀíµÚ 28/36 ¸öÑ§Éú: ID=28, ÐÕÃû=ÇñâùÑó
+2025-06-21 02:29:09,610 - utils.report_exporter - INFO - ÎªÑ§Éú 28 Éú³É±¨¸æ...
+2025-06-21 02:29:09,612 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=28, ÐÕÃû=ÇñâùÑó
+2025-06-21 02:29:09,612 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:29:09,856 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 28_ÇñâùÑó.docx
+2025-06-21 02:29:09,861 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 28 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:29:09,861 - utils.report_exporter - INFO - ´¦ÀíµÚ 29/36 ¸öÑ§Éú: ID=29, ÐÕÃû=ÕÅîÚÁÕ
+2025-06-21 02:29:09,861 - utils.report_exporter - INFO - ÎªÑ§Éú 29 Éú³É±¨¸æ...
+2025-06-21 02:29:09,861 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=29, ÐÕÃû=ÕÅîÚÁÕ
+2025-06-21 02:29:09,864 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:29:10,081 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 29_ÕÅîÚÁÕ.docx
+2025-06-21 02:29:10,087 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 29 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:29:10,087 - utils.report_exporter - INFO - ´¦ÀíµÚ 30/36 ¸öÑ§Éú: ID=30, ÐÕÃû=ºúÄÝ
+2025-06-21 02:29:10,087 - utils.report_exporter - INFO - ÎªÑ§Éú 30 Éú³É±¨¸æ...
+2025-06-21 02:29:10,087 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=30, ÐÕÃû=ºúÄÝ
+2025-06-21 02:29:10,087 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:29:10,210 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 30_ºúÄÝ.docx
+2025-06-21 02:29:10,213 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 30 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:29:10,213 - utils.report_exporter - INFO - ´¦ÀíµÚ 31/36 ¸öÑ§Éú: ID=31, ÐÕÃû=ÂÀÔóÈã
+2025-06-21 02:29:10,214 - utils.report_exporter - INFO - ÎªÑ§Éú 31 Éú³É±¨¸æ...
+2025-06-21 02:29:10,214 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=31, ÐÕÃû=ÂÀÔóÈã
+2025-06-21 02:29:10,214 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:29:10,318 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 31_ÂÀÔóÈã.docx
+2025-06-21 02:29:10,320 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 31 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:29:10,321 - utils.report_exporter - INFO - ´¦ÀíµÚ 32/36 ¸öÑ§Éú: ID=32, ÐÕÃû=»ÆæÂæÂ
+2025-06-21 02:29:10,321 - utils.report_exporter - INFO - ÎªÑ§Éú 32 Éú³É±¨¸æ...
+2025-06-21 02:29:10,321 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=32, ÐÕÃû=»ÆæÂæÂ
+2025-06-21 02:29:10,323 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:29:10,448 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 32_»ÆæÂæÂ.docx
+2025-06-21 02:29:10,454 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 32 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:29:10,454 - utils.report_exporter - INFO - ´¦ÀíµÚ 33/36 ¸öÑ§Éú: ID=33, ÐÕÃû=ÀîÇïÊµ
+2025-06-21 02:29:10,454 - utils.report_exporter - INFO - ÎªÑ§Éú 33 Éú³É±¨¸æ...
+2025-06-21 02:29:10,457 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=33, ÐÕÃû=ÀîÇïÊµ
+2025-06-21 02:29:10,457 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:29:10,570 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 33_ÀîÇïÊµ.docx
+2025-06-21 02:29:10,572 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 33 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:29:10,573 - utils.report_exporter - INFO - ´¦ÀíµÚ 34/36 ¸öÑ§Éú: ID=34, ÐÕÃû=Ö£Ü·åû
+2025-06-21 02:29:10,573 - utils.report_exporter - INFO - ÎªÑ§Éú 34 Éú³É±¨¸æ...
+2025-06-21 02:29:10,573 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=34, ÐÕÃû=Ö£Ü·åû
+2025-06-21 02:29:10,573 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:29:10,697 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 34_Ö£Ü·åû.docx
+2025-06-21 02:29:10,699 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 34 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:29:10,699 - utils.report_exporter - INFO - ´¦ÀíµÚ 35/36 ¸öÑ§Éú: ID=35, ÐÕÃû=ÖÜ¼ÑÔÃ
+2025-06-21 02:29:10,699 - utils.report_exporter - INFO - ÎªÑ§Éú 35 Éú³É±¨¸æ...
+2025-06-21 02:29:10,699 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=35, ÐÕÃû=ÖÜ¼ÑÔÃ
+2025-06-21 02:29:10,699 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:29:10,814 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 35_ÖÜ¼ÑÔÃ.docx
+2025-06-21 02:29:10,817 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 35 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:29:10,817 - utils.report_exporter - INFO - ´¦ÀíµÚ 36/36 ¸öÑ§Éú: ID=36, ÐÕÃû=×¯ÆôÊ«
+2025-06-21 02:29:10,817 - utils.report_exporter - INFO - ÎªÑ§Éú 36 Éú³É±¨¸æ...
+2025-06-21 02:29:10,817 - utils.report_exporter - INFO - ¿ªÊ¼ÎªÑ§ÉúÉú³É±¨¸æ: ID=36, ÐÕÃû=×¯ÆôÊ«
+2025-06-21 02:29:10,817 - utils.report_exporter - DEBUG - ×¼±¸Ä£°åÊý¾ÝÍê³É: 40 ¸ö×Ö¶Î
+2025-06-21 02:29:10,915 - utils.report_exporter - INFO - ±¨¸æÉú³É³É¹¦£¬×¼±¸±£´æÎª: 36_×¯ÆôÊ«.docx
+2025-06-21 02:29:10,919 - utils.report_exporter - INFO - ³É¹¦Ìí¼ÓÑ§Éú 36 µÄ±¨¸æµ½ZIPÎÄ¼þ
+2025-06-21 02:29:10,920 - utils.report_exporter - INFO - Éú³ÉZIPÎÄ¼þ: C:\Users\ADMINI~1\AppData\Local\Temp\tmpsdn9eb_g\student_reports.zip
+2025-06-21 02:29:10,922 - utils.report_exporter - INFO - ³É¹¦µ¼³ö 36/36 ¸öÑ§Éú±¨¸æ
+2025-06-21 02:29:11,030 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [15%] °à¼¶ ÈýÄê¼¶6°à: ÕýÔÚ×ª»» 36 ¸öWordÎÄµµÎªPDF... (15.0%)
+2025-06-21 02:29:11,030 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [15%] °à¼¶ ÈýÄê¼¶6°à: ÕýÔÚ×ª»»PDF 10_ÖÜÔÊºè.docx (1/36) (15.0%)
+2025-06-21 02:29:46,301 - class_export - INFO - ³É¹¦×ª»»PDF: 10_ÖÜÔÊºè.docx -> 10_ÖÜÔÊºè.pdf
+2025-06-21 02:29:46,887 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 10_ÖÜÔÊºè.docx
+2025-06-21 02:29:47,498 - class_export - DEBUG - WordÓ¦ÓÃ³ÌÐòÒÑÍË³ö
+2025-06-21 02:29:47,718 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:29:47,718 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [15%] °à¼¶ ÈýÄê¼¶6°à: ÕýÔÚ×ª»»PDF 11_»ÆÈðÐù.docx (2/36) (15.0%)
+2025-06-21 02:29:49,657 - class_export - INFO - ³É¹¦×ª»»PDF: 11_»ÆÈðÐù.docx -> 11_»ÆÈðÐù.pdf
+2025-06-21 02:29:49,679 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 11_»ÆÈðÐù.docx
+2025-06-21 02:29:53,850 - class_export - WARNING - ÍË³öWordÓ¦ÓÃ³ÌÐòÊ±³ö´í: Word.Application.Quit
+2025-06-21 02:29:53,850 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:29:53,850 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [16%] °à¼¶ ÈýÄê¼¶6°à: ÕýÔÚ×ª»»PDF 12_Â¬Ê«¿­.docx (3/36) (15.0%)
+2025-06-21 02:29:59,193 - class_export - INFO - ³É¹¦×ª»»PDF: 12_Â¬Ê«¿­.docx -> 12_Â¬Ê«¿­.pdf
+2025-06-21 02:29:59,438 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 12_Â¬Ê«¿­.docx
+2025-06-21 02:29:59,489 - class_export - DEBUG - WordÓ¦ÓÃ³ÌÐòÒÑÍË³ö
+2025-06-21 02:29:59,597 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:29:59,597 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [16%] °à¼¶ ÈýÄê¼¶6°à: ÕýÔÚ×ª»»PDF 13_ÖÜØ¹·².docx (4/36) (15.0%)
+2025-06-21 02:30:01,186 - class_export - INFO - ³É¹¦×ª»»PDF: 13_ÖÜØ¹·².docx -> 13_ÖÜØ¹·².pdf
+2025-06-21 02:30:01,199 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 13_ÖÜØ¹·².docx
+2025-06-21 02:30:03,907 - class_export - WARNING - ÍË³öWordÓ¦ÓÃ³ÌÐòÊ±³ö´í: Word.Application.Quit
+2025-06-21 02:30:03,916 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:30:03,917 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [16%] °à¼¶ ÈýÄê¼¶6°à: ÕýÔÚ×ª»»PDF 14_ÖÓÑ§Áº.docx (5/36) (15.0%)
+2025-06-21 02:30:10,466 - class_export - INFO - ³É¹¦×ª»»PDF: 14_ÖÓÑ§Áº.docx -> 14_ÖÓÑ§Áº.pdf
+2025-06-21 02:30:10,694 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 14_ÖÓÑ§Áº.docx
+2025-06-21 02:30:10,750 - class_export - DEBUG - WordÓ¦ÓÃ³ÌÐòÒÑÍË³ö
+2025-06-21 02:30:10,856 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:30:10,856 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [16%] °à¼¶ ÈýÄê¼¶6°à: ÕýÔÚ×ª»»PDF 15_ÅË¾´Ðù.docx (6/36) (15.0%)
+2025-06-21 02:30:12,497 - class_export - INFO - ³É¹¦×ª»»PDF: 15_ÅË¾´Ðù.docx -> 15_ÅË¾´Ðù.pdf
+2025-06-21 02:30:12,510 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 15_ÅË¾´Ðù.docx
+2025-06-21 02:30:15,048 - class_export - WARNING - ÍË³öWordÓ¦ÓÃ³ÌÐòÊ±³ö´í: Word.Application.Quit
+2025-06-21 02:30:15,049 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:30:15,049 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [17%] °à¼¶ ÈýÄê¼¶6°à: ÕýÔÚ×ª»»PDF 16_ÎâÎ°ÇÕ.docx (7/36) (15.0%)
+2025-06-21 02:30:19,277 - class_export - INFO - ³É¹¦×ª»»PDF: 16_ÎâÎ°ÇÕ.docx -> 16_ÎâÎ°ÇÕ.pdf
+2025-06-21 02:30:19,459 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 16_ÎâÎ°ÇÕ.docx
+2025-06-21 02:30:19,462 - class_export - DEBUG - WordÓ¦ÓÃ³ÌÐòÒÑÍË³ö
+2025-06-21 02:30:19,576 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:30:19,576 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [17%] °à¼¶ ÈýÄê¼¶6°à: ÕýÔÚ×ª»»PDF 17_²Ì›vË³.docx (8/36) (15.0%)
+2025-06-21 02:30:21,337 - class_export - INFO - ³É¹¦×ª»»PDF: 17_²Ì›vË³.docx -> 17_²Ì›vË³.pdf
+2025-06-21 02:30:21,357 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 17_²Ì›vË³.docx
+2025-06-21 02:30:23,977 - class_export - WARNING - ÍË³öWordÓ¦ÓÃ³ÌÐòÊ±³ö´í: Word.Application.Quit
+2025-06-21 02:30:23,986 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:30:23,986 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [17%] °à¼¶ ÈýÄê¼¶6°à: ÕýÔÚ×ª»»PDF 18_³ÂÒÕÑï.docx (9/36) (15.0%)
+2025-06-21 02:30:28,217 - class_export - INFO - ³É¹¦×ª»»PDF: 18_³ÂÒÕÑï.docx -> 18_³ÂÒÕÑï.pdf
+2025-06-21 02:30:28,454 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 18_³ÂÒÕÑï.docx
+2025-06-21 02:30:28,508 - class_export - DEBUG - WordÓ¦ÓÃ³ÌÐòÒÑÍË³ö
+2025-06-21 02:30:28,606 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:30:28,606 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [18%] °à¼¶ ÈýÄê¼¶6°à: ÕýÔÚ×ª»»PDF 19_³ÂÇ§¹ã.docx (10/36) (15.0%)
+2025-06-21 02:30:30,191 - class_export - INFO - ³É¹¦×ª»»PDF: 19_³ÂÇ§¹ã.docx -> 19_³ÂÇ§¹ã.pdf
+2025-06-21 02:30:30,201 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 19_³ÂÇ§¹ã.docx
+2025-06-21 02:30:32,827 - class_export - WARNING - ÍË³öWordÓ¦ÓÃ³ÌÐòÊ±³ö´í: Word.Application.Quit
+2025-06-21 02:30:32,829 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:30:32,829 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [18%] °à¼¶ ÈýÄê¼¶6°à: ÕýÔÚ×ª»»PDF 1_ÐíÒ»Åµ.docx (11/36) (15.0%)
+2025-06-21 02:30:37,004 - class_export - INFO - ³É¹¦×ª»»PDF: 1_ÐíÒ»Åµ.docx -> 1_ÐíÒ»Åµ.pdf
+2025-06-21 02:30:37,210 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 1_ÐíÒ»Åµ.docx
+2025-06-21 02:30:37,269 - class_export - DEBUG - WordÓ¦ÓÃ³ÌÐòÒÑÍË³ö
+2025-06-21 02:30:37,374 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:30:37,375 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [18%] °à¼¶ ÈýÄê¼¶6°à: ÕýÔÚ×ª»»PDF 20_µËÖÇÓî.docx (12/36) (15.0%)
+2025-06-21 02:30:38,949 - class_export - INFO - ³É¹¦×ª»»PDF: 20_µËÖÇÓî.docx -> 20_µËÖÇÓî.pdf
+2025-06-21 02:30:38,966 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 20_µËÖÇÓî.docx
+2025-06-21 02:31:04,247 - class_export - WARNING - ÍË³öWordÓ¦ÓÃ³ÌÐòÊ±³ö´í: Word.Application.Quit
+2025-06-21 02:31:04,248 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:31:04,249 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [18%] °à¼¶ ÈýÄê¼¶6°à: ÕýÔÚ×ª»»PDF 21_ÁÖºë´ï.docx (13/36) (15.0%)
+2025-06-21 02:31:08,517 - class_export - INFO - ³É¹¦×ª»»PDF: 21_ÁÖºë´ï.docx -> 21_ÁÖºë´ï.pdf
+2025-06-21 02:31:08,741 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 21_ÁÖºë´ï.docx
+2025-06-21 02:31:08,795 - class_export - DEBUG - WordÓ¦ÓÃ³ÌÐòÒÑÍË³ö
+2025-06-21 02:31:08,898 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:31:08,898 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [19%] °à¼¶ ÈýÄê¼¶6°à: ÕýÔÚ×ª»»PDF 22_ÕÔ²©³¬.docx (14/36) (15.0%)
+2025-06-21 02:31:10,648 - class_export - INFO - ³É¹¦×ª»»PDF: 22_ÕÔ²©³¬.docx -> 22_ÕÔ²©³¬.pdf
+2025-06-21 02:31:10,662 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 22_ÕÔ²©³¬.docx
+2025-06-21 02:31:13,297 - class_export - WARNING - ÍË³öWordÓ¦ÓÃ³ÌÐòÊ±³ö´í: Word.Application.Quit
+2025-06-21 02:31:13,308 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:31:13,308 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [19%] °à¼¶ ÈýÄê¼¶6°à: ÕýÔÚ×ª»»PDF 23_´÷°²°².docx (15/36) (15.0%)
+2025-06-21 02:31:17,393 - class_export - INFO - ³É¹¦×ª»»PDF: 23_´÷°²°².docx -> 23_´÷°²°².pdf
+2025-06-21 02:31:17,600 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 23_´÷°²°².docx
+2025-06-21 02:31:17,600 - class_export - DEBUG - WordÓ¦ÓÃ³ÌÐòÒÑÍË³ö
+2025-06-21 02:31:17,721 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:31:17,721 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [19%] °à¼¶ ÈýÄê¼¶6°à: ÕýÔÚ×ª»»PDF 24_ÕÅÜ¿Ï©.docx (16/36) (15.0%)
+2025-06-21 02:31:19,477 - class_export - INFO - ³É¹¦×ª»»PDF: 24_ÕÅÜ¿Ï©.docx -> 24_ÕÅÜ¿Ï©.pdf
+2025-06-21 02:31:19,493 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 24_ÕÅÜ¿Ï©.docx
+2025-06-21 02:31:22,096 - class_export - WARNING - ÍË³öWordÓ¦ÓÃ³ÌÐòÊ±³ö´í: Word.Application.Quit
+2025-06-21 02:31:22,097 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:31:22,097 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [19%] °à¼¶ ÈýÄê¼¶6°à: ÕýÔÚ×ª»»PDF 25_¹ùÐ¾Ù×.docx (17/36) (15.0%)
+2025-06-21 02:31:26,257 - class_export - INFO - ³É¹¦×ª»»PDF: 25_¹ùÐ¾Ù×.docx -> 25_¹ùÐ¾Ù×.pdf
+2025-06-21 02:31:26,467 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 25_¹ùÐ¾Ù×.docx
+2025-06-21 02:31:26,524 - class_export - DEBUG - WordÓ¦ÓÃ³ÌÐòÒÑÍË³ö
+2025-06-21 02:31:26,627 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:31:26,627 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [20%] °à¼¶ ÈýÄê¼¶6°à: ÕýÔÚ×ª»»PDF 26_ÁÖÎõäÞ.docx (18/36) (15.0%)
+2025-06-21 02:31:28,197 - class_export - INFO - ³É¹¦×ª»»PDF: 26_ÁÖÎõäÞ.docx -> 26_ÁÖÎõäÞ.pdf
+2025-06-21 02:31:28,218 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 26_ÁÖÎõäÞ.docx
+2025-06-21 02:31:30,922 - class_export - WARNING - ÍË³öWordÓ¦ÓÃ³ÌÐòÊ±³ö´í: Word.Application.Quit
+2025-06-21 02:31:30,924 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:31:30,924 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [20%] °à¼¶ ÈýÄê¼¶6°à: ÕýÔÚ×ª»»PDF 27_Âæ×Óæ«.docx (19/36) (15.0%)
+2025-06-21 02:31:35,229 - class_export - INFO - ³É¹¦×ª»»PDF: 27_Âæ×Óæ«.docx -> 27_Âæ×Óæ«.pdf
+2025-06-21 02:31:35,428 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 27_Âæ×Óæ«.docx
+2025-06-21 02:31:35,487 - class_export - DEBUG - WordÓ¦ÓÃ³ÌÐòÒÑÍË³ö
+2025-06-21 02:31:35,587 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:31:35,587 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [20%] °à¼¶ ÈýÄê¼¶6°à: ÕýÔÚ×ª»»PDF 28_ÇñâùÑó.docx (20/36) (15.0%)
+2025-06-21 02:31:37,350 - class_export - INFO - ³É¹¦×ª»»PDF: 28_ÇñâùÑó.docx -> 28_ÇñâùÑó.pdf
+2025-06-21 02:31:37,357 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 28_ÇñâùÑó.docx
+2025-06-21 02:31:39,951 - class_export - WARNING - ÍË³öWordÓ¦ÓÃ³ÌÐòÊ±³ö´í: Word.Application.Quit
+2025-06-21 02:31:39,953 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:31:39,953 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [21%] °à¼¶ ÈýÄê¼¶6°à: ÕýÔÚ×ª»»PDF 29_ÕÅîÚÁÕ.docx (21/36) (15.0%)
+2025-06-21 02:31:44,067 - class_export - INFO - ³É¹¦×ª»»PDF: 29_ÕÅîÚÁÕ.docx -> 29_ÕÅîÚÁÕ.pdf
+2025-06-21 02:31:44,264 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 29_ÕÅîÚÁÕ.docx
+2025-06-21 02:31:44,317 - class_export - DEBUG - WordÓ¦ÓÃ³ÌÐòÒÑÍË³ö
+2025-06-21 02:31:44,420 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:31:44,420 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [21%] °à¼¶ ÈýÄê¼¶6°à: ÕýÔÚ×ª»»PDF 2_ÕÅÖÇÃú.docx (22/36) (15.0%)
+2025-06-21 02:31:45,997 - class_export - INFO - ³É¹¦×ª»»PDF: 2_ÕÅÖÇÃú.docx -> 2_ÕÅÖÇÃú.pdf
+2025-06-21 02:31:46,017 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 2_ÕÅÖÇÃú.docx
+2025-06-21 02:31:48,635 - class_export - WARNING - ÍË³öWordÓ¦ÓÃ³ÌÐòÊ±³ö´í: Word.Application.Quit
+2025-06-21 02:31:48,636 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:31:48,637 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [21%] °à¼¶ ÈýÄê¼¶6°à: ÕýÔÚ×ª»»PDF 30_ºúÄÝ.docx (23/36) (15.0%)
+2025-06-21 02:31:52,752 - class_export - INFO - ³É¹¦×ª»»PDF: 30_ºúÄÝ.docx -> 30_ºúÄÝ.pdf
+2025-06-21 02:31:52,958 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 30_ºúÄÝ.docx
+2025-06-21 02:31:53,017 - class_export - DEBUG - WordÓ¦ÓÃ³ÌÐòÒÑÍË³ö
+2025-06-21 02:31:53,112 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:31:53,117 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [21%] °à¼¶ ÈýÄê¼¶6°à: ÕýÔÚ×ª»»PDF 31_ÂÀÔóÈã.docx (24/36) (15.0%)
+2025-06-21 02:31:54,917 - class_export - INFO - ³É¹¦×ª»»PDF: 31_ÂÀÔóÈã.docx -> 31_ÂÀÔóÈã.pdf
+2025-06-21 02:31:54,940 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 31_ÂÀÔóÈã.docx
+2025-06-21 02:31:57,437 - class_export - WARNING - ÍË³öWordÓ¦ÓÃ³ÌÐòÊ±³ö´í: Word.Application.Quit
+2025-06-21 02:31:57,446 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:31:57,446 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [22%] °à¼¶ ÈýÄê¼¶6°à: ÕýÔÚ×ª»»PDF 32_»ÆæÂæÂ.docx (25/36) (15.0%)
+2025-06-21 02:32:02,765 - class_export - INFO - ³É¹¦×ª»»PDF: 32_»ÆæÂæÂ.docx -> 32_»ÆæÂæÂ.pdf
+2025-06-21 02:32:03,010 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 32_»ÆæÂæÂ.docx
+2025-06-21 02:32:03,066 - class_export - DEBUG - WordÓ¦ÓÃ³ÌÐòÒÑÍË³ö
+2025-06-21 02:32:03,171 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:32:03,171 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [22%] °à¼¶ ÈýÄê¼¶6°à: ÕýÔÚ×ª»»PDF 33_ÀîÇïÊµ.docx (26/36) (15.0%)
+2025-06-21 02:32:04,979 - class_export - INFO - ³É¹¦×ª»»PDF: 33_ÀîÇïÊµ.docx -> 33_ÀîÇïÊµ.pdf
+2025-06-21 02:32:04,999 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 33_ÀîÇïÊµ.docx
+2025-06-21 02:32:07,521 - class_export - WARNING - ÍË³öWordÓ¦ÓÃ³ÌÐòÊ±³ö´í: Word.Application.Quit
+2025-06-21 02:32:07,521 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:32:07,521 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [22%] °à¼¶ ÈýÄê¼¶6°à: ÕýÔÚ×ª»»PDF 34_Ö£Ü·åû.docx (27/36) (15.0%)
+2025-06-21 02:32:11,777 - class_export - INFO - ³É¹¦×ª»»PDF: 34_Ö£Ü·åû.docx -> 34_Ö£Ü·åû.pdf
+2025-06-21 02:32:11,992 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 34_Ö£Ü·åû.docx
+2025-06-21 02:32:12,047 - class_export - DEBUG - WordÓ¦ÓÃ³ÌÐòÒÑÍË³ö
+2025-06-21 02:32:12,147 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:32:12,147 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [22%] °à¼¶ ÈýÄê¼¶6°à: ÕýÔÚ×ª»»PDF 35_ÖÜ¼ÑÔÃ.docx (28/36) (15.0%)
+2025-06-21 02:32:13,897 - class_export - INFO - ³É¹¦×ª»»PDF: 35_ÖÜ¼ÑÔÃ.docx -> 35_ÖÜ¼ÑÔÃ.pdf
+2025-06-21 02:32:13,907 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 35_ÖÜ¼ÑÔÃ.docx
+2025-06-21 02:32:16,561 - class_export - WARNING - ÍË³öWordÓ¦ÓÃ³ÌÐòÊ±³ö´í: Word.Application.Quit
+2025-06-21 02:32:16,562 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:32:16,562 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [23%] °à¼¶ ÈýÄê¼¶6°à: ÕýÔÚ×ª»»PDF 36_×¯ÆôÊ«.docx (29/36) (15.0%)
+2025-06-21 02:32:20,727 - class_export - INFO - ³É¹¦×ª»»PDF: 36_×¯ÆôÊ«.docx -> 36_×¯ÆôÊ«.pdf
+2025-06-21 02:32:20,957 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 36_×¯ÆôÊ«.docx
+2025-06-21 02:32:21,015 - class_export - DEBUG - WordÓ¦ÓÃ³ÌÐòÒÑÍË³ö
+2025-06-21 02:32:21,121 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:32:21,127 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [23%] °à¼¶ ÈýÄê¼¶6°à: ÕýÔÚ×ª»»PDF 3_Õ²×ÓÆ½.docx (30/36) (15.0%)
+2025-06-21 02:32:22,697 - class_export - INFO - ³É¹¦×ª»»PDF: 3_Õ²×ÓÆ½.docx -> 3_Õ²×ÓÆ½.pdf
+2025-06-21 02:32:22,711 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 3_Õ²×ÓÆ½.docx
+2025-06-21 02:32:25,369 - class_export - WARNING - ÍË³öWordÓ¦ÓÃ³ÌÐòÊ±³ö´í: Word.Application.Quit
+2025-06-21 02:32:25,370 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:32:25,370 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [23%] °à¼¶ ÈýÄê¼¶6°à: ÕýÔÚ×ª»»PDF 4_ÉÛ½õÁú.docx (31/36) (15.0%)
+2025-06-21 02:32:29,537 - class_export - INFO - ³É¹¦×ª»»PDF: 4_ÉÛ½õÁú.docx -> 4_ÉÛ½õÁú.pdf
+2025-06-21 02:32:29,748 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 4_ÉÛ½õÁú.docx
+2025-06-21 02:32:29,807 - class_export - DEBUG - WordÓ¦ÓÃ³ÌÐòÒÑÍË³ö
+2025-06-21 02:32:29,915 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:32:29,915 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [24%] °à¼¶ ÈýÄê¼¶6°à: ÕýÔÚ×ª»»PDF 5_Àîºº´Ï.docx (32/36) (15.0%)
+2025-06-21 02:32:31,684 - class_export - INFO - ³É¹¦×ª»»PDF: 5_Àîºº´Ï.docx -> 5_Àîºº´Ï.pdf
+2025-06-21 02:32:31,703 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 5_Àîºº´Ï.docx
+2025-06-21 02:32:34,266 - class_export - WARNING - ÍË³öWordÓ¦ÓÃ³ÌÐòÊ±³ö´í: Word.Application.Quit
+2025-06-21 02:32:34,275 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:32:34,275 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [24%] °à¼¶ ÈýÄê¼¶6°à: ÕýÔÚ×ª»»PDF 6_Àîå«ï¿.docx (33/36) (15.0%)
+2025-06-21 02:32:38,777 - class_export - INFO - ³É¹¦×ª»»PDF: 6_Àîå«ï¿.docx -> 6_Àîå«ï¿.pdf
+2025-06-21 02:32:38,997 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 6_Àîå«ï¿.docx
+2025-06-21 02:32:38,997 - class_export - DEBUG - WordÓ¦ÓÃ³ÌÐòÒÑÍË³ö
+2025-06-21 02:32:39,127 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:32:39,127 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [24%] °à¼¶ ÈýÄê¼¶6°à: ÕýÔÚ×ª»»PDF 7_ÐíÒ¢ï¿.docx (34/36) (15.0%)
+2025-06-21 02:32:40,909 - class_export - INFO - ³É¹¦×ª»»PDF: 7_ÐíÒ¢ï¿.docx -> 7_ÐíÒ¢ï¿.pdf
+2025-06-21 02:32:40,929 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 7_ÐíÒ¢ï¿.docx
+2025-06-21 02:32:43,356 - class_export - WARNING - ÍË³öWordÓ¦ÓÃ³ÌÐòÊ±³ö´í: Word.Application.Quit
+2025-06-21 02:32:43,356 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:32:43,358 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [24%] °à¼¶ ÈýÄê¼¶6°à: ÕýÔÚ×ª»»PDF 8_ÁõÐ¢Óî.docx (35/36) (15.0%)
+2025-06-21 02:32:47,916 - class_export - INFO - ³É¹¦×ª»»PDF: 8_ÁõÐ¢Óî.docx -> 8_ÁõÐ¢Óî.pdf
+2025-06-21 02:32:48,125 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 8_ÁõÐ¢Óî.docx
+2025-06-21 02:32:48,187 - class_export - DEBUG - WordÓ¦ÓÃ³ÌÐòÒÑÍË³ö
+2025-06-21 02:32:48,289 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:32:48,289 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [25%] °à¼¶ ÈýÄê¼¶6°à: ÕýÔÚ×ª»»PDF 9_ÁÖÓñ»Ê.docx (36/36) (15.0%)
+2025-06-21 02:32:50,089 - class_export - INFO - ³É¹¦×ª»»PDF: 9_ÁÖÓñ»Ê.docx -> 9_ÁÖÓñ»Ê.pdf
+2025-06-21 02:32:50,103 - class_export - DEBUG - ÎÄµµÒÑ¹Ø±Õ: 9_ÁÖÓñ»Ê.docx
+2025-06-21 02:32:52,643 - class_export - WARNING - ÍË³öWordÓ¦ÓÃ³ÌÐòÊ±³ö´í: Word.Application.Quit
+2025-06-21 02:32:52,644 - class_export - DEBUG - COM»·¾³ÒÑÊÍ·Å
+2025-06-21 02:32:52,645 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [15%] °à¼¶ ÈýÄê¼¶6°à: ÕýÔÚºÏ²¢ 36 ¸öPDFÎÄ¼þ... (15.0%)
+2025-06-21 02:32:53,791 - class_export - INFO - ³É¹¦ºÏ²¢ 36 ¸öPDFÎÄ¼þµ½ C:\Users\ADMINI~1\AppData\Local\Temp\tmpd45krcew\ÈýÄê¼¶6°à\ÈýÄê¼¶6°à_ºÏ²¢±¨¸æ.pdf
+2025-06-21 02:32:53,798 - class_export - INFO - °à¼¶ ÈýÄê¼¶6°à µ¼³ö³É¹¦
+2025-06-21 02:32:53,798 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [90%] ÕýÔÚ´ò°ü 1 ¸ö°à¼¶µÄµ¼³öÎÄ¼þ... (90%)
+2025-06-21 02:32:54,347 - comments - INFO - µ¼³ö½ø¶È¸üÐÂ [ÓÃ»§:1, ÇëÇó:None]: [100%] µ¼³öÍê³É£¡³É¹¦´¦Àí 1 ¸ö°à¼¶ (×ÜºÄÊ±: 3·Ö52Ãë) (100%)
+2025-06-21 02:32:54,357 - class_export - INFO - °à¼¶µ¼³öÍê³É£¬¹²´¦Àí 1 ¸ö°à¼¶£¬ÎÄ¼þ´óÐ¡: 18525260 ×Ö½Ú
+2025-06-21 02:32:54,370 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 02:32:54] "POST /api/export-class-reports HTTP/1.1" 200 -

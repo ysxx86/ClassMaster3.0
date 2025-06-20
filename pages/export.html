@@ -930,15 +930,21 @@
                     pdfOrganization: pdfOrganization
                 };
                 
+                // 记录开始时间
+                const exportStartTime = new Date();
+                
+                // 生成唯一的请求ID
+                const requestId = Date.now().toString();
+                
                 // 显示进度对话框
                 const progressModal = new bootstrap.Modal(document.getElementById('progressModal'));
                 progressModal.show();
                 
-                // 更新进度文本
-                const progressText = document.getElementById('progressText');
-                if (progressText) {
-                    progressText.textContent = `正在导出 ${selectedClasses.length} 个班级的报告...`;
-                }
+                // 初始进度显示
+                updateClassExportProgress(0, `[0%] 开始导出 ${selectedClasses.length} 个班级的报告...`, exportStartTime);
+                
+                // 开始轮询进度
+                startClassProgressPolling(requestId, exportStartTime);
                 
                 // 发送导出请求
                 const response = await fetch('/api/export-class-reports', {
@@ -948,25 +954,72 @@
                     },
                     body: JSON.stringify({
                         classes: selectedClasses,
-                        settings: settings
+                        settings: settings,
+                        request_id: requestId
                     })
                 });
                 
+                // 停止轮询
+                stopClassProgressPolling();
+                
                 if (response.ok) {
-                    // 处理文件下载
-                    const blob = await response.blob();
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `班级报告_${exportType}_${new Date().getTime()}.zip`;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    window.URL.revokeObjectURL(url);
-                    
-                    // 隐藏进度对话框并显示成功消息
-                    progressModal.hide();
-                    showNotification(`成功导出 ${selectedClasses.length} 个班级的报告`, 'success');
+                    // 检查是否是直接文件下载
+                    const contentType = response.headers.get('Content-Type');
+                    if (contentType && contentType.includes('application/zip')) {
+                        const blob = await response.blob();
+                        
+                        // 计算总耗时
+                        const totalElapsedTime = formatElapsedTime(exportStartTime);
+                        const filename = `class_reports_${exportType}_${new Date().toISOString().slice(0,10)}.zip`;
+                        
+                        updateClassExportProgress(95, '正在准备下载...', exportStartTime);
+                        
+                        // 尝试使用现代浏览器的文件保存API
+                        if (window.showSaveFilePicker) {
+                            try {
+                                updateClassExportProgress(98, '请选择保存位置...', exportStartTime);
+                                const fileHandle = await window.showSaveFilePicker({
+                                    suggestedName: filename,
+                                    types: [{
+                                        description: 'ZIP files',
+                                        accept: { 'application/zip': ['.zip'] }
+                                    }]
+                                });
+                                
+                                const writable = await fileHandle.createWritable();
+                                await writable.write(blob);
+                                await writable.close();
+                                
+                                updateClassExportProgress(100, `[100%] 导出完成！${totalElapsedTime ? ` 总耗时: ${totalElapsedTime}` : ''}`, exportStartTime);
+                            } catch (err) {
+                                if (err.name !== 'AbortError') {
+                                    console.error('文件保存失败:', err);
+                                    // 回退到传统下载方式
+                                    downloadFileTraditional(blob, filename);
+                                    updateClassExportProgress(100, `[100%] 导出完成！${totalElapsedTime ? ` 总耗时: ${totalElapsedTime}` : ''}`, exportStartTime);
+                                } else {
+                                    updateClassExportProgress(100, '用户取消了文件保存', exportStartTime);
+                                }
+                            }
+                        } else {
+                            // 浏览器不支持新API，使用传统下载方式
+                            downloadFileTraditional(blob, filename);
+                            updateClassExportProgress(100, `[100%] 导出完成！${totalElapsedTime ? ` 总耗时: ${totalElapsedTime}` : ''}`, exportStartTime);
+                        }
+                        
+                        // 延迟隐藏进度对话框并显示成功消息
+                        setTimeout(() => {
+                            progressModal.hide();
+                            const finalMessage = totalElapsedTime ? 
+                                `成功导出 ${selectedClasses.length} 个班级的报告！总耗时：${totalElapsedTime}` :
+                                `成功导出 ${selectedClasses.length} 个班级的报告！`;
+                            showNotification(finalMessage, 'success');
+                        }, 1000);
+                    } else {
+                        const errorData = await response.json();
+                        progressModal.hide();
+                        showNotification(`导出失败: ${errorData.message || '未知错误'}`, 'error');
+                    }
                 } else {
                     const errorData = await response.json();
                     progressModal.hide();
@@ -975,6 +1028,8 @@
                 
             } catch (error) {
                 console.error('班级导出时出错:', error);
+                // 停止轮询
+                stopClassProgressPolling();
                 // 隐藏进度对话框
                 const progressModal = bootstrap.Modal.getInstance(document.getElementById('progressModal'));
                 if (progressModal) {
@@ -982,6 +1037,128 @@
                 }
                 showNotification(`导出失败: ${error.message}`, 'error');
             }
+        }
+        
+        // 更新班级导出进度
+        function updateClassExportProgress(percent, message, startTime) {
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            
+            if (progressBar && progressText) {
+                // 显示详细的进度信息（包含百分比和耗时）
+                const elapsedTime = formatElapsedTime(startTime);
+                const progressMessage = elapsedTime ? 
+                    `${message} (耗时: ${elapsedTime})` : 
+                    message;
+                
+                progressText.textContent = progressMessage;
+                
+                // 更新进度条
+                progressBar.style.width = `${percent}%`;
+                progressBar.setAttribute('aria-valuenow', percent);
+                
+                // 根据进度阶段设置颜色
+                progressBar.className = 'progress-bar';
+                if (percent === 100) {
+                    progressBar.classList.add('bg-success');
+                } else {
+                    progressBar.classList.add('bg-primary', 'progress-bar-striped', 'progress-bar-animated');
+                }
+            }
+        }
+        
+        // 开始轮询班级导出进度
+        function startClassProgressPolling(requestId, startTime) {
+            // 先清除可能存在的旧轮询器
+            stopClassProgressPolling();
+            
+            // 设置轮询间隔
+            window.classProgressPoller = setInterval(async () => {
+                try {
+                    // 构建查询URL
+                    const progressUrl = `/api/export-progress?request_id=${encodeURIComponent(requestId)}`;
+                    
+                    // 调用API获取最新进度
+                    const response = await fetch(progressUrl, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        }
+                    });
+                    
+                    if (!response.ok) {
+                        console.warn('获取班级导出进度失败:', response.status);
+                        return;
+                    }
+                    
+                    const progressData = await response.json();
+                    
+                    // 检查进度信息是否有效
+                    if (progressData.status === 'idle') {
+                        return;
+                    }
+                    
+                    // 检查是否导出已完成
+                    if (progressData.status === 'completed') {
+                        console.log('班级导出已完成，停止轮询');
+                        stopClassProgressPolling();
+                        return;
+                    }
+                    
+                    // 更新进度显示
+                    if (progressData.message) {
+                        updateClassExportProgress(progressData.percent || 0, progressData.message, startTime);
+                    }
+                } catch (error) {
+                    console.error('轮询班级导出进度时出错:', error);
+                }
+            }, 500); // 每500毫秒轮询一次
+            
+            console.log(`开始轮询班级导出进度 [请求ID: ${requestId}]...`);
+        }
+        
+        // 停止轮询班级导出进度
+        function stopClassProgressPolling() {
+            if (window.classProgressPoller) {
+                clearInterval(window.classProgressPoller);
+                window.classProgressPoller = null;
+                console.log('已停止轮询班级导出进度');
+            }
+        }
+        
+        // 计算和格式化导出耗时
+        function formatElapsedTime(startTime) {
+            if (!startTime) return '';
+            
+            const now = new Date();
+            const elapsedMs = now - startTime;
+            const elapsedSeconds = Math.floor(elapsedMs / 1000);
+            
+            if (elapsedSeconds < 60) {
+                return `${elapsedSeconds}秒`;
+            } else {
+                const minutes = Math.floor(elapsedSeconds / 60);
+                const seconds = elapsedSeconds % 60;
+                return `${minutes}分${seconds}秒`;
+            }
+        }
+        
+        // 传统方式下载文件
+        function downloadFileTraditional(blob, filename) {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            a.click();
+            
+            // 清理
+            setTimeout(() => {
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            }, 100);
         }
         
         // 初始化班级导出功能（兼容性函数）

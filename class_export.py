@@ -167,6 +167,21 @@ def check_export_cancelled(request_id):
     except ImportError:
         return False
 
+def format_elapsed_time(start_time):
+    """格式化耗时"""
+    if not start_time:
+        return ''
+    
+    elapsed = datetime.datetime.now() - start_time
+    elapsed_seconds = int(elapsed.total_seconds())
+    
+    if elapsed_seconds < 60:
+        return f"{elapsed_seconds}秒"
+    else:
+        minutes = elapsed_seconds // 60
+        seconds = elapsed_seconds % 60
+        return f"{minutes}分{seconds}秒"
+
 @class_export_bp.route('/api/export-class-reports', methods=['POST'])
 @login_required
 def api_export_class_reports():
@@ -185,11 +200,15 @@ def api_export_class_reports():
         # 验证请求数据
         selected_classes = data.get('classes', [])
         settings = data.get('settings', {})
+        request_id = data.get('request_id')
         
         if not selected_classes:
             return jsonify({'status': 'error', 'message': '未选择任何班级'})
             
         logger.info(f"管理员 {current_user.username} 开始按班级导出报告，选择了 {len(selected_classes)} 个班级")
+        
+        # 记录开始时间
+        start_time = datetime.datetime.now()
         
         # 更新初始进度
         websocket_progress(f"[5%] 开始导出 {len(selected_classes)} 个班级的报告...", 5, request_id)
@@ -469,7 +488,11 @@ def api_export_class_reports():
                                 final_zip.write(file_path, arcname)
             
             # 更新完成进度
-            websocket_progress(f"[100%] 导出完成！成功处理 {len(all_class_results)} 个班级", 100, request_id)
+            total_elapsed = format_elapsed_time(start_time)
+            completion_message = f"[100%] 导出完成！成功处理 {len(all_class_results)} 个班级"
+            if total_elapsed:
+                completion_message += f" (总耗时: {total_elapsed})"
+            websocket_progress(completion_message, 100, request_id)
             
             # 读取最终ZIP文件并返回
             with open(final_zip_path, 'rb') as f:

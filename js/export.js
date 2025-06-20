@@ -9,6 +9,7 @@ let templateFile = null;
 let currentExportRequestId = null; // 用于跟踪当前导出请求ID
 let abortController = null; // 用于取消请求
 let exportInProgress = false;  // 新增：导出进行中标志
+let exportStartTime = null; // 导出开始时间
 
 // 全局变量，用于记录轮询状态
 let progressPoller = null; 
@@ -840,6 +841,9 @@ async function exportReports(exportType = 'word') {
         // 设置导出进行中标志
         exportInProgress = true;
         
+        // 记录导出开始时间
+        exportStartTime = new Date();
+        
         // 生成唯一的请求ID
         currentExportRequestId = Date.now().toString();
         // 创建新的AbortController用于取消请求
@@ -982,22 +986,44 @@ async function exportReports(exportType = 'word') {
                 
                 // 下载文件
                 const blob = await response.blob();
-                updateProgress(90, exportType === 'pdf' ? '正在下载PDF文件...' : '正在下载文件...');
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `student_reports_${exportType}_` + new Date().toISOString().slice(0,10) + '.zip';
-                document.body.appendChild(a);
-                a.click();
+                updateProgress(90, exportType === 'pdf' ? '正在准备下载PDF文件...' : '正在准备下载文件...');
                 
-                // 清理
-                setTimeout(() => {
-                    document.body.removeChild(a);
-                    window.URL.revokeObjectURL(url);
-                    window.isExporting = false; // 确保导出状态被重置
-                }, 100);
+                // 计算最终耗时
+                const totalElapsedTime = formatElapsedTime(exportStartTime);
+                const filename = `class_reports_${exportType}_` + new Date().toISOString().slice(0,10) + '.zip';
                 
-                updateProgress(100, '导出完成!', 'success');
+                // 尝试使用现代浏览器的文件保存API
+                if (window.showSaveFilePicker) {
+                    try {
+                        updateProgress(95, '请选择保存位置...');
+                        const fileHandle = await window.showSaveFilePicker({
+                            suggestedName: filename,
+                            types: [{
+                                description: 'ZIP files',
+                                accept: { 'application/zip': ['.zip'] }
+                            }]
+                        });
+                        
+                        const writable = await fileHandle.createWritable();
+                        await writable.write(blob);
+                        await writable.close();
+                        
+                        updateProgress(100, `导出完成！${totalElapsedTime ? ` 总耗时: ${totalElapsedTime}` : ''}`, 'success');
+                    } catch (err) {
+                        if (err.name !== 'AbortError') {
+                            console.error('文件保存失败:', err);
+                            // 回退到传统下载方式
+                            downloadFileTraditional(blob, filename);
+                            updateProgress(100, `导出完成！${totalElapsedTime ? ` 总耗时: ${totalElapsedTime}` : ''}`, 'success');
+                        } else {
+                            updateProgress(100, '用户取消了文件保存', 'warning');
+                        }
+                    }
+                } else {
+                    // 浏览器不支持新API，使用传统下载方式
+                                         downloadFileTraditional(blob, filename);
+                     updateProgress(100, `导出完成！${totalElapsedTime ? ` 总耗时: ${totalElapsedTime}` : ''}`, 'success');
+                 }
                 
                 // 延迟一秒后关闭进度条，让用户看到100%完成状态
                 setTimeout(() => {
@@ -1008,9 +1034,14 @@ async function exportReports(exportType = 'word') {
                     hideProgressModal();
                     
                     // 显示完成模态框
+                    const totalTime = formatElapsedTime(exportStartTime);
+                    const completionMessage = totalTime ? 
+                        `已成功导出${selectedStudentIds.length}份学生报告！总耗时：${totalTime}` :
+                        `已成功导出${selectedStudentIds.length}份学生报告！`;
+                    
                     showExportCompleteModal(
                         `${exportType === 'pdf' ? 'PDF' : 'Word'}导出成功`, 
-                        `已成功导出${selectedStudentIds.length}份学生报告！`, 
+                        completionMessage, 
                         'success'
                     );
                     
@@ -2075,6 +2106,40 @@ function formatDate(date) {
     return `${year}-${month}-${day}`;
 }
 
+// 计算和格式化导出耗时
+function formatElapsedTime(startTime) {
+    if (!startTime) return '';
+    
+    const now = new Date();
+    const elapsedMs = now - startTime;
+    const elapsedSeconds = Math.floor(elapsedMs / 1000);
+    
+    if (elapsedSeconds < 60) {
+        return `${elapsedSeconds}秒`;
+    } else {
+        const minutes = Math.floor(elapsedSeconds / 60);
+        const seconds = elapsedSeconds % 60;
+        return `${minutes}分${seconds}秒`;
+    }
+}
+
+// 传统方式下载文件
+function downloadFileTraditional(blob, filename) {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    
+    // 清理
+    setTimeout(() => {
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+    }, 100);
+}
+
 /**
  * 保存导出设置
  */
@@ -2510,8 +2575,13 @@ function startPollingProgress(requestId) {
             
             // 更新进度条和文本
             if (progressBar && progressText && progressData.message) {
-                // 始终只显示消息文本，不显示百分比
-                progressText.textContent = progressData.message;
+                // 显示详细的进度信息（包含百分比和耗时）
+                const elapsedTime = formatElapsedTime(exportStartTime);
+                const progressMessage = elapsedTime ? 
+                    `${progressData.message} (耗时: ${elapsedTime})` : 
+                    progressData.message;
+                
+                progressText.textContent = progressMessage;
                 
                 // 更新进度条
                 progressBar.style.width = `${progressData.percent}%`;
