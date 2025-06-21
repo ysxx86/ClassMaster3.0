@@ -847,8 +847,10 @@ async function exportReports(exportType = 'word') {
         // 记录导出开始时间
         exportStartTime = new Date();
         
-        // 生成唯一的请求ID
-        currentExportRequestId = Date.now().toString();
+        // 生成唯一的请求ID（只在没有活动请求时生成新ID）
+        if (!currentExportRequestId || !exportInProgress) {
+            currentExportRequestId = Date.now().toString();
+        }
         // 创建新的AbortController用于取消请求
         abortController = new AbortController();
         
@@ -1036,6 +1038,11 @@ async function exportReports(exportType = 'word') {
                     // 停止导出拦截器
                     stopExportInterceptor();
                     
+                    // 重置请求ID
+                    currentExportRequestId = null;
+                    abortController = null;
+                    window.isExporting = false;
+                    
                     // 隐藏进度模态框
                     hideProgressModal();
                     
@@ -1109,6 +1116,13 @@ async function exportReports(exportType = 'word') {
                         updateProgress(100, '导出完成!');
                         
                         setTimeout(() => {
+                            // 重置导出状态
+                            exportInProgress = false;
+                            stopExportInterceptor();
+                            currentExportRequestId = null;
+                            abortController = null;
+                            window.isExporting = false;
+                            
                             if (progressModal) {
                                 progressModal.hide();
                             }
@@ -1208,6 +1222,13 @@ async function exportReports(exportType = 'word') {
                     
                     // 延迟一秒后关闭进度条，让用户看到100%完成状态
                     setTimeout(() => {
+                        // 重置导出状态
+                        exportInProgress = false;
+                        stopExportInterceptor();
+                        currentExportRequestId = null;
+                        abortController = null;
+                        window.isExporting = false;
+                        
                         if (progressModal) {
                             progressModal.hide();
                         }
@@ -1241,6 +1262,13 @@ async function exportReports(exportType = 'word') {
                     
                     // 延迟一秒后关闭进度条，让用户看到100%完成状态
                     setTimeout(() => {
+                        // 重置导出状态
+                        exportInProgress = false;
+                        stopExportInterceptor();
+                        currentExportRequestId = null;
+                        abortController = null;
+                        window.isExporting = false;
+                        
                         if (progressModal) {
                             progressModal.hide();
                         }
@@ -2693,8 +2721,8 @@ function setupExportInterceptor() {
     }
     exportInterceptorActive = true;
     
-    // 拦截页面刷新和关闭
-    window.addEventListener('beforeunload', handleBeforeUnload);
+    // 监听页面关闭/刷新，静默取消导出（不阻止页面关闭）
+    window.addEventListener('beforeunload', handlePageUnload);
     
     // 拦截点击模态框以外的空白位置
     document.addEventListener('click', handleModalBackdropClick);
@@ -2710,22 +2738,51 @@ function stopExportInterceptor() {
     exportInterceptorActive = false;
     
     // 移除事件监听器
-    window.removeEventListener('beforeunload', handleBeforeUnload);
+    window.removeEventListener('beforeunload', handlePageUnload);
     document.removeEventListener('click', handleModalBackdropClick);
     
     console.log('导出拦截器已停用');
 }
 
-// 处理页面刷新和关闭
-function handleBeforeUnload(e) {
+
+
+
+// 处理页面关闭/刷新 - 静默取消导出（不阻止页面关闭）
+function handlePageUnload(e) {
     if (exportInProgress) {
-        e.preventDefault();
-        e.returnValue = '正在进行导出，是否要取消导出任务？';
-        return e.returnValue;
+        // 确定要取消的导出请求ID
+        const requestIdToCancel = currentExportRequestId || currentClassExportRequestId;
+        
+        if (requestIdToCancel) {
+            console.log('页面即将关闭，静默取消导出请求:', requestIdToCancel);
+            
+            // 使用sendBeacon确保请求能在页面关闭前发送成功
+            if (navigator.sendBeacon) {
+                const cancelData = JSON.stringify({
+                    requestId: requestIdToCancel
+                });
+                
+                navigator.sendBeacon('/api/cancel-export', new Blob([cancelData], {
+                    type: 'application/json'
+                }));
+            } else {
+                // 降级方案：使用同步XMLHttpRequest（不推荐但作为备用）
+                try {
+                    const xhr = new XMLHttpRequest();
+                    xhr.open('POST', '/api/cancel-export', false); // 同步请求
+                    xhr.setRequestHeader('Content-Type', 'application/json');
+                    xhr.send(JSON.stringify({
+                        requestId: requestIdToCancel
+                    }));
+                } catch (error) {
+                    console.warn('同步取消请求失败:', error);
+                }
+            }
+        }
     }
+    
+    // 不阻止页面关闭，让用户正常离开
 }
-
-
 
 // 处理模态框外点击
 function handleModalBackdropClick(e) {
@@ -2743,6 +2800,7 @@ function handleModalBackdropClick(e) {
 
 // 显示导出阻塞对话框
 function showExportBlockingDialog() {
+    
     // 创建模态框HTML
     const modalHtml = `
         <div class="modal fade" id="exportBlockingModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
@@ -2854,3 +2912,5 @@ function confirmStopExport() {
 function forceStopExport() {
     confirmStopExport();
 }
+
+
