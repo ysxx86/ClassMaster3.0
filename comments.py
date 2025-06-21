@@ -1614,9 +1614,17 @@ def api_export_reports():
                         # 转换DOCX文件为PDF
                         pdf_files = []
                         for i, docx_file in enumerate(docx_files):
-                            # 检查请求是否已取消
+                            # 转换前检查请求是否已取消
                             if request_id and is_export_cancelled(request_id):
                                 logger.info(f"转换过程中检测到请求已取消: {request_id}")
+                                # 清理进度信息
+                                try:
+                                    with export_requests_lock:
+                                        if request_id in active_export_requests:
+                                            del active_export_requests[request_id]
+                                            logger.info(f"已清理取消的导出请求: {request_id}")
+                                except:
+                                    pass
                                 return jsonify({
                                     'status': 'warning',
                                     'message': '导出操作已被用户取消'
@@ -1643,11 +1651,27 @@ def api_export_reports():
                             # 尝试最多3次转换
                             success = False
                             for attempt in range(3):
+                                # 每次重试前检查是否被取消
+                                if request_id and is_export_cancelled(request_id):
+                                    logger.info(f"在重试第{attempt+1}次转换前检测到请求已取消: {request_id}")
+                                    # 清理进度信息
+                                    try:
+                                        with export_requests_lock:
+                                            if request_id in active_export_requests:
+                                                del active_export_requests[request_id]
+                                                logger.info(f"已清理取消的导出请求: {request_id}")
+                                    except:
+                                        pass
+                                    return jsonify({
+                                        'status': 'warning',
+                                        'message': '导出操作已被用户取消'
+                                    })
+                                
                                 try:
                                     if attempt > 0:
                                         logger.info(f"重试第{attempt+1}次转换: {docx_file}")
                                     
-                                    # 执行转换
+                                    # 执行转换（convert_docx_to_pdf内部也会检查取消状态）
                                     success = convert_docx_to_pdf(docx_path, pdf_path, request_id)
                                     
                                     if success:
@@ -1655,6 +1679,22 @@ def api_export_reports():
                                         pdf_files.append(pdf_file)
                                         successful_conversions += 1
                                         break  # 成功则退出重试循环
+                                    else:
+                                        # 如果转换失败，检查是否是因为取消导致的
+                                        if request_id and is_export_cancelled(request_id):
+                                            logger.info(f"PDF转换失败是因为用户取消: {docx_file}")
+                                            # 清理进度信息
+                                            try:
+                                                with export_requests_lock:
+                                                    if request_id in active_export_requests:
+                                                        del active_export_requests[request_id]
+                                                        logger.info(f"已清理取消的导出请求: {request_id}")
+                                            except:
+                                                pass
+                                            return jsonify({
+                                                'status': 'warning',
+                                                'message': '导出操作已被用户取消'
+                                            })
                                 except Exception as e:
                                     logger.error(f"尝试转换第{attempt+1}次失败: {str(e)}")
                                     success = False
@@ -1662,9 +1702,41 @@ def api_export_reports():
                                 # 如果所有尝试都失败，记录错误
                                 if not success and attempt == 2:  # 最后一次尝试
                                     logger.error(f"转换失败 {docx_file} 在3次尝试后")
+                            
+                            # 每个文档转换完成后再次检查取消状态
+                            if request_id and is_export_cancelled(request_id):
+                                logger.info(f"文档 {docx_file} 转换完成后检测到请求已取消")
+                                # 清理进度信息
+                                try:
+                                    with export_requests_lock:
+                                        if request_id in active_export_requests:
+                                            del active_export_requests[request_id]
+                                            logger.info(f"已清理取消的导出请求: {request_id}")
+                                except:
+                                    pass
+                                return jsonify({
+                                    'status': 'warning',
+                                    'message': '导出操作已被用户取消'
+                                })
                         
                         # 记录转换完成情况
                         logger.info(f"完成转换: 成功 {successful_conversions}/{total_files} 文件")
+                        
+                        # 检查是否被取消
+                        if request_id and is_export_cancelled(request_id):
+                            logger.info(f"PDF转换完成后检测到请求已取消: {request_id}")
+                            # 清理进度信息
+                            try:
+                                with export_requests_lock:
+                                    if request_id in active_export_requests:
+                                        del active_export_requests[request_id]
+                                        logger.info(f"已清理取消的导出请求: {request_id}")
+                            except:
+                                pass
+                            return jsonify({
+                                'status': 'warning',
+                                'message': '导出操作已被用户取消'
+                            })
                         
                         # 如果没有成功转换任何文件，返回错误
                         if successful_conversions == 0:
@@ -1697,6 +1769,22 @@ def api_export_reports():
                             
                             # 检查是否有PDF文件需要合并
                             if len(pdf_files) > 1:
+                                # 合并前检查是否被取消
+                                if request_id and is_export_cancelled(request_id):
+                                    logger.info(f"PDF合并前检测到请求已取消: {request_id}")
+                                    # 清理进度信息
+                                    try:
+                                        with export_requests_lock:
+                                            if request_id in active_export_requests:
+                                                del active_export_requests[request_id]
+                                                logger.info(f"已清理取消的导出请求: {request_id}")
+                                    except:
+                                        pass
+                                    return jsonify({
+                                        'status': 'warning',
+                                        'message': '导出操作已被用户取消'
+                                    })
+                                
                                 # 更新进度信息，显示正在合并
                                 merge_message = f"正在合并 {len(pdf_files)} 个PDF文件..."
                                 websocket_progress(merge_message, 90, request_id)
@@ -1782,6 +1870,22 @@ def api_export_reports():
                                 
                                 # 按学号顺序合并PDF文件
                                 for idx, (_, pdf_file) in enumerate(student_pdf_mapping):
+                                    # 合并过程中检查是否被取消
+                                    if request_id and is_export_cancelled(request_id):
+                                        logger.info(f"PDF合并过程中检测到请求已取消: {request_id}")
+                                        # 清理进度信息
+                                        try:
+                                            with export_requests_lock:
+                                                if request_id in active_export_requests:
+                                                    del active_export_requests[request_id]
+                                                    logger.info(f"已清理取消的导出请求: {request_id}")
+                                        except:
+                                            pass
+                                        return jsonify({
+                                            'status': 'warning',
+                                            'message': '导出操作已被用户取消'
+                                        })
+                                    
                                     pdf_path = os.path.join(pdf_dir, pdf_file)
                                     if os.path.exists(pdf_path):
                                         try:
@@ -1795,6 +1899,22 @@ def api_export_reports():
                                 
                                 # 写入合并后的PDF文件
                                 try:
+                                    # 写入前检查是否被取消
+                                    if request_id and is_export_cancelled(request_id):
+                                        logger.info(f"写入合并PDF前检测到请求已取消: {request_id}")
+                                        # 清理进度信息
+                                        try:
+                                            with export_requests_lock:
+                                                if request_id in active_export_requests:
+                                                    del active_export_requests[request_id]
+                                                    logger.info(f"已清理取消的导出请求: {request_id}")
+                                        except:
+                                            pass
+                                        return jsonify({
+                                            'status': 'warning',
+                                            'message': '导出操作已被用户取消'
+                                        })
+                                    
                                     # 更新进度为正在写入合并文件
                                     websocket_progress("正在生成合并后的PDF文件...", 95, request_id)
                                     merger.write(merged_pdf_path)
@@ -1814,15 +1934,63 @@ def api_export_reports():
                             logger.error(traceback.format_exc())
                             # 如果合并失败，继续处理，仍然提供单独的PDF文件
                         
+                        # 创建ZIP文件前检查是否被取消
+                        if request_id and is_export_cancelled(request_id):
+                            logger.info(f"创建ZIP前检测到请求已取消: {request_id}")
+                            # 清理进度信息
+                            try:
+                                with export_requests_lock:
+                                    if request_id in active_export_requests:
+                                        del active_export_requests[request_id]
+                                        logger.info(f"已清理取消的导出请求: {request_id}")
+                            except:
+                                pass
+                            return jsonify({
+                                'status': 'warning',
+                                'message': '导出操作已被用户取消'
+                            })
+                        
                         # 创建PDF文件的压缩包
                         pdf_zip_path = os.path.join(temp_dir, "pdf_reports.zip")
                         logger.info(f"创建PDF ZIP文件: {pdf_zip_path}")
                         
                         with zipfile.ZipFile(pdf_zip_path, 'w') as zipf:
                             for pdf_file in pdf_files:
+                                # ZIP过程中检查是否被取消
+                                if request_id and is_export_cancelled(request_id):
+                                    logger.info(f"ZIP过程中检测到请求已取消: {request_id}")
+                                    # 清理进度信息
+                                    try:
+                                        with export_requests_lock:
+                                            if request_id in active_export_requests:
+                                                del active_export_requests[request_id]
+                                                logger.info(f"已清理取消的导出请求: {request_id}")
+                                    except:
+                                        pass
+                                    return jsonify({
+                                        'status': 'warning',
+                                        'message': '导出操作已被用户取消'
+                                    })
+                                
                                 file_path = os.path.join(pdf_dir, pdf_file)
                                 logger.info(f"添加PDF到ZIP: {file_path} -> {pdf_file}")
                                 zipf.write(file_path, pdf_file)
+                        
+                        # 读取最终ZIP文件前检查是否被取消
+                        if request_id and is_export_cancelled(request_id):
+                            logger.info(f"读取最终ZIP文件前检测到请求已取消: {request_id}")
+                            # 清理进度信息
+                            try:
+                                with export_requests_lock:
+                                    if request_id in active_export_requests:
+                                        del active_export_requests[request_id]
+                                        logger.info(f"已清理取消的导出请求: {request_id}")
+                            except:
+                                pass
+                            return jsonify({
+                                'status': 'warning',
+                                'message': '导出操作已被用户取消'
+                            })
                         
                         # 读取最终的ZIP文件
                         with open(pdf_zip_path, 'rb') as f:
