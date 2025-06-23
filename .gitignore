@@ -16,10 +16,4 @@ __pycache__/
 .DS_Store
 *~
 ~$*.xlsx  # 忽略Excel临时文件
-<<<<<<< HEAD
-=======
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
->>>>>>> dfa64ce7676593d44f456d8f271de78f37ab6c66
+*.log
