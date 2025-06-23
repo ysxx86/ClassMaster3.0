@@ -743,6 +743,64 @@ def get_db_connection():
     """获取数据库连接"""
     return config.get_db_connection()
 
+def save_setting_to_db(key, value, description=None):
+    """将设置保存到数据库的 system_settings 表"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # 确保 system_settings 表存在
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS system_settings (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            key TEXT UNIQUE NOT NULL,
+            value TEXT,
+            description TEXT,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        ''')
+        
+        # 插入或更新设置
+        cursor.execute('''
+        INSERT OR REPLACE INTO system_settings (key, value, description, updated_at)
+        VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+        ''', (key, value, description))
+        
+        conn.commit()
+        conn.close()
+        logger.info(f"成功保存设置到数据库: {key} = {value}")
+    except Exception as e:
+        logger.error(f"保存设置到数据库时出错: {key} = {value}, 错误: {str(e)}")
+        if 'conn' in locals():
+            conn.close()
+        raise
+
+def update_config_file():
+    """从数据库读取设置并更新配置文件"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # 从数据库读取所有设置
+        cursor.execute('SELECT key, value FROM system_settings')
+        db_settings = {row['key']: row['value'] for row in cursor.fetchall()}
+        conn.close()
+        
+        # 更新全局配置
+        if db_settings:
+            config.system_settings.update(db_settings)
+            # 保存到 config.json 文件
+            config.save_json_config()
+            logger.info("成功从数据库更新配置文件")
+        else:
+            logger.warning("数据库中没有找到系统设置")
+            
+    except Exception as e:
+        logger.error(f"更新配置文件时出错: {str(e)}")
+        if 'conn' in locals():
+            conn.close()
+        # 不抛出异常，避免阻断程序运行
+
 # 初始化数据库
 def init_db():
     logger.info("初始化数据库")
@@ -1386,7 +1444,7 @@ def save_deepseek_api_settings():
 def get_system_settings():
     try:
         # 从数据库重新加载设置，确保获取最新数据
-        load_settings_from_db()
+        update_config_file()
         
         # 添加用户权限检查，只有管理员可以获取完整的系统设置
         if not current_user.is_admin:

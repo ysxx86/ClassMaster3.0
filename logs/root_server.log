@@ -19146,3 +19146,491 @@ AttributeError: Open.Close
 2025-06-21 11:26:28,137 - comments - INFO - PDF×ª»»Ê§°ÜÊÇÒòÎªÓÃ»§È¡Ïû: 12_³Â»ÍÒÇ.docx
 2025-06-21 11:26:28,137 - comments - INFO - ÒÑÇåÀíÈ¡ÏûµÄµ¼³öÇëÇó: 1750476360390
 2025-06-21 11:26:28,157 - werkzeug - INFO - 127.0.0.1 - - [21/Jun/2025 11:26:28] "POST /api/export-reports HTTP/1.1" 200 -
+2025-06-23 12:13:29,780 - utils.pdf_exporter_fixed - ERROR - PDFµ¼³öÄ£¿é: ÎÞ·¨µ¼ÈëReportLab¿â£¬PDFÉú³É¹¦ÄÜ½«²»¿ÉÓÃ
+2025-06-23 12:13:30,041 - utils.comment_processor - ERROR - ÎÞ·¨µ¼ÈëReportLab¿â£¬PDFÉú³É¹¦ÄÜ½«²»¿ÉÓÃ
+2025-06-23 12:13:30,041 - utils.comment_processor - ERROR - ÇëÊ¹ÓÃÒÔÏÂÃüÁî°²×°ReportLab: pip install reportlab
+2025-06-23 12:14:07,323 - utils.pdf_exporter_fixed - ERROR - PDFµ¼³öÄ£¿é: ÎÞ·¨µ¼ÈëReportLab¿â£¬PDFÉú³É¹¦ÄÜ½«²»¿ÉÓÃ
+2025-06-23 12:14:07,354 - utils.comment_processor - ERROR - ÎÞ·¨µ¼ÈëReportLab¿â£¬PDFÉú³É¹¦ÄÜ½«²»¿ÉÓÃ
+2025-06-23 12:14:07,354 - utils.comment_processor - ERROR - ÇëÊ¹ÓÃÒÔÏÂÃüÁî°²×°ReportLab: pip install reportlab
+2025-06-23 12:14:07,570 - utils.deepseek_api - INFO - Ê¹ÓÃÄ¬ÈÏDeepSeek APIÃÜÔ¿
+2025-06-23 12:14:07,570 - server - INFO - ·þÎñÆ÷Æô¶¯
+2025-06-23 12:14:07,606 - grades - INFO - ³õÊ¼»¯³É¼¨Ä£¿é
+2025-06-23 12:14:07,606 - grades - INFO - ³É¼¨Ä£¿é³õÊ¼»¯Íê³É
+2025-06-23 12:14:07,606 - deyu - INFO - ³õÊ¼»¯µÂÓýÎ¬¶ÈÄ£¿é
+2025-06-23 12:14:07,606 - deyu - INFO - ÏÖÓÐÊý¾Ý¿âÁÐ: ['id', 'name', 'gender', 'class', 'class_id', 'height', 'weight', 'chest_circumference', 'vital_capacity', 'dental_caries', 'vision_left', 'vision_right', 'physical_test_status', 'comments', 'pinzhi', 'xuexi', 'jiankang', 'shenmei', 'shijian', 'shenghuo', 'created_at', 'updated_at', 'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'xinli', 'semester']
+2025-06-23 12:14:07,609 - deyu - INFO - µÂÓýÎ¬¶ÈÄ£¿é³õÊ¼»¯Íê³É
+2025-06-23 12:14:07,610 - grade_analysis - INFO - ³õÊ¼»¯³É¼¨·ÖÎöÄ£¿é
+2025-06-23 12:14:07,610 - grade_analysis - INFO - ³É¼¨·ÖÎöÄ£¿é³õÊ¼»¯Íê³É
+2025-06-23 12:14:07,610 - users - INFO - ³õÊ¼»¯ÓÃ»§±í
+2025-06-23 12:14:07,610 - users - INFO - ÓÃ»§±íÏÖÓÐÁÐ: ['id', 'username', 'password_hash', 'is_admin', 'class_id', 'reset_password', 'created_at', 'updated_at']
+2025-06-23 12:14:07,610 - users - WARNING - Î´·¢ÏÖ¹ÜÀíÔ±ÕËºÅ£¬´´½¨Ä¬ÈÏ¹ÜÀíÔ±
+2025-06-23 12:14:07,755 - users - INFO - ´´½¨Ä¬ÈÏ¹ÜÀíÔ±³É¹¦
+2025-06-23 12:14:07,755 - users - INFO - ÓÃ»§±í³õÊ¼»¯Íê³É
+2025-06-23 12:14:07,755 - classes - INFO - ³õÊ¼»¯°à¼¶±í
+2025-06-23 12:14:07,760 - classes - INFO - °à¼¶±í³õÊ¼»¯Íê³É
+2025-06-23 12:14:07,760 - database_backup - INFO - Êý¾Ý¿â±¸·ÝÄ£¿éÒÑ³õÊ¼»¯
+2025-06-23 12:14:07,768 - server - INFO - ³õÊ¼»¯Êý¾Ý¿â
+2025-06-23 12:14:07,768 - server - INFO - ÏÖÓÐÊý¾Ý¿âÁÐ: ['id', 'name', 'gender', 'class', 'class_id', 'height', 'weight', 'chest_circumference', 'vital_capacity', 'dental_caries', 'vision_left', 'vision_right', 'physical_test_status', 'comments', 'pinzhi', 'xuexi', 'jiankang', 'shenmei', 'shijian', 'shenghuo', 'created_at', 'updated_at', 'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'xinli', 'semester']
+2025-06-23 12:14:07,768 - server - INFO - Êý¾Ý¿â³õÊ¼»¯Íê³É
+2025-06-23 12:14:07,788 - users - INFO - ³õÊ¼»¯ÓÃ»§±í
+2025-06-23 12:14:07,795 - users - INFO - ÓÃ»§±íÏÖÓÐÁÐ: ['id', 'username', 'password_hash', 'is_admin', 'class_id', 'reset_password', 'created_at', 'updated_at']
+2025-06-23 12:14:07,795 - users - INFO - ÓÃ»§±í³õÊ¼»¯Íê³É
+2025-06-23 12:14:07,795 - classes - INFO - ³õÊ¼»¯°à¼¶±í
+2025-06-23 12:14:07,795 - classes - INFO - °à¼¶±í³õÊ¼»¯Íê³É
+2025-06-23 12:14:19,354 - utils.pdf_exporter_fixed - ERROR - PDFµ¼³öÄ£¿é: ÎÞ·¨µ¼ÈëReportLab¿â£¬PDFÉú³É¹¦ÄÜ½«²»¿ÉÓÃ
+2025-06-23 12:14:19,401 - utils.comment_processor - ERROR - ÎÞ·¨µ¼ÈëReportLab¿â£¬PDFÉú³É¹¦ÄÜ½«²»¿ÉÓÃ
+2025-06-23 12:14:19,401 - utils.comment_processor - ERROR - ÇëÊ¹ÓÃÒÔÏÂÃüÁî°²×°ReportLab: pip install reportlab
+2025-06-23 12:14:19,461 - utils.deepseek_api - INFO - Ê¹ÓÃÄ¬ÈÏDeepSeek APIÃÜÔ¿
+2025-06-23 12:14:19,461 - __main__ - INFO - ·þÎñÆ÷Æô¶¯
+2025-06-23 12:14:19,523 - grades - INFO - ³õÊ¼»¯³É¼¨Ä£¿é
+2025-06-23 12:14:19,523 - grades - INFO - ³É¼¨Ä£¿é³õÊ¼»¯Íê³É
+2025-06-23 12:14:19,523 - deyu - INFO - ³õÊ¼»¯µÂÓýÎ¬¶ÈÄ£¿é
+2025-06-23 12:14:19,523 - deyu - INFO - ÏÖÓÐÊý¾Ý¿âÁÐ: ['id', 'name', 'gender', 'class', 'class_id', 'height', 'weight', 'chest_circumference', 'vital_capacity', 'dental_caries', 'vision_left', 'vision_right', 'physical_test_status', 'comments', 'pinzhi', 'xuexi', 'jiankang', 'shenmei', 'shijian', 'shenghuo', 'created_at', 'updated_at', 'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'xinli', 'semester']
+2025-06-23 12:14:19,523 - deyu - INFO - µÂÓýÎ¬¶ÈÄ£¿é³õÊ¼»¯Íê³É
+2025-06-23 12:14:19,523 - grade_analysis - INFO - ³õÊ¼»¯³É¼¨·ÖÎöÄ£¿é
+2025-06-23 12:14:19,541 - grade_analysis - INFO - ³É¼¨·ÖÎöÄ£¿é³õÊ¼»¯Íê³É
+2025-06-23 12:14:19,541 - users - INFO - ³õÊ¼»¯ÓÃ»§±í
+2025-06-23 12:14:19,541 - users - INFO - ÓÃ»§±íÏÖÓÐÁÐ: ['id', 'username', 'password_hash', 'is_admin', 'class_id', 'reset_password', 'created_at', 'updated_at']
+2025-06-23 12:14:19,541 - users - INFO - ÓÃ»§±í³õÊ¼»¯Íê³É
+2025-06-23 12:14:19,541 - classes - INFO - ³õÊ¼»¯°à¼¶±í
+2025-06-23 12:14:19,541 - classes - INFO - °à¼¶±í³õÊ¼»¯Íê³É
+2025-06-23 12:14:19,541 - database_backup - INFO - Êý¾Ý¿â±¸·ÝÄ£¿éÒÑ³õÊ¼»¯
+2025-06-23 12:14:19,554 - __main__ - INFO - ³õÊ¼»¯Êý¾Ý¿â
+2025-06-23 12:14:19,554 - __main__ - INFO - ÏÖÓÐÊý¾Ý¿âÁÐ: ['id', 'name', 'gender', 'class', 'class_id', 'height', 'weight', 'chest_circumference', 'vital_capacity', 'dental_caries', 'vision_left', 'vision_right', 'physical_test_status', 'comments', 'pinzhi', 'xuexi', 'jiankang', 'shenmei', 'shijian', 'shenghuo', 'created_at', 'updated_at', 'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'xinli', 'semester']
+2025-06-23 12:14:19,554 - __main__ - INFO - Êý¾Ý¿â³õÊ¼»¯Íê³É
+2025-06-23 12:14:19,594 - users - INFO - ³õÊ¼»¯ÓÃ»§±í
+2025-06-23 12:14:19,594 - users - INFO - ÓÃ»§±íÏÖÓÐÁÐ: ['id', 'username', 'password_hash', 'is_admin', 'class_id', 'reset_password', 'created_at', 'updated_at']
+2025-06-23 12:14:19,594 - users - INFO - ÓÃ»§±í³õÊ¼»¯Íê³É
+2025-06-23 12:14:19,594 - classes - INFO - ³õÊ¼»¯°à¼¶±í
+2025-06-23 12:14:19,594 - classes - INFO - °à¼¶±í³õÊ¼»¯Íê³É
+2025-06-23 12:14:19,615 - __main__ - INFO - ³õÊ¼»¯Êý¾Ý¿â
+2025-06-23 12:14:19,615 - __main__ - INFO - ÏÖÓÐÊý¾Ý¿âÁÐ: ['id', 'name', 'gender', 'class', 'class_id', 'height', 'weight', 'chest_circumference', 'vital_capacity', 'dental_caries', 'vision_left', 'vision_right', 'physical_test_status', 'comments', 'pinzhi', 'xuexi', 'jiankang', 'shenmei', 'shijian', 'shenghuo', 'created_at', 'updated_at', 'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'xinli', 'semester']
+2025-06-23 12:14:19,618 - __main__ - INFO - Êý¾Ý¿â³õÊ¼»¯Íê³É
+2025-06-23 12:14:19,620 - __main__ - INFO - Êý¾Ý¿â³õÊ¼»¯Íê³É£¬±£ÁôÒÑÓÐÊý¾Ý
+2025-06-23 12:14:19,822 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8080
+ * Running on http://10.211.55.3:8080
+2025-06-23 12:14:19,822 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-06-23 12:51:46,193 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:51:46] "[32mGET / HTTP/1.1[0m" 302 -
+2025-06-23 12:51:46,604 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:51:46] "GET /login?next=/ HTTP/1.1" 200 -
+2025-06-23 12:51:47,091 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:51:47] "GET /css/bootstrap.min.css HTTP/1.1" 200 -
+2025-06-23 12:51:47,091 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:51:47] "GET /css/boxicons-local.css HTTP/1.1" 200 -
+2025-06-23 12:51:47,098 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:51:47] "GET /js/libs/bootstrap.bundle.min.js HTTP/1.1" 200 -
+2025-06-23 12:51:47,120 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:51:47] "GET /img/logo.png HTTP/1.1" 200 -
+2025-06-23 12:51:47,537 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:51:47] "GET /img/backgrounds/bg01.jpg HTTP/1.1" 200 -
+2025-06-23 12:51:48,003 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:51:48] "GET /favicon.ico HTTP/1.1" 200 -
+2025-06-23 12:51:54,892 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:51:54] "POST /login HTTP/1.1" 200 -
+2025-06-23 12:51:54,954 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:51:54] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-23 12:51:54,982 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:51:54] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-23 12:51:55,411 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:51:55] "[36mGET /img/logo.png HTTP/1.1[0m" 304 -
+2025-06-23 12:51:55,556 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:51:55] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-23 12:51:55,865 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:51:55] "[36mGET /img/backgrounds/bg01.jpg HTTP/1.1[0m" 304 -
+2025-06-23 12:52:02,291 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:52:02] "POST /login HTTP/1.1" 200 -
+2025-06-23 12:52:02,348 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:52:02] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-23 12:52:02,405 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:52:02] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-23 12:52:02,668 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:52:02] "[36mGET /img/logo.png HTTP/1.1[0m" 304 -
+2025-06-23 12:52:02,668 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:52:02] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-23 12:52:02,894 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:52:02] "[36mGET /img/backgrounds/bg01.jpg HTTP/1.1[0m" 304 -
+2025-06-23 12:54:19,835 - users - INFO - ÓÃ»§ admin µÇÂ¼³É¹¦£¬ÒÑ¸üÐÂreset_password
+2025-06-23 12:54:19,841 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:19] "[32mPOST /login HTTP/1.1[0m" 302 -
+2025-06-23 12:54:19,841 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:19] "GET / HTTP/1.1" 200 -
+2025-06-23 12:54:19,909 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:19] "GET /css/main.css HTTP/1.1" 200 -
+2025-06-23 12:54:20,241 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:20] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-23 12:54:20,241 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:20] "GET /css/tutorial.css HTTP/1.1" 200 -
+2025-06-23 12:54:20,249 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:20] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-23 12:54:20,257 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:20] "GET /js/session-timeout.js HTTP/1.1" 200 -
+2025-06-23 12:54:20,268 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:20] "[36mGET /img/logo.png HTTP/1.1[0m" 304 -
+2025-06-23 12:54:20,276 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:20] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-23 12:54:20,616 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:20] "GET /pages/home.html HTTP/1.1" 200 -
+2025-06-23 12:54:20,718 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:20] "GET /pages/comments.html HTTP/1.1" 200 -
+2025-06-23 12:54:20,722 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:20] "GET /pages/students.html HTTP/1.1" 200 -
+2025-06-23 12:54:20,757 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:20] "GET /fonts/boxicons.woff2 HTTP/1.1" 200 -
+2025-06-23 12:54:20,765 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:20] "GET /pages/deyu.html HTTP/1.1" 200 -
+2025-06-23 12:54:20,862 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:20] "GET /pages/grades.html HTTP/1.1" 200 -
+2025-06-23 12:54:21,062 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:21] "GET /pages/grade_analysis.html HTTP/1.1" 200 -
+2025-06-23 12:54:21,102 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:21] "GET /pages/export.html HTTP/1.1" 200 -
+2025-06-23 12:54:21,308 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:21] "GET /pages/settings.html HTTP/1.1" 200 -
+2025-06-23 12:54:21,336 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:21] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-23 12:54:21,336 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:21] "GET /pages/admin.html HTTP/1.1" 200 -
+2025-06-23 12:54:21,419 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:21] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-23 12:54:21,443 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:21] "GET /css/comments.css HTTP/1.1" 200 -
+2025-06-23 12:54:21,451 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:21] "GET /css/home.css HTTP/1.1" 200 -
+2025-06-23 12:54:21,661 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:21] "GET /css/grade_analysis.css HTTP/1.1" 200 -
+2025-06-23 12:54:21,673 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:21] "[36mGET /css/main.css HTTP/1.1[0m" 304 -
+2025-06-23 12:54:21,673 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:21] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-23 12:54:21,785 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:21] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-23 12:54:21,785 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:21] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-23 12:54:21,814 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:21] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-23 12:54:21,980 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:21] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-23 12:54:22,003 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:22] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-23 12:54:22,011 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:22] "GET /css/admin.css HTTP/1.1" 200 -
+2025-06-23 12:54:22,103 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:22] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-23 12:54:22,141 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:22] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-23 12:54:22,149 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:22] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-23 12:54:22,315 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:22] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-23 12:54:22,341 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:22] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-23 12:54:22,348 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:22] "GET /js/libs/chart.js HTTP/1.1" 200 -
+2025-06-23 12:54:22,434 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:22] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-23 12:54:22,457 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:22] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-23 12:54:22,490 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:22] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-23 12:54:22,631 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:22] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-23 12:54:22,655 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:22] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-23 12:54:22,663 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:22] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-23 12:54:22,750 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:22] "GET /js/home.js HTTP/1.1" 200 -
+2025-06-23 12:54:22,787 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:22] "GET /js/comments.js HTTP/1.1" 200 -
+2025-06-23 12:54:22,814 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:22] "GET /js/students.js HTTP/1.1" 200 -
+2025-06-23 12:54:22,954 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:22] "GET /js/grades.js HTTP/1.1" 200 -
+2025-06-23 12:54:22,991 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:22] "GET /js/libs/jquery.min.js HTTP/1.1" 200 -
+2025-06-23 12:54:22,991 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:22] "GET /js/deyu.js HTTP/1.1" 200 -
+2025-06-23 12:54:23,063 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:23] "GET /js/grade_analysis.js HTTP/1.1" 200 -
+2025-06-23 12:54:23,122 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:23] "GET /libs/pizzip.min.js HTTP/1.1" 200 -
+2025-06-23 12:54:23,130 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:23] "GET /libs/docxtemplater.js HTTP/1.1" 200 -
+2025-06-23 12:54:23,270 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:23] "GET /libs/jszip.min.js HTTP/1.1" 200 -
+2025-06-23 12:54:23,321 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:23] "GET /js/export.js HTTP/1.1" 200 -
+2025-06-23 12:54:23,321 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:23] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-23 12:54:23,387 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:23] "GET /js/admin.js HTTP/1.1" 200 -
+2025-06-23 12:54:23,435 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:23] "[36mGET /js/libs/chart.js HTTP/1.1[0m" 304 -
+2025-06-23 12:54:23,508 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:23] "GET /api/dashboard/info HTTP/1.1" 200 -
+2025-06-23 12:54:23,588 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:23] "GET /api/dashboard/grade-distribution HTTP/1.1" 200 -
+2025-06-23 12:54:23,638 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:23] "GET /api/dashboard/todos HTTP/1.1" 200 -
+2025-06-23 12:54:23,638 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:23] "GET /api/dashboard/comments HTTP/1.1" 200 -
+2025-06-23 12:54:23,707 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:23] "GET /api/dashboard/activities HTTP/1.1" 200 -
+2025-06-23 12:54:23,751 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:23] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-23 12:54:23,836 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:23] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-23 12:54:24,109 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:24] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-23 12:54:24,162 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:24] "GET /js/data.js HTTP/1.1" 200 -
+2025-06-23 12:54:24,286 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:24] "GET /js/main.js HTTP/1.1" 200 -
+2025-06-23 12:54:24,438 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:24] "GET /js/tutorial.js HTTP/1.1" 200 -
+2025-06-23 12:54:24,724 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:24] "[36mGET /img/logo.png HTTP/1.1[0m" 304 -
+2025-06-23 12:54:24,818 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:24] "GET /img/vx.jpg HTTP/1.1" 200 -
+2025-06-23 12:54:24,947 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:24] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-23 12:54:25,288 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:25] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-06-23 12:54:25,512 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:25] "GET /js/settings.js HTTP/1.1" 200 -
+2025-06-23 12:54:25,621 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:25] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-23 12:54:25,746 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:25] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-23 12:54:26,104 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:26] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-06-23 12:54:26,307 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:26] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-23 12:54:26,563 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:26] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-23 12:54:26,674 - students - INFO - »ñÈ¡ËùÓÐÑ§Éú
+2025-06-23 12:54:27,271 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:27] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-06-23 12:54:27,631 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:27] "GET /api/students HTTP/1.1" 200 -
+2025-06-23 12:54:27,683 - classes - INFO - === CLASSES BLUEPRINT: ½ÓÊÕµ½»ñÈ¡°à¼¶ÁÐ±íÇëÇó ===
+2025-06-23 12:54:27,735 - classes - INFO - ´ÓÊý¾Ý¿â»ñÈ¡µ½ 55 ¸ö°à¼¶
+2025-06-23 12:54:27,749 - classes - INFO - »ñÈ¡µ½ 55 ¸ö°à¼¶£¬×¼±¸·µ»Ø
+2025-06-23 12:54:27,763 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:27] "GET /api/classes HTTP/1.1" 200 -
+2025-06-23 12:54:27,789 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:27] "GET /api/users HTTP/1.1" 200 -
+2025-06-23 12:54:27,912 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:27] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-23 12:54:28,042 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:28] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-23 12:54:28,159 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:28] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-06-23 12:54:28,562 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:28] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-06-23 12:54:28,562 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:28] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-23 12:54:28,788 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:28] "GET /api/grades?semester=2024-2025Ñ§ÄêÏÂÑ§ÆÚ HTTP/1.1" 200 -
+2025-06-23 12:54:28,968 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:28] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-23 12:54:29,303 - __main__ - ERROR - »ñÈ¡ÏµÍ³ÉèÖÃÊ±³ö´í: name 'load_settings_from_db' is not defined
+2025-06-23 12:54:29,326 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:29] "[35m[1mGET /api/settings HTTP/1.1[0m" 500 -
+2025-06-23 12:54:29,352 - students - INFO - »ñÈ¡ËùÓÐÑ§Éú
+2025-06-23 12:54:30,567 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:30] "GET /api/students HTTP/1.1" 200 -
+2025-06-23 12:54:30,575 - __main__ - ERROR - »ñÈ¡ÏµÍ³ÉèÖÃÊ±³ö´í: name 'load_settings_from_db' is not defined
+2025-06-23 12:54:30,583 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:30] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-23 12:54:30,610 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:30] "[35m[1mGET /api/settings HTTP/1.1[0m" 500 -
+2025-06-23 12:54:30,735 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:30] "GET /api/carousel/settings HTTP/1.1" 200 -
+2025-06-23 12:54:30,735 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:30] "GET /api/carousel/images HTTP/1.1" 200 -
+2025-06-23 12:54:31,028 - students - INFO - »ñÈ¡ËùÓÐÑ§Éú
+2025-06-23 12:54:31,041 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:31] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-23 12:54:31,041 - __main__ - ERROR - »ñÈ¡ÏµÍ³ÉèÖÃÊ±³ö´í: name 'load_settings_from_db' is not defined
+2025-06-23 12:54:31,041 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:31] "[35m[1mGET /api/settings HTTP/1.1[0m" 500 -
+2025-06-23 12:54:31,162 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:31] "GET /api/carousel/settings HTTP/1.1" 200 -
+2025-06-23 12:54:31,268 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:31] "GET /api/students HTTP/1.1" 200 -
+2025-06-23 12:54:31,605 - __main__ - ERROR - »ñÈ¡ÏµÍ³ÉèÖÃÊ±³ö´í: name 'load_settings_from_db' is not defined
+2025-06-23 12:54:31,605 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:31] "[35m[1mGET /api/settings HTTP/1.1[0m" 500 -
+2025-06-23 12:54:31,615 - students - INFO - »ñÈ¡ËùÓÐÑ§Éú
+2025-06-23 12:54:31,684 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:31] "GET /api/students HTTP/1.1" 200 -
+2025-06-23 12:54:32,001 - students - INFO - »ñÈ¡ËùÓÐÑ§Éú
+2025-06-23 12:54:32,055 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:32] "GET /api/students HTTP/1.1" 200 -
+2025-06-23 12:54:33,123 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:33] "[36mGET /fonts/boxicons.woff2 HTTP/1.1[0m" 304 -
+2025-06-23 12:54:34,172 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:34] "GET /api/carousel/images HTTP/1.1" 200 -
+2025-06-23 12:54:34,554 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:34] "[36mGET /img/backgrounds/bg01.jpg HTTP/1.1[0m" 304 -
+2025-06-23 12:54:34,554 - classes - INFO - === CLASSES BLUEPRINT: ½ÓÊÕµ½»ñÈ¡°à¼¶ÁÐ±íÇëÇó ===
+2025-06-23 12:54:34,566 - deyu - INFO - ÊÕµ½»ñÈ¡µÂÓýÎ¬¶ÈÊý¾ÝÇëÇó: class_id=, semester=2024-2025Ñ§ÄêÏÂÑ§ÆÚ
+2025-06-23 12:54:34,588 - classes - INFO - ´ÓÊý¾Ý¿â»ñÈ¡µ½ 55 ¸ö°à¼¶
+2025-06-23 12:54:34,611 - deyu - INFO - µ±Ç°ÓÃ»§: admin, ID: 1, ½ÇÉ«: ¹ÜÀíÔ±, ¹ØÁª°à¼¶: None
+2025-06-23 12:54:34,659 - deyu - INFO - ÇëÇó²ÎÊý: ImmutableMultiDict([('semester', '2024-2025Ñ§ÄêÏÂÑ§ÆÚ')])
+2025-06-23 12:54:34,668 - deyu - WARNING - Î´Ìá¹©°à¼¶ID
+2025-06-23 12:54:34,708 - classes - INFO - »ñÈ¡µ½ 55 ¸ö°à¼¶£¬×¼±¸·µ»Ø
+2025-06-23 12:54:34,722 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:34] "GET /api/deyu?semester=2024-2025Ñ§ÄêÏÂÑ§ÆÚ HTTP/1.1" 200 -
+2025-06-23 12:54:34,722 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:34] "GET /api/classes HTTP/1.1" 200 -
+2025-06-23 12:54:39,481 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:39] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-23 12:54:42,429 - students - INFO - »ñÈ¡ËùÓÐÑ§Éú
+2025-06-23 12:54:42,623 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:42] "GET /api/students HTTP/1.1" 200 -
+2025-06-23 12:54:57,672 - __main__ - INFO - ³É¹¦±£´æÉèÖÃµ½Êý¾Ý¿â: school_year = 2024-2025
+2025-06-23 12:54:57,688 - __main__ - INFO - ³É¹¦±£´æÉèÖÃµ½Êý¾Ý¿â: semester = 2
+2025-06-23 12:54:57,688 - __main__ - INFO - ³É¹¦±£´æÉèÖÃµ½Êý¾Ý¿â: start_date = 2025-09-01
+2025-06-23 12:54:57,703 - __main__ - INFO - ³É¹¦´ÓÊý¾Ý¿â¸üÐÂÅäÖÃÎÄ¼þ
+2025-06-23 12:54:57,703 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:54:57] "POST /api/settings/semester HTTP/1.1" 200 -
+2025-06-23 12:55:06,855 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:06] "[36mGET / HTTP/1.1[0m" 304 -
+2025-06-23 12:55:07,937 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:07] "[36mGET /css/tutorial.css HTTP/1.1[0m" 304 -
+2025-06-23 12:55:08,269 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:08] "[36mGET /css/main.css HTTP/1.1[0m" 304 -
+2025-06-23 12:55:08,269 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:08] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-23 12:55:08,269 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:08] "[36mGET /js/session-timeout.js HTTP/1.1[0m" 304 -
+2025-06-23 12:55:08,269 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:08] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-23 12:55:08,269 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:08] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-23 12:55:08,269 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:08] "[36mGET /img/logo.png HTTP/1.1[0m" 304 -
+2025-06-23 12:55:08,668 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:08] "[36mGET /pages/home.html HTTP/1.1[0m" 304 -
+2025-06-23 12:55:08,668 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:08] "[36mGET /pages/students.html HTTP/1.1[0m" 304 -
+2025-06-23 12:55:08,668 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:08] "[36mGET /pages/comments.html HTTP/1.1[0m" 304 -
+2025-06-23 12:55:08,682 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:08] "[36mGET /fonts/boxicons.woff2 HTTP/1.1[0m" 304 -
+2025-06-23 12:55:08,749 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:08] "[36mGET /pages/grades.html HTTP/1.1[0m" 304 -
+2025-06-23 12:55:08,749 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:08] "[36mGET /pages/deyu.html HTTP/1.1[0m" 304 -
+2025-06-23 12:55:09,002 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:09] "[36mGET /pages/export.html HTTP/1.1[0m" 304 -
+2025-06-23 12:55:09,057 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:09] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-23 12:55:09,077 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:09] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-23 12:55:09,109 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:09] "[36mGET /pages/grade_analysis.html HTTP/1.1[0m" 304 -
+2025-06-23 12:55:09,109 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:09] "[36mGET /pages/settings.html HTTP/1.1[0m" 304 -
+2025-06-23 12:55:09,109 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:09] "[36mGET /pages/admin.html HTTP/1.1[0m" 304 -
+2025-06-23 12:55:09,311 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:09] "[36mGET /css/home.css HTTP/1.1[0m" 304 -
+2025-06-23 12:55:09,379 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:09] "[36mGET /css/comments.css HTTP/1.1[0m" 304 -
+2025-06-23 12:55:09,388 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:09] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-23 12:55:09,433 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:09] "[36mGET /css/main.css HTTP/1.1[0m" 304 -
+2025-06-23 12:55:09,433 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:09] "[36mGET /css/grade_analysis.css HTTP/1.1[0m" 304 -
+2025-06-23 12:55:09,433 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:09] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-23 12:55:09,618 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:09] "[36mGET /css/admin.css HTTP/1.1[0m" 304 -
+2025-06-23 12:55:09,693 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:09] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-23 12:55:09,717 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:09] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-23 12:55:09,762 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:09] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-23 12:55:09,770 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:09] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-23 12:55:09,770 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:09] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-23 12:55:09,935 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:09] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-23 12:55:10,015 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:10] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-23 12:55:10,019 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:10] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-23 12:55:10,068 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:10] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-23 12:55:10,076 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:10] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-23 12:55:10,124 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:10] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-23 12:55:10,280 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:10] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-23 12:55:10,344 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:10] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-23 12:55:10,344 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:10] "[36mGET /js/home.js HTTP/1.1[0m" 304 -
+2025-06-23 12:55:10,384 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:10] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-23 12:55:10,384 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:10] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-23 12:55:10,451 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:10] "[36mGET /js/libs/chart.js HTTP/1.1[0m" 304 -
+2025-06-23 12:55:10,685 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:10] "[36mGET /js/students.js HTTP/1.1[0m" 304 -
+2025-06-23 12:55:10,695 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:10] "[36mGET /js/comments.js HTTP/1.1[0m" 304 -
+2025-06-23 12:55:10,722 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:10] "[36mGET /js/grades.js HTTP/1.1[0m" 304 -
+2025-06-23 12:55:10,783 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:10] "[36mGET /js/deyu.js HTTP/1.1[0m" 304 -
+2025-06-23 12:55:10,842 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:10] "[36mGET /libs/pizzip.min.js HTTP/1.1[0m" 304 -
+2025-06-23 12:55:10,896 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:10] "[36mGET /libs/docxtemplater.js HTTP/1.1[0m" 304 -
+2025-06-23 12:55:11,032 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:11] "[36mGET /libs/jszip.min.js HTTP/1.1[0m" 304 -
+2025-06-23 12:55:11,088 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:11] "[36mGET /js/export.js HTTP/1.1[0m" 304 -
+2025-06-23 12:55:11,215 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:11] "[36mGET /js/libs/jquery.min.js HTTP/1.1[0m" 304 -
+2025-06-23 12:55:11,244 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:11] "[36mGET /js/grade_analysis.js HTTP/1.1[0m" 304 -
+2025-06-23 12:55:11,310 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:11] "[36mGET /js/admin.js HTTP/1.1[0m" 304 -
+2025-06-23 12:55:11,362 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:11] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-23 12:55:11,398 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:11] "[36mGET /js/libs/chart.js HTTP/1.1[0m" 304 -
+2025-06-23 12:55:11,658 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:11] "GET /api/dashboard/grade-distribution HTTP/1.1" 200 -
+2025-06-23 12:55:11,736 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:11] "GET /api/dashboard/comments HTTP/1.1" 200 -
+2025-06-23 12:55:11,766 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:11] "GET /api/dashboard/info HTTP/1.1" 200 -
+2025-06-23 12:55:11,783 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:11] "GET /api/dashboard/todos HTTP/1.1" 200 -
+2025-06-23 12:55:11,830 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:11] "GET /api/dashboard/activities HTTP/1.1" 200 -
+2025-06-23 12:55:11,869 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:11] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-23 12:55:12,110 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:12] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-23 12:55:12,287 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:12] "[36mGET /js/tutorial.js HTTP/1.1[0m" 304 -
+2025-06-23 12:55:12,356 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:12] "[36mGET /js/main.js HTTP/1.1[0m" 304 -
+2025-06-23 12:55:12,443 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:12] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-06-23 12:55:12,530 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:12] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-23 12:55:12,629 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:12] "[36mGET /img/logo.png HTTP/1.1[0m" 304 -
+2025-06-23 12:55:12,729 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:12] "[36mGET /img/vx.jpg HTTP/1.1[0m" 304 -
+2025-06-23 12:55:12,921 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:12] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-06-23 12:55:13,018 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:13] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-23 12:55:13,110 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:13] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-23 12:55:13,328 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:13] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-06-23 12:55:13,809 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:13] "[36mGET /js/settings.js HTTP/1.1[0m" 304 -
+2025-06-23 12:55:13,936 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:13] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-23 12:55:14,066 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:14] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-23 12:55:14,136 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:14] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-06-23 12:55:14,210 - students - INFO - »ñÈ¡ËùÓÐÑ§Éú
+2025-06-23 12:55:14,435 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:14] "GET /api/students HTTP/1.1" 200 -
+2025-06-23 12:55:14,442 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:14] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-23 12:55:14,615 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:14] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-06-23 12:55:14,650 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:14] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-23 12:55:14,829 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:14] "GET /api/grades?semester=2024-2025Ñ§ÄêÏÂÑ§ÆÚ HTTP/1.1" 200 -
+2025-06-23 12:55:14,829 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:14] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-23 12:55:14,829 - students - INFO - »ñÈ¡ËùÓÐÑ§Éú
+2025-06-23 12:55:14,890 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:14] "GET /api/students HTTP/1.1" 200 -
+2025-06-23 12:55:14,940 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:14] "GET /api/users HTTP/1.1" 200 -
+2025-06-23 12:55:15,023 - classes - INFO - === CLASSES BLUEPRINT: ½ÓÊÕµ½»ñÈ¡°à¼¶ÁÐ±íÇëÇó ===
+2025-06-23 12:55:15,023 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:15] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-06-23 12:55:15,043 - classes - INFO - ´ÓÊý¾Ý¿â»ñÈ¡µ½ 55 ¸ö°à¼¶
+2025-06-23 12:55:15,063 - classes - INFO - »ñÈ¡µ½ 55 ¸ö°à¼¶£¬×¼±¸·µ»Ø
+2025-06-23 12:55:15,104 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:15] "GET /api/classes HTTP/1.1" 200 -
+2025-06-23 12:55:15,180 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:15] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-23 12:55:15,242 - students - INFO - »ñÈ¡ËùÓÐÑ§Éú
+2025-06-23 12:55:15,337 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:15] "GET /api/students HTTP/1.1" 200 -
+2025-06-23 12:55:15,509 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:15] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-23 12:55:15,836 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:15] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-23 12:55:18,547 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:18] "[36mGET /fonts/boxicons.woff2 HTTP/1.1[0m" 304 -
+2025-06-23 12:55:18,731 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:18] "GET /api/carousel/images HTTP/1.1" 200 -
+2025-06-23 12:55:18,736 - __main__ - ERROR - »ñÈ¡ÏµÍ³ÉèÖÃÊ±³ö´í: name 'load_settings_from_db' is not defined
+2025-06-23 12:55:18,749 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:18] "[35m[1mGET /api/settings HTTP/1.1[0m" 500 -
+2025-06-23 12:55:18,757 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:18] "GET /api/carousel/settings HTTP/1.1" 200 -
+2025-06-23 12:55:18,811 - __main__ - ERROR - »ñÈ¡ÏµÍ³ÉèÖÃÊ±³ö´í: name 'load_settings_from_db' is not defined
+2025-06-23 12:55:18,811 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:18] "[35m[1mGET /api/settings HTTP/1.1[0m" 500 -
+2025-06-23 12:55:19,123 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:19] "GET /api/carousel/settings HTTP/1.1" 200 -
+2025-06-23 12:55:23,839 - students - INFO - »ñÈ¡ËùÓÐÑ§Éú
+2025-06-23 12:55:23,850 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:23] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-23 12:55:23,855 - __main__ - ERROR - »ñÈ¡ÏµÍ³ÉèÖÃÊ±³ö´í: name 'load_settings_from_db' is not defined
+2025-06-23 12:55:23,855 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:23] "[35m[1mGET /api/settings HTTP/1.1[0m" 500 -
+2025-06-23 12:55:23,949 - deyu - INFO - ÊÕµ½»ñÈ¡µÂÓýÎ¬¶ÈÊý¾ÝÇëÇó: class_id=, semester=2024-2025Ñ§ÄêÏÂÑ§ÆÚ
+2025-06-23 12:55:23,949 - deyu - INFO - µ±Ç°ÓÃ»§: admin, ID: 1, ½ÇÉ«: ¹ÜÀíÔ±, ¹ØÁª°à¼¶: None
+2025-06-23 12:55:23,949 - deyu - INFO - ÇëÇó²ÎÊý: ImmutableMultiDict([('semester', '2024-2025Ñ§ÄêÏÂÑ§ÆÚ')])
+2025-06-23 12:55:23,949 - deyu - WARNING - Î´Ìá¹©°à¼¶ID
+2025-06-23 12:55:23,949 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:23] "GET /api/deyu?semester=2024-2025Ñ§ÄêÏÂÑ§ÆÚ HTTP/1.1" 200 -
+2025-06-23 12:55:24,027 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:24] "GET /api/students HTTP/1.1" 200 -
+2025-06-23 12:55:24,105 - __main__ - ERROR - »ñÈ¡ÏµÍ³ÉèÖÃÊ±³ö´í: name 'load_settings_from_db' is not defined
+2025-06-23 12:55:24,105 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:24] "[35m[1mGET /api/settings HTTP/1.1[0m" 500 -
+2025-06-23 12:55:24,121 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:24] "GET /api/carousel/images HTTP/1.1" 200 -
+2025-06-23 12:55:24,277 - students - INFO - »ñÈ¡ËùÓÐÑ§Éú
+2025-06-23 12:55:24,371 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:24] "GET /api/students HTTP/1.1" 200 -
+2025-06-23 12:55:24,449 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:24] "[36mGET /img/backgrounds/bg01.jpg HTTP/1.1[0m" 304 -
+2025-06-23 12:55:26,651 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:26] "[36mGET /favicon.ico HTTP/1.1[0m" 304 -
+2025-06-23 12:55:29,438 - classes - INFO - === CLASSES BLUEPRINT: ½ÓÊÕµ½»ñÈ¡°à¼¶ÁÐ±íÇëÇó ===
+2025-06-23 12:55:29,587 - classes - INFO - ´ÓÊý¾Ý¿â»ñÈ¡µ½ 55 ¸ö°à¼¶
+2025-06-23 12:55:29,629 - classes - INFO - »ñÈ¡µ½ 55 ¸ö°à¼¶£¬×¼±¸·µ»Ø
+2025-06-23 12:55:29,629 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:29] "GET /api/classes HTTP/1.1" 200 -
+2025-06-23 12:55:29,924 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:29] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-23 12:55:32,652 - students - INFO - »ñÈ¡ËùÓÐÑ§Éú
+2025-06-23 12:55:32,682 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:55:32] "GET /api/students HTTP/1.1" 200 -
+2025-06-23 12:57:13,833 - __main__ - INFO - ³É¹¦±£´æÉèÖÃµ½Êý¾Ý¿â: school_year = 2025-2026
+2025-06-23 12:57:13,898 - __main__ - INFO - ³É¹¦±£´æÉèÖÃµ½Êý¾Ý¿â: semester = 1
+2025-06-23 12:57:13,912 - __main__ - INFO - ³É¹¦±£´æÉèÖÃµ½Êý¾Ý¿â: start_date = 2025-09-01
+2025-06-23 12:57:13,927 - __main__ - INFO - ³É¹¦´ÓÊý¾Ý¿â¸üÐÂÅäÖÃÎÄ¼þ
+2025-06-23 12:57:13,941 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:13] "POST /api/settings/semester HTTP/1.1" 200 -
+2025-06-23 12:57:17,460 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:17] "[36mGET / HTTP/1.1[0m" 304 -
+2025-06-23 12:57:18,348 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:18] "[36mGET /css/tutorial.css HTTP/1.1[0m" 304 -
+2025-06-23 12:57:18,645 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:18] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-23 12:57:18,645 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:18] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-23 12:57:18,645 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:18] "[36mGET /css/main.css HTTP/1.1[0m" 304 -
+2025-06-23 12:57:18,645 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:18] "[36mGET /js/session-timeout.js HTTP/1.1[0m" 304 -
+2025-06-23 12:57:18,645 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:18] "[36mGET /img/logo.png HTTP/1.1[0m" 304 -
+2025-06-23 12:57:18,658 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:18] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-23 12:57:18,992 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:18] "[36mGET /pages/comments.html HTTP/1.1[0m" 304 -
+2025-06-23 12:57:18,992 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:18] "[36mGET /pages/home.html HTTP/1.1[0m" 304 -
+2025-06-23 12:57:19,004 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:19] "[36mGET /pages/students.html HTTP/1.1[0m" 304 -
+2025-06-23 12:57:19,004 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:19] "[36mGET /pages/deyu.html HTTP/1.1[0m" 304 -
+2025-06-23 12:57:19,012 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:19] "[36mGET /pages/grades.html HTTP/1.1[0m" 304 -
+2025-06-23 12:57:19,017 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:19] "[36mGET /pages/grade_analysis.html HTTP/1.1[0m" 304 -
+2025-06-23 12:57:19,322 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:19] "[36mGET /fonts/boxicons.woff2 HTTP/1.1[0m" 304 -
+2025-06-23 12:57:19,333 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:19] "[36mGET /pages/admin.html HTTP/1.1[0m" 304 -
+2025-06-23 12:57:19,333 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:19] "[36mGET /pages/export.html HTTP/1.1[0m" 304 -
+2025-06-23 12:57:19,333 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:19] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-23 12:57:19,341 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:19] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-23 12:57:19,349 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:19] "[36mGET /pages/settings.html HTTP/1.1[0m" 304 -
+2025-06-23 12:57:19,642 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:19] "[36mGET /css/grade_analysis.css HTTP/1.1[0m" 304 -
+2025-06-23 12:57:19,642 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:19] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-23 12:57:19,650 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:19] "[36mGET /css/home.css HTTP/1.1[0m" 304 -
+2025-06-23 12:57:19,650 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:19] "[36mGET /css/comments.css HTTP/1.1[0m" 304 -
+2025-06-23 12:57:19,658 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:19] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-23 12:57:19,671 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:19] "[36mGET /css/admin.css HTTP/1.1[0m" 304 -
+2025-06-23 12:57:19,959 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:19] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-23 12:57:19,959 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:19] "[36mGET /css/main.css HTTP/1.1[0m" 304 -
+2025-06-23 12:57:19,967 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:19] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-23 12:57:19,978 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:19] "[36mGET /fonts/boxicons.woff2 HTTP/1.1[0m" 304 -
+2025-06-23 12:57:19,978 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:19] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-23 12:57:19,986 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:19] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-23 12:57:20,271 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:20] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-23 12:57:20,271 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:20] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-23 12:57:20,287 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:20] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-23 12:57:20,306 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:20] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-23 12:57:20,306 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:20] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-23 12:57:20,306 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:20] "[36mGET /js/comments.js HTTP/1.1[0m" 304 -
+2025-06-23 12:57:20,652 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:20] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-23 12:57:20,672 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:20] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-23 12:57:20,741 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:20] "[36mGET /js/home.js HTTP/1.1[0m" 304 -
+2025-06-23 12:57:20,757 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:20] "[36mGET /js/students.js HTTP/1.1[0m" 304 -
+2025-06-23 12:57:20,774 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:20] "[36mGET /js/grades.js HTTP/1.1[0m" 304 -
+2025-06-23 12:57:20,798 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:20] "[36mGET /js/deyu.js HTTP/1.1[0m" 304 -
+2025-06-23 12:57:21,017 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:21] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-23 12:57:21,058 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:21] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-23 12:57:21,106 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:21] "[36mGET /js/libs/chart.js HTTP/1.1[0m" 304 -
+2025-06-23 12:57:21,106 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:21] "[36mGET /js/libs/jquery.min.js HTTP/1.1[0m" 304 -
+2025-06-23 12:57:21,106 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:21] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-06-23 12:57:21,122 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:21] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-06-23 12:57:21,405 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:21] "[36mGET /js/grade_analysis.js HTTP/1.1[0m" 304 -
+2025-06-23 12:57:21,405 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:21] "[36mGET /js/admin.js HTTP/1.1[0m" 304 -
+2025-06-23 12:57:21,431 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:21] "[36mGET /libs/jszip.min.js HTTP/1.1[0m" 304 -
+2025-06-23 12:57:21,431 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:21] "[36mGET /libs/pizzip.min.js HTTP/1.1[0m" 304 -
+2025-06-23 12:57:21,431 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:21] "[36mGET /libs/docxtemplater.js HTTP/1.1[0m" 304 -
+2025-06-23 12:57:21,447 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:21] "[36mGET /js/export.js HTTP/1.1[0m" 304 -
+2025-06-23 12:57:21,713 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:21] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-23 12:57:21,713 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:21] "[36mGET /js/libs/chart.js HTTP/1.1[0m" 304 -
+2025-06-23 12:57:21,751 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:21] "[36mGET /js/main.js HTTP/1.1[0m" 304 -
+2025-06-23 12:57:21,753 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:21] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-06-23 12:57:21,753 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:21] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-23 12:57:21,766 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:21] "[36mGET /js/tutorial.js HTTP/1.1[0m" 304 -
+2025-06-23 12:57:22,019 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:22] "GET /api/dashboard/grade-distribution HTTP/1.1" 200 -
+2025-06-23 12:57:22,036 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:22] "GET /api/dashboard/info HTTP/1.1" 200 -
+2025-06-23 12:57:22,073 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:22] "GET /api/dashboard/todos HTTP/1.1" 200 -
+2025-06-23 12:57:22,073 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:22] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-06-23 12:57:22,073 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:22] "GET /api/dashboard/activities HTTP/1.1" 200 -
+2025-06-23 12:57:22,073 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:22] "GET /api/dashboard/comments HTTP/1.1" 200 -
+2025-06-23 12:57:22,338 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:22] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-23 12:57:22,354 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:22] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-23 12:57:22,391 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:22] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-06-23 12:57:22,406 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:22] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-23 12:57:22,406 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:22] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-06-23 12:57:22,406 - students - INFO - »ñÈ¡ËùÓÐÑ§Éú
+2025-06-23 12:57:22,472 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:22] "GET /api/students HTTP/1.1" 200 -
+2025-06-23 12:57:22,648 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:22] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-23 12:57:22,664 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:22] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-06-23 12:57:22,706 - students - INFO - »ñÈ¡ËùÓÐÑ§Éú
+2025-06-23 12:57:22,760 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:22] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-23 12:57:22,760 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:22] "GET /api/students HTTP/1.1" 200 -
+2025-06-23 12:57:22,768 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:22] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-23 12:57:22,924 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:22] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-06-23 12:57:22,964 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:22] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-23 12:57:22,978 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:22] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-23 12:57:23,093 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:23] "GET /api/grades?semester=2024-2025Ñ§ÄêÏÂÑ§ÆÚ HTTP/1.1" 200 -
+2025-06-23 12:57:23,093 - students - INFO - »ñÈ¡ËùÓÐÑ§Éú
+2025-06-23 12:57:23,093 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:23] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-23 12:57:23,145 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:23] "GET /api/students HTTP/1.1" 200 -
+2025-06-23 12:57:23,266 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:23] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-06-23 12:57:23,274 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:23] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-23 12:57:23,298 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:23] "GET /api/users HTTP/1.1" 200 -
+2025-06-23 12:57:23,400 - classes - INFO - === CLASSES BLUEPRINT: ½ÓÊÕµ½»ñÈ¡°à¼¶ÁÐ±íÇëÇó ===
+2025-06-23 12:57:23,400 - classes - INFO - ´ÓÊý¾Ý¿â»ñÈ¡µ½ 55 ¸ö°à¼¶
+2025-06-23 12:57:23,400 - classes - INFO - »ñÈ¡µ½ 55 ¸ö°à¼¶£¬×¼±¸·µ»Ø
+2025-06-23 12:57:23,407 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:23] "GET /api/classes HTTP/1.1" 200 -
+2025-06-23 12:57:23,407 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:23] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-23 12:57:23,458 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:23] "[36mGET /img/logo.png HTTP/1.1[0m" 304 -
+2025-06-23 12:57:23,575 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:23] "[36mGET /img/vx.jpg HTTP/1.1[0m" 304 -
+2025-06-23 12:57:23,575 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:23] "[36mGET /js/settings.js HTTP/1.1[0m" 304 -
+2025-06-23 12:57:26,242 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:26] "[36mGET /fonts/boxicons.woff2 HTTP/1.1[0m" 304 -
+2025-06-23 12:57:26,441 - deyu - INFO - ÊÕµ½»ñÈ¡µÂÓýÎ¬¶ÈÊý¾ÝÇëÇó: class_id=, semester=2024-2025Ñ§ÄêÏÂÑ§ÆÚ
+2025-06-23 12:57:26,441 - deyu - INFO - µ±Ç°ÓÃ»§: admin, ID: 1, ½ÇÉ«: ¹ÜÀíÔ±, ¹ØÁª°à¼¶: None
+2025-06-23 12:57:26,448 - deyu - INFO - ÇëÇó²ÎÊý: ImmutableMultiDict([('semester', '2024-2025Ñ§ÄêÏÂÑ§ÆÚ')])
+2025-06-23 12:57:26,448 - deyu - WARNING - Î´Ìá¹©°à¼¶ID
+2025-06-23 12:57:26,448 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:26] "GET /api/deyu?semester=2024-2025Ñ§ÄêÏÂÑ§ÆÚ HTTP/1.1" 200 -
+2025-06-23 12:57:26,456 - __main__ - ERROR - »ñÈ¡ÏµÍ³ÉèÖÃÊ±³ö´í: name 'load_settings_from_db' is not defined
+2025-06-23 12:57:26,456 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:26] "[35m[1mGET /api/settings HTTP/1.1[0m" 500 -
+2025-06-23 12:57:26,456 - students - INFO - »ñÈ¡ËùÓÐÑ§Éú
+2025-06-23 12:57:26,464 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:26] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-23 12:57:26,502 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:26] "GET /api/students HTTP/1.1" 200 -
+2025-06-23 12:57:26,502 - __main__ - ERROR - »ñÈ¡ÏµÍ³ÉèÖÃÊ±³ö´í: name 'load_settings_from_db' is not defined
+2025-06-23 12:57:26,502 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:26] "[35m[1mGET /api/settings HTTP/1.1[0m" 500 -
+2025-06-23 12:57:26,775 - students - INFO - »ñÈ¡ËùÓÐÑ§Éú
+2025-06-23 12:57:26,813 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:26] "GET /api/students HTTP/1.1" 200 -
+2025-06-23 12:57:27,813 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:27] "GET /api/carousel/settings HTTP/1.1" 200 -
+2025-06-23 12:57:28,125 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:28] "GET /api/carousel/settings HTTP/1.1" 200 -
+2025-06-23 12:57:28,125 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:28] "GET /api/carousel/images HTTP/1.1" 200 -
+2025-06-23 12:57:28,125 - __main__ - ERROR - »ñÈ¡ÏµÍ³ÉèÖÃÊ±³ö´í: name 'load_settings_from_db' is not defined
+2025-06-23 12:57:28,125 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:28] "[35m[1mGET /api/settings HTTP/1.1[0m" 500 -
+2025-06-23 12:57:28,439 - __main__ - ERROR - »ñÈ¡ÏµÍ³ÉèÖÃÊ±³ö´í: name 'load_settings_from_db' is not defined
+2025-06-23 12:57:28,439 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:28] "[35m[1mGET /api/settings HTTP/1.1[0m" 500 -
+2025-06-23 12:57:29,826 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:29] "GET /api/current-user HTTP/1.1" 200 -
+2025-06-23 12:57:29,832 - classes - INFO - === CLASSES BLUEPRINT: ½ÓÊÕµ½»ñÈ¡°à¼¶ÁÐ±íÇëÇó ===
+2025-06-23 12:57:29,832 - classes - INFO - ´ÓÊý¾Ý¿â»ñÈ¡µ½ 55 ¸ö°à¼¶
+2025-06-23 12:57:29,832 - classes - INFO - »ñÈ¡µ½ 55 ¸ö°à¼¶£¬×¼±¸·µ»Ø
+2025-06-23 12:57:29,840 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:29] "GET /api/classes HTTP/1.1" 200 -
+2025-06-23 12:57:30,160 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:30] "[36mGET /favicon.ico HTTP/1.1[0m" 304 -
+2025-06-23 12:57:32,886 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:32] "GET /api/carousel/images HTTP/1.1" 200 -
+2025-06-23 12:57:32,897 - students - INFO - »ñÈ¡ËùÓÐÑ§Éú
+2025-06-23 12:57:32,988 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:32] "GET /api/students HTTP/1.1" 200 -
+2025-06-23 12:57:33,072 - werkzeug - INFO - 127.0.0.1 - - [23/Jun/2025 12:57:33] "[36mGET /img/backgrounds/bg01.jpg HTTP/1.1[0m" 304 -

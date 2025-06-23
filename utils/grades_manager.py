@@ -15,6 +15,34 @@ class GradesManager:
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
         
+        # 首先创建students表（如果不存在）
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS students (
+            id TEXT PRIMARY KEY,
+            name TEXT NOT NULL,
+            gender TEXT NOT NULL,
+            class TEXT,
+            class_id INTEGER,
+            height REAL,
+            weight REAL,
+            chest_circumference REAL,
+            vital_capacity REAL,
+            dental_caries TEXT,
+            vision_left REAL,
+            vision_right REAL,
+            physical_test_status TEXT,
+            comments TEXT,
+            pinzhi INTEGER,
+            xuexi INTEGER,
+            jiankang INTEGER,
+            shenmei INTEGER,
+            shijian INTEGER,
+            shenghuo INTEGER,
+            created_at TEXT,
+            updated_at TEXT
+        )
+        ''')
+        
         # 检查学生表结构
         cursor.execute("PRAGMA table_info(students)")
         columns = cursor.fetchall()
@@ -30,11 +58,21 @@ class GradesManager:
         # 添加缺失的字段
         for field in grade_fields:
             if field not in column_names:
-                cursor.execute(f"ALTER TABLE students ADD COLUMN {field} TEXT DEFAULT ''")
+                try:
+                    cursor.execute(f"ALTER TABLE students ADD COLUMN {field} TEXT DEFAULT ''")
+                except sqlite3.OperationalError as e:
+                    # 如果列已存在，忽略错误
+                    if "duplicate column name" not in str(e).lower():
+                        raise
         
         # 确保存在学期字段
         if 'semester' not in column_names:
-            cursor.execute("ALTER TABLE students ADD COLUMN semester TEXT DEFAULT '上学期'")
+            try:
+                cursor.execute("ALTER TABLE students ADD COLUMN semester TEXT DEFAULT '上学期'")
+            except sqlite3.OperationalError as e:
+                # 如果列已存在，忽略错误
+                if "duplicate column name" not in str(e).lower():
+                    raise
         
         conn.commit()
         conn.close()
