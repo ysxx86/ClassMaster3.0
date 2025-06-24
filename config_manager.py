@@ -79,7 +79,7 @@ class ConfigManager:
             level=logging.DEBUG,
             format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
             handlers=[
-                logging.FileHandler(os.path.join(self.LOGS_FOLDER, "root_server.log")),
+                logging.FileHandler(os.path.join(self.LOGS_FOLDER, "root_server.log"), encoding='utf-8'),
                 logging.StreamHandler()
             ]
         )
