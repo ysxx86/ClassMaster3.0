@@ -322,7 +322,7 @@ function createStudentCard(student) {
             </div>
             <div class="card-body p-2">
                 <p class="mb-1"><strong>学号:</strong> ${student.id}</p>
-                <p class="mb-1"><strong>班级:</strong> ${student.class || '-'}</p>
+                <p class="mb-1"><strong>班级:</strong> ${student.class_name || '未分配班级'}</p>
                 <p class="mb-1"><strong>身高:</strong> ${displayNumericValue(student.height)} cm</p>
                 <p class="mb-1"><strong>体重:</strong> ${displayNumericValue(student.weight)} kg</p>
                 <p class="mb-1"><strong>胸围:</strong> ${displayNumericValue(student.chest_circumference)} cm</p>
@@ -462,7 +462,7 @@ function viewStudentDetails(studentId, classId) {
                                     </tr>
                                     <tr>
                                         <th class="bg-light">班级</th>
-                                        <td>${student.class || '未设置'}</td>
+                                        <td>${student.class_name || '未设置'}</td>
                                     </tr>
                                     <tr>
                                         <th class="bg-light">身高</th>
@@ -542,7 +542,7 @@ function generateHealthAnalysis(student) {
     // 基本状态
     analysis += `<li class="list-group-item">
         <strong>基本状况:</strong> 
-        <span class="text-info">学生 ${student.name}, ${student.gender}, ${student.class || '未知班级'}</span>
+        <span class="text-info">学生 ${student.name}, ${student.gender}, ${student.class_name || '未知班级'}</span>
     </li>`;
     
     // BMI分析
@@ -2299,4 +2299,52 @@ function clearAllStudents() {
         confirmButton.disabled = false;
         confirmButton.innerHTML = originalButtonContent;
     });
+}
+
+// 导出学生数据到Excel
+async function exportStudentData() {
+    try {
+        // 显示加载提示
+        showNotification('正在导出学生数据...', 'info');
+        
+        // 获取当前的class_id（使用全局变量）
+        const class_id = currentUserClassId;
+
+        // 构建导出URL
+        const url = `/api/students/export-excel${class_id ? `?class_id=${class_id}` : ''}`;
+        
+        // 发起下载请求
+        const exportResponse = await fetch(url);
+        
+        if (!exportResponse.ok) {
+            throw new Error('导出失败');
+        }
+
+        // 获取文件名
+        const contentDisposition = exportResponse.headers.get('content-disposition');
+        let filename = '学生数据.xlsx';
+        if (contentDisposition) {
+            const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+            if (filenameMatch && filenameMatch[1]) {
+                filename = decodeURIComponent(filenameMatch[1].replace(/['"]/g, ''));
+            }
+        }
+
+        // 下载文件
+        const blob = await exportResponse.blob();
+        const url_object = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url_object;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url_object);
+
+        // 显示成功提示
+        showNotification('学生数据导出成功', 'success');
+    } catch (error) {
+        console.error('导出失败:', error);
+        showNotification('导出失败: ' + error.message, 'error');
+    }
 }

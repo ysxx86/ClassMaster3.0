@@ -608,7 +608,7 @@ def api_export_comments_pdf():
             if not class_name:
                 conn = get_db_connection()
                 cursor = conn.cursor()
-                cursor.execute('SELECT class FROM students WHERE class_id = ? LIMIT 1', (current_user.class_id,))
+                cursor.execute('SELECT c.class_name as class FROM students s LEFT JOIN classes c ON s.class_id = c.id WHERE class_id = ? LIMIT 1', (current_user.class_id,))
                 result = cursor.fetchone()
                 conn.close()
                 
@@ -619,7 +619,7 @@ def api_export_comments_pdf():
             elif class_name:
                 conn = get_db_connection()
                 cursor = conn.cursor()
-                cursor.execute('SELECT class FROM students WHERE class_id = ? LIMIT 1', (current_user.class_id,))
+                cursor.execute('SELECT c.class_name as class FROM students s LEFT JOIN classes c ON s.class_id = c.id WHERE class_id = ? LIMIT 1', (current_user.class_id,))
                 result = cursor.fetchone()
                 conn.close()
                 
@@ -748,7 +748,7 @@ def api_preview_comments():
             if not class_name:
                 conn = get_db_connection()
                 cursor = conn.cursor()
-                cursor.execute('SELECT class FROM students WHERE class_id = ? LIMIT 1', (current_user.class_id,))
+                cursor.execute('SELECT c.class_name as class FROM students s LEFT JOIN classes c ON s.class_id = c.id WHERE class_id = ? LIMIT 1', (current_user.class_id,))
                 result = cursor.fetchone()
                 conn.close()
                 
@@ -759,7 +759,7 @@ def api_preview_comments():
             elif class_name:
                 conn = get_db_connection()
                 cursor = conn.cursor()
-                cursor.execute('SELECT class FROM students WHERE class_id = ? LIMIT 1', (current_user.class_id,))
+                cursor.execute('SELECT c.class_name as class FROM students s LEFT JOIN classes c ON s.class_id = c.id WHERE class_id = ? LIMIT 1', (current_user.class_id,))
                 result = cursor.fetchone()
                 conn.close()
                 

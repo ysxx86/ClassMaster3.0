@@ -200,11 +200,11 @@ def export_comments_to_pdf(class_name=None, output_file=None, school_name=None, 
         if hasattr(current_user, 'is_authenticated') and current_user.is_authenticated and hasattr(current_user, 'is_admin') and not current_user.is_admin and hasattr(current_user, 'class_id') and current_user.class_id:
             # 班主任只能导出本班级学生
             if class_name:
-                query = 'SELECT id, name, gender, class, class_id, comments, updated_at FROM students WHERE class = ? AND class_id = ? ORDER BY CAST(id AS INTEGER)'
+                query = 'SELECT id, name, gender, c.class_name as class, c.class_name as class_id, comments, updated_at FROM students s LEFT JOIN classes c ON s.class_id = c.id WHERE class_id = ? AND class_id = ? ORDER BY CAST(id AS INTEGER)'
                 logger.info(f"班主任模式: 执行查询: {query} 参数: {class_name}, {current_user.class_id}")
                 cursor.execute(query, (class_name, current_user.class_id))
             else:
-                query = 'SELECT id, name, gender, class, class_id, comments, updated_at FROM students WHERE class_id = ? ORDER BY CAST(id AS INTEGER)'
+                query = 'SELECT id, name, gender, c.class_name as class, c.class_name as class_id, comments, updated_at FROM students s LEFT JOIN classes c ON s.class_id = c.id WHERE class_id = ? ORDER BY CAST(id AS INTEGER)'
                 logger.info(f"班主任模式: 执行查询: {query} 参数: {current_user.class_id}")
                 cursor.execute(query, (current_user.class_id,))
         else:
@@ -214,11 +214,11 @@ def export_comments_to_pdf(class_name=None, output_file=None, school_name=None, 
                 return {'status': 'error', 'message': '您需要登录后才能导出报告'}
                 
             if class_name:
-                query = 'SELECT id, name, gender, class, class_id, comments, updated_at FROM students WHERE class = ? ORDER BY CAST(id AS INTEGER)'
+                query = 'SELECT id, name, gender, c.class_name as class, c.class_name as class_id, comments, updated_at FROM students s LEFT JOIN classes c ON s.class_id = c.id WHERE class_id = ? ORDER BY CAST(id AS INTEGER)'
                 logger.info(f"管理员模式: 执行查询: {query} 参数: {class_name}")
                 cursor.execute(query, (class_name,))
             else:
-                query = 'SELECT id, name, gender, class, class_id, comments, updated_at FROM students ORDER BY class, CAST(id AS INTEGER)'
+                query = 'SELECT id, name, gender, c.class_name as class, c.class_name as class_id, comments, updated_at FROM students s LEFT JOIN classes c ON s.class_id = c.id ORDER BY class, CAST(id AS INTEGER)'
                 logger.info(f"管理员模式: 执行查询: {query}")
                 cursor.execute(query)
         

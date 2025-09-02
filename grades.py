@@ -108,7 +108,7 @@ def get_student_grade(student_id):
         cursor = conn.cursor()
         
         # 查询学生基本信息
-        cursor.execute('SELECT id, name, gender, class FROM students WHERE id = ? AND class_id = ?', 
+        cursor.execute('SELECT s.id, s.name, s.gender, c.c.class_name as class_name as c.class_name as class FROM students s LEFT JOIN classes c ON s.class_id = c.id s LEFT JOIN classes c ON s.class_id = c.id WHERE s.id = ? AND s.class_id = ?', 
                       (student_id, class_id))
         
         student = cursor.fetchone()

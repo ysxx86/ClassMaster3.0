@@ -196,7 +196,7 @@ def get_all_deyu():
             cursor.execute('''
                 SELECT id, name, class, class_id, pinzhi, xuexi, jiankang, shenmei, shijian, shenghuo 
                 FROM students 
-                WHERE class = ?
+                WHERE class_id = ?
                 ORDER BY id
             ''', (class_id,))
             students = cursor.fetchall()
@@ -411,7 +411,7 @@ def save_student_deyu(student_id):
         now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         
         # 查询条件：如果有班级ID，则同时匹配学生ID和班级ID；否则只匹配学生ID
-        query = "SELECT id, class_id, name, class FROM students WHERE id = ?"
+        query = "SELECT s.id, s.c.class_name as class_id, s.name, c.c.class_name as class_name as c.class_name as class FROM students s LEFT JOIN classes c ON s.class_id = c.id s LEFT JOIN classes c ON s.class_id = c.id WHERE s.id = ?"
         params = [student_id]
         
         if class_id:
@@ -435,7 +435,7 @@ def save_student_deyu(student_id):
         if not student:
             logger.error(f"学生不存在或不在指定班级，ID: {student_id}, 班级ID: {class_id}")
             # 尝试不带班级条件查询学生，仅用于调试
-            cursor.execute("SELECT id, class_id, name, class FROM students WHERE id = ?", (student_id,))
+            cursor.execute("SELECT id, c.class_name as class_id, name, c.class_name as class FROM students s LEFT JOIN classes c ON s.class_id = c.id WHERE id = ?", (student_id,))
             debug_student = cursor.fetchone()
             if debug_student:
                 debug_info = dict(debug_student)

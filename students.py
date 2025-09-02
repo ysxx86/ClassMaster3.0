@@ -8,7 +8,7 @@ import os
 import datetime
 import traceback
 import sqlite3
-from flask import Blueprint, request, jsonify, send_from_directory, url_for
+from flask import Blueprint, request, jsonify, send_from_directory, url_for, send_file
 from werkzeug.utils import secure_filename
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font
@@ -17,6 +17,7 @@ from flask_login import login_required, current_user
 from utils.class_filter import class_filter, user_can_access
 import logging
 import openpyxl
+from io import BytesIO
 
 # 配置日志
 logger = logging.getLogger(__name__)
@@ -113,10 +114,21 @@ def get_all_students():
     try:
         if class_id:
             logger.info(f"仅获取班级 {class_id} 的学生")
-            cursor.execute('SELECT * FROM students WHERE class_id = ? ORDER BY CAST(id AS INTEGER)', (class_id,))
+            cursor.execute('''
+                SELECT s.*, c.class_name 
+                FROM students s
+                LEFT JOIN classes c ON s.class_id = c.id
+                WHERE s.class_id = ? 
+                ORDER BY CAST(s.id AS INTEGER)
+            ''', (class_id,))
         else:
             logger.info(f"获取所有学生")
-            cursor.execute('SELECT * FROM students ORDER BY CAST(id AS INTEGER)')
+            cursor.execute('''
+                SELECT s.*, c.class_name 
+                FROM students s
+                LEFT JOIN classes c ON s.class_id = c.id
+                ORDER BY CAST(s.id AS INTEGER)
+            ''')
             
         students = [dict(row) for row in cursor.fetchall()]
         
@@ -1062,7 +1074,7 @@ def get_students():
             except (ValueError, TypeError):
                 # 如果无法转为整数，尝试按班级名称查询
                 logger.info(f"尝试以班级名称查询: {class_id}")
-                cursor.execute('SELECT * FROM students WHERE class = ? ORDER BY CAST(id AS INTEGER)', (class_id,))
+                cursor.execute('SELECT * FROM students WHERE class_id = ? ORDER BY CAST(id AS INTEGER)', (class_id,))
             
             # 检查结果数量
             students = cursor.fetchall()
@@ -1166,3 +1178,93 @@ def clear_all_students():
     except Exception as e:
         logger.error(f"清除学生名单API出错: {str(e)}")
         return jsonify({'status': 'error', 'message': f'清除学生名单失败: {str(e)}'}), 500 
+
+# 导出学生数据到Excel
+@students_bp.route('/api/students/export-excel', methods=['GET'])
+@login_required
+def export_students_excel():
+    """导出学生数据到Excel文件"""
+    try:
+        class_id = request.args.get('class_id')
+        
+        # 班主任只能导出自己班级的学生
+        if not current_user.is_admin:
+            if not current_user.class_id:
+                return jsonify({
+                    'status': 'error',
+                    'message': '您尚未被分配班级，无法导出学生数据'
+                }), 403
+            class_id = current_user.class_id
+        
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        try:
+            # 获取学生数据
+            if class_id:
+                cursor.execute('''
+                    SELECT s.*, c.class_name 
+                    FROM students s
+                    LEFT JOIN classes c ON s.class_id = c.id
+                    WHERE s.class_id = ?
+                    ORDER BY CAST(s.id AS INTEGER)
+                ''', (class_id,))
+            else:
+                cursor.execute('''
+                    SELECT s.*, c.class_name 
+                    FROM students s
+                    LEFT JOIN classes c ON s.class_id = c.id
+                    ORDER BY c.class_name, CAST(s.id AS INTEGER)
+                ''')
+            
+            students = cursor.fetchall()
+            
+            # 创建Excel工作簿
+            wb = Workbook()
+            ws = wb.active
+            ws.title = "学生信息"
+            
+            # 设置表头
+            headers = ['学号', '姓名', '性别', '班级', '身高(cm)', '体重(kg)', 
+                      '胸围(cm)', '肺活量(ml)', '龋齿(个)', '视力左', '视力右']
+            for col, header in enumerate(headers, 1):
+                cell = ws.cell(row=1, column=col, value=header)
+                cell.font = Font(bold=True)
+                cell.alignment = Alignment(horizontal='center')
+                ws.column_dimensions[get_column_letter(col)].width = 15
+            
+            # 写入数据
+            for row, student in enumerate(students, 2):
+                ws.cell(row=row, column=1, value=student['id'])
+                ws.cell(row=row, column=2, value=student['name'])
+                ws.cell(row=row, column=3, value=student['gender'])
+                ws.cell(row=row, column=4, value=student['class_name'])
+                ws.cell(row=row, column=5, value=student['height'])
+                ws.cell(row=row, column=6, value=student['weight'])
+                ws.cell(row=row, column=7, value=student['chest_circumference'])
+                ws.cell(row=row, column=8, value=student['vital_capacity'])
+                ws.cell(row=row, column=9, value=student['dental_caries'])
+                ws.cell(row=row, column=10, value=student['vision_left'])
+                ws.cell(row=row, column=11, value=student['vision_right'])
+            
+            # 将Excel保存到字节流
+            excel_file = BytesIO()
+            wb.save(excel_file)
+            excel_file.seek(0)
+            
+            current_time = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f'学生数据_{current_time}.xlsx'
+            
+            return send_file(
+                excel_file,
+                mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                as_attachment=True,
+                download_name=filename
+            )
+            
+        finally:
+            conn.close()
+            
+    except Exception as e:
+        logger.error(f"导出学生数据时出错: {str(e)}")
+        return jsonify({'status': 'error', 'message': f'导出学生数据失败: {str(e)}'}), 500
