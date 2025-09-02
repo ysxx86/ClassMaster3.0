@@ -29,16 +29,16 @@ class DashboardManager:
         cursor = conn.cursor()
         
         cursor.execute("""
-            SELECT DISTINCT class 
-            FROM students 
-            WHERE class_id = ?
+            SELECT class_name 
+            FROM classes 
+            WHERE id = ?
         """, (user_class_id,))
         
         result = cursor.fetchone()
         conn.close()
         
-        if result and result['class']:
-            return result['class']
+        if result and result['class_name']:
+            return result['class_name']
         return "暂无班级"
     
     def get_current_semester(self):
@@ -237,7 +237,7 @@ class DashboardManager:
         personal_info_conditions = [
             "name IS NOT NULL AND name != ''",
             "gender IS NOT NULL AND gender != ''",
-            "class IS NOT NULL AND class != ''"
+            "class_id IS NOT NULL"
         ]
         
         # 将"/"也视为有效的成绩录入值

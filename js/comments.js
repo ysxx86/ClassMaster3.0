@@ -86,6 +86,68 @@ function initialize() {
     console.log('评语管理初始化完成');
 }
 
+// 导出学生数据到Excel
+async function exportStudentData() {
+    try {
+        // 显示加载中提示
+        const btn = document.querySelector('.btn-outline-primary');
+        const originalContent = btn.innerHTML;
+        btn.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i> 导出中...';
+        btn.disabled = true;
+
+        // 获取当前的class_id
+        const response = await fetch('/api/current-user');
+        const data = await response.json();
+        const class_id = data.user.class_id;
+
+        // 构建导出URL
+        const url = `/api/students/export-excel${class_id ? `?class_id=${class_id}` : ''}`;
+        
+        // 发起下载请求
+        const exportResponse = await fetch(url);
+        
+        if (!exportResponse.ok) {
+            throw new Error('导出失败');
+        }
+
+        // 获取文件名
+        const contentDisposition = exportResponse.headers.get('content-disposition');
+        let filename = '学生数据.xlsx';
+        if (contentDisposition) {
+            const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+            if (filenameMatch && filenameMatch[1]) {
+                filename = decodeURIComponent(filenameMatch[1].replace(/['"]/g, ''));
+            }
+        }
+
+        // 下载文件
+        const blob = await exportResponse.blob();
+        const url_object = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url_object;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url_object);
+
+        // 恢复按钮状态
+        btn.innerHTML = originalContent;
+        btn.disabled = false;
+
+        // 显示成功提示
+        showNotification('学生数据导出成功', 'success');
+    } catch (error) {
+        console.error('导出失败:', error);
+        showNotification('导出失败: ' + error.message, 'error');
+        
+        // 恢复按钮状态
+        const btn = document.querySelector('.btn-outline-primary');
+        btn.innerHTML = '<i class="bx bx-export"></i> 导出学生数据';
+        btn.disabled = false;
+    }
+}
+
 // 在页面加载完成后初始化
 document.addEventListener('DOMContentLoaded', initialize);
 
@@ -141,20 +203,42 @@ function initCommentList() {
             console.log(`从服务器获取学生数据:`, students.length, '条');
             console.log(`有评语的学生:`, commentsCount, '人');
             
-            // 设置页面标题
+            // 获取当前用户信息并设置页面标题
             if (commentsHeader) {
-                const className = exportSettings.className || (students.length > 0 ? students[0].class : '未设置');
-                commentsHeader.innerHTML = `
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h1 class="page-title">评语管理</h1>
-                        <div class="text-muted">
-                            <span>班级：${className}</span> | 
-                            <span>班主任：${exportSettings.teacherName || '未设置'}</span> | 
-                            <span>学生数：${students.length}</span> | 
-                            <span>评语数：${commentsCount}</span>
-                        </div>
-                    </div>
-                `;
+                fetch('/api/current-user')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'ok') {
+                            const user = data.user;
+                            const className = user.class_name || (students.length > 0 ? students[0].class_name : '未设置');
+                            commentsHeader.innerHTML = `
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h1 class="page-title">评语管理</h1>
+                                    <div class="text-muted">
+                                        <span>班级：${className}</span> | 
+                                        <span>班主任：${user.display_name || '未设置'}</span> | 
+                                        <span>学生数：${students.length}</span> | 
+                                        <span>评语数：${commentsCount}</span>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('获取用户信息失败:', error);
+                        const className = students.length > 0 ? students[0].class_name : '未设置';
+                        commentsHeader.innerHTML = `
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h1 class="page-title">评语管理</h1>
+                                <div class="text-muted">
+                                    <span>班级：${className}</span> | 
+                                    <span>班主任：未设置</span> | 
+                                    <span>学生数：${students.length}</span> | 
+                                    <span>评语数：${commentsCount}</span>
+                                </div>
+                            </div>
+                        `;
+                    });
             }
             
             // 使用文档片段减少DOM操作，提高性能
@@ -171,7 +255,7 @@ function initCommentList() {
                 // 按班级分组学生
                 const studentsByClass = {};
                 students.forEach(student => {
-                    const className = student.class || '未分班';
+                    const className = student.class_name || '未分班';
                     if (!studentsByClass[className]) {
                         studentsByClass[className] = [];
                     }
@@ -296,7 +380,7 @@ function createCommentCard(student, commentData) {
                 <div class="student-details">
                     <h4>${student.name}</h4>
                     <div class="text-muted">学号: ${student.id}</div>
-                    <div class="text-muted">班级: ${student.class || '未分班'}</div>
+                    <div class="text-muted">班级: ${student.class_name || '未分班'}</div>
                     <div class="text-muted small">班级ID: ${student.class_id || '未知'}</div>
                 </div>
             </div>

@@ -341,7 +341,7 @@ def add_user():
         except sqlite3.OperationalError:
             # classes表不存在，尝试从students表验证
             logger.warning("classes表不存在，从students表验证班级")
-            cursor.execute('SELECT DISTINCT class FROM students WHERE class = ?', (class_name,))
+            cursor.execute('SELECT DISTINCT c.class_name as class FROM students s LEFT JOIN classes c ON s.class_id = c.id WHERE class_id = ?', (class_name,))
             if not cursor.fetchone():
                 conn.close()
                 return jsonify({'status': 'error', 'message': f'班级 "{class_name}" 不存在，请先创建该班级'}), 400
@@ -439,7 +439,7 @@ def batch_add_users():
         except sqlite3.OperationalError:
             # 如果classes表不存在，则从students表获取
             logger.warning("classes表不存在，从students表获取班级信息")
-            cursor.execute('SELECT DISTINCT class FROM students WHERE class IS NOT NULL AND class != ""')
+            cursor.execute('SELECT DISTINCT c.class_name as class FROM students s LEFT JOIN classes c ON s.class_id = c.id WHERE class IS NOT NULL AND class != ""')
             existing_classes = {row['class']: row['class'] for row in cursor.fetchall()}
             use_classes_table = False
         
@@ -645,7 +645,7 @@ def update_user(user_id):
                             return jsonify({'status': 'error', 'message': f'班级ID "{class_id_value}" 不存在，请先创建该班级'}), 400
                     else:
                         # 作为班级名称验证
-                        cursor.execute('SELECT DISTINCT class FROM students WHERE class = ?', (class_id_value,))
+                        cursor.execute('SELECT DISTINCT c.class_name as class FROM students s LEFT JOIN classes c ON s.class_id = c.id WHERE class_id = ?', (class_id_value,))
                         if cursor.fetchone():
                             class_id = class_id_value
                         else:
@@ -791,7 +791,7 @@ def import_teachers_excel():
         except sqlite3.OperationalError:
             # 如果classes表不存在，则从students表获取
             logger.warning("classes表不存在，从students表获取班级信息")
-            cursor.execute('SELECT DISTINCT class FROM students WHERE class IS NOT NULL AND class != ""')
+            cursor.execute('SELECT DISTINCT c.class_name as class FROM students s LEFT JOIN classes c ON s.class_id = c.id WHERE class IS NOT NULL AND class != ""')
             existing_classes = {row['class']: row['class'] for row in cursor.fetchall()}
             use_classes_table = False
         
@@ -953,15 +953,30 @@ def download_teacher_template():
 def get_current_user():
     """获取当前登录用户的信息"""
     try:
-        return jsonify({
-            'status': 'ok',
-            'user': {
-                'id': current_user.id,
-                'username': current_user.username,
-                'class_id': current_user.class_id,
-                'is_admin': current_user.is_admin
-            }
-        })
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        try:
+            cursor.execute('''
+                SELECT c.class_name 
+                FROM classes c 
+                WHERE c.id = ?
+            ''', (current_user.class_id,))
+            class_info = cursor.fetchone()
+            class_name = class_info['class_name'] if class_info else None
+            
+            return jsonify({
+                'status': 'ok',
+                'user': {
+                    'id': current_user.id,
+                    'username': current_user.username,
+                    'display_name': f"{current_user.username}老师",
+                    'class_id': current_user.class_id,
+                    'class_name': class_name,
+                    'is_admin': current_user.is_admin
+                }
+            })
+        finally:
+            conn.close()
     except Exception as e:
         logger.error(f"获取当前用户信息时出错: {str(e)}")
         return jsonify({'status': 'error', 'message': f'获取用户信息失败: {str(e)}'}), 500
@@ -1102,7 +1117,7 @@ def preview_import_teachers():
             except sqlite3.OperationalError:
                 # 如果classes表不存在，则从students表获取
                 logger.warning("classes表不存在，从students表获取班级信息")
-                cursor.execute('SELECT DISTINCT class FROM students WHERE class IS NOT NULL AND class != ""')
+                cursor.execute('SELECT DISTINCT c.class_name as class FROM students s LEFT JOIN classes c ON s.class_id = c.id WHERE class IS NOT NULL AND class != ""')
                 existing_classes = {row['class']: row['class'] for row in cursor.fetchall()}
                 use_classes_table = False
             
@@ -1221,7 +1236,7 @@ def confirm_import_teachers():
         except sqlite3.OperationalError:
             # 如果classes表不存在，则从students表获取
             logger.warning("classes表不存在，从students表获取班级信息")
-            cursor.execute('SELECT DISTINCT class FROM students WHERE class IS NOT NULL AND class != ""')
+            cursor.execute('SELECT DISTINCT c.class_name as class FROM students s LEFT JOIN classes c ON s.class_id = c.id WHERE class IS NOT NULL AND class != ""')
             existing_classes = {row['class']: row['class'] for row in cursor.fetchall()}
             use_classes_table = False
         

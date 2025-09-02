@@ -87,25 +87,26 @@ class GradesManager:
             # 构建SQL查询
             sql = '''
                 SELECT 
-                    id AS student_id, 
-                    class_id,
-                    name AS student_name, 
-                    class, 
-                    daof, yuwen, shuxue, yingyu, laodong, 
-                    tiyu, yinyue, meishu, kexue, zonghe, 
-                    xinxi, shufa, xinli
-                FROM students
+                    s.id AS student_id, 
+                    s.class_id,
+                    s.name AS student_name, 
+                    c.class_name as class, 
+                    s.daof, s.yuwen, s.shuxue, s.yingyu, s.laodong, 
+                    s.tiyu, s.yinyue, s.meishu, s.kexue, s.zonghe, 
+                    s.xinxi, s.shufa, s.xinli
+                FROM students s
+                LEFT JOIN classes c ON s.class_id = c.id
             '''
             
             params = []
             
             # 添加班级ID筛选
             if class_id:
-                sql += " WHERE class_id = ?"
+                sql += " WHERE s.class_id = ?"
                 params.append(class_id)
             
             # 添加排序
-            sql += " ORDER BY class, CAST(id AS INTEGER)"
+            sql += " ORDER BY class, CAST(s.id AS INTEGER)"
             
             # 执行查询
             cursor.execute(sql, params)
@@ -173,7 +174,7 @@ class GradesManager:
             }
         else:
             # 查找学生基本信息
-            cursor.execute('SELECT id, name, class FROM students WHERE id = ? AND class_id = ?', (student_id, class_id))
+            cursor.execute('SELECT id, name, c.class_name as class FROM students s LEFT JOIN classes c ON s.class_id = c.id WHERE id = ? AND class_id = ?', (student_id, class_id))
             student = cursor.fetchone()
             
             if student:
@@ -242,7 +243,7 @@ class GradesManager:
             }
         else:
             # 查找学生基本信息
-            cursor.execute('SELECT id, name, class FROM students WHERE id = ? AND class_id = ?', (student_id, class_id))
+            cursor.execute('SELECT id, name, c.class_name as class FROM students s LEFT JOIN classes c ON s.class_id = c.id WHERE id = ? AND class_id = ?', (student_id, class_id))
             student = cursor.fetchone()
             
             if student:
@@ -605,9 +606,9 @@ class GradesManager:
             
             # 根据班级ID筛选学生
             if class_id:
-                cursor.execute('SELECT id, name, class FROM students WHERE class_id = ?', (class_id,))
+                cursor.execute('SELECT s.id, s.name, c.class_name as class FROM students s LEFT JOIN classes c ON s.class_id = c.id WHERE s.class_id = ?', (class_id,))
             else:
-                cursor.execute('SELECT id, name, class FROM students')
+                cursor.execute('SELECT s.id, s.name, c.class_name as class FROM students s LEFT JOIN classes c ON s.class_id = c.id')
             
             students_dict = {row[0]: {'name': row[1], 'class': row[2]} for row in cursor.fetchall()}
             conn.close()
@@ -1005,14 +1006,14 @@ class GradesManager:
         # 根据班级ID筛选学生
         if class_id:
             cursor.execute('''
-            SELECT id, name, class, class_id FROM students
-            WHERE class_id = ?
-            ORDER BY class, CAST(id AS INTEGER)
+            SELECT s.id, s.name, c.class_name as class, c.class_name as class_id FROM students s LEFT JOIN classes c ON s.class_id = c.id
+            WHERE s.class_id = ?
+            ORDER BY c.class_name, CAST(s.id AS INTEGER)
             ''', (class_id,))
         else:
             cursor.execute('''
-            SELECT id, name, class, class_id FROM students
-            ORDER BY class, CAST(id AS INTEGER)
+            SELECT s.id, s.name, c.class_name as class, c.class_name as class_id FROM students s LEFT JOIN classes c ON s.class_id = c.id
+            ORDER BY c.class_name, CAST(s.id AS INTEGER)
             ''')
         
         students = []

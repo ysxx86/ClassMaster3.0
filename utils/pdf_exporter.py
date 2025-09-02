@@ -197,11 +197,11 @@ def export_comments_to_pdf(class_name=None, output_file=None, school_name=None, 
         
         # 查询语句
         if class_name:
-            query = 'SELECT id, name, gender, class, class_id, comments, updated_at FROM students WHERE class = ? ORDER BY CAST(id AS INTEGER)'
+            query = 'SELECT id, name, gender, c.class_name as class, c.class_name as class_id, comments, updated_at FROM students s LEFT JOIN classes c ON s.class_id = c.id WHERE class_id = ? ORDER BY CAST(id AS INTEGER)'
             logger.info(f"执行查询: {query} 参数: {class_name}")
             cursor.execute(query, (class_name,))
         else:
-            query = 'SELECT id, name, gender, class, class_id, comments, updated_at FROM students ORDER BY class, CAST(id AS INTEGER)'
+            query = 'SELECT id, name, gender, c.class_name as class, c.class_name as class_id, comments, updated_at FROM students s LEFT JOIN classes c ON s.class_id = c.id ORDER BY class, CAST(id AS INTEGER)'
             logger.info(f"执行查询: {query}")
             cursor.execute(query)
         

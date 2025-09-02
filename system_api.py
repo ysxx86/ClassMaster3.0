@@ -35,11 +35,11 @@ def get_current_user():
         if hasattr(current_user, 'class_id') and current_user.class_id:
             conn = config.get_db_connection()
             cursor = conn.cursor()
-            cursor.execute('SELECT name FROM classes WHERE id = ?', (current_user.class_id,))
+            cursor.execute('SELECT class_name FROM classes WHERE id = ?', (current_user.class_id,))
             class_result = cursor.fetchone()
             if class_result:
                 user_info['class_id'] = current_user.class_id
-                user_info['class_name'] = class_result['name']
+                user_info['class_name'] = class_result['class_name']
             conn.close()
         
         return jsonify({

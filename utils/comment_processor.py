@@ -202,9 +202,9 @@ def generate_comments_pdf(class_name=None):
             
             # 使用与打印预览相同的查询
             if class_name:
-                cursor.execute('SELECT id, name, gender, class, comments, updated_at FROM students WHERE class = ? ORDER BY CAST(id AS INTEGER)', (class_name,))
+                cursor.execute('SELECT id, name, gender, c.class_name as class, comments, updated_at FROM students s LEFT JOIN classes c ON s.class_id = c.id WHERE class_id = ? ORDER BY CAST(id AS INTEGER)', (class_name,))
             else:
-                cursor.execute('SELECT id, name, gender, class, comments, updated_at FROM students ORDER BY class, CAST(id AS INTEGER)')
+                cursor.execute('SELECT id, name, gender, c.class_name as class, comments, updated_at FROM students s LEFT JOIN classes c ON s.class_id = c.id ORDER BY class, CAST(id AS INTEGER)')
                 
             students = cursor.fetchall()
             if not students:
@@ -483,13 +483,13 @@ def generate_preview_html(class_name=None, current_user=None):
         # 根据用户权限和班级参数构建查询
         if current_user and not current_user.is_admin and current_user.class_id:
             # 如果是班主任，只获取其班级的学生
-            cursor.execute('SELECT id, name, gender, class, comments, updated_at FROM students WHERE class_id = ? ORDER BY CAST(id AS INTEGER)', (current_user.class_id,))
+            cursor.execute('SELECT id, name, gender, c.class_name as class, comments, updated_at FROM students s LEFT JOIN classes c ON s.class_id = c.id WHERE class_id = ? ORDER BY CAST(id AS INTEGER)', (current_user.class_id,))
         elif class_name:
             # 如果指定了班级，获取该班级的学生
-            cursor.execute('SELECT id, name, gender, class, comments, updated_at FROM students WHERE class = ? ORDER BY CAST(id AS INTEGER)', (class_name,))
+            cursor.execute('SELECT id, name, gender, c.class_name as class, comments, updated_at FROM students s LEFT JOIN classes c ON s.class_id = c.id WHERE class_id = ? ORDER BY CAST(id AS INTEGER)', (class_name,))
         else:
             # 否则获取所有学生
-            cursor.execute('SELECT id, name, gender, class, comments, updated_at FROM students ORDER BY class, CAST(id AS INTEGER)')
+            cursor.execute('SELECT id, name, gender, c.class_name as class, comments, updated_at FROM students s LEFT JOIN classes c ON s.class_id = c.id ORDER BY class, CAST(id AS INTEGER)')
             
         students = cursor.fetchall()
         conn.close()
