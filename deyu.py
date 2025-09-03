@@ -148,7 +148,7 @@ def get_all_deyu():
             logger.info(f"students表列名: {column_names}")
             
             # 确认必要的列存在
-            required_columns = ['id', 'name', 'class', 'class_id', 'pinzhi', 'xuexi', 'jiankang', 'shenmei', 'shijian', 'shenghuo']
+            required_columns = ['id', 'name', 'class_id', 'pinzhi', 'xuexi', 'jiankang', 'shenmei', 'shijian', 'shenghuo']
             missing_columns = [col for col in required_columns if col not in column_names]
             
             if missing_columns:
@@ -176,7 +176,7 @@ def get_all_deyu():
             query_attempts += 1
             
             cursor.execute('''
-                SELECT id, name, class, class_id, pinzhi, xuexi, jiankang, shenmei, shijian, shenghuo 
+                SELECT id, name, class_id, pinzhi, xuexi, jiankang, shenmei, shijian, shenghuo 
                 FROM students 
                 WHERE class_id = ?
                 ORDER BY id
@@ -194,7 +194,7 @@ def get_all_deyu():
             query_attempts += 1
             
             cursor.execute('''
-                SELECT id, name, class, class_id, pinzhi, xuexi, jiankang, shenmei, shijian, shenghuo 
+                SELECT id, name, class_id, pinzhi, xuexi, jiankang, shenmei, shijian, shenghuo 
                 FROM students 
                 WHERE class_id = ?
                 ORDER BY id
@@ -208,9 +208,9 @@ def get_all_deyu():
             query_attempts += 1
             
             cursor.execute('''
-                SELECT id, name, class, class_id, pinzhi, xuexi, jiankang, shenmei, shijian, shenghuo 
+                SELECT id, name, class_id, pinzhi, xuexi, jiankang, shenmei, shijian, shenghuo 
                 FROM students 
-                WHERE class LIKE ?
+                WHERE class_id LIKE ?
                 ORDER BY id
             ''', (f'%{class_id}%',))
             students = cursor.fetchall()
@@ -222,9 +222,9 @@ def get_all_deyu():
                 query_attempts += 1
                 
                 cursor.execute('''
-                    SELECT id, name, class, class_id, pinzhi, xuexi, jiankang, shenmei, shijian, shenghuo 
+                    SELECT id, name, class_id, pinzhi, xuexi, jiankang, shenmei, shijian, shenghuo 
                     FROM students 
-                    ORDER BY class, id
+                    ORDER BY class_id, id
                 ''')
                 students = cursor.fetchall()
                 logger.info(f"获取所有学生结果: 找到{len(students)}名学生")
