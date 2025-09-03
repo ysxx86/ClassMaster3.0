@@ -29975,3 +29975,744 @@ AttributeError: Open.Close
 2025-09-02 15:42:10,850 - students - INFO - 仅获取班级 11 的学生
 2025-09-02 15:42:10,850 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 15:42:10] "GET /api/students HTTP/1.1" 200 -
 2025-09-02 15:42:10,866 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 15:42:10] "GET /api/current-user HTTP/1.1" 200 -
+2025-09-02 17:49:02,296 - utils.pdf_exporter_fixed - ERROR - PDF导出模块: 无法导入ReportLab库，PDF生成功能将不可用
+2025-09-02 17:49:02,321 - utils.comment_processor - ERROR - 无法导入ReportLab库，PDF生成功能将不可用
+2025-09-02 17:49:02,321 - utils.comment_processor - ERROR - 请使用以下命令安装ReportLab: pip install reportlab
+2025-09-02 17:49:02,570 - utils.deepseek_api - INFO - 使用默认DeepSeek API密钥
+2025-09-02 17:49:02,570 - __main__ - INFO - 服务器启动
+2025-09-02 17:49:02,571 - utils.deepseek_api - INFO - 使用默认DeepSeek API密钥
+2025-09-02 17:49:02,595 - grades - INFO - 初始化成绩模块
+2025-09-02 17:49:02,595 - grades - INFO - 成绩模块初始化完成
+2025-09-02 17:49:02,596 - deyu - INFO - 初始化德育维度模块
+2025-09-02 17:49:02,596 - deyu - INFO - 现有数据库列: ['id', 'name', 'gender', 'class_id', 'height', 'weight', 'chest_circumference', 'vital_capacity', 'dental_caries', 'vision_left', 'vision_right', 'physical_test_status', 'comments', 'created_at', 'updated_at', 'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'semester', 'xinli', 'pinzhi', 'xuexi', 'jiankang', 'shenmei', 'shijian', 'shenghuo']
+2025-09-02 17:49:02,597 - deyu - INFO - 德育维度模块初始化完成
+2025-09-02 17:49:02,597 - grade_analysis - INFO - 初始化成绩分析模块
+2025-09-02 17:49:02,598 - grade_analysis - INFO - 成绩分析模块初始化完成
+2025-09-02 17:49:02,598 - users - INFO - 初始化用户表
+2025-09-02 17:49:02,598 - users - INFO - 用户表现有列: ['id', 'username', 'password_hash', 'is_admin', 'class_id', 'created_at', 'updated_at', 'reset_password']
+2025-09-02 17:49:02,599 - users - INFO - 用户表初始化完成
+2025-09-02 17:49:02,599 - classes - INFO - 初始化班级表
+2025-09-02 17:49:02,599 - classes - INFO - 班级表初始化完成
+2025-09-02 17:49:02,600 - database_backup - INFO - 数据库备份模块已初始化
+2025-09-02 17:49:02,606 - __main__ - INFO - 初始化数据库
+2025-09-02 17:49:02,607 - __main__ - INFO - 现有数据库列: ['id', 'name', 'gender', 'class_id', 'height', 'weight', 'chest_circumference', 'vital_capacity', 'dental_caries', 'vision_left', 'vision_right', 'physical_test_status', 'comments', 'created_at', 'updated_at', 'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'semester', 'xinli', 'pinzhi', 'xuexi', 'jiankang', 'shenmei', 'shijian', 'shenghuo']
+2025-09-02 17:49:02,607 - __main__ - INFO - 数据库初始化完成
+2025-09-02 17:49:02,627 - users - INFO - 初始化用户表
+2025-09-02 17:49:02,628 - users - INFO - 用户表现有列: ['id', 'username', 'password_hash', 'is_admin', 'class_id', 'created_at', 'updated_at', 'reset_password']
+2025-09-02 17:49:02,628 - users - INFO - 用户表初始化完成
+2025-09-02 17:49:02,628 - classes - INFO - 初始化班级表
+2025-09-02 17:49:02,629 - classes - INFO - 班级表初始化完成
+2025-09-02 17:49:02,633 - __main__ - INFO - 初始化数据库
+2025-09-02 17:49:02,635 - __main__ - INFO - 现有数据库列: ['id', 'name', 'gender', 'class_id', 'height', 'weight', 'chest_circumference', 'vital_capacity', 'dental_caries', 'vision_left', 'vision_right', 'physical_test_status', 'comments', 'created_at', 'updated_at', 'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'semester', 'xinli', 'pinzhi', 'xuexi', 'jiankang', 'shenmei', 'shijian', 'shenghuo']
+2025-09-02 17:49:02,635 - __main__ - INFO - 数据库初始化完成
+2025-09-02 17:49:02,635 - __main__ - INFO - 数据库初始化完成，保留已有数据
+2025-09-02 17:49:02,665 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8080
+ * Running on http://10.211.55.3:8080
+2025-09-02 17:49:02,666 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-09-02 17:49:05,411 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:05] "GET /login?timeout=true HTTP/1.1" 200 -
+2025-09-02 17:49:05,476 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:05] "[36mGET /img/logo.png HTTP/1.1[0m" 304 -
+2025-09-02 17:49:05,485 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:05] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-09-02 17:49:05,487 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:05] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-09-02 17:49:05,487 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:05] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-09-02 17:49:05,856 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:05] "[36mGET /img/backgrounds/bg01.jpg HTTP/1.1[0m" 304 -
+2025-09-02 17:49:05,953 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:05] "[36mGET /favicon.ico HTTP/1.1[0m" 304 -
+2025-09-02 17:49:11,961 - users - INFO - 用户 林冠莲 登录成功，已更新reset_password
+2025-09-02 17:49:11,979 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:11] "[32mPOST /login HTTP/1.1[0m" 302 -
+2025-09-02 17:49:12,035 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET / HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,092 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,092 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /css/main.css HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,093 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,095 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /css/tutorial.css HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,096 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /js/session-timeout.js HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,114 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /img/logo.png HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,114 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,248 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "GET /js/data.js HTTP/1.1" 200 -
+2025-09-02 17:49:12,255 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /js/tutorial.js HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,256 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /js/main.js HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,258 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /pages/home.html HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,267 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /pages/comments.html HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,274 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /pages/students.html HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,331 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /pages/grades.html HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,418 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /pages/deyu.html HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,442 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /pages/grade_analysis.html HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,469 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /pages/settings.html HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,470 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /pages/export.html HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,476 - __main__ - WARNING - 用户 林冠莲 (ID: 12) 尝试访问管理页面 admin.html，但权限不足
+2025-09-02 17:49:12,488 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,489 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[32mGET /pages/admin.html HTTP/1.1[0m" 302 -
+2025-09-02 17:49:12,506 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /css/home.css HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,507 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,532 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,536 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /css/comments.css HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,538 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,557 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,568 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,569 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET / HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,581 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /js/libs/chart.js HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,582 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /js/comments.js HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,593 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /js/home.js HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,599 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,606 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /fonts/boxicons.woff2 HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,690 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,690 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,691 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,693 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /css/main.css HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,693 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /css/grade_analysis.css HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,694 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,715 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,717 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /css/tutorial.css HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,725 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,727 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /css/main.css HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,733 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /js/grades.js HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,742 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /js/deyu.js HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,744 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /js/libs/chart.js HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,761 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,762 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /js/libs/jquery.min.js HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,765 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /js/grade_analysis.js HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,774 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,780 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /libs/pizzip.min.js HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,781 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /libs/jszip.min.js HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,800 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /libs/docxtemplater.js HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,815 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /js/export.js HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,816 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,819 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /js/students.js HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,836 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,847 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /js/session-timeout.js HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,848 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,865 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,874 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /img/logo.png HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,878 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,889 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,890 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /img/vx.jpg HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,891 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,924 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /img/logo.png HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,924 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,941 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,981 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-09-02 17:49:12,995 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:12] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-09-02 17:49:13,004 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:13] "[36mGET /js/settings.js HTTP/1.1[0m" 304 -
+2025-09-02 17:49:13,014 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:13] "GET /api/current-user HTTP/1.1" 200 -
+2025-09-02 17:49:13,019 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:13] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-09-02 17:49:13,021 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:13] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-09-02 17:49:13,037 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:13] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-09-02 17:49:13,046 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:13] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-09-02 17:49:13,054 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:13] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-09-02 17:49:13,061 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:13] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-09-02 17:49:13,074 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:13] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-09-02 17:49:13,557 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:13] "GET /api/grades?semester=2025-2026学年上学期 HTTP/1.1" 200 -
+2025-09-02 17:49:13,572 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:13] "[36mGET /js/main.js HTTP/1.1[0m" 304 -
+2025-09-02 17:49:13,590 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:13] "[36mGET /js/tutorial.js HTTP/1.1[0m" 304 -
+2025-09-02 17:49:13,622 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:13] "GET /api/current-user HTTP/1.1" 200 -
+2025-09-02 17:49:13,662 - __main__ - INFO - 成功从数据库更新配置文件
+2025-09-02 17:49:13,668 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:13] "GET /api/settings HTTP/1.1" 200 -
+2025-09-02 17:49:13,668 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:13] "GET /api/carousel/settings HTTP/1.1" 200 -
+2025-09-02 17:49:13,670 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:13] "GET /api/carousel/images HTTP/1.1" 200 -
+2025-09-02 17:49:13,709 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:13] "GET /api/dashboard/info HTTP/1.1" 200 -
+2025-09-02 17:49:13,711 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:13] "GET /api/dashboard/grade-distribution HTTP/1.1" 200 -
+2025-09-02 17:49:13,751 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:13] "GET /api/dashboard/comments HTTP/1.1" 200 -
+2025-09-02 17:49:13,762 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:13] "[36mGET /pages/home.html HTTP/1.1[0m" 304 -
+2025-09-02 17:49:13,773 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:13] "GET /api/dashboard/todos HTTP/1.1" 200 -
+2025-09-02 17:49:13,806 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:13] "GET /api/carousel/settings HTTP/1.1" 200 -
+2025-09-02 17:49:13,810 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:13] "GET /api/dashboard/activities HTTP/1.1" 200 -
+2025-09-02 17:49:13,815 - __main__ - INFO - 成功从数据库更新配置文件
+2025-09-02 17:49:13,816 - students - INFO - 仅获取班级 11 的学生
+2025-09-02 17:49:13,821 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:13] "GET /api/settings HTTP/1.1" 200 -
+2025-09-02 17:49:13,822 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:13] "GET /api/current-user HTTP/1.1" 200 -
+2025-09-02 17:49:13,825 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:13] "GET /api/carousel/images HTTP/1.1" 200 -
+2025-09-02 17:49:13,835 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:13] "GET /api/students HTTP/1.1" 200 -
+2025-09-02 17:49:13,844 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:13] "[36mGET /img/backgrounds/bg01.jpg HTTP/1.1[0m" 304 -
+2025-09-02 17:49:13,848 - deyu - INFO - 收到获取德育维度数据请求: class_id=11, semester=2025-2026学年上学期
+2025-09-02 17:49:13,849 - deyu - INFO - 当前用户: 林冠莲, ID: 12, 角色: 普通用户, 关联班级: 11
+2025-09-02 17:49:13,865 - deyu - INFO - 请求参数: ImmutableMultiDict([('semester', '2025-2026学年上学期'), ('class_id', '11')])
+2025-09-02 17:49:13,868 - deyu - INFO - 非管理员用户，使用其班级ID: 11
+2025-09-02 17:49:13,870 - deyu - INFO - 使用的班级ID参数: 11
+2025-09-02 17:49:13,887 - __main__ - INFO - 成功从数据库更新配置文件
+2025-09-02 17:49:13,895 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:13] "GET /api/current-user HTTP/1.1" 200 -
+2025-09-02 17:49:13,899 - deyu - INFO - students表列名: ['id', 'name', 'gender', 'class_id', 'height', 'weight', 'chest_circumference', 'vital_capacity', 'dental_caries', 'vision_left', 'vision_right', 'physical_test_status', 'comments', 'created_at', 'updated_at', 'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'semester', 'xinli', 'pinzhi', 'xuexi', 'jiankang', 'shenmei', 'shijian', 'shenghuo']
+2025-09-02 17:49:13,901 - students - INFO - 仅获取班级 11 的学生
+2025-09-02 17:49:13,904 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:13] "GET /api/settings HTTP/1.1" 200 -
+2025-09-02 17:49:13,913 - deyu - ERROR - students表缺少必要的列: ['class']
+2025-09-02 17:49:13,919 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:13] "GET /api/deyu?semester=2025-2026学年上学期&class_id=11 HTTP/1.1" 200 -
+2025-09-02 17:49:13,934 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:13] "GET /api/students HTTP/1.1" 200 -
+2025-09-02 17:49:13,983 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:13] "GET /api/current-user HTTP/1.1" 200 -
+2025-09-02 17:49:13,999 - __main__ - INFO - 成功从数据库更新配置文件
+2025-09-02 17:49:14,003 - students - INFO - 仅获取班级 11 的学生
+2025-09-02 17:49:14,013 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:14] "GET /api/settings HTTP/1.1" 200 -
+2025-09-02 17:49:14,022 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:14] "GET /api/students HTTP/1.1" 200 -
+2025-09-02 17:49:14,070 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:14] "GET /api/exams?class_id=11 HTTP/1.1" 200 -
+2025-09-02 17:49:14,086 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:14] "[31m[1mGET /api/database/backups HTTP/1.1[0m" 403 -
+2025-09-02 17:49:14,153 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:14] "GET /api/classes/11 HTTP/1.1" 200 -
+2025-09-02 17:49:14,177 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:14] "GET /api/current-user HTTP/1.1" 200 -
+2025-09-02 17:49:14,193 - students - INFO - 仅获取班级 11 的学生
+2025-09-02 17:49:14,218 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:14] "GET /api/students HTTP/1.1" 200 -
+2025-09-02 17:49:14,219 - students - INFO - 仅获取班级 11 的学生
+2025-09-02 17:49:14,244 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:14] "GET /api/students?class_id=11 HTTP/1.1" 200 -
+2025-09-02 17:49:14,252 - students - INFO - 仅获取班级 11 的学生
+2025-09-02 17:49:14,256 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:14] "GET /api/current-user HTTP/1.1" 200 -
+2025-09-02 17:49:14,261 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:14] "GET /api/students HTTP/1.1" 200 -
+2025-09-02 17:49:14,609 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 17:49:14] "[36mGET /fonts/boxicons.woff2 HTTP/1.1[0m" 304 -
+2025-09-02 19:11:25,942 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 19:11:25] "POST /api/logout HTTP/1.1" 200 -
+2025-09-02 19:11:25,944 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 19:11:25] "POST /api/logout HTTP/1.1" 200 -
+2025-09-02 19:11:26,210 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 19:11:26] "GET /login?timeout=true HTTP/1.1" 200 -
+2025-09-02 19:11:26,341 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 19:11:26] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-09-02 19:11:26,342 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 19:11:26] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-09-02 19:11:26,347 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 19:11:26] "[36mGET /img/logo.png HTTP/1.1[0m" 304 -
+2025-09-02 19:11:26,349 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 19:11:26] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-09-02 19:11:26,814 - werkzeug - INFO - 127.0.0.1 - - [02/Sep/2025 19:11:26] "[36mGET /img/backgrounds/bg01.jpg HTTP/1.1[0m" 304 -
+2025-09-03 10:55:05,618 - utils.pdf_exporter_fixed - ERROR - PDF导出模块: 无法导入ReportLab库，PDF生成功能将不可用
+2025-09-03 10:55:05,727 - utils.comment_processor - ERROR - 无法导入ReportLab库，PDF生成功能将不可用
+2025-09-03 10:55:05,727 - utils.comment_processor - ERROR - 请使用以下命令安装ReportLab: pip install reportlab
+2025-09-03 10:55:05,926 - utils.deepseek_api - INFO - 使用默认DeepSeek API密钥
+2025-09-03 10:55:05,926 - __main__ - INFO - 服务器启动
+2025-09-03 10:55:05,929 - utils.deepseek_api - INFO - 使用默认DeepSeek API密钥
+2025-09-03 10:55:05,951 - grades - INFO - 初始化成绩模块
+2025-09-03 10:55:05,952 - grades - INFO - 成绩模块初始化完成
+2025-09-03 10:55:05,952 - deyu - INFO - 初始化德育维度模块
+2025-09-03 10:55:05,953 - deyu - INFO - 现有数据库列: ['id', 'name', 'gender', 'class_id', 'height', 'weight', 'chest_circumference', 'vital_capacity', 'dental_caries', 'vision_left', 'vision_right', 'physical_test_status', 'comments', 'created_at', 'updated_at', 'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'semester', 'xinli', 'pinzhi', 'xuexi', 'jiankang', 'shenmei', 'shijian', 'shenghuo']
+2025-09-03 10:55:05,954 - deyu - INFO - 德育维度模块初始化完成
+2025-09-03 10:55:05,954 - grade_analysis - INFO - 初始化成绩分析模块
+2025-09-03 10:55:05,954 - grade_analysis - INFO - 成绩分析模块初始化完成
+2025-09-03 10:55:05,955 - users - INFO - 初始化用户表
+2025-09-03 10:55:05,955 - users - INFO - 用户表现有列: ['id', 'username', 'password_hash', 'is_admin', 'class_id', 'created_at', 'updated_at', 'reset_password']
+2025-09-03 10:55:05,956 - users - INFO - 用户表初始化完成
+2025-09-03 10:55:05,957 - classes - INFO - 初始化班级表
+2025-09-03 10:55:05,958 - classes - INFO - 班级表初始化完成
+2025-09-03 10:55:05,958 - database_backup - INFO - 数据库备份模块已初始化
+2025-09-03 10:55:05,964 - __main__ - INFO - 初始化数据库
+2025-09-03 10:55:05,965 - __main__ - INFO - 现有数据库列: ['id', 'name', 'gender', 'class_id', 'height', 'weight', 'chest_circumference', 'vital_capacity', 'dental_caries', 'vision_left', 'vision_right', 'physical_test_status', 'comments', 'created_at', 'updated_at', 'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'semester', 'xinli', 'pinzhi', 'xuexi', 'jiankang', 'shenmei', 'shijian', 'shenghuo']
+2025-09-03 10:55:05,966 - __main__ - INFO - 数据库初始化完成
+2025-09-03 10:55:05,983 - users - INFO - 初始化用户表
+2025-09-03 10:55:05,984 - users - INFO - 用户表现有列: ['id', 'username', 'password_hash', 'is_admin', 'class_id', 'created_at', 'updated_at', 'reset_password']
+2025-09-03 10:55:05,984 - users - INFO - 用户表初始化完成
+2025-09-03 10:55:05,985 - classes - INFO - 初始化班级表
+2025-09-03 10:55:05,985 - classes - INFO - 班级表初始化完成
+2025-09-03 10:55:05,991 - __main__ - INFO - 初始化数据库
+2025-09-03 10:55:05,992 - __main__ - INFO - 现有数据库列: ['id', 'name', 'gender', 'class_id', 'height', 'weight', 'chest_circumference', 'vital_capacity', 'dental_caries', 'vision_left', 'vision_right', 'physical_test_status', 'comments', 'created_at', 'updated_at', 'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'semester', 'xinli', 'pinzhi', 'xuexi', 'jiankang', 'shenmei', 'shijian', 'shenghuo']
+2025-09-03 10:55:05,993 - __main__ - INFO - 数据库初始化完成
+2025-09-03 10:55:05,993 - __main__ - INFO - 数据库初始化完成，保留已有数据
+2025-09-03 10:55:06,049 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8080
+ * Running on http://10.211.55.3:8080
+2025-09-03 10:55:06,050 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-09-03 10:56:15,634 - utils.pdf_exporter_fixed - ERROR - PDF导出模块: 无法导入ReportLab库，PDF生成功能将不可用
+2025-09-03 10:56:15,734 - utils.comment_processor - ERROR - 无法导入ReportLab库，PDF生成功能将不可用
+2025-09-03 10:56:15,735 - utils.comment_processor - ERROR - 请使用以下命令安装ReportLab: pip install reportlab
+2025-09-03 10:56:15,900 - utils.deepseek_api - INFO - 使用默认DeepSeek API密钥
+2025-09-03 10:56:15,900 - __main__ - INFO - 服务器启动
+2025-09-03 10:56:15,903 - utils.deepseek_api - INFO - 使用默认DeepSeek API密钥
+2025-09-03 10:56:15,922 - grades - INFO - 初始化成绩模块
+2025-09-03 10:56:15,922 - grades - INFO - 成绩模块初始化完成
+2025-09-03 10:56:15,922 - deyu - INFO - 初始化德育维度模块
+2025-09-03 10:56:15,924 - deyu - INFO - 现有数据库列: ['id', 'name', 'gender', 'class_id', 'height', 'weight', 'chest_circumference', 'vital_capacity', 'dental_caries', 'vision_left', 'vision_right', 'physical_test_status', 'comments', 'created_at', 'updated_at', 'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'semester', 'xinli', 'pinzhi', 'xuexi', 'jiankang', 'shenmei', 'shijian', 'shenghuo']
+2025-09-03 10:56:15,926 - deyu - INFO - 德育维度模块初始化完成
+2025-09-03 10:56:15,926 - grade_analysis - INFO - 初始化成绩分析模块
+2025-09-03 10:56:15,929 - grade_analysis - INFO - 成绩分析模块初始化完成
+2025-09-03 10:56:15,929 - users - INFO - 初始化用户表
+2025-09-03 10:56:15,931 - users - INFO - 用户表现有列: ['id', 'username', 'password_hash', 'is_admin', 'class_id', 'created_at', 'updated_at', 'reset_password']
+2025-09-03 10:56:15,932 - users - INFO - 用户表初始化完成
+2025-09-03 10:56:15,932 - classes - INFO - 初始化班级表
+2025-09-03 10:56:15,934 - classes - INFO - 班级表初始化完成
+2025-09-03 10:56:15,935 - database_backup - INFO - 数据库备份模块已初始化
+2025-09-03 10:56:15,945 - __main__ - INFO - 初始化数据库
+2025-09-03 10:56:15,946 - __main__ - INFO - 现有数据库列: ['id', 'name', 'gender', 'class_id', 'height', 'weight', 'chest_circumference', 'vital_capacity', 'dental_caries', 'vision_left', 'vision_right', 'physical_test_status', 'comments', 'created_at', 'updated_at', 'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'semester', 'xinli', 'pinzhi', 'xuexi', 'jiankang', 'shenmei', 'shijian', 'shenghuo']
+2025-09-03 10:56:15,948 - __main__ - INFO - 数据库初始化完成
+2025-09-03 10:56:15,967 - users - INFO - 初始化用户表
+2025-09-03 10:56:15,968 - users - INFO - 用户表现有列: ['id', 'username', 'password_hash', 'is_admin', 'class_id', 'created_at', 'updated_at', 'reset_password']
+2025-09-03 10:56:15,969 - users - INFO - 用户表初始化完成
+2025-09-03 10:56:15,970 - classes - INFO - 初始化班级表
+2025-09-03 10:56:15,973 - classes - INFO - 班级表初始化完成
+2025-09-03 10:56:15,980 - __main__ - INFO - 初始化数据库
+2025-09-03 10:56:15,983 - __main__ - INFO - 现有数据库列: ['id', 'name', 'gender', 'class_id', 'height', 'weight', 'chest_circumference', 'vital_capacity', 'dental_caries', 'vision_left', 'vision_right', 'physical_test_status', 'comments', 'created_at', 'updated_at', 'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'semester', 'xinli', 'pinzhi', 'xuexi', 'jiankang', 'shenmei', 'shijian', 'shenghuo']
+2025-09-03 10:56:15,983 - __main__ - INFO - 数据库初始化完成
+2025-09-03 10:56:15,984 - __main__ - INFO - 数据库初始化完成，保留已有数据
+2025-09-03 10:56:16,005 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8080
+ * Running on http://10.211.55.3:8080
+2025-09-03 10:56:16,006 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-09-03 10:56:25,521 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:25] "[32mGET / HTTP/1.1[0m" 302 -
+2025-09-03 10:56:25,534 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:25] "GET /login?next=/ HTTP/1.1" 200 -
+2025-09-03 10:56:25,557 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:25] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-09-03 10:56:25,560 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:25] "[36mGET /img/logo.png HTTP/1.1[0m" 304 -
+2025-09-03 10:56:25,561 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:25] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-09-03 10:56:25,563 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:25] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-09-03 10:56:25,816 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:25] "[36mGET /img/backgrounds/bg01.jpg HTTP/1.1[0m" 304 -
+2025-09-03 10:56:32,455 - users - INFO - 用户 林冠莲 登录成功，已更新reset_password
+2025-09-03 10:56:32,458 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:32] "[32mPOST /login HTTP/1.1[0m" 302 -
+2025-09-03 10:56:32,468 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:32] "GET / HTTP/1.1" 200 -
+2025-09-03 10:56:32,499 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:32] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-09-03 10:56:32,500 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:32] "[36mGET /js/session-timeout.js HTTP/1.1[0m" 304 -
+2025-09-03 10:56:32,501 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:32] "[36mGET /css/main.css HTTP/1.1[0m" 304 -
+2025-09-03 10:56:32,501 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:32] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-09-03 10:56:32,502 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:32] "[36mGET /css/tutorial.css HTTP/1.1[0m" 304 -
+2025-09-03 10:56:32,509 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:32] "[36mGET /img/logo.png HTTP/1.1[0m" 304 -
+2025-09-03 10:56:32,526 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:32] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-09-03 10:56:32,573 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:32] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-09-03 10:56:32,577 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:32] "[36mGET /js/main.js HTTP/1.1[0m" 304 -
+2025-09-03 10:56:32,584 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:32] "[36mGET /js/tutorial.js HTTP/1.1[0m" 304 -
+2025-09-03 10:56:32,598 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:32] "GET /pages/students.html HTTP/1.1" 200 -
+2025-09-03 10:56:32,598 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:32] "GET /pages/home.html HTTP/1.1" 200 -
+2025-09-03 10:56:32,605 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:32] "GET /pages/comments.html HTTP/1.1" 200 -
+2025-09-03 10:56:32,615 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:32] "[36mGET /pages/deyu.html HTTP/1.1[0m" 304 -
+2025-09-03 10:56:32,623 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:32] "[36mGET /pages/grades.html HTTP/1.1[0m" 304 -
+2025-09-03 10:56:32,639 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:32] "[36mGET /fonts/boxicons.woff2 HTTP/1.1[0m" 304 -
+2025-09-03 10:56:32,668 - __main__ - WARNING - 用户 林冠莲 (ID: 12) 尝试访问管理页面 admin.html，但权限不足
+2025-09-03 10:56:32,681 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:32] "[36mGET /pages/settings.html HTTP/1.1[0m" 304 -
+2025-09-03 10:56:32,700 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:32] "[32mGET /pages/admin.html HTTP/1.1[0m" 302 -
+2025-09-03 10:56:32,707 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:32] "[36mGET /pages/export.html HTTP/1.1[0m" 304 -
+2025-09-03 10:56:32,716 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:32] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-09-03 10:56:32,716 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:32] "[36mGET /pages/grade_analysis.html HTTP/1.1[0m" 304 -
+2025-09-03 10:56:32,728 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:32] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-09-03 10:56:32,733 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:32] "[36mGET /css/home.css HTTP/1.1[0m" 304 -
+2025-09-03 10:56:32,746 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:32] "[36mGET /css/comments.css HTTP/1.1[0m" 304 -
+2025-09-03 10:56:32,750 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:32] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-09-03 10:56:32,753 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:32] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-09-03 10:56:32,761 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:32] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-09-03 10:56:32,765 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:32] "[36mGET /js/libs/chart.js HTTP/1.1[0m" 304 -
+2025-09-03 10:56:32,771 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:32] "[36mGET /js/home.js HTTP/1.1[0m" 304 -
+2025-09-03 10:56:32,775 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:32] "[36mGET / HTTP/1.1[0m" 304 -
+2025-09-03 10:56:32,789 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:32] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-09-03 10:56:32,790 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:32] "[36mGET /js/comments.js HTTP/1.1[0m" 304 -
+2025-09-03 10:56:32,795 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:32] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-09-03 10:56:32,807 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:32] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-09-03 10:56:32,814 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:32] "GET /api/current-user HTTP/1.1" 200 -
+2025-09-03 10:56:32,819 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:32] "[36mGET /js/students.js HTTP/1.1[0m" 304 -
+2025-09-03 10:56:32,820 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:32] "[36mGET /js/deyu.js HTTP/1.1[0m" 304 -
+2025-09-03 10:56:32,821 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:32] "[36mGET /js/grades.js HTTP/1.1[0m" 304 -
+2025-09-03 10:56:32,825 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:32] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-09-03 10:56:32,838 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:32] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-09-03 10:56:32,841 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:32] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-09-03 10:56:32,841 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:32] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-09-03 10:56:32,843 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:32] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-09-03 10:56:32,866 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:32] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-09-03 10:56:32,868 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:32] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-09-03 10:56:32,875 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:32] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-09-03 10:56:32,876 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:32] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-09-03 10:56:32,884 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:32] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-09-03 10:56:32,887 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:32] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-09-03 10:56:33,128 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:33] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-09-03 10:56:33,130 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:33] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-09-03 10:56:33,138 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:33] "[36mGET /img/logo.png HTTP/1.1[0m" 304 -
+2025-09-03 10:56:33,140 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:33] "[36mGET /css/main.css HTTP/1.1[0m" 304 -
+2025-09-03 10:56:33,142 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:33] "[36mGET /img/vx.jpg HTTP/1.1[0m" 304 -
+2025-09-03 10:56:33,156 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:33] "[36mGET /libs/pizzip.min.js HTTP/1.1[0m" 304 -
+2025-09-03 10:56:33,157 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:33] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-09-03 10:56:33,165 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:33] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-09-03 10:56:33,183 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:33] "[36mGET /css/grade_analysis.css HTTP/1.1[0m" 304 -
+2025-09-03 10:56:33,185 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:33] "[36mGET /css/main.css HTTP/1.1[0m" 304 -
+2025-09-03 10:56:33,188 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:33] "[36mGET /css/tutorial.css HTTP/1.1[0m" 304 -
+2025-09-03 10:56:33,196 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:33] "[36mGET /libs/docxtemplater.js HTTP/1.1[0m" 304 -
+2025-09-03 10:56:33,214 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:33] "[36mGET /libs/jszip.min.js HTTP/1.1[0m" 304 -
+2025-09-03 10:56:33,216 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:33] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-09-03 10:56:33,218 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:33] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-09-03 10:56:33,219 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:33] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-09-03 10:56:33,232 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:33] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-09-03 10:56:33,250 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:33] "[36mGET /js/export.js HTTP/1.1[0m" 304 -
+2025-09-03 10:56:33,257 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:33] "[36mGET /js/libs/chart.js HTTP/1.1[0m" 304 -
+2025-09-03 10:56:33,259 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:33] "[36mGET /js/libs/jquery.min.js HTTP/1.1[0m" 304 -
+2025-09-03 10:56:33,291 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:33] "[36mGET /css/bootstrap.min.css HTTP/1.1[0m" 304 -
+2025-09-03 10:56:33,292 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:33] "[36mGET /css/boxicons-local.css HTTP/1.1[0m" 304 -
+2025-09-03 10:56:33,299 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:33] "[36mGET /js/grade_analysis.js HTTP/1.1[0m" 304 -
+2025-09-03 10:56:33,323 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:33] "[36mGET /js/session-timeout.js HTTP/1.1[0m" 304 -
+2025-09-03 10:56:33,372 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:33] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-09-03 10:56:33,375 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:33] "[36mGET /img/logo.png HTTP/1.1[0m" 304 -
+2025-09-03 10:56:33,393 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:33] "[36mGET /js/settings.js HTTP/1.1[0m" 304 -
+2025-09-03 10:56:33,401 - students - INFO - 仅获取班级 11 的学生
+2025-09-03 10:56:33,408 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:33] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-09-03 10:56:33,411 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:33] "GET /api/current-user HTTP/1.1" 200 -
+2025-09-03 10:56:33,425 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:33] "GET /api/students HTTP/1.1" 200 -
+2025-09-03 10:56:33,430 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:33] "[36mGET /js/libs/bootstrap.bundle.min.js HTTP/1.1[0m" 304 -
+2025-09-03 10:56:33,445 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:33] "GET /api/grades?semester=2025-2026学年上学期 HTTP/1.1" 200 -
+2025-09-03 10:56:33,460 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:33] "GET /api/current-user HTTP/1.1" 200 -
+2025-09-03 10:56:33,483 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:33] "[36mGET /js/data.js HTTP/1.1[0m" 304 -
+2025-09-03 10:56:33,679 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:33] "[36mGET /js/main.js HTTP/1.1[0m" 304 -
+2025-09-03 10:56:33,682 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:33] "[36mGET /js/tutorial.js HTTP/1.1[0m" 304 -
+2025-09-03 10:56:33,717 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:33] "GET /api/current-user HTTP/1.1" 200 -
+2025-09-03 10:56:33,768 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:33] "GET /api/dashboard/todos HTTP/1.1" 200 -
+2025-09-03 10:56:33,776 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:33] "GET /api/dashboard/grade-distribution HTTP/1.1" 200 -
+2025-09-03 10:56:33,779 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:33] "GET /api/dashboard/comments HTTP/1.1" 200 -
+2025-09-03 10:56:33,784 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:33] "GET /api/dashboard/activities HTTP/1.1" 200 -
+2025-09-03 10:56:33,814 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:33] "GET /api/dashboard/info HTTP/1.1" 200 -
+2025-09-03 10:56:33,871 - students - INFO - 仅获取班级 11 的学生
+2025-09-03 10:56:33,877 - __main__ - INFO - 成功从数据库更新配置文件
+2025-09-03 10:56:33,882 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:33] "GET /api/settings HTTP/1.1" 200 -
+2025-09-03 10:56:33,883 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:33] "GET /api/students HTTP/1.1" 200 -
+2025-09-03 10:56:33,888 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:33] "GET /api/current-user HTTP/1.1" 200 -
+2025-09-03 10:56:33,926 - deyu - INFO - 收到获取德育维度数据请求: class_id=11, semester=2025-2026学年上学期
+2025-09-03 10:56:33,934 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:33] "GET /api/carousel/settings HTTP/1.1" 200 -
+2025-09-03 10:56:33,935 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:33] "GET /api/carousel/images HTTP/1.1" 200 -
+2025-09-03 10:56:33,939 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:33] "GET /api/classes/11 HTTP/1.1" 200 -
+2025-09-03 10:56:33,968 - deyu - INFO - 当前用户: 林冠莲, ID: 12, 角色: 普通用户, 关联班级: 11
+2025-09-03 10:56:34,005 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:34] "GET /api/exams?class_id=11 HTTP/1.1" 200 -
+2025-09-03 10:56:34,047 - deyu - INFO - 请求参数: ImmutableMultiDict([('semester', '2025-2026学年上学期'), ('class_id', '11')])
+2025-09-03 10:56:34,065 - __main__ - INFO - 成功从数据库更新配置文件
+2025-09-03 10:56:34,096 - deyu - INFO - 非管理员用户，使用其班级ID: 11
+2025-09-03 10:56:34,104 - deyu - INFO - 使用的班级ID参数: 11
+2025-09-03 10:56:34,108 - students - INFO - 仅获取班级 11 的学生
+2025-09-03 10:56:34,108 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:34] "GET /api/settings HTTP/1.1" 200 -
+2025-09-03 10:56:34,111 - deyu - INFO - students表列名: ['id', 'name', 'gender', 'class_id', 'height', 'weight', 'chest_circumference', 'vital_capacity', 'dental_caries', 'vision_left', 'vision_right', 'physical_test_status', 'comments', 'created_at', 'updated_at', 'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'semester', 'xinli', 'pinzhi', 'xuexi', 'jiankang', 'shenmei', 'shijian', 'shenghuo']
+2025-09-03 10:56:34,115 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:34] "GET /api/students HTTP/1.1" 200 -
+2025-09-03 10:56:34,117 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:34] "GET /api/carousel/settings HTTP/1.1" 200 -
+2025-09-03 10:56:34,118 - deyu - ERROR - students表缺少必要的列: ['class']
+2025-09-03 10:56:34,131 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:34] "GET /api/deyu?semester=2025-2026学年上学期&class_id=11 HTTP/1.1" 200 -
+2025-09-03 10:56:34,150 - __main__ - INFO - 成功从数据库更新配置文件
+2025-09-03 10:56:34,153 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:34] "GET /api/settings HTTP/1.1" 200 -
+2025-09-03 10:56:34,160 - students - INFO - 仅获取班级 11 的学生
+2025-09-03 10:56:34,167 - __main__ - INFO - 成功从数据库更新配置文件
+2025-09-03 10:56:34,174 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:34] "GET /api/settings HTTP/1.1" 200 -
+2025-09-03 10:56:34,175 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:34] "GET /api/students HTTP/1.1" 200 -
+2025-09-03 10:56:34,215 - students - INFO - 仅获取班级 11 的学生
+2025-09-03 10:56:34,224 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:34] "GET /api/students HTTP/1.1" 200 -
+2025-09-03 10:56:34,251 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:34] "GET /api/carousel/images HTTP/1.1" 200 -
+2025-09-03 10:56:34,253 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:34] "[36mGET /img/backgrounds/bg01.jpg HTTP/1.1[0m" 304 -
+2025-09-03 10:56:34,259 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:34] "GET /api/current-user HTTP/1.1" 200 -
+2025-09-03 10:56:34,264 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:34] "[31m[1mGET /api/database/backups HTTP/1.1[0m" 403 -
+2025-09-03 10:56:34,277 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:34] "GET /api/current-user HTTP/1.1" 200 -
+2025-09-03 10:56:34,287 - students - INFO - 仅获取班级 11 的学生
+2025-09-03 10:56:34,293 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:34] "GET /api/students?class_id=11 HTTP/1.1" 200 -
+2025-09-03 10:56:37,372 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:37] "[36mGET /fonts/boxicons.woff2 HTTP/1.1[0m" 304 -
+2025-09-03 10:56:57,831 - comments - INFO - 收到导出报告请求 [请求ID: 1756868217820]: {'studentIds': ['1', '2'], 'templateId': '泉州东海湾实验学校综合素质发展报告单', 'settings': {'schoolYear': '2024-2025', 'semester': '第二学期', 'fileNameFormat': 'id_name', 'startDate': '2025-09-01', 'schoolName': '', 'className': '', 'teacherName': '肖老师', 'exportType': 'pdf'}}
+2025-09-03 10:56:57,831 - comments - INFO - 导出类型: pdf
+2025-09-03 10:56:57,831 - comments - INFO - 导出学生: ['1', '2'], 模板ID: 泉州东海湾实验学校综合素质发展报告单, 使用内置默认模板: False, 设置: {'schoolYear': '2024-2025', 'semester': '第二学期', 'fileNameFormat': 'id_name', 'startDate': '2025-09-01', 'schoolName': '', 'className': '', 'teacherName': '肖老师', 'exportType': 'pdf'}
+2025-09-03 10:56:58,089 - utils.report_exporter - INFO - 成功创建内置默认模板
+2025-09-03 10:56:58,090 - comments - INFO - 初始化ReportExporter成功
+2025-09-03 10:56:58,090 - comments - INFO - 模板路径: templates/docx\泉州东海湾实验学校综合素质发展报告单.docx, 模板是否存在: True
+2025-09-03 10:56:58,092 - comments - INFO - 找到 2 名学生的数据 (请求了 2 名学生)
+2025-09-03 10:56:58,096 - comments - INFO - 导出前进行数据完整性验证...
+2025-09-03 10:56:58,096 - comments - ERROR - 数据验证失败: 发现 2 名学生的数据不完整，无法导出报告。
+2025-09-03 10:56:58,097 - comments - INFO - 根据班主任班级筛选后的问题学生数量: 0/2
+2025-09-03 10:56:58,097 - comments - INFO - 本班学生数据已完整，忽略其他班级的数据问题，继续导出报告
+2025-09-03 10:56:58,097 - comments - INFO - 跳过验证错误，允许导出本班学生数据
+2025-09-03 10:56:58,098 - comments - INFO - 数据验证通过，继续导出报告...
+2025-09-03 10:56:58,334 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:58] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:56:58,832 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:58] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:56:59,334 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:59] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:56:59,835 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:56:59] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:00,333 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:00] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:00,833 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:00] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:01,342 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:01] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:01,479 - comments - INFO - 依赖检查: docxtpl和docx库已安装
+2025-09-03 10:57:01,579 - comments - INFO - 依赖检查: docx2pdf库已安装
+2025-09-03 10:57:01,579 - comments - INFO - 开始生成报告，学生数量: 2
+2025-09-03 10:57:01,579 - comments - INFO - 学生数据示例: {'id': '1', 'name': '吴俊亿', 'gender': '男', 'class_id': '11', 'height': 126.0, 'weight': 31.45, 'chest_circumference': 67.0, 'vital_capacity': 885.0, 'dental_caries': '0', 'vision_left': 5.0, 'vision_right': 5.0, 'physical_test_status': '健康', 'comments': '俊亿，你阳光开朗，是班级里不可或缺的“氛围担当”！每次联欢会都能看到你踊跃参与的身影，用热情感染着每一位同学；当老师或同伴需要帮助时，你总是第一个冲在前面，这份乐于助人的赤诚之心令人赞赏。你身上洋溢着强烈的集体荣誉感和责任感，这份光芒让我们的班级更加温暖。  \n\n老师想悄悄提醒你：课堂是汲取知识的殿堂，如果能更好地遵守课堂纪律，管住小嘴巴，让专注力成为你的新伙伴，你的潜力将无可限量；课后与同学相处时，也请记得把“安全”和“适度”放在心头，让活泼更添一份稳重。', 'created_at': '2025-05-12 18:36:57', 'updated_at': '2025-06-13 15:47:32', 'daof': '优', 'yuwen': '优', 'shuxue': '及格', 'yingyu': '待及格', 'laodong': '优', 'tiyu': '优', 'yinyue': '优', 'meishu': '良', 'kexue': '良', 'zonghe': '优', 'xinxi': '/', 'shufa': '优', 'semester': '2024-2025学年下学期', 'xinli': '', 'pinzhi': None, 'xuexi': None, 'jiankang': None, 'shenmei': None, 'shijian': None, 'shenghuo': None}
+2025-09-03 10:57:01,580 - comments - INFO - 评语数据: {'1': {'studentId': '1', 'studentName': '吴俊亿', 'content': '俊亿，你阳光开朗，是班级里不可或缺的“氛围担当”！每次联欢会都能看到你踊跃参与的身影，用热情感染着每一位同学；当老师或同伴需要帮助时，你总是第一个冲在前面，这份乐于助人的赤诚之心令人赞赏。你身上洋溢着强烈的集体荣誉感和责任感，这份光芒让我们的班级更加温暖。  \n\n老师想悄悄提醒你：课堂是汲取知识的殿堂，如果能更好地遵守课堂纪律，管住小嘴巴，让专注力成为你的新伙伴，你的潜力将无可限量；课后与同学相处时，也请记得把“安全”和“适度”放在心头，让活泼更添一份稳重。'}, '2': {'studentId': '2', 'studentName': '郭凯霖', 'content': '凯霖，古语云“不积跬步，无以至千里”，本学期你用行动诠释了稳步前行的力量。相较于以往，你变得愈发沉稳，工整的字迹见证着“业精于勤荒于嬉”的努力。身为小组长，你以“独学而无友，则孤陋而寡闻”的智慧，带领组员共同进步，主动承担起监督学习的责任；凭借“慎独”的自律精神，总能提前完成学习任务，成为同学们身边的榜样。科技节纸飞机比赛中荣获三等奖，更是展现了你勇于探索的创新精神。“少年负壮气，奋烈自有时”，优秀少先队员的称号，正是对你成长的最佳褒奖，愿你继续扬帆远航！'}}
+2025-09-03 10:57:01,580 - comments - INFO - 成绩数据: {'1': {'grades': {'daof': '优', 'yuwen': '优', 'shuxue': '及格', 'yingyu': '待及格', 'laodong': '优', 'tiyu': '优', 'yinyue': '优', 'meishu': '良', 'kexue': '良', 'zonghe': '优', 'xinxi': '/', 'shufa': '优'}}, '2': {'grades': {'daof': '优', 'yuwen': '优', 'shuxue': '优', 'yingyu': '优', 'laodong': '优', 'tiyu': '优', 'yinyue': '优', 'meishu': '优', 'kexue': '优', 'zonghe': '优', 'xinxi': '/', 'shufa': '优'}}}
+2025-09-03 10:57:01,620 - utils.report_exporter - INFO - 成功创建内置默认模板
+2025-09-03 10:57:01,621 - utils.report_exporter - INFO - 开始批量导出报告，学生数量: 2, 使用模板: 泉州东海湾实验学校综合素质发展报告单
+2025-09-03 10:57:01,621 - utils.report_exporter - INFO - 模板路径: templates/docx\泉州东海湾实验学校综合素质发展报告单.docx
+2025-09-03 10:57:01,622 - utils.report_exporter - INFO - 处理第 1/2 个学生: ID=1, 姓名=吴俊亿
+2025-09-03 10:57:01,622 - utils.report_exporter - INFO - 为学生 1 生成报告...
+2025-09-03 10:57:01,622 - utils.report_exporter - INFO - 开始为学生生成报告: ID=1, 姓名=吴俊亿
+2025-09-03 10:57:01,623 - utils.report_exporter - DEBUG - 准备模板数据完成: 40 个字段
+2025-09-03 10:57:01,738 - utils.report_exporter - INFO - 报告生成成功，准备保存为: 1_吴俊亿.docx
+2025-09-03 10:57:01,751 - utils.report_exporter - INFO - 成功添加学生 1 的报告到ZIP文件
+2025-09-03 10:57:01,751 - utils.report_exporter - INFO - 处理第 2/2 个学生: ID=2, 姓名=郭凯霖
+2025-09-03 10:57:01,751 - utils.report_exporter - INFO - 为学生 2 生成报告...
+2025-09-03 10:57:01,753 - utils.report_exporter - INFO - 开始为学生生成报告: ID=2, 姓名=郭凯霖
+2025-09-03 10:57:01,754 - utils.report_exporter - DEBUG - 准备模板数据完成: 40 个字段
+2025-09-03 10:57:01,856 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:01] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:01,861 - utils.report_exporter - INFO - 报告生成成功，准备保存为: 2_郭凯霖.docx
+2025-09-03 10:57:01,878 - utils.report_exporter - INFO - 成功添加学生 2 的报告到ZIP文件
+2025-09-03 10:57:01,880 - utils.report_exporter - INFO - 生成ZIP文件: C:\Users\kmduyy\AppData\Local\Temp\tmp4w3e7cte\student_reports.zip
+2025-09-03 10:57:01,899 - utils.report_exporter - INFO - 成功导出 2/2 个学生报告
+2025-09-03 10:57:01,900 - root - INFO - 开始PDF导出流程
+2025-09-03 10:57:01,900 - comments - INFO - 开始检查文档转换软件是否安装
+2025-09-03 10:57:01,945 - comments - INFO - 当前操作系统: Windows
+2025-09-03 10:57:01,945 - comments - INFO - 通过注册表确认Microsoft Word已安装
+2025-09-03 10:57:01,945 - comments - INFO - 检测到Microsoft Word，将继续PDF转换
+2025-09-03 10:57:01,946 - comments - INFO - 保存ZIP文件到临时目录: C:\Users\kmduyy\AppData\Local\Temp\tmp_8lfmt58\word_reports.zip
+2025-09-03 10:57:01,947 - comments - INFO - 解压ZIP文件到: C:\Users\kmduyy\AppData\Local\Temp\tmp_8lfmt58\extracted
+2025-09-03 10:57:01,959 - comments - INFO - ZIP文件中包含的文件: ['1_吴俊亿.docx', '2_郭凯霖.docx']
+2025-09-03 10:57:01,961 - comments - INFO - 解压后的文件列表: ['1_吴俊亿.docx', '2_郭凯霖.docx']
+2025-09-03 10:57:01,963 - comments - INFO - 创建PDF输出目录: C:\Users\kmduyy\AppData\Local\Temp\tmp_8lfmt58\pdf
+2025-09-03 10:57:01,964 - comments - INFO - 创建学生文件名映射: {'1_吴俊亿.docx': '吴俊亿', '2_郭凯霖.docx': '郭凯霖'}
+2025-09-03 10:57:01,965 - comments - INFO - 导出进度更新 [用户:12, 请求:1756868217820]: 正在导出学生报告: 吴俊亿 (1/2) (40%)
+2025-09-03 10:57:01,965 - comments - INFO - 正在导出学生报告: 吴俊亿 (1/2)
+2025-09-03 10:57:01,965 - comments - INFO - 开始转换 [1/2]: C:\Users\kmduyy\AppData\Local\Temp\tmp_8lfmt58\extracted\1_吴俊亿.docx -> C:\Users\kmduyy\AppData\Local\Temp\tmp_8lfmt58\pdf\1_吴俊亿.pdf
+2025-09-03 10:57:01,966 - comments - INFO - 当前操作系统: Windows
+2025-09-03 10:57:01,966 - comments - INFO - 为文件 1_吴俊亿.docx 初始化COM环境
+2025-09-03 10:57:02,018 - comments - INFO - 使用win32com直接转换: C:\Users\kmduyy\AppData\Local\Temp\tmp_8lfmt58\extracted\1_吴俊亿.docx -> C:\Users\kmduyy\AppData\Local\Temp\tmp_8lfmt58\pdf\1_吴俊亿.pdf
+2025-09-03 10:57:02,334 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:02] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:02,839 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:02] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:03,335 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:03] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:03,833 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:03] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:04,354 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:04] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:04,832 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:04] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:05,334 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:05] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:05,833 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:05] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:06,334 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:06] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:06,834 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:06] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:07,335 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:07] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:07,769 - comments - INFO - Word应用程序实例创建成功
+2025-09-03 10:57:07,835 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:07] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:08,334 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:08] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:08,931 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:08] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:09,329 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:09] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:09,638 - comments - INFO - 成功打开文档: C:\Users\kmduyy\AppData\Local\Temp\tmp_8lfmt58\extracted\1_吴俊亿.docx
+2025-09-03 10:57:09,830 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:09] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:10,329 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:10] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:10,829 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:10] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:11,331 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:11] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:11,558 - comments - INFO - 使用FileFormat=17成功保存PDF: C:\Users\kmduyy\AppData\Local\Temp\tmp_8lfmt58\pdf\1_吴俊亿.pdf
+2025-09-03 10:57:11,638 - comments - INFO - 文档已关闭
+2025-09-03 10:57:11,643 - comments - INFO - Word应用已退出
+2025-09-03 10:57:11,643 - comments - INFO - 成功转换文件为PDF: C:\Users\kmduyy\AppData\Local\Temp\tmp_8lfmt58\pdf\1_吴俊亿.pdf, 文件大小: 292716 字节
+2025-09-03 10:57:11,643 - comments - INFO - 释放文件 1_吴俊亿.docx 的COM资源
+2025-09-03 10:57:11,808 - comments - INFO - 转换成功 (尝试 1): 1_吴俊亿.docx
+2025-09-03 10:57:11,809 - comments - INFO - 导出进度更新 [用户:12, 请求:1756868217820]: 正在导出学生报告: 郭凯霖 (2/2) (80%)
+2025-09-03 10:57:11,810 - comments - INFO - 正在导出学生报告: 郭凯霖 (2/2)
+2025-09-03 10:57:11,810 - comments - INFO - 开始转换 [2/2]: C:\Users\kmduyy\AppData\Local\Temp\tmp_8lfmt58\extracted\2_郭凯霖.docx -> C:\Users\kmduyy\AppData\Local\Temp\tmp_8lfmt58\pdf\2_郭凯霖.pdf
+2025-09-03 10:57:11,810 - comments - INFO - 当前操作系统: Windows
+2025-09-03 10:57:11,810 - comments - INFO - 为文件 2_郭凯霖.docx 初始化COM环境
+2025-09-03 10:57:11,810 - comments - INFO - 使用win32com直接转换: C:\Users\kmduyy\AppData\Local\Temp\tmp_8lfmt58\extracted\2_郭凯霖.docx -> C:\Users\kmduyy\AppData\Local\Temp\tmp_8lfmt58\pdf\2_郭凯霖.pdf
+2025-09-03 10:57:11,821 - comments - INFO - Word应用程序实例创建成功
+2025-09-03 10:57:11,830 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:11] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:12,329 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:12] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:12,829 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:12] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:13,330 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:13] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:13,830 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:13] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:14,329 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:14] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:14,657 - comments - INFO - 成功打开文档: C:\Users\kmduyy\AppData\Local\Temp\tmp_8lfmt58\extracted\2_郭凯霖.docx
+2025-09-03 10:57:14,660 - comments - WARNING - 使用FileFormat=17保存失败: Open.SaveAs，尝试使用wdFormatPDF
+2025-09-03 10:57:14,661 - comments - ERROR - 所有保存方法都失败: Open.SaveAs
+2025-09-03 10:57:14,661 - comments - ERROR - 保存PDF时出错: Open.SaveAs
+2025-09-03 10:57:14,662 - comments - WARNING - 关闭文档时出错
+2025-09-03 10:57:14,663 - comments - ERROR - 转换文件 2_郭凯霖.docx 失败: Open.Close
+2025-09-03 10:57:14,685 - comments - ERROR - 错误详情: Traceback (most recent call last):
+  File "C:\Users\kmduyy\ClassMaster2.2\comments.py", line 1050, in convert_docx_to_pdf
+    doc.SaveAs(output_file_abs, FileFormat=17)
+    ^^^^^^^^^^
+  File "C:\Users\kmduyy\ClassMaster2.2\venv\Lib\site-packages\win32com\client\dynamic.py", line 631, in __getattr__
+    raise AttributeError(f"{self._username_}.{attr}")
+AttributeError: Open.SaveAs
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\kmduyy\ClassMaster2.2\comments.py", line 1056, in convert_docx_to_pdf
+    doc.SaveAs(output_file_abs, FileFormat=constants.wdFormatPDF)
+    ^^^^^^^^^^
+  File "C:\Users\kmduyy\ClassMaster2.2\venv\Lib\site-packages\win32com\client\dynamic.py", line 631, in __getattr__
+    raise AttributeError(f"{self._username_}.{attr}")
+AttributeError: Open.SaveAs
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\kmduyy\ClassMaster2.2\comments.py", line 1063, in convert_docx_to_pdf
+    doc.Close(False)  # 不保存更改
+    ^^^^^^^^^
+  File "C:\Users\kmduyy\ClassMaster2.2\venv\Lib\site-packages\win32com\client\dynamic.py", line 631, in __getattr__
+    raise AttributeError(f"{self._username_}.{attr}")
+AttributeError: Open.Close
+
+2025-09-03 10:57:14,686 - comments - INFO - 释放文件 2_郭凯霖.docx 的COM资源
+2025-09-03 10:57:14,687 - comments - INFO - 重试第2次转换: 2_郭凯霖.docx
+2025-09-03 10:57:14,688 - comments - INFO - 当前操作系统: Windows
+2025-09-03 10:57:14,688 - comments - INFO - 为文件 2_郭凯霖.docx 初始化COM环境
+2025-09-03 10:57:14,688 - comments - INFO - 使用win32com直接转换: C:\Users\kmduyy\AppData\Local\Temp\tmp_8lfmt58\extracted\2_郭凯霖.docx -> C:\Users\kmduyy\AppData\Local\Temp\tmp_8lfmt58\pdf\2_郭凯霖.pdf
+2025-09-03 10:57:14,830 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:14] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:15,337 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:15] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:15,831 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:15] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:16,330 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:16] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:16,830 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:16] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:17,005 - comments - INFO - Word应用程序实例创建成功
+2025-09-03 10:57:17,329 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:17] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:17,646 - comments - INFO - 成功打开文档: C:\Users\kmduyy\AppData\Local\Temp\tmp_8lfmt58\extracted\2_郭凯霖.docx
+2025-09-03 10:57:17,829 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:17] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:18,329 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:18] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:18,835 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:18] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:18,884 - comments - INFO - 使用FileFormat=17成功保存PDF: C:\Users\kmduyy\AppData\Local\Temp\tmp_8lfmt58\pdf\2_郭凯霖.pdf
+2025-09-03 10:57:18,945 - comments - INFO - 文档已关闭
+2025-09-03 10:57:18,947 - comments - INFO - Word应用已退出
+2025-09-03 10:57:18,947 - comments - INFO - 成功转换文件为PDF: C:\Users\kmduyy\AppData\Local\Temp\tmp_8lfmt58\pdf\2_郭凯霖.pdf, 文件大小: 293828 字节
+2025-09-03 10:57:18,948 - comments - INFO - 释放文件 2_郭凯霖.docx 的COM资源
+2025-09-03 10:57:19,019 - comments - INFO - 转换成功 (尝试 2): 2_郭凯霖.docx
+2025-09-03 10:57:19,020 - comments - INFO - 完成转换: 成功 2/2 文件
+2025-09-03 10:57:19,103 - comments - INFO - 成功导入PyPDF2
+2025-09-03 10:57:19,103 - comments - INFO - 导出进度更新 [用户:12, 请求:1756868217820]: 正在合并 2 个PDF文件... (90%)
+2025-09-03 10:57:19,104 - comments - INFO - 正在合并 2 个PDF文件...
+2025-09-03 10:57:19,105 - comments - ERROR - 获取班级名称时出错: no such column: name
+2025-09-03 10:57:19,105 - comments - INFO - 从学生记录获取班级名称: ''
+2025-09-03 10:57:19,105 - comments - INFO - 使用班级名称 '' 生成合并PDF文件名: 合并报告.pdf
+2025-09-03 10:57:19,108 - comments - INFO - 按学号顺序排序后的PDF文件列表: ['1_吴俊亿.pdf', '2_郭凯霖.pdf']
+2025-09-03 10:57:19,136 - comments - INFO - 导出进度更新 [用户:12, 请求:1756868217820]: 正在合并PDF文件 (1/2) (92%)
+2025-09-03 10:57:19,136 - comments - INFO - 成功添加PDF文件到合并器: 1_吴俊亿.pdf
+2025-09-03 10:57:19,154 - comments - INFO - 导出进度更新 [用户:12, 请求:1756868217820]: 正在合并PDF文件 (2/2) (95%)
+2025-09-03 10:57:19,155 - comments - INFO - 成功添加PDF文件到合并器: 2_郭凯霖.pdf
+2025-09-03 10:57:19,155 - comments - INFO - 导出进度更新 [用户:12, 请求:1756868217820]: 正在生成合并后的PDF文件... (95%)
+2025-09-03 10:57:19,188 - comments - INFO - 导出进度更新 [用户:12, 请求:1756868217820]: PDF文件合并完成 (98%)
+2025-09-03 10:57:19,189 - comments - INFO - 成功创建合并的PDF文件: C:\Users\kmduyy\AppData\Local\Temp\tmp_8lfmt58\pdf\合并报告.pdf
+2025-09-03 10:57:19,189 - comments - INFO - 创建PDF ZIP文件: C:\Users\kmduyy\AppData\Local\Temp\tmp_8lfmt58\pdf_reports.zip
+2025-09-03 10:57:19,192 - comments - INFO - 添加PDF到ZIP: C:\Users\kmduyy\AppData\Local\Temp\tmp_8lfmt58\pdf\1_吴俊亿.pdf -> 1_吴俊亿.pdf
+2025-09-03 10:57:19,195 - comments - INFO - 添加PDF到ZIP: C:\Users\kmduyy\AppData\Local\Temp\tmp_8lfmt58\pdf\2_郭凯霖.pdf -> 2_郭凯霖.pdf
+2025-09-03 10:57:19,196 - comments - INFO - 添加PDF到ZIP: C:\Users\kmduyy\AppData\Local\Temp\tmp_8lfmt58\pdf\合并报告.pdf -> 合并报告.pdf
+2025-09-03 10:57:19,230 - comments - INFO - PDF转换成功，ZIP文件大小: 1134811 字节
+2025-09-03 10:57:19,233 - comments - INFO - 使用直接下载模式
+2025-09-03 10:57:19,235 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:19] "POST /api/export-reports HTTP/1.1" 200 -
+2025-09-03 10:57:19,336 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:19] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:19,834 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:19] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:20,512 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:20] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:20,895 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:20] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:21,330 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:21] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:21,831 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:21] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:22,332 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:22] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:22,833 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:22] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:23,334 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:23] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:23,835 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:23] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:24,332 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:24] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:24,829 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:24] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:25,332 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:25] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:25,840 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:25] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:26,344 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:26] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:26,888 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:26] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:27,337 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:27] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:27,844 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:27] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:28,329 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:28] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:28,835 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:28] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:29,329 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:29] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:29,835 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:29] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:30,333 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:30] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:30,830 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:30] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:31,348 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:31] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:31,838 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:31] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:32,338 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:32] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:32,841 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:32] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:33,335 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:33] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:33,830 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:33] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:34,339 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:34] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:34,835 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:34] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:35,335 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:35] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:35,836 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:35] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:36,331 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:36] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:36,838 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:36] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:37,329 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:37] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:37,828 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:37] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:38,813 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:38] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:39,811 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:39] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:40,799 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:40] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:41,802 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:41] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:42,813 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:42] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:43,804 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:43] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:44,801 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:44] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:45,865 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:45] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:46,939 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:46] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:49,291 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:49] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:50,927 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:50] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:51,801 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:51] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:52,813 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:52] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:53,808 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:53] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:54,799 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:54] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:55,799 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:55] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:56,813 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:56] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:57,799 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:57] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:58,798 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:58] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:57:59,802 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:57:59] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:00,755 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:00] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:00,843 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:00] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:01,329 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:01] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:01,836 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:01] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:02,332 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:02] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:02,827 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:02] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:03,331 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:03] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:03,840 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:03] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:04,334 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:04] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:04,840 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:04] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:05,332 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:05] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:05,829 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:05] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:06,340 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:06] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:06,835 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:06] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:07,330 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:07] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:07,840 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:07] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:08,333 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:08] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:08,836 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:08] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:09,337 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:09] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:09,831 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:09] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:10,341 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:10] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:10,837 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:10] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:11,333 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:11] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:11,840 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:11] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:12,339 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:12] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:12,829 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:12] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:13,337 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:13] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:13,833 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:13] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:14,342 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:14] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:14,835 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:14] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:15,334 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:15] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:15,833 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:15] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:16,344 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:16] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:16,828 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:16] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:17,340 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:17] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:17,835 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:17] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:18,329 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:18] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:18,840 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:18] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:19,336 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:19] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:19,843 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:19] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:20,334 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:20] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:20,841 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:20] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:21,336 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:21] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:21,841 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:21] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:22,337 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:22] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:22,833 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:22] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:23,331 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:23] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:23,829 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:23] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:24,339 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:24] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:24,836 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:24] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:25,332 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:25] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:25,841 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:25] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:26,332 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:26] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:26,843 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:26] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:27,341 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:27] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:27,842 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:27] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:28,328 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:28] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:28,829 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:28] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:29,329 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:29] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:29,835 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:29] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:30,802 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:30] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:31,810 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:31] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:32,801 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:32] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:34,679 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:34] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:34,751 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:34] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:35,831 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:35] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:36,828 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:36] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:37,813 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:37] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:38,804 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:38] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:39,810 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:39] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:40,805 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:40] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:41,812 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:41] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:42,813 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:42] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:43,802 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:43] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:44,803 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:44] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:45,808 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:45] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:46,805 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:46] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:47,818 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:47] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:48,801 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:48] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:49,807 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:49] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:50,804 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:50] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:51,804 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:51] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:52,812 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:52] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:53,807 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:53] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:54,807 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:54] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:55,805 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:55] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:56,803 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:56] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:57,799 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:57] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:58,805 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:58] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:58:59,812 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:58:59] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:59:00,810 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:59:00] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:59:01,798 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:59:01] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:59:02,807 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:59:02] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:59:03,803 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:59:03] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:59:04,812 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:59:04] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:59:05,802 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:59:05] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:59:06,813 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:59:06] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:59:07,802 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:59:07] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:59:08,801 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:59:08] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:59:09,806 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:59:09] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:59:10,801 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:59:10] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:59:11,810 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:59:11] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:59:12,804 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:59:12] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:59:13,800 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:59:13] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -
+2025-09-03 10:59:14,810 - werkzeug - INFO - 127.0.0.1 - - [03/Sep/2025 10:59:14] "GET /api/export-progress?request_id=1756868217820 HTTP/1.1" 200 -

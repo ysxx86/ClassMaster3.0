@@ -1,3 +1,14 @@
+from flask import Blueprint, jsonify
+from flask_login import login_required, current_user
+from database import get_db_connection
+import logging
+
+# 创建日志记录器
+logger = logging.getLogger(__name__)
+
+# 创建蓝图
+dashboard_bp = Blueprint('dashboard', __name__)
+
 def check_table_exists(cursor, table_name):
     """检查表是否存在"""
     cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name=?", (table_name,))
