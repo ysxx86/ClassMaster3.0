@@ -18,3 +18,4 @@ __pycache__/
 ~$*.xlsx  # 忽略Excel临时文件
 *.log
 logs/
+*.db-wal

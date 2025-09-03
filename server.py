@@ -24,10 +24,10 @@ from utils.excel_processor import ExcelProcessor
 
 # 依赖检查已通过dependency_manager处理
 
-# 原始的导入语句
+# 导入应用工厂
+from app_factory import create_app
 from flask import Flask, request, jsonify, send_from_directory, render_template, url_for, send_file, make_response, redirect, flash, session
 from flask_cors import CORS
-# 导入Flask-Login相关模块
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user, UserMixin
 import os
 import sqlite3
