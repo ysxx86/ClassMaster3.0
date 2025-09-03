@@ -12,11 +12,54 @@ from typing import Dict, List, Any, Optional, Tuple, Union
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+import sqlite3
+
 class ReportExporter:
     """
     报告导出工具类，负责处理Word文档模板和生成学生报告
     """
     
+    # 字段映射配置
+    DEYU_FIELD_MAPPING = {
+        'pinzhi': '品质',
+        'xuexi': '学习',
+        'jiankang': '健康',
+        'shenmei': '审美',
+        'shijian': '实践',
+        'shenghuo': '生活'
+    }
+
+    def get_class_name(self, class_id: Union[int, str, None]) -> str:
+        """
+        根据班级ID获取班级名称
+        
+        Args:
+            class_id: 班级ID
+            
+        Returns:
+            str: 班级名称，如果未找到则返回空字符串
+        """
+        if not class_id:
+            return ""
+            
+        try:
+            conn = sqlite3.connect('students.db')
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
+            
+            cursor.execute('SELECT class_name FROM classes WHERE id = ?', (class_id,))
+            result = cursor.fetchone()
+            
+            if result:
+                return result['class_name']
+            return ""
+        except Exception as e:
+            logger.error(f"获取班级名称出错: {str(e)}")
+            return ""
+        finally:
+            if 'conn' in locals():
+                conn.close()
+
     def __init__(self, templates_dir: str = "templates/docx"):
         """
         初始化报告导出器
@@ -241,7 +284,8 @@ class ReportExporter:
             "姓名": safe_get(student, 'name'),
             "学号": safe_get(student, 'id'),
             "性别": safe_get(student, 'gender'),
-            "班级": safe_get(student, 'class') or settings.get('className', ''),
+            # 优先使用数据库中的班级名称
+            "班级": self.get_class_name(safe_get(student, 'class_id')) or settings.get('className', ''),
             
             # 体测数据
             "身高": safe_get(student, 'height'),
@@ -267,12 +311,8 @@ class ReportExporter:
             "日期": datetime.now().strftime('%Y-%m-%d'),
             
             # 德育维度数据
-            "品质": safe_get(student, 'pinzhi', '0'),
-            "学习": safe_get(student, 'xuexi', '0'),
-            "健康": safe_get(student, 'jiankang', '0'),
-            "审美": safe_get(student, 'shenmei', '0'),
-            "实践": safe_get(student, 'shijian', '0'),
-            "生活": safe_get(student, 'shenghuo', '0')
+            **{template_field: safe_get(student, db_field, '0') 
+               for db_field, template_field in self.DEYU_FIELD_MAPPING.items()}
         }
         
         # 如果有成绩数据，添加成绩
