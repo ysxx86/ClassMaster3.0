@@ -259,6 +259,19 @@ def websocket_progress(message, percent=None, request_id=None):
         clean_message = clean_unicode_for_logging(message)
         logger.info(f"进度更新: {clean_message} ({percent}%)")
 
+def get_system_setting(key, default=None):
+    """从数据库获取系统设置"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute('SELECT value FROM system_settings WHERE key = ?', (key,))
+        result = cursor.fetchone()
+        conn.close()
+        return result['value'] if result else default
+    except Exception as e:
+        logger.error(f"获取系统设置 {key} 时出错: {str(e)}")
+        return default
+
 def check_export_cancelled(request_id):
     """检查导出是否被取消"""
     if not request_id:
@@ -270,6 +283,15 @@ def check_export_cancelled(request_id):
     except ImportError:
         logger.warning("无法导入is_export_cancelled函数")
         return False
+
+def format_semester(semester_value):
+    """格式化学期显示"""
+    try:
+        semester_map = {'1': '第一学期', '2': '第二学期'}
+        return semester_map.get(str(semester_value), '第一学期')
+    except Exception as e:
+        logger.error(f"格式化学期显示时出错: {str(e)}")
+        return '第一学期'
 
 def format_elapsed_time(start_time):
     """格式化耗时"""
@@ -342,7 +364,7 @@ def api_export_class_reports():
         # 使用默认设置补充缺失的设置
         default_settings = {
             'schoolYear': '2023-2024',
-            'semester': '1',
+            'semester': format_semester(get_system_setting('semester', '1')),  # 从数据库获取并格式化学期信息
             'fileNameFormat': 'id_name'
         }
         
