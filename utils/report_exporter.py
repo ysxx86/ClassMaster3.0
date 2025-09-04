@@ -251,8 +251,23 @@ class ReportExporter:
         Returns:
             Dict[str, Any]: 用于模板替换的数据
         """
-        # 获取学期文本
-        semester_text = "第一学期" if settings.get('semester') == '1' else "第二学期"
+        # 从数据库获取学期设置
+        def get_system_setting(key, default=None):
+            try:
+                conn = sqlite3.connect('students.db')
+                conn.row_factory = sqlite3.Row
+                cursor = conn.cursor()
+                cursor.execute('SELECT value FROM system_settings WHERE key = ?', (key,))
+                result = cursor.fetchone()
+                conn.close()
+                return result['value'] if result else default
+            except Exception as e:
+                logger.error(f"获取系统设置 {key} 时出错: {str(e)}")
+                return default
+
+        # 获取并格式化学期文本
+        semester_value = get_system_setting('semester', '1')
+        semester_text = "第一学期" if str(semester_value).strip() == '1' else "第二学期"
         
         # 处理开学时间，转换为"月日"格式
         start_date = settings.get('startDate', '')
