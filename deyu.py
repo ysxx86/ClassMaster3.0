@@ -117,10 +117,11 @@ def get_all_deyu():
             if not current_user.class_id:
                 logger.warning("非管理员用户未分配班级")
                 return jsonify({
-                    'status': 'ok',
+                    'status': 'error',
+                    'code': 'NO_CLASS_ASSIGNED',
                     'deyu': [],
                     'message': '您尚未被分配班级，无法查看学生德育维度'
-                })
+                }), 403
             class_id = current_user.class_id
             logger.info(f"非管理员用户，使用其班级ID: {class_id}")
         
@@ -176,10 +177,10 @@ def get_all_deyu():
             query_attempts += 1
             
             cursor.execute('''
-                SELECT id, name, class_id, pinzhi, xuexi, jiankang, shenmei, shijian, shenghuo 
-                FROM students 
-                WHERE class_id = ?
-                ORDER BY id
+                SELECT s.id, s.name, s.class_id, s.pinzhi, s.xuexi, s.jiankang, s.shenmei, s.shijian, s.shenghuo 
+                FROM students s
+                WHERE s.class_id = ?
+                ORDER BY s.id
             ''', (int_class_id,))
             students = cursor.fetchall()
             logger.info(f"按班级ID查询结果: 找到{len(students)}名学生")
@@ -264,10 +265,21 @@ def get_all_deyu():
                 field_value = student_data.get(field)
                 deyu_fields[field] = field_value or 0  # 将None转为0
             
+            # 获取班级名称
+            class_name = ''
+            try:
+                class_cursor = conn.cursor()
+                class_cursor.execute('SELECT class_name FROM classes WHERE id = ?', (student_data['class_id'],))
+                class_row = class_cursor.fetchone()
+                if class_row:
+                    class_name = dict(class_row)['class_name']
+            except Exception as e:
+                logger.warning(f"获取班级名称失败: {e}")
+
             result.append({
                 'student_id': student_data['id'],
                 'name': student_data['name'],
-                'class': student_data['class'],
+                'class': class_name,  # 使用查询到的班级名称
                 'class_id': student_data['class_id'],
                 'pinzhi': deyu_fields['pinzhi'],      # 品质
                 'xuexi': deyu_fields['xuexi'],        # 学习
