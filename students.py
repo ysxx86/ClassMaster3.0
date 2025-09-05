@@ -30,6 +30,20 @@ UPLOAD_FOLDER = 'uploads'
 TEMPLATE_FOLDER = 'templates'
 DATABASE = 'students.db'
 
+# 常量定义
+VALID_GRADES = ['优', '良', '及格', '待及格', '/']  # 使用列表而不是集合，兼容性更好
+
+DEYU_SCORE_LIMITS = {
+    'pinzhi': 30,    # 品德修养
+    'xuexi': 20,     # 学习素养
+    'jiankang': 20,  # 身心健康
+    'shenmei': 10,   # 审美素养
+    'shijian': 10,   # 实践创新
+    'shenghuo': 10   # 生活素养
+}
+
+DEYU_TOTAL_LIMIT = 100
+
 # 创建数据库连接
 def get_db_connection():
     conn = sqlite3.connect(DATABASE)
@@ -431,9 +445,127 @@ def delete_student(student_id):
     finally:
         conn.close()
 
+# 定义成绩等级和德育维度分数限制
+VALID_GRADES = ['优', '良', '及格', '待及格', '/']
+
+DEYU_SCORE_LIMITS = {
+    'pinzhi': 30,    # 品德修养
+    'xuexi': 20,     # 学习素养
+    'jiankang': 20,  # 身心健康
+    'shenmei': 10,   # 审美素养
+    'shijian': 10,   # 实践创新
+    'shenghuo': 10   # 生活素养
+}
+DEYU_TOTAL_LIMIT = 100
+
+def validate_grade(value):
+    """验证成绩等级"""
+    if not value:
+        return True, None  # 允许为空
+    if value not in VALID_GRADES:
+        return False, f"成绩必须是：{', '.join(VALID_GRADES)}中的一个"
+    return True, None
+
+def validate_deyu_score(field, value):
+    """验证德育维度分数"""
+    if not value and value != 0:
+        return False, f"{field}分数不能为空"
+    try:
+        score = int(value)
+        if score < 0:
+            return False, f"{field}分数不能为负"
+        if score > DEYU_SCORE_LIMITS[field]:
+            return False, f"{field}分数不能超过{DEYU_SCORE_LIMITS[field]}"
+        return True, None
+    except (ValueError, TypeError):
+        return False, f"{field}分数必须是整数"
+
+def validate_deyu_total(scores):
+    """验证德育维度总分"""
+    total = sum(int(score) for score in scores.values() if score)
+    if total > DEYU_TOTAL_LIMIT:
+        return False, f"德育维度总分不能超过{DEYU_TOTAL_LIMIT}分，当前总分：{total}"
+    return True, None
+
+def validate_comment(value):
+    """验证评语"""
+    if not value:
+        return False, "评语不能为空"
+    if len(value) > 260:
+        return False, "评语不能超过260个字"
+    return True, None
+
+def get_field_changes(existing_data, new_data):
+    """获取字段更改信息"""
+    changes = []
+    for field, new_value in new_data.items():
+        if field in existing_data:
+            old_value = existing_data[field]
+            if (old_value != new_value and 
+                (old_value is not None or new_value is not None)):  # 处理NULL值的比较
+                changes.append({
+                    'field': field,
+                    'old_value': old_value,
+                    'new_value': new_value
+                })
+    return changes
+
 # 导入学生预览API
 @students_bp.route('/api/import-students', methods=['POST'])
 @login_required
+
+def validate_grade(value):
+    """验证成绩等级"""
+    if not value:
+        return True, None  # 允许为空
+    if value not in VALID_GRADES:
+        return False, f"成绩必须是：{', '.join(VALID_GRADES)}中的一个"
+    return True, None
+
+def validate_deyu_score(field, value):
+    """验证德育维度分数"""
+    if not value and value != 0:
+        return False, f"{field}分数不能为空"
+    try:
+        score = int(value)
+        if score < 0:
+            return False, f"{field}分数不能为负"
+        if score > DEYU_SCORE_LIMITS[field]:
+            return False, f"{field}分数不能超过{DEYU_SCORE_LIMITS[field]}"
+        return True, None
+    except (ValueError, TypeError):
+        return False, f"{field}分数必须是整数"
+
+def validate_deyu_total(scores):
+    """验证德育维度总分"""
+    total = sum(int(score) for score in scores.values() if score)
+    if total > DEYU_TOTAL_LIMIT:
+        return False, f"德育维度总分不能超过{DEYU_TOTAL_LIMIT}分，当前总分：{total}"
+    return True, None
+
+def validate_comment(value):
+    """验证评语"""
+    if not value:
+        return False, "评语不能为空"
+    if len(value) > 260:
+        return False, "评语不能超过260个字"
+    return True, None
+
+def get_field_changes(existing_data, new_data):
+    """获取字段更改信息"""
+    changes = []
+    for field, new_value in new_data.items():
+        if field in existing_data:
+            old_value = existing_data[field]
+            if (old_value != new_value and 
+                (old_value is not None or new_value is not None)):  # 处理NULL值的比较
+                changes.append({
+                    'field': field,
+                    'old_value': old_value,
+                    'new_value': new_value
+                })
+    return changes
+
 def import_students_preview():
     """预览导入学生数据"""
     try:
@@ -521,6 +653,28 @@ def import_students_preview():
             '视力左': 'vision_left',
             '视力右': 'vision_right',
             '体测情况': 'physical_test_status',
+            # 学科成绩
+            '语文': 'yuwen',
+            '数学': 'shuxue',
+            '英语': 'yingyu',
+            '劳动': 'laodong',
+            '体育': 'tiyu',
+            '音乐': 'yinyue',
+            '美术': 'meishu',
+            '科学': 'kexue',
+            '综合': 'zonghe',
+            '信息': 'xinxi',
+            '书法': 'shufa',
+            '心理': 'xinli',
+            # 德育维度
+            '品德修养': 'pinzhi',
+            '学习素养': 'xuexi',
+            '身心健康': 'jiankang',
+            '审美素养': 'shenmei',
+            '实践创新': 'shijian',
+            '生活素养': 'shenghuo',
+            # 其他
+            '评语': 'comments'
         }
         
         # 处理每一行数据
@@ -528,11 +682,39 @@ def import_students_preview():
             student = {}
             
             # 处理每个单元格
+            deyu_scores = {}  # 用于存储德育维度分数
+            validation_errors = []  # 用于存储验证错误
+            
             for header, cell in zip(headers, row):
                 cell_value = cell.value
                 field_name = field_mapping.get(header)
                 
                 if field_name:
+                    # 验证成绩格式
+                    if field_name in ['yuwen', 'shuxue', 'yingyu', 'laodong', 'tiyu', 
+                                    'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 
+                                    'shufa', 'xinli']:
+                        is_valid, error = validate_grade(cell_value)
+                        if not is_valid:
+                            validation_errors.append(f"{header}: {error}")
+                            continue
+                            
+                    # 验证德育维度分数
+                    elif field_name in ['pinzhi', 'xuexi', 'jiankang', 'shenmei', 
+                                      'shijian', 'shenghuo']:
+                        is_valid, error = validate_deyu_score(header, cell_value)
+                        if not is_valid:
+                            validation_errors.append(f"{header}: {error}")
+                            continue
+                        deyu_scores[field_name] = cell_value
+                        
+                    # 验证评语
+                    elif field_name == 'comments':
+                        is_valid, error = validate_comment(cell_value)
+                        if not is_valid:
+                            validation_errors.append(f"{header}: {error}")
+                            continue
+                            
                     # 数值字段处理
                     if field_name in ['height', 'weight', 'chest_circumference', 'vital_capacity', 
                                     'vision_left', 'vision_right']:
@@ -611,7 +793,11 @@ def import_students_preview():
                 # 查询数据库中已有的学生信息，用于字段比对
                 cursor.execute('''
                     SELECT id, name, height, weight, chest_circumference, vital_capacity, 
-                           vision_left, vision_right, dental_caries, physical_test_status
+                           vision_left, vision_right, dental_caries, physical_test_status,
+                           yuwen, shuxue, yingyu, laodong, tiyu, yinyue, meishu, kexue,
+                           zonghe, xinxi, shufa, xinli,
+                           pinzhi, xuexi, jiankang, shenmei, shijian, shenghuo,
+                           comments
                     FROM students 
                     WHERE id = ? AND class_id = ?
                 ''', (student['id'], student['class_id']))
@@ -633,6 +819,28 @@ def import_students_preview():
                         ('vision_left', '视力左'), 
                         ('vision_right', '视力右'), 
                         ('dental_caries', '龋齿'),
+                        # 学科成绩
+                        ('yuwen', '语文'),
+                        ('shuxue', '数学'),
+                        ('yingyu', '英语'),
+                        ('laodong', '劳动'),
+                        ('tiyu', '体育'),
+                        ('yinyue', '音乐'),
+                        ('meishu', '美术'),
+                        ('kexue', '科学'),
+                        ('zonghe', '综合'),
+                        ('xinxi', '信息'),
+                        ('shufa', '书法'),
+                        ('xinli', '心理'),
+                        # 德育维度
+                        ('pinzhi', '品德修养'),
+                        ('xuexi', '学习素养'),
+                        ('jiankang', '身心健康'),
+                        ('shenmei', '审美素养'),
+                        ('shijian', '实践创新'),
+                        ('shenghuo', '生活素养'),
+                        # 其他
+                        ('comments', '评语'),
                         ('physical_test_status', '体测情况')
                     ]
                     
@@ -1226,12 +1434,20 @@ def export_students_excel():
             
             # 设置表头
             headers = ['学号', '姓名', '性别', '班级', '身高(cm)', '体重(kg)', 
-                      '胸围(cm)', '肺活量(ml)', '龋齿(个)', '视力左', '视力右']
+                      '胸围(cm)', '肺活量(ml)', '龋齿(个)', '视力左', '视力右',
+                      '语文', '数学', '英语', '劳动', '体育', '音乐', '美术', 
+                      '科学', '综合', '信息', '书法', '心理',
+                      '品德修养', '学习素养', '身心健康', '审美素养', '实践创新', '生活素养',
+                      '评语']
             for col, header in enumerate(headers, 1):
                 cell = ws.cell(row=1, column=col, value=header)
                 cell.font = Font(bold=True)
                 cell.alignment = Alignment(horizontal='center')
-                ws.column_dimensions[get_column_letter(col)].width = 15
+                # 为评语列设置更宽的列宽
+                if header == '评语':
+                    ws.column_dimensions[get_column_letter(col)].width = 40
+                else:
+                    ws.column_dimensions[get_column_letter(col)].width = 15
             
             # 写入数据
             for row, student in enumerate(students, 2):
@@ -1243,6 +1459,35 @@ def export_students_excel():
                 ws.cell(row=row, column=6, value=student['weight'])
                 ws.cell(row=row, column=7, value=student['chest_circumference'])
                 ws.cell(row=row, column=8, value=student['vital_capacity'])
+                ws.cell(row=row, column=9, value=student['dental_caries'])
+                ws.cell(row=row, column=10, value=student['vision_left'])
+                ws.cell(row=row, column=11, value=student['vision_right'])
+                
+                # 学科成绩
+                ws.cell(row=row, column=12, value=student['yuwen'])
+                ws.cell(row=row, column=13, value=student['shuxue'])
+                ws.cell(row=row, column=14, value=student['yingyu'])
+                ws.cell(row=row, column=15, value=student['laodong'])
+                ws.cell(row=row, column=16, value=student['tiyu'])
+                ws.cell(row=row, column=17, value=student['yinyue'])
+                ws.cell(row=row, column=18, value=student['meishu'])
+                ws.cell(row=row, column=19, value=student['kexue'])
+                ws.cell(row=row, column=20, value=student['zonghe'])
+                ws.cell(row=row, column=21, value=student['xinxi'])
+                ws.cell(row=row, column=22, value=student['shufa'])
+                ws.cell(row=row, column=23, value=student['xinli'])
+                
+                # 德育维度
+                ws.cell(row=row, column=24, value=student['pinzhi'])
+                ws.cell(row=row, column=25, value=student['xuexi'])
+                ws.cell(row=row, column=26, value=student['jiankang'])
+                ws.cell(row=row, column=27, value=student['shenmei'])
+                ws.cell(row=row, column=28, value=student['shijian'])
+                ws.cell(row=row, column=29, value=student['shenghuo'])
+                
+                # 评语
+                comments_cell = ws.cell(row=row, column=30, value=student['comments'])
+                comments_cell.alignment = Alignment(wrapText=True)  # 允许评语自动换行
                 ws.cell(row=row, column=9, value=student['dental_caries'])
                 ws.cell(row=row, column=10, value=student['vision_left'])
                 ws.cell(row=row, column=11, value=student['vision_right'])
