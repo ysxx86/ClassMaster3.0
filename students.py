@@ -788,6 +788,9 @@ def import_students_preview():
                     
                     # 比对各个字段
                     fields_to_compare = [
+                        ('id', '学号'),
+                        ('name', '姓名'),
+                        ('gender', '性别'),
                         ('height', '身高'), 
                         ('weight', '体重'), 
                         ('chest_circumference', '胸围'), 
