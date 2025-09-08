@@ -11,7 +11,7 @@ import sqlite3
 from flask import Blueprint, request, jsonify, send_from_directory, url_for, send_file
 from werkzeug.utils import secure_filename
 from openpyxl import Workbook
-from openpyxl.styles import Alignment, Font
+from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.utils import get_column_letter
 from flask_login import login_required, current_user
 from utils.class_filter import class_filter, user_can_access
@@ -1521,3 +1521,114 @@ def export_students_excel():
     except Exception as e:
         logger.error(f"导出学生数据时出错: {str(e)}")
         return jsonify({'status': 'error', 'message': f'导出学生数据失败: {str(e)}'}), 500
+
+
+@students_bp.route('/api/students/export-basic-info', methods=['GET'])
+@login_required
+def export_students_basic_info():
+    """导出学生基本信息到Excel文件（学号、姓名、性别、班级）"""
+    try:
+        class_id = request.args.get('class_id')
+        
+        # 班主任只能导出自己班级的学生
+        if not current_user.is_admin:
+            if not current_user.class_id:
+                return jsonify({
+                    'status': 'error',
+                    'message': '您尚未被分配班级，无法导出学生数据'
+                }), 403
+            class_id = current_user.class_id
+        
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        try:
+            # 获取班级信息用于文件命名
+            class_name = None
+            if class_id:
+                cursor.execute('SELECT class_name FROM classes WHERE id = ?', (class_id,))
+                class_info = cursor.fetchone()
+                if class_info:
+                    class_name = class_info['class_name']
+            
+            # 获取学生基本数据
+            if class_id:
+                cursor.execute('''
+                    SELECT s.id, s.name, s.gender, c.class_name 
+                    FROM students s
+                    LEFT JOIN classes c ON s.class_id = c.id
+                    WHERE s.class_id = ?
+                    ORDER BY CAST(s.id AS INTEGER)
+                ''', (class_id,))
+            else:
+                cursor.execute('''
+                    SELECT s.id, s.name, s.gender, c.class_name 
+                    FROM students s
+                    LEFT JOIN classes c ON s.class_id = c.id
+                    ORDER BY c.class_name, CAST(s.id AS INTEGER)
+                ''')
+            
+            students = cursor.fetchall()
+            
+            if not students:
+                return jsonify({
+                    'status': 'error',
+                    'message': '没有找到学生数据'
+                }), 404
+            
+            # 创建Excel工作簿
+            wb = Workbook()
+            ws = wb.active
+            ws.title = "学生基本信息"
+            
+            # 设置表头
+            headers = ['学号', '姓名', '性别', '班级']
+            for col, header in enumerate(headers, 1):
+                cell = ws.cell(row=1, column=col, value=header)
+                cell.font = Font(bold=True)
+                cell.fill = PatternFill(start_color='E6F3FF', end_color='E6F3FF', fill_type='solid')
+                cell.alignment = Alignment(horizontal='center', vertical='center')
+            
+            # 填充数据
+            for row, student in enumerate(students, 2):
+                ws.cell(row=row, column=1, value=student['id'])
+                ws.cell(row=row, column=2, value=student['name'])
+                ws.cell(row=row, column=3, value=student['gender'])
+                ws.cell(row=row, column=4, value=student['class_name'] or '未分配')
+            
+            # 调整列宽
+            ws.column_dimensions['A'].width = 12  # 学号
+            ws.column_dimensions['B'].width = 15  # 姓名
+            ws.column_dimensions['C'].width = 8   # 性别
+            ws.column_dimensions['D'].width = 20  # 班级
+            
+            # 将Excel保存到字节流
+            excel_file = BytesIO()
+            wb.save(excel_file)
+            excel_file.seek(0)
+            
+            # 根据用户类型和班级信息设置文件名
+            if not current_user.is_admin and class_name:
+                # 班主任：使用"班级名+学生名单.xlsx"格式
+                filename = f'{class_name}学生名单.xlsx'
+            elif class_name:
+                # 管理员选择特定班级
+                filename = f'{class_name}学生名单.xlsx'
+            else:
+                # 管理员导出全校
+                current_time = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+                filename = f'全校学生名单_{current_time}.xlsx'
+            
+            return send_file(
+                excel_file,
+                mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                as_attachment=True,
+                download_name=filename
+            )
+            
+        finally:
+            conn.close()
+            
+    except Exception as e:
+        logger.error(f"导出学生基本信息时出错: {str(e)}")
+        return jsonify({'status': 'error', 'message': f'导出学生基本信息失败: {str(e)}'}), 500
