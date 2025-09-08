@@ -2473,3 +2473,52 @@ async function exportStudentData() {
         showNotification('导出失败: ' + error.message, 'error');
     }
 }
+
+// 导出学生基本信息
+async function exportBasicInfo() {
+    try {
+        // 显示加载提示
+        showNotification('正在导出学生基本信息...', 'info');
+        
+        // 获取当前的class_id（使用全局变量）
+        const class_id = currentUserClassId;
+
+        // 构建导出URL
+        const url = `/api/students/export-basic-info${class_id ? `?class_id=${class_id}` : ''}`;
+        
+        // 发起下载请求
+        const exportResponse = await fetch(url);
+        
+        if (!exportResponse.ok) {
+            const errorData = await exportResponse.json();
+            throw new Error(errorData.message || '导出失败');
+        }
+
+        // 获取文件名
+        const contentDisposition = exportResponse.headers.get('content-disposition');
+        let filename = '学生基本信息.xlsx';
+        if (contentDisposition) {
+            const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+            if (filenameMatch && filenameMatch[1]) {
+                filename = decodeURIComponent(filenameMatch[1].replace(/['"]/g, ''));
+            }
+        }
+
+        // 下载文件
+        const blob = await exportResponse.blob();
+        const url_object = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url_object;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url_object);
+
+        // 显示成功提示
+        showNotification('学生基本信息导出成功', 'success');
+    } catch (error) {
+        console.error('导出基本信息失败:', error);
+        showNotification('导出失败: ' + error.message, 'error');
+    }
+}
