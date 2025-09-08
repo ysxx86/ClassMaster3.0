@@ -76,7 +76,7 @@ def create_student_template():
     
     # 设置标题行 - 与导出功能保持一致的完整30个字段
     headers = ['学号', '姓名', '性别', '班级', '身高(cm)', '体重(kg)', 
-              '胸围(cm)', '肺活量(ml)', '龋齿(个)', '视力左', '视力右',
+              '胸围(cm)', '肺活量(ml)', '龋齿(个)', '视力左', '视力右', '体测情况',
               '语文', '数学', '英语', '劳动', '体育', '音乐', '美术', 
               '科学', '综合', '信息', '书法', '心理',
               '品质', '学习', '健康', '审美', '实践', '生活',
@@ -91,9 +91,9 @@ def create_student_template():
         else:
             ws.column_dimensions[get_column_letter(i)].width = 15
     
-    # 添加示例数据 - 包含所有30个字段的示例
+    # 添加示例数据 - 包含所有31个字段的示例
     example_data = [
-        '1', '张三', '男', '三年级一班', '135', '32', '65', '1500', '0', '5.0', '5.0',  # 基础信息
+        '1', '张三', '男', '三年级一班', '135', '32', '65', '1500', '0', '5.0', '5.0', '健康',  # 基础信息
         '优秀', '良好', '优秀', '良好', '优秀', '良好', '优秀', '良好', '优秀', '良好', '优秀', '良好',  # 学科成绩
         '25', '18', '18', '8', '8', '8',  # 德育维度
         '该学生表现优秀，德智体美劳全面发展。'  # 评语
@@ -108,12 +108,13 @@ def create_student_template():
     ws.cell(row=7, column=1, value="3. 班级格式: 三年级一班")
     ws.cell(row=8, column=1, value="4. 视力格式: 5.0 或 4.8 等")
     ws.cell(row=9, column=1, value="5. 学科成绩请填写: 优秀、良好、一般、待改进 中的一个")
-    ws.cell(row=10, column=1, value="6. 德育维度分数: 品质(0-30)、学习(0-20)、健康(0-20)、审美(0-10)、实践(0-10)、生活(0-10)")
-    ws.cell(row=11, column=1, value="7. 评语不能超过260个字")
-    ws.cell(row=12, column=1, value="8. 班主任导入学生数据时，班级必须与当前所管理的班级一致，否则无法导入")
+    ws.cell(row=10, column=1, value="6. 体测情况请填写: 健康、肥胖、营养不良 中的一个")
+    ws.cell(row=11, column=1, value="7. 德育维度分数: 品质(0-30)、学习(0-20)、健康(0-20)、审美(0-10)、实践(0-10)、生活(0-10)")
+    ws.cell(row=12, column=1, value="8. 评语不能超过260个字")
+    ws.cell(row=13, column=1, value="9. 班主任导入学生数据时，班级必须与当前所管理的班级一致，否则无法导入")
     
     # 合并说明文字的单元格
-    for i in range(4, 13):
+    for i in range(4, 14):
         ws.merge_cells(start_row=i, start_column=1, end_row=i, end_column=8)
     
     wb.save(template_path)
@@ -249,11 +250,11 @@ def add_student():
     conn = get_db_connection()
     cursor = conn.cursor()
     
-    # 检查学生ID是否已存在
-    cursor.execute('SELECT id FROM students WHERE id = ?', (data['id'],))
+    # 检查学生ID是否在当前班级已存在
+    cursor.execute('SELECT id FROM students WHERE id = ? AND class_id = ?', (data['id'], data['class_id']))
     if cursor.fetchone():
         conn.close()
-        return jsonify({'error': f'学号 {data["id"]} 已存在'}), 400
+        return jsonify({'error': f'学号 {data["id"]} 在当前班级已存在'}), 400
     
     now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     
@@ -268,12 +269,12 @@ def add_student():
     try:
         cursor.execute('''
         INSERT INTO students (
-            id, name, gender, class, class_id, height, weight,
+            id, name, gender, class_id, height, weight,
             chest_circumference, vital_capacity, dental_caries,
             vision_left, vision_right, physical_test_status, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (
-            data['id'], data['name'], data['gender'], data.get('class', ''),
+            data['id'], data['name'], data['gender'],
             data.get('class_id'), height, weight, 
             chest_circumference, vital_capacity, data.get('dental_caries', ''),
             vision_left, vision_right, data.get('physical_test_status', ''),
@@ -1249,7 +1250,13 @@ def get_students():
         # 非管理员只能查看自己负责班级的学生
         if not is_admin and current_user_class_id:
             logger.info(f"班主任查询自己班级 {current_user_class_id} 的学生")
-            cursor.execute('SELECT * FROM students WHERE class_id = ? ORDER BY CAST(id AS INTEGER)', (current_user_class_id,))
+            cursor.execute('''
+                SELECT s.*, c.class_name 
+                FROM students s 
+                LEFT JOIN classes c ON s.class_id = c.id 
+                WHERE s.class_id = ? 
+                ORDER BY CAST(s.id AS INTEGER)
+            ''', (current_user_class_id,))
         # 如果指定了班级ID，则按班级筛选
         elif class_id:
             # 尝试处理整数或字符串的班级ID
@@ -1257,25 +1264,47 @@ def get_students():
                 # 尝试转为整数
                 int_class_id = int(class_id)
                 logger.info(f"以数字形式查询班级ID: {int_class_id}")
-                cursor.execute('SELECT * FROM students WHERE class_id = ? ORDER BY CAST(id AS INTEGER)', (int_class_id,))
+                cursor.execute('''
+                    SELECT s.*, c.class_name 
+                    FROM students s 
+                    LEFT JOIN classes c ON s.class_id = c.id 
+                    WHERE s.class_id = ? 
+                    ORDER BY CAST(s.id AS INTEGER)
+                ''', (int_class_id,))
             except (ValueError, TypeError):
                 # 如果无法转为整数，尝试按班级名称查询
                 logger.info(f"尝试以班级名称查询: {class_id}")
-                cursor.execute('SELECT * FROM students WHERE class_id = ? ORDER BY CAST(id AS INTEGER)', (class_id,))
+                cursor.execute('''
+                    SELECT s.*, c.class_name 
+                    FROM students s 
+                    LEFT JOIN classes c ON s.class_id = c.id 
+                    WHERE s.class_id = ? 
+                    ORDER BY CAST(s.id AS INTEGER)
+                ''', (class_id,))
             
             # 检查结果数量
             students = cursor.fetchall()
             if not students:
-                # 尝试模糊匹配
-                logger.info(f"未找到精确匹配班级，尝试模糊匹配: {class_id}")
-                cursor.execute('SELECT * FROM students WHERE class LIKE ? ORDER BY CAST(id AS INTEGER)', (f'%{class_id}%',))
-                students = cursor.fetchall()
+                # 不再支持模糊匹配，因为数据库中没有class字段
+                logger.info(f"未找到班级ID: {class_id}，返回空结果")
+                students = []
             else:
                 # 重置游标位置
-                cursor.execute('SELECT * FROM students WHERE class_id = ? ORDER BY CAST(id AS INTEGER)', (int_class_id,))
+                cursor.execute('''
+                    SELECT s.*, c.class_name 
+                    FROM students s 
+                    LEFT JOIN classes c ON s.class_id = c.id 
+                    WHERE s.class_id = ? 
+                    ORDER BY CAST(s.id AS INTEGER)
+                ''', (int_class_id,))
         else:
             logger.info("管理员查询所有学生")
-            cursor.execute('SELECT * FROM students ORDER BY CAST(id AS INTEGER)')
+            cursor.execute('''
+                SELECT s.*, c.class_name 
+                FROM students s 
+                LEFT JOIN classes c ON s.class_id = c.id 
+                ORDER BY CAST(s.id AS INTEGER)
+            ''')
         
         students = [dict(row) for row in cursor.fetchall()]
         logger.info(f"查询结果: 找到 {len(students)} 名学生")

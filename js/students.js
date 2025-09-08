@@ -264,6 +264,51 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // 添加模态框关闭事件监听和保存按钮重置函数
 function setupStudentModalEvents() {
+    // 添加学生模态框事件监听
+    const addStudentModal = document.getElementById('addStudentModal');
+    if (addStudentModal) {
+        addStudentModal.addEventListener('show.bs.modal', function() {
+            // 获取当前班级信息并设置默认值
+            if (currentUserClassId) {
+                // 使用当前用户信息设置班级字段
+                fetch('/api/current-user')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'ok' && data.user && data.user.class_name) {
+                            // 设置班级字段默认值
+                            const classField = document.getElementById('studentClass');
+                            if (classField) {
+                                classField.value = data.user.class_name || '';
+                                classField.readOnly = true; // 设置为只读
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('获取当前用户信息失败:', error);
+                        // 如果API失败，使用备用方案
+                        const classField = document.getElementById('studentClass');
+                        if (classField) {
+                            classField.value = '当前班级';
+                            classField.readOnly = true;
+                        }
+                    });
+            }
+        });
+        
+        addStudentModal.addEventListener('hidden.bs.modal', function() {
+            // 重置表单
+            const form = document.getElementById('addStudentForm');
+            if (form) {
+                form.reset();
+            }
+            // 移除班级字段的只读状态（为下次打开做准备）
+            const classField = document.getElementById('studentClass');
+            if (classField) {
+                classField.readOnly = false;
+            }
+        });
+    }
+
     // 添加编辑模态框关闭事件监听
     const editStudentModal = document.getElementById('editStudentModal');
     if (editStudentModal) {
@@ -709,7 +754,7 @@ function addStudent() {
         id,
         name,
         gender,
-        class: studentClass,
+        class_id: currentUserClassId, // 使用当前用户的班级ID
         height,
         weight,
         chest_circumference: chest,
