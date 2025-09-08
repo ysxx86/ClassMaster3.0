@@ -1360,6 +1360,38 @@ function showLegacyPreview(previewContainer, data) {
         return value !== null && value !== undefined ? value : '-';
     };
     
+    // 检查字段是否会被更新的辅助函数
+    const isFieldUpdated = (student, fieldName) => {
+        if (!student.fields_to_update) return false;
+        return student.fields_to_update.some(field => field.field === fieldName);
+    };
+    
+    // 获取字段更新信息的辅助函数
+    const getFieldUpdateInfo = (student, fieldName) => {
+        if (!student.fields_to_update) return null;
+        return student.fields_to_update.find(field => field.field === fieldName);
+    };
+    
+    // 格式化显示值，如果字段有更新则添加样式和提示
+    const formatCellValue = (student, fieldName, value) => {
+        const updateInfo = getFieldUpdateInfo(student, fieldName);
+        if (updateInfo) {
+            const displayValue = displayNumericValue(value);
+            return `<span class="text-warning fw-bold" title="将从 '${updateInfo.old_value || '空'}' 更新为 '${updateInfo.new_value}'" style="background-color: #fff3cd; padding: 2px 4px; border-radius: 3px;">${displayValue}</span>`;
+        }
+        return displayNumericValue(value);
+    };
+    
+    // 格式化文本字段显示值
+    const formatTextCellValue = (student, fieldName, value) => {
+        const updateInfo = getFieldUpdateInfo(student, fieldName);
+        if (updateInfo) {
+            const displayValue = value || '-';
+            return `<span class="text-warning fw-bold" title="将从 '${updateInfo.old_value || '空'}' 更新为 '${updateInfo.new_value}'" style="background-color: #fff3cd; padding: 2px 4px; border-radius: 3px;">${displayValue}</span>`;
+        }
+        return value || '-';
+    };
+    
     // 创建表格预览
     let tableHtml = `
         <div class="table-responsive">
@@ -1419,36 +1451,36 @@ function showLegacyPreview(previewContainer, data) {
         tableHtml += `
             <tr class="${rowClass}">
                 <td>${student.id || '-'}</td>
-                <td>${student.name || '-'}</td>
-                <td>${student.gender || '-'}</td>
+                <td>${formatTextCellValue(student, 'name', student.name)}</td>
+                <td>${formatTextCellValue(student, 'gender', student.gender)}</td>
                 <td>${student.class || '-'} ${hasClassMismatch ? `<i class="bx bx-error-circle text-danger" title="${student.error_reason}"></i>` : ''}</td>
-                <td>${displayNumericValue(student.height)}</td>
-                <td>${displayNumericValue(student.weight)}</td>
-                <td>${displayNumericValue(student.chest_circumference)}</td>
-                <td>${displayNumericValue(student.vital_capacity)}</td>
-                <td>${student.dental_caries || '-'}</td>
-                <td>${displayNumericValue(student.vision_left)}</td>
-                <td>${displayNumericValue(student.vision_right)}</td>
-                <td>${student.yuwen || '-'}</td>
-                <td>${student.shuxue || '-'}</td>
-                <td>${student.yingyu || '-'}</td>
-                <td>${student.laodong || '-'}</td>
-                <td>${student.tiyu || '-'}</td>
-                <td>${student.yinyue || '-'}</td>
-                <td>${student.meishu || '-'}</td>
-                <td>${student.kexue || '-'}</td>
-                <td>${student.zonghe || '-'}</td>
-                <td>${student.xinxi || '-'}</td>
-                <td>${student.shufa || '-'}</td>
-                <td>${student.xinli || '-'}</td>
-                <td>${displayNumericValue(student.pinzhi)}</td>
-                <td>${displayNumericValue(student.xuexi)}</td>
-                <td>${displayNumericValue(student.jiankang)}</td>
-                <td>${displayNumericValue(student.shenmei)}</td>
-                <td>${displayNumericValue(student.shijian)}</td>
-                <td>${displayNumericValue(student.shenghuo)}</td>
-                <td style="max-width: 200px; word-wrap: break-word;">${student.comments || '-'}</td>
-                <td>${student.physical_test_status || '-'}</td>
+                <td>${formatCellValue(student, 'height', student.height)}</td>
+                <td>${formatCellValue(student, 'weight', student.weight)}</td>
+                <td>${formatCellValue(student, 'chest_circumference', student.chest_circumference)}</td>
+                <td>${formatCellValue(student, 'vital_capacity', student.vital_capacity)}</td>
+                <td>${formatCellValue(student, 'dental_caries', student.dental_caries)}</td>
+                <td>${formatCellValue(student, 'vision_left', student.vision_left)}</td>
+                <td>${formatCellValue(student, 'vision_right', student.vision_right)}</td>
+                <td>${formatTextCellValue(student, 'yuwen', student.yuwen)}</td>
+                <td>${formatTextCellValue(student, 'shuxue', student.shuxue)}</td>
+                <td>${formatTextCellValue(student, 'yingyu', student.yingyu)}</td>
+                <td>${formatTextCellValue(student, 'laodong', student.laodong)}</td>
+                <td>${formatTextCellValue(student, 'tiyu', student.tiyu)}</td>
+                <td>${formatTextCellValue(student, 'yinyue', student.yinyue)}</td>
+                <td>${formatTextCellValue(student, 'meishu', student.meishu)}</td>
+                <td>${formatTextCellValue(student, 'kexue', student.kexue)}</td>
+                <td>${formatTextCellValue(student, 'zonghe', student.zonghe)}</td>
+                <td>${formatTextCellValue(student, 'xinxi', student.xinxi)}</td>
+                <td>${formatTextCellValue(student, 'shufa', student.shufa)}</td>
+                <td>${formatTextCellValue(student, 'xinli', student.xinli)}</td>
+                <td>${formatCellValue(student, 'pinzhi', student.pinzhi)}</td>
+                <td>${formatCellValue(student, 'xuexi', student.xuexi)}</td>
+                <td>${formatCellValue(student, 'jiankang', student.jiankang)}</td>
+                <td>${formatCellValue(student, 'shenmei', student.shenmei)}</td>
+                <td>${formatCellValue(student, 'shijian', student.shijian)}</td>
+                <td>${formatCellValue(student, 'shenghuo', student.shenghuo)}</td>
+                <td style="max-width: 200px; word-wrap: break-word;">${formatTextCellValue(student, 'comments', student.comments)}</td>
+                <td>${formatTextCellValue(student, 'physical_test_status', student.physical_test_status)}</td>
                 <td>${statusHtml}</td>
             </tr>
         `;
@@ -1463,6 +1495,16 @@ function showLegacyPreview(previewContainer, data) {
     tableHtml += `
                 </tbody>
             </table>
+        </div>
+    `;
+    
+    // 添加字段变更说明
+    tableHtml += `
+        <div class="alert alert-info mb-3">
+            <i class='bx bx-info-circle'></i> 
+            <strong>字段变更说明：</strong>
+            <span class="text-warning fw-bold" style="background-color: #fff3cd; padding: 2px 4px; border-radius: 3px;">高亮显示</span>
+            的字段表示将要更新的数据，鼠标悬停可查看原值和新值的对比。
         </div>
     `;
     
