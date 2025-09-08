@@ -1377,6 +1377,25 @@ function showLegacyPreview(previewContainer, data) {
                         <th>龋齿</th>
                         <th>视力左</th>
                         <th>视力右</th>
+                        <th>语文</th>
+                        <th>数学</th>
+                        <th>英语</th>
+                        <th>劳动</th>
+                        <th>体育</th>
+                        <th>音乐</th>
+                        <th>美术</th>
+                        <th>科学</th>
+                        <th>综合</th>
+                        <th>信息</th>
+                        <th>书法</th>
+                        <th>心理</th>
+                        <th>品质</th>
+                        <th>学习</th>
+                        <th>健康</th>
+                        <th>审美</th>
+                        <th>实践</th>
+                        <th>生活</th>
+                        <th>评语</th>
                         <th>体测情况</th>
                         <th>状态</th>
                     </tr>
@@ -1410,6 +1429,25 @@ function showLegacyPreview(previewContainer, data) {
                 <td>${student.dental_caries || '-'}</td>
                 <td>${displayNumericValue(student.vision_left)}</td>
                 <td>${displayNumericValue(student.vision_right)}</td>
+                <td>${student.yuwen || '-'}</td>
+                <td>${student.shuxue || '-'}</td>
+                <td>${student.yingyu || '-'}</td>
+                <td>${student.laodong || '-'}</td>
+                <td>${student.tiyu || '-'}</td>
+                <td>${student.yinyue || '-'}</td>
+                <td>${student.meishu || '-'}</td>
+                <td>${student.kexue || '-'}</td>
+                <td>${student.zonghe || '-'}</td>
+                <td>${student.xinxi || '-'}</td>
+                <td>${student.shufa || '-'}</td>
+                <td>${student.xinli || '-'}</td>
+                <td>${displayNumericValue(student.pinzhi)}</td>
+                <td>${displayNumericValue(student.xuexi)}</td>
+                <td>${displayNumericValue(student.jiankang)}</td>
+                <td>${displayNumericValue(student.shenmei)}</td>
+                <td>${displayNumericValue(student.shijian)}</td>
+                <td>${displayNumericValue(student.shenghuo)}</td>
+                <td style="max-width: 200px; word-wrap: break-word;">${student.comments || '-'}</td>
                 <td>${student.physical_test_status || '-'}</td>
                 <td>${statusHtml}</td>
             </tr>

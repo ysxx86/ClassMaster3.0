@@ -74,16 +74,30 @@ def create_student_template():
     ws = wb.active
     ws.title = "学生信息"
     
-    # 设置标题行
-    headers = ['学号', '姓名', '性别', '班级', '身高(cm)', '体重(kg)', '胸围(cm)', '肺活量(ml)', '龋齿(个)', '视力左', '视力右']
+    # 设置标题行 - 与导出功能保持一致的完整30个字段
+    headers = ['学号', '姓名', '性别', '班级', '身高(cm)', '体重(kg)', 
+              '胸围(cm)', '肺活量(ml)', '龋齿(个)', '视力左', '视力右',
+              '语文', '数学', '英语', '劳动', '体育', '音乐', '美术', 
+              '科学', '综合', '信息', '书法', '心理',
+              '品质', '学习', '健康', '审美', '实践', '生活',
+              '评语']
     for i, header in enumerate(headers, 1):
         cell = ws.cell(row=1, column=i, value=header)
         cell.font = Font(bold=True)
         cell.alignment = Alignment(horizontal='center')
-        ws.column_dimensions[get_column_letter(i)].width = 15
+        # 为评语列设置更宽的列宽
+        if header == '评语':
+            ws.column_dimensions[get_column_letter(i)].width = 40
+        else:
+            ws.column_dimensions[get_column_letter(i)].width = 15
     
-    # 添加示例数据
-    example_data = ['1', '张三', '男', '三年级一班', '135', '32', '65', '1500', '0', '5.0', '5.0']
+    # 添加示例数据 - 包含所有30个字段的示例
+    example_data = [
+        '1', '张三', '男', '三年级一班', '135', '32', '65', '1500', '0', '5.0', '5.0',  # 基础信息
+        '优秀', '良好', '优秀', '良好', '优秀', '良好', '优秀', '良好', '优秀', '良好', '优秀', '良好',  # 学科成绩
+        '25', '18', '18', '8', '8', '8',  # 德育维度
+        '该学生表现优秀，德智体美劳全面发展。'  # 评语
+    ]
     for i, value in enumerate(example_data, 1):
         ws.cell(row=2, column=i, value=value)
     
@@ -93,11 +107,14 @@ def create_student_template():
     ws.cell(row=6, column=1, value='2. 性别请填写"男"或"女"')
     ws.cell(row=7, column=1, value="3. 班级格式: 三年级一班")
     ws.cell(row=8, column=1, value="4. 视力格式: 5.0 或 4.8 等")
-    ws.cell(row=9, column=1, value="5. 班主任导入学生数据时，班级必须与当前所管理的班级一致，否则无法导入")
+    ws.cell(row=9, column=1, value="5. 学科成绩请填写: 优秀、良好、一般、待改进 中的一个")
+    ws.cell(row=10, column=1, value="6. 德育维度分数: 品质(0-30)、学习(0-20)、健康(0-20)、审美(0-10)、实践(0-10)、生活(0-10)")
+    ws.cell(row=11, column=1, value="7. 评语不能超过260个字")
+    ws.cell(row=12, column=1, value="8. 班主任导入学生数据时，班级必须与当前所管理的班级一致，否则无法导入")
     
     # 合并说明文字的单元格
-    for i in range(4, 10):
-        ws.merge_cells(start_row=i, start_column=1, end_row=i, end_column=5)
+    for i in range(4, 13):
+        ws.merge_cells(start_row=i, start_column=1, end_row=i, end_column=8)
     
     wb.save(template_path)
     print("学生Excel模板创建完成")
@@ -468,17 +485,29 @@ def validate_grade(value):
 
 def validate_deyu_score(field, value):
     """验证德育维度分数"""
+    # 数据库字段名到显示名称的映射
+    field_display_names = {
+        'pinzhi': '品质',
+        'xuexi': '学习',
+        'jiankang': '健康',
+        'shenmei': '审美',
+        'shijian': '实践',
+        'shenghuo': '生活'
+    }
+    
+    display_name = field_display_names.get(field, field)
+    
     if not value and value != 0:
-        return False, f"{field}分数不能为空"
+        return True, None  # 允许德育分数为空
     try:
         score = int(value)
         if score < 0:
-            return False, f"{field}分数不能为负"
+            return False, f"{display_name}分数不能为负"
         if score > DEYU_SCORE_LIMITS[field]:
-            return False, f"{field}分数不能超过{DEYU_SCORE_LIMITS[field]}"
+            return False, f"{display_name}分数不能超过{DEYU_SCORE_LIMITS[field]}"
         return True, None
     except (ValueError, TypeError):
-        return False, f"{field}分数必须是整数"
+        return False, f"{display_name}分数必须是整数"
 
 def validate_deyu_total(scores):
     """验证德育维度总分"""
@@ -490,7 +519,7 @@ def validate_deyu_total(scores):
 def validate_comment(value):
     """验证评语"""
     if not value:
-        return False, "评语不能为空"
+        return True, None  # 允许评语为空
     if len(value) > 260:
         return False, "评语不能超过260个字"
     return True, None
@@ -513,59 +542,6 @@ def get_field_changes(existing_data, new_data):
 # 导入学生预览API
 @students_bp.route('/api/import-students', methods=['POST'])
 @login_required
-
-def validate_grade(value):
-    """验证成绩等级"""
-    if not value:
-        return True, None  # 允许为空
-    if value not in VALID_GRADES:
-        return False, f"成绩必须是：{', '.join(VALID_GRADES)}中的一个"
-    return True, None
-
-def validate_deyu_score(field, value):
-    """验证德育维度分数"""
-    if not value and value != 0:
-        return False, f"{field}分数不能为空"
-    try:
-        score = int(value)
-        if score < 0:
-            return False, f"{field}分数不能为负"
-        if score > DEYU_SCORE_LIMITS[field]:
-            return False, f"{field}分数不能超过{DEYU_SCORE_LIMITS[field]}"
-        return True, None
-    except (ValueError, TypeError):
-        return False, f"{field}分数必须是整数"
-
-def validate_deyu_total(scores):
-    """验证德育维度总分"""
-    total = sum(int(score) for score in scores.values() if score)
-    if total > DEYU_TOTAL_LIMIT:
-        return False, f"德育维度总分不能超过{DEYU_TOTAL_LIMIT}分，当前总分：{total}"
-    return True, None
-
-def validate_comment(value):
-    """验证评语"""
-    if not value:
-        return False, "评语不能为空"
-    if len(value) > 260:
-        return False, "评语不能超过260个字"
-    return True, None
-
-def get_field_changes(existing_data, new_data):
-    """获取字段更改信息"""
-    changes = []
-    for field, new_value in new_data.items():
-        if field in existing_data:
-            old_value = existing_data[field]
-            if (old_value != new_value and 
-                (old_value is not None or new_value is not None)):  # 处理NULL值的比较
-                changes.append({
-                    'field': field,
-                    'old_value': old_value,
-                    'new_value': new_value
-                })
-    return changes
-
 def import_students_preview():
     """预览导入学生数据"""
     try:
@@ -667,12 +643,12 @@ def import_students_preview():
             '书法': 'shufa',
             '心理': 'xinli',
             # 德育维度
-            '品德修养': 'pinzhi',
-            '学习素养': 'xuexi',
-            '身心健康': 'jiankang',
-            '审美素养': 'shenmei',
-            '实践创新': 'shijian',
-            '生活素养': 'shenghuo',
+            '品质': 'pinzhi',
+            '学习': 'xuexi',
+            '健康': 'jiankang',
+            '审美': 'shenmei',
+            '实践': 'shijian',
+            '生活': 'shenghuo',
             # 其他
             '评语': 'comments'
         }
@@ -702,7 +678,7 @@ def import_students_preview():
                     # 验证德育维度分数
                     elif field_name in ['pinzhi', 'xuexi', 'jiankang', 'shenmei', 
                                       'shijian', 'shenghuo']:
-                        is_valid, error = validate_deyu_score(header, cell_value)
+                        is_valid, error = validate_deyu_score(field_name, cell_value)
                         if not is_valid:
                             validation_errors.append(f"{header}: {error}")
                             continue
@@ -833,12 +809,12 @@ def import_students_preview():
                         ('shufa', '书法'),
                         ('xinli', '心理'),
                         # 德育维度
-                        ('pinzhi', '品德修养'),
-                        ('xuexi', '学习素养'),
-                        ('jiankang', '身心健康'),
-                        ('shenmei', '审美素养'),
-                        ('shijian', '实践创新'),
-                        ('shenghuo', '生活素养'),
+                        ('pinzhi', '品质'),
+                        ('xuexi', '学习'),
+                        ('jiankang', '健康'),
+                        ('shenmei', '审美'),
+                        ('shijian', '实践'),
+                        ('shenghuo', '生活'),
                         # 其他
                         ('comments', '评语'),
                         ('physical_test_status', '体测情况')
@@ -1437,7 +1413,7 @@ def export_students_excel():
                       '胸围(cm)', '肺活量(ml)', '龋齿(个)', '视力左', '视力右',
                       '语文', '数学', '英语', '劳动', '体育', '音乐', '美术', 
                       '科学', '综合', '信息', '书法', '心理',
-                      '品德修养', '学习素养', '身心健康', '审美素养', '实践创新', '生活素养',
+                      '品质', '学习', '健康', '审美', '实践', '生活',
                       '评语']
             for col, header in enumerate(headers, 1):
                 cell = ws.cell(row=1, column=col, value=header)
