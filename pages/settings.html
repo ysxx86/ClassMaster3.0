@@ -1,0 +1,1918 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>系统设置 - 德育AI智能系统</title>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/boxicons-local.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            padding: 20px;
+        }
+        .page-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #3498db;
+        }
+        .settings-card {
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+        .settings-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+        .settings-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: #3498db;
+        }
+        .settings-title {
+            font-weight: 600;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+        }
+        .settings-title i {
+            margin-right: 10px;
+            font-size: 1.4rem;
+            color: #3498db;
+        }
+        .form-label {
+            font-weight: 500;
+            color: #555;
+        }
+        .nav-pills .nav-link {
+            color: #555;
+            border-radius: 8px;
+            padding: 10px 15px;
+            margin-bottom: 5px;
+            transition: all 0.3s ease;
+        }
+        .nav-pills .nav-link:hover {
+            background-color: #f0f7ff;
+        }
+        .nav-pills .nav-link.active {
+            background-color: #3498db;
+            color: #fff;
+        }
+        .nav-pills .nav-link i {
+            margin-right: 8px;
+        }
+        .tab-content {
+            padding: 20px 0;
+        }
+        .avatar-container {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background-color: #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            overflow: hidden;
+            border: 3px solid #3498db;
+            position: relative;
+        }
+        .avatar-container i {
+            font-size: 4rem;
+            color: #3498db;
+        }
+        .avatar-upload {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: #fff;
+            text-align: center;
+            padding: 5px 0;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        .color-option {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            margin-right: 10px;
+            cursor: pointer;
+            border: 2px solid #fff;
+            box-shadow: 0 0 0 1px #ccc;
+            transition: all 0.3s ease;
+        }
+        .color-option:hover, .color-option.active {
+            transform: scale(1.1);
+            box-shadow: 0 0 0 2px #3498db;
+        }
+        .color-blue {
+            background-color: #3498db;
+        }
+        .color-green {
+            background-color: #2ecc71;
+        }
+        .color-purple {
+            background-color: #9b59b6;
+        }
+        .color-orange {
+            background-color: #e67e22;
+        }
+        .color-red {
+            background-color: #e74c3c;
+        }
+        .card {
+            margin-bottom: 20px;
+        }
+        
+        /* API状态显示样式 */
+        .api-status {
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-weight: 500;
+        }
+        
+        .api-status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .api-status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        /* 轮播图片管理样式 */
+        .image-card {
+            position: relative;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .image-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .image-card img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+        }
+        
+        .image-card .image-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .image-card:hover .image-overlay {
+            opacity: 1;
+        }
+        
+        .image-card .image-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .image-card .image-actions button {
+            background: rgba(255,255,255,0.9);
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .image-card .image-actions button:hover {
+            background: #fff;
+            transform: scale(1.1);
+        }
+        
+        .image-card .image-actions i {
+            font-size: 1.2rem;
+        }
+        
+        .image-card .image-info {
+            padding: 10px;
+            background: #f8f9fa;
+            border-top: 1px solid #ddd;
+        }
+        
+        .image-card .image-title {
+            font-size: 0.9rem;
+            margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        /* 预览轮播样式 */
+        .carousel-preview-container {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        /* 圆角矩形条指示器样式 */
+        .carousel-indicators-custom {
+            bottom: 10px;
+            margin-bottom: 0;
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            z-index: 15;
+            list-style: none;
+            padding: 0;
+        }
+        
+        .carousel-indicators-custom button {
+            box-sizing: content-box;
+            flex: 0 1 auto;
+            width: 30px;
+            height: 3px;
+            margin: 0;
+            text-indent: -999px;
+            cursor: pointer;
+            border: 0;
+            border-radius: 20px;
+            opacity: 0.5;
+            transition: all 0.6s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .carousel-indicators-custom button.active {
+            opacity: 1;
+        }
+        
+        /* 进度条动画 */
+        .carousel-indicators-custom button.active::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 0;
+            background-color: rgba(255, 255, 255, 0.5);
+            animation: progress-animation linear forwards;
+        }
+        
+        @keyframes progress-animation {
+            0% { width: 0; }
+            100% { width: 100%; }
+        }
+        
+        /* 不同样式的指示器 */
+        .carousel-indicators-circle button {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .carousel-indicators-rectangle button {
+            width: 25px;
+            height: 5px;
+            border-radius: 0;
+        }
+        
+        /* 拖放区域样式 */
+        .upload-dropzone {
+            border: 2px dashed #3498db;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            background-color: rgba(52, 152, 219, 0.05);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .upload-dropzone:hover, .upload-dropzone.dragover {
+            background-color: rgba(52, 152, 219, 0.1);
+            border-color: #2980b9;
+        }
+        
+        .upload-dropzone i {
+            font-size: 2.5rem;
+            color: #3498db;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <h1 class="page-title">系统设置</h1>
+        
+        <div class="row">
+            <div class="col-md-3">
+                <div class="settings-card">
+                    <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                        <button class="nav-link active" id="v-pills-ai-tab" data-bs-toggle="pill" data-bs-target="#v-pills-ai" type="button" role="tab">
+                            <i class='bx bx-bot'></i> AI评语设置
+                        </button>
+                        <button class="nav-link" id="v-pills-semester-tab" data-bs-toggle="pill" data-bs-target="#v-pills-semester" type="button" role="tab">
+                            <i class='bx bx-calendar'></i> 学期设置
+                        </button>
+                        <button class="nav-link" id="v-pills-carousel-tab" data-bs-toggle="pill" data-bs-target="#v-pills-carousel" type="button" role="tab">
+                            <i class='bx bx-image'></i> 登录轮播设置
+                        </button>
+                        <button class="nav-link" id="v-pills-backup-tab" data-bs-toggle="pill" data-bs-target="#v-pills-backup" type="button" role="tab">
+                            <i class='bx bx-data'></i> 数据库备份
+                        </button>
+                        <button class="nav-link" id="v-pills-about-tab" data-bs-toggle="pill" data-bs-target="#v-pills-about" type="button" role="tab">
+                            <i class='bx bx-info-circle'></i> 关于系统
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-9">
+                <div class="settings-card">
+                    <div class="tab-content" id="v-pills-tabContent">
+                        <!-- AI评语设置 -->
+                        <div class="tab-pane fade show active" id="v-pills-ai" role="tabpanel">
+                            <h2 class="settings-title"><i class='bx bx-bot'></i> AI评语设置</h2>
+                            <div class="alert alert-info">
+                                <i class='bx bx-info-circle'></i> 设置AI评语生成功能的相关参数，以获得更好的评语生成效果。
+                </div>
+                
+                <div class="card mb-4">
+                    <div class="card-header">
+                                    <h5 class="mb-0">API设置</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="deepseekApiKey" class="form-label">DeepSeek API密钥</label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="deepseekApiKey" placeholder="输入您的DeepSeek API密钥">
+                                <button class="btn btn-outline-secondary" type="button" id="toggleDeepseekKeyBtn">
+                                    <i class='bx bx-show'></i>
+                                </button>
+                            </div>
+                            <div class="form-text">用于生成学生评语的API密钥，请在 <a href="https://www.deepseek.com/" target="_blank">DeepSeek官网</a> 获取</div>
+                            <div class="form-text mt-2 text-danger" id="apiHelp">
+                                <i class='bx bx-info-circle'></i> 注意：DeepSeek API可能需要付费使用。若遇到"Payment Required"错误，请确保您的账户已充值或激活。
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <button class="btn btn-primary" id="saveDeepseekApiBtn">保存API设置</button>
+                            <button class="btn btn-outline-info ms-2" id="testDeepseekApiBtn">测试连接</button>
+                        </div>
+                        <!-- 添加状态显示元素 -->
+                        <div id="apiStatus" class="api-status mt-2" style="display: none;"></div>
+                    </div>
+                </div>
+                
+                <div class="card mb-4">
+                    <div class="card-header">
+                                    <h5 class="mb-0">评语生成设置</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                                        <label for="commentLength" class="form-label">评语长度</label>
+                                        <select class="form-select" id="commentLength">
+                                            <option value="short">简短 (100-150字)</option>
+                                            <option value="medium" selected>中等 (200-300字)</option>
+                                            <option value="long">详细 (400-500字)</option>
+                                        </select>
+                        </div>
+                        <div class="mb-3">
+                                        <label for="commentStyle" class="form-label">评语风格</label>
+                                        <select class="form-select" id="commentStyle">
+                                            <option value="encouraging" selected>鼓励型</option>
+                                            <option value="objective">客观型</option>
+                                            <option value="suggestive">建议型</option>
+                            </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="focusArea" class="form-label">重点关注</label>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="focusAcademic" checked>
+                                            <label class="form-check-label" for="focusAcademic">学习表现</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="focusBehavior" checked>
+                                            <label class="form-check-label" for="focusBehavior">行为表现</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="focusActivity" checked>
+                                            <label class="form-check-label" for="focusActivity">活动参与</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="focusSuggestion" checked>
+                                            <label class="form-check-label" for="focusSuggestion">改进建议</label>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-primary" id="saveAiSettingsBtn">
+                                        <i class='bx bx-save'></i> 保存设置
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 学期设置选项卡 -->
+                        <div class="tab-pane fade" id="v-pills-semester" role="tabpanel">
+                            <div class="settings-card">
+                                <div class="settings-icon">
+                                    <i class='bx bx-calendar'></i>
+                                </div>
+                                <h2 class="settings-title">学期设置</h2>
+                                <p class="settings-desc">设置系统的学年、学期和开学时间。这些设置将在导出报告时自动应用。</p>
+                                
+                                <div class="alert alert-info">
+                                    <i class='bx bx-info-circle'></i> 这些设置会影响所有用户的导出报告，请谨慎修改。
+                                </div>
+                                
+                                <form id="semesterSettingsForm" class="mt-4">
+                                    <div class="form-group row mb-3">
+                                        <label for="schoolYearSetting" class="col-sm-3 col-form-label">学年</label>
+                                        <div class="col-sm-9">
+                                            <input type="text" class="form-control" id="schoolYearSetting" name="schoolYearSetting" placeholder="例如：2024-2025" required>
+                                            <small class="form-text text-muted">格式：YYYY-YYYY，例如：2024-2025</small>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group row mb-3">
+                                        <label for="semesterSetting" class="col-sm-3 col-form-label">学期</label>
+                                        <div class="col-sm-9">
+                                            <select class="form-select" id="semesterSetting" name="semesterSetting" required>
+                                                <option value="1">第一学期</option>
+                                                <option value="2">第二学期</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group row mb-3">
+                                        <label for="startDateSetting" class="col-sm-3 col-form-label">开学时间</label>
+                                        <div class="col-sm-9">
+                                            <input type="date" class="form-control" id="startDateSetting" name="startDateSetting" required>
+                                            <small class="form-text text-muted">开学日期，将在报告中显示</small>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group row">
+                                        <div class="col-sm-9 offset-sm-3">
+                                            <button type="button" id="saveSemesterSettingsBtn" class="btn btn-primary">
+                                                <i class='bx bx-save'></i> 保存设置
+                                            </button>
+                                            <div id="semesterSettingsStatus" class="mt-2"></div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        
+                        <!-- 登录轮播设置 -->
+                        <div class="tab-pane fade" id="v-pills-carousel" role="tabpanel">
+                            <h2 class="settings-title"><i class='bx bx-image'></i> 登录轮播设置</h2>
+                            <div class="alert alert-info">
+                                <i class='bx bx-info-circle'></i> 自定义登录页面轮播图片和显示效果，为用户提供更好的视觉体验。
+                            </div>
+                            
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h5 class="mb-0">轮播效果设置</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="carouselInterval" class="form-label">轮播间隔时间</label>
+                                                <div class="input-group">
+                                                    <input type="range" class="form-range" id="carouselInterval" min="1000" max="10000" step="500">
+                                                    <span class="ms-3" id="intervalDisplay">5秒</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="maxImages" class="form-label">最大轮播图片数量</label>
+                                                <div class="input-group">
+                                                    <input type="number" class="form-control" id="maxImages" min="1" max="20" step="1">
+                                                    <span class="input-group-text">张</span>
+                                                </div>
+                                                <div class="form-text">设置为0表示不限制数量，显示所有图片</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="carouselAnimation" class="form-label">切换动画效果</label>
+                                                <select class="form-select" id="carouselAnimation">
+                                                    <option value="fade" selected>淡入淡出</option>
+                                                    <option value="slide">滑动</option>
+                                                    <option value="zoom">缩放</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="indicatorStyle" class="form-label">指示器样式</label>
+                                                <select class="form-select" id="indicatorStyle">
+                                                    <option value="rounded-pill" selected>圆角矩形条</option>
+                                                    <option value="circle">圆点</option>
+                                                    <option value="rectangle">方形</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="indicatorColor" class="form-label">指示器颜色</label>
+                                                <input type="color" class="form-control form-control-color" id="indicatorColor" value="#3498db">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">动画效果</label>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="showProgress" checked>
+                                                    <label class="form-check-label" for="showProgress">显示进度动画</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <button class="btn btn-primary" id="saveCarouselSettingsBtn">
+                                        <i class='bx bx-save'></i> 保存轮播设置
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="card mb-4">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">轮播图片管理</h5>
+                                    <button class="btn btn-sm btn-primary" id="uploadNewImageBtn">
+                                        <i class='bx bx-upload'></i> 上传新图片
+                                    </button>
+                                </div>
+                                <div class="card-body">
+                                    <div class="alert alert-warning" id="maxImagesWarning" style="display: none;">
+                                        <i class='bx bx-error'></i> 最多可以上传9张轮播图片。请删除现有图片后再上传新图片。
+                                    </div>
+                                    
+                                    <!-- 替换模式选择（默认隐藏） -->
+                                    <div id="replaceContainer" style="display: none;" class="mb-4 p-3 border rounded bg-light">
+                                        <h6 class="mb-3">请选择要替换的图片</h6>
+                                        <div class="row" id="replaceImagesContainer">
+                                            <!-- 将由JavaScript动态加载要替换的图片 -->
+                                        </div>
+                                        <div class="d-flex justify-content-end mt-3">
+                                            <button type="button" class="btn btn-secondary" id="cancelReplaceBtn">取消</button>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- 图片上传表单（默认隐藏） -->
+                                    <div id="uploadFormContainer" style="display: none;" class="mb-4 p-3 border rounded bg-light">
+                                        <h6 class="mb-3">上传新图片</h6>
+                                        <form id="uploadImageForm" enctype="multipart/form-data">
+                                            <div class="mb-3">
+                                                <label for="carouselImage" class="form-label">选择图片文件</label>
+                                                <input class="form-control" type="file" id="carouselImage" accept="image/jpeg,image/png,image/jpg">
+                                                <div class="form-text">推荐尺寸: 1920x1080像素，文件大小不超过2MB</div>
+                                            </div>
+                                            <div class="d-flex justify-content-end">
+                                                <button type="button" class="btn btn-secondary me-2" id="cancelUploadBtn">取消</button>
+                                                <button type="button" class="btn btn-success" id="submitUploadBtn">上传图片</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    
+                                    <!-- 图片列表 -->
+                                    <div class="row" id="carouselImagesContainer">
+                                        <!-- 图片将由JavaScript动态加载 -->
+                                        <div class="text-center py-5" id="loadingImagesMsg">
+                                            <div class="spinner-border text-primary" role="status">
+                                                <span class="visually-hidden">加载中...</span>
+                                            </div>
+                                            <p class="mt-2">正在加载图片...</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- 预览当前轮播效果 -->
+                                    <div class="mt-4">
+                                        <h6 class="mb-3">轮播效果预览</h6>
+                                        <div class="carousel-preview-container" style="height: 200px; overflow: hidden; border-radius: 8px; position: relative;">
+                                            <div id="carouselPreview" class="carousel slide" data-bs-ride="carousel">
+                                                <div class="carousel-indicators" id="previewIndicators">
+                                                    <!-- 指示器将由JavaScript动态生成 -->
+                                                </div>
+                                                <div class="carousel-inner" id="previewInner">
+                                                    <!-- 轮播项将由JavaScript动态生成 -->
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 数据库备份选项卡 -->
+                        <div class="tab-pane fade" id="v-pills-backup" role="tabpanel">
+                            <h2 class="settings-title"><i class='bx bx-data'></i> 数据库备份</h2>
+                            <div class="alert alert-info">
+                                <i class='bx bx-info-circle'></i> 备份和恢复系统数据库，保护您的重要数据安全。定期备份可以防止数据丢失。
+                            </div>
+                            
+                            <div class="card mb-4">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">创建备份</h5>
+                                    <button class="btn btn-primary" id="createBackupBtn">
+                                        <i class='bx bx-download'></i> 创建新备份
+                                    </button>
+                                </div>
+                                <div class="card-body">
+                                    <p>创建一个包含当前所有数据的备份文件。备份过程不会影响系统的正常使用。</p>
+                                    <div id="backupProgress" class="progress" style="display: none;">
+                                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h5 class="mb-0">备份历史</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>备份日期</th>
+                                                    <th>备份大小</th>
+                                                    <th>描述</th>
+                                                    <th>操作</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="backupHistoryList">
+                                                <tr>
+                                                    <td colspan="4" class="text-center">
+                                                        <div class="spinner-border text-primary" role="status">
+                                                            <span class="visually-hidden">加载中...</span>
+                                                        </div>
+                                                        <p class="mt-2">正在加载备份历史...</p>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div id="noBackupsMessage" style="display: none;" class="text-center py-4">
+                                        <i class='bx bx-info-circle bx-lg text-muted'></i>
+                                        <p class="mt-2 text-muted">暂无备份记录，请创建新的备份。</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 恢复确认对话框 -->
+                            <div class="modal fade" id="restoreConfirmModal" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">确认恢复</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="alert alert-warning">
+                                                <i class='bx bx-error-circle'></i> 警告：恢复操作将使用备份数据替换当前所有数据，此操作不可撤销！
+                                            </div>
+                                            <p>您确定要恢复到 <strong id="restoreBackupDate">2023-01-01 12:00:00</strong> 的备份吗？</p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                            <button type="button" class="btn btn-danger" id="confirmRestoreBtn">确认恢复</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 删除确认对话框 -->
+                            <div class="modal fade" id="deleteBackupModal" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">确认删除</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p>您确定要删除 <strong id="deleteBackupDate">2023-01-01 12:00:00</strong> 的备份吗？此操作不可撤销！</p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                            <button type="button" class="btn btn-danger" id="confirmDeleteBtn">确认删除</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 关于系统 -->
+                        <div class="tab-pane fade" id="v-pills-about" role="tabpanel">
+                            <h2 class="settings-title"><i class='bx bx-info-circle'></i> 关于系统</h2>
+                            
+                            <div class="card mb-4">
+                                <div class="card-body text-center">
+                                    <img src="../img/logo.png" alt="班主任管理系统" style="max-width: 200px; margin-bottom: 20px;">
+                                    <h4>德育AI智能系统</h4>
+                                    <p class="mb-1">版本：2.0.0</p>
+                                    <p class="text-muted">最后更新：<span id="lastUpdateTime">加载中...</span></p>
+                                    <hr>
+                                    <p>德育AI智能系统是一款专门为班主任设计的教育管理软件。它可以帮助班主任高效地管理班级事务，包括学生信息、评语生成、成绩管理等。</p>
+                                    <div class="mt-4">
+                                        <p><strong>版权所有 © <span id="copyrightYear">2025</span> 青柠半夏</strong></p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="card mb-4">
+                                        <div class="card-header">
+                                            <h5 class="mb-0">联系方式</h5>
+                                        </div>
+                                        <div class="card-body text-center">
+                                            <p><strong>微信扫码关注：</strong></p>
+                                            <img src="../img/vx.jpg" alt="微信二维码" style="max-width: 180px; margin: 10px 0;">
+                                            <p class="mt-3"><strong>QQ联系：</strong> 492610718</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="card mb-4">
+                                        <div class="card-header">
+                                            <h5 class="mb-0">系统信息</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <ul class="list-group list-group-flush">
+                                                <li class="list-group-item d-flex justify-content-between">
+                                                    <span>操作系统</span>
+                                                    <span id="osInfo">Windows</span>
+                                                </li>
+                                                <li class="list-group-item d-flex justify-content-between">
+                                                    <span>运行环境</span>
+                                                    <span id="runtimeInfo">Electron</span>
+                                                </li>
+                                                <li class="list-group-item d-flex justify-content-between">
+                                                    <span>数据库</span>
+                                                    <span id="dbTypeInfo">WebStorage/IndexedDB</span>
+                                                </li>
+                                                <li class="list-group-item d-flex justify-content-between">
+                                                    <span>内存使用</span>
+                                                    <span id="memoryUsage">约 120MB</span>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast容器 -->
+    <div id="toastContainer" class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999;"></div>
+    
+    <script src="/js/libs/bootstrap.bundle.min.js"></script>
+    <script src="../js/settings.js"></script>
+    <script>
+        // 页面加载时获取设置
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                // 加载API设置
+                const response = await fetch('/api/settings');
+                const data = await response.json();
+                if (data.status === 'ok') {
+                    document.getElementById('deepseekApiKey').value = data.settings.deepseek_api_key || '';
+                }
+                
+                // 加载AI评语设置
+                if (data.settings.ai_comments) {
+                    document.getElementById('commentLength').value = data.settings.ai_comments.length || 'medium';
+                    document.getElementById('commentStyle').value = data.settings.ai_comments.style || 'encouraging';
+                    document.getElementById('focusAcademic').checked = data.settings.ai_comments.focus_academic !== false;
+                    document.getElementById('focusBehavior').checked = data.settings.ai_comments.focus_behavior !== false;
+                    document.getElementById('focusActivity').checked = data.settings.ai_comments.focus_activity !== false;
+                    document.getElementById('focusSuggestion').checked = data.settings.ai_comments.focus_suggestion !== false;
+                }
+                
+                // 直接使用模拟系统信息，不再调用API
+                displayMockSystemInfo();
+                
+                // 加载数据库备份历史
+                loadBackupHistory();
+            } catch (error) {
+                console.error('获取设置失败:', error);
+                showToast('error', '获取设置失败，请刷新页面重试');
+            }
+            
+            // 确保默认显示AI评语设置选项卡
+            const aiTab = document.getElementById('v-pills-ai-tab');
+            if (aiTab) {
+                aiTab.click();
+            }
+        });
+
+        // 切换API密钥显示/隐藏
+        document.getElementById('toggleDeepseekKeyBtn').addEventListener('click', function() {
+            const apiKeyInput = document.getElementById('deepseekApiKey');
+            const icon = this.querySelector('i');
+            if (apiKeyInput.type === 'password') {
+                apiKeyInput.type = 'text';
+                icon.classList.remove('bx-show');
+                icon.classList.add('bx-hide');
+            } else {
+                apiKeyInput.type = 'password';
+                icon.classList.remove('bx-hide');
+                icon.classList.add('bx-show');
+            }
+        });
+
+        // 显示API状态
+        function showApiStatus(status, message) {
+            const statusDiv = document.getElementById('apiStatus');
+            if (!statusDiv) {
+                console.error('找不到状态显示元素');
+                return;
+            }
+            
+            statusDiv.textContent = message;
+            statusDiv.className = `api-status ${status}`;
+            statusDiv.style.display = 'block';
+            
+            // 3秒后自动隐藏
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 3000);
+        }
+
+        // 测试API连接
+        document.getElementById('testDeepseekApiBtn').addEventListener('click', async function() {
+            const apiKey = document.getElementById('deepseekApiKey').value.trim();
+            if (!apiKey) {
+                showApiStatus('error', '请输入API密钥');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/test-deepseek', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ api_key: apiKey })
+                });
+                const data = await response.json();
+                
+                if (data.status === 'ok') {
+                    showApiStatus('success', 'API连接测试成功');
+                } else {
+                    // 检查是否是付款相关的错误
+                    if (data.message && data.message.includes('402') && data.message.includes('Payment Required')) {
+                        showApiStatus('error', '账户付款问题：您的DeepSeek账户可能余额不足或需要付费激活');
+                    } else {
+                        showApiStatus('error', data.message || 'API连接测试失败');
+                    }
+                }
+            } catch (error) {
+                showApiStatus('error', 'API连接测试失败: ' + error.message);
+            }
+        });
+
+        // 保存API设置
+        document.getElementById('saveDeepseekApiBtn').addEventListener('click', async function() {
+            const apiKey = document.getElementById('deepseekApiKey').value.trim();
+            try {
+                const response = await fetch('/api/settings/deepseek', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ api_key: apiKey })
+                });
+                const data = await response.json();
+                if (data.status === 'ok') {
+                    showApiStatus('success', '设置已保存');
+                } else {
+                    showApiStatus('error', data.message);
+                }
+            } catch (error) {
+                showApiStatus('error', '保存设置失败: ' + error.message);
+            }
+        });
+        
+        // 保存AI评语设置
+        document.getElementById('saveAiSettingsBtn').addEventListener('click', async function() {
+            const settings = {
+                length: document.getElementById('commentLength').value,
+                style: document.getElementById('commentStyle').value,
+                focus_academic: document.getElementById('focusAcademic').checked,
+                focus_behavior: document.getElementById('focusBehavior').checked,
+                focus_activity: document.getElementById('focusActivity').checked,
+                focus_suggestion: document.getElementById('focusSuggestion').checked
+            };
+            
+            try {
+                const response = await fetch('/api/settings/ai-comments', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(settings)
+                });
+                const data = await response.json();
+                if (data.status === 'ok') {
+                    showToast('success', 'AI评语设置已保存');
+                } else {
+                    showToast('error', data.message || '保存设置失败');
+                }
+            } catch (error) {
+                showToast('error', '保存设置失败: ' + error.message);
+            }
+        });
+        
+        // 显示模拟系统信息
+        function displayMockSystemInfo() {
+            const systemInfoContainer = document.getElementById('systemInfoContainer');
+            if (systemInfoContainer) {
+                const mockInfo = {
+                    version: '1.2.0',
+                    environment: 'Production',
+                    startTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(), // 3天前
+                    memoryUsage: 1024 * 1024 * 75 // 75MB
+                };
+                
+                systemInfoContainer.innerHTML = `
+                    <div class="list-group">
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>系统版本</span>
+                            <span class="badge bg-primary rounded-pill">${mockInfo.version}</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>运行环境</span>
+                            <span class="text-muted">${mockInfo.environment}</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>启动时间</span>
+                            <span class="text-muted">${new Date(mockInfo.startTime).toLocaleString()}</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>内存使用</span>
+                            <span class="badge bg-info rounded-pill">${formatBytes(mockInfo.memoryUsage)}</span>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+        
+        // 格式化字节大小
+        function formatBytes(bytes, decimals = 2) {
+            if (bytes === 0) return '0 Bytes';
+            
+            const k = 1024;
+            const dm = decimals < 0 ? 0 : decimals;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+            
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+        }
+        
+        // 登录轮播设置功能
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("DOM加载完成，开始初始化轮播设置功能");
+            
+            // 设置版权年份
+            const copyrightYear = document.getElementById('copyrightYear');
+            if (copyrightYear) {
+                copyrightYear.textContent = new Date().getFullYear();
+            }
+            
+            // 设置最后更新时间
+            const lastUpdateTime = document.getElementById('lastUpdateTime');
+            if (lastUpdateTime) {
+                lastUpdateTime.textContent = new Date().toLocaleDateString();
+            }
+            
+            // 更新间隔显示
+            const intervalInput = document.getElementById('carouselInterval');
+            const intervalDisplay = document.getElementById('intervalDisplay');
+            
+            if (intervalInput && intervalDisplay) {
+                // 初始化显示
+                updateIntervalDisplay();
+                
+                // 监听变化
+                intervalInput.addEventListener('input', updateIntervalDisplay);
+                
+                function updateIntervalDisplay() {
+                    const seconds = intervalInput.value / 1000;
+                    intervalDisplay.textContent = seconds + '秒';
+                }
+            }
+            
+            // 上传新图片按钮
+            const uploadNewImageBtn = document.getElementById('uploadNewImageBtn');
+            const uploadFormContainer = document.getElementById('uploadFormContainer');
+            const cancelUploadBtn = document.getElementById('cancelUploadBtn');
+            const submitUploadBtn = document.getElementById('submitUploadBtn');
+            const cancelReplaceBtn = document.getElementById('cancelReplaceBtn');
+            const replaceContainer = document.getElementById('replaceContainer');
+            
+            // 检查并打印关键元素状态
+            console.log("上传按钮元素:", uploadNewImageBtn ? "存在" : "不存在");
+            console.log("上传表单容器:", uploadFormContainer ? "存在" : "不存在");
+            console.log("提交上传按钮:", submitUploadBtn ? "存在" : "不存在");
+            
+            if (uploadNewImageBtn && uploadFormContainer && cancelUploadBtn) {
+                uploadNewImageBtn.addEventListener('click', function() {
+                    console.log("点击了上传新图片按钮");
+                    uploadFormContainer.style.display = 'block';
+                    uploadNewImageBtn.style.display = 'none';
+                    if (replaceContainer) replaceContainer.style.display = 'none';
+                });
+                
+                cancelUploadBtn.addEventListener('click', function() {
+                    console.log("点击了取消上传按钮");
+                    uploadFormContainer.style.display = 'none';
+                    uploadNewImageBtn.style.display = 'inline-block';
+                });
+            } else {
+                console.error("上传图片相关元素缺失");
+            }
+            
+            // 添加取消替换按钮点击事件
+            if (cancelReplaceBtn && replaceContainer) {
+                cancelReplaceBtn.addEventListener('click', function() {
+                    replaceContainer.style.display = 'none';
+                    uploadNewImageBtn.style.display = 'inline-block';
+                });
+            }
+            
+            // 添加上传图片按钮点击事件
+            if (submitUploadBtn) {
+                submitUploadBtn.addEventListener('click', function() {
+                    console.log("上传按钮被点击");
+                    try {
+                        uploadCarouselImage();
+                    } catch (err) {
+                        console.error("上传图片时出错:", err);
+                        showToast('error', '上传图片失败: ' + err.message);
+                    }
+                });
+                console.log("已添加上传按钮点击事件");
+            } else {
+                console.error("未找到上传按钮元素");
+            }
+            
+            // 加载轮播图片
+            loadCarouselImages();
+            
+            // 保存轮播设置
+            const saveCarouselSettingsBtn = document.getElementById('saveCarouselSettingsBtn');
+            if (saveCarouselSettingsBtn) {
+                saveCarouselSettingsBtn.addEventListener('click', saveCarouselSettings);
+            }
+            
+            // 获取轮播设置
+            getCarouselSettings();
+        });
+        
+        // 加载轮播图片
+        function loadCarouselImages() {
+            const container = document.getElementById('carouselImagesContainer');
+            if (!container) return;
+            
+            // 显示加载中
+            container.innerHTML = `
+                <div class="col-12 text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">加载中...</span>
+                    </div>
+                    <p class="mt-2">正在加载轮播图片...</p>
+                </div>
+            `;
+            
+            // 调用API获取图片列表
+            fetch('/api/carousel/images')
+                .then(response => response.json())
+                .then(data => {
+                    console.log("加载的图片数据:", data); // 添加日志以便调试
+                    if (data.status === 'success') {
+                        if (data.images && data.images.length > 0) {
+                            container.innerHTML = '';
+                            // 遍历并显示图片
+                            data.images.forEach(image => {
+                                try {
+                                    const col = document.createElement('div');
+                                    col.className = 'col-md-4 mb-3';
+                                    col.innerHTML = `
+                                        <div class="card">
+                                            <img src="${image.url}" class="card-img-top" alt="${image.name}" style="height: 160px; object-fit: cover;">
+                                            <div class="card-body p-2">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <small class="text-muted">${image.name} (${image.size}MB)</small>
+                                                    <button class="btn btn-sm btn-danger delete-image" data-image="${image.name}">
+                                                        <i class='bx bx-trash'></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `;
+                                    container.appendChild(col);
+                                } catch (err) {
+                                    console.error("添加图片卡片时出错:", err, image);
+                                }
+                            });
+                            
+                            // 添加删除事件监听
+                            document.querySelectorAll('.delete-image').forEach(button => {
+                                button.addEventListener('click', function() {
+                                    const imageName = this.getAttribute('data-image');
+                                    deleteCarouselImage(imageName);
+                                });
+                            });
+                        } else {
+                            container.innerHTML = `
+                                <div class="col-12 text-center py-4">
+                                    <p class="text-muted">
+                                        <i class='bx bx-image bx-lg'></i><br>
+                                        暂无轮播图片，请上传一些图片。
+                                    </p>
+                                </div>
+                            `;
+                        }
+                        
+                        // 更新上传表单状态
+                        updateUploadFormState(data.images ? data.images.length : 0);
+                    } else {
+                        showToast('error', data.message || '加载图片失败');
+                        container.innerHTML = `
+                            <div class="col-12 text-center py-4">
+                                <p class="text-danger">
+                                    <i class='bx bx-error-circle bx-lg'></i><br>
+                                    加载图片失败，请刷新页面重试。
+                                </p>
+                            </div>
+                        `;
+                    }
+                    
+                    // 更新轮播预览
+                    updateCarouselPreview();
+                })
+                .catch(error => {
+                    console.error('获取轮播图片失败:', error);
+                    showToast('error', '加载图片失败');
+                    container.innerHTML = `
+                        <div class="col-12 text-center py-4">
+                            <p class="text-danger">
+                                <i class='bx bx-error-circle bx-lg'></i><br>
+                                加载图片失败，请刷新页面重试。
+                            </p>
+                        </div>
+                    `;
+                });
+        }
+        
+        // 更新上传表单状态
+        function updateUploadFormState(imageCount) {
+            const maxImagesWarning = document.getElementById('maxImagesWarning');
+            const uploadNewImageBtn = document.getElementById('uploadNewImageBtn');
+            
+            if (maxImagesWarning && uploadNewImageBtn) {
+                // 移除按钮禁用逻辑，始终允许上传
+                maxImagesWarning.style.display = 'none';
+                uploadNewImageBtn.disabled = false;
+                
+                // 如果图片数量较多，显示不同的提示
+                if (imageCount >= 9) {
+                    console.log("图片数量已达到或超过9张，但仍允许上传");
+                }
+            }
+        }
+        
+        // 删除轮播图片
+        function deleteCarouselImage(imageName) {
+            if (!confirm(`确定要删除图片 ${imageName} 吗？`)) {
+                return;
+            }
+            
+            showToast('info', '正在删除图片...');
+            
+            fetch(`/api/carousel/images/${imageName}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showToast('success', '图片删除成功');
+                    // 重新加载图片列表
+                    loadCarouselImages();
+                    // 更新轮播预览
+                    setTimeout(updateCarouselPreview, 500);
+                } else {
+                    showToast('error', data.message || '删除图片失败');
+                }
+            })
+            .catch(error => {
+                console.error('删除图片失败:', error);
+                showToast('error', '删除图片失败，请重试');
+            });
+        }
+        
+        // 上传轮播图片
+        function uploadCarouselImage(replaceIndex) {
+            const fileInput = document.getElementById('carouselImage');
+            const uploadFormContainer = document.getElementById('uploadFormContainer');
+            const uploadNewImageBtn = document.getElementById('uploadNewImageBtn');
+            const replaceContainer = document.getElementById('replaceContainer');
+            
+            if (!fileInput || !fileInput.files || !fileInput.files[0]) {
+                showToast('error', '请选择要上传的图片');
+                return;
+            }
+            
+            const file = fileInput.files[0];
+            console.log("准备上传文件:", file.name, file.size);
+            
+            // 检查文件类型
+            if (!file.type.match('image/jpeg') && !file.type.match('image/png') && !file.type.match('image/jpg')) {
+                showToast('error', '请选择JPG或PNG格式的图片');
+                return;
+            }
+            
+            // 检查文件大小（限制为10MB）
+            if (file.size > 10 * 1024 * 1024) {
+                showToast('error', '图片大小不能超过10MB');
+                return;
+            }
+            
+            // 创建FormData对象
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            // 如果有替换索引，添加到表单数据中
+            if (replaceIndex) {
+                formData.append('replace_index', replaceIndex);
+            }
+            
+            // 显示上传中提示
+            showToast('info', replaceIndex ? '正在替换图片...' : '正在上传图片...');
+            
+            // 发送上传请求
+            fetch('/api/carousel/images', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                console.log("上传响应状态:", response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log("上传响应数据:", data);
+                if (data.status === 'success') {
+                    // 上传成功
+                    showToast('success', data.message || '图片上传成功');
+                    
+                    // 隐藏所有相关容器
+                    if (uploadFormContainer) uploadFormContainer.style.display = 'none';
+                    if (replaceContainer) replaceContainer.style.display = 'none';
+                    if (uploadNewImageBtn) uploadNewImageBtn.style.display = 'inline-block';
+                    
+                    // 清空文件输入
+                    fileInput.value = '';
+                    
+                    // 重新加载图片列表
+                    loadCarouselImages();
+                    
+                    // 更新轮播预览
+                    setTimeout(updateCarouselPreview, 500);
+                } else {
+                    // 判断是否需要进入替换模式
+                    if (data.can_replace && data.existing_count >= 9) {
+                        showToast('info', '已达到最大图片数量，请选择要替换的图片');
+                        showReplaceOptions();
+                    } else {
+                        // 上传失败
+                        showToast('error', data.message || '上传图片失败');
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('上传图片失败:', error);
+                showToast('error', '上传图片失败，请重试');
+            });
+        }
+        
+        // 显示替换选项
+        function showReplaceOptions() {
+            const uploadFormContainer = document.getElementById('uploadFormContainer');
+            const replaceContainer = document.getElementById('replaceContainer');
+            const replaceImagesContainer = document.getElementById('replaceImagesContainer');
+            
+            if (!replaceContainer || !replaceImagesContainer) return;
+            
+            // 隐藏上传表单，显示替换选项
+            if (uploadFormContainer) uploadFormContainer.style.display = 'none';
+            replaceContainer.style.display = 'block';
+            
+            // 获取图片列表
+            fetch('/api/carousel/images')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success' && data.images) {
+                        // 清空现有内容
+                        replaceImagesContainer.innerHTML = '';
+                        
+                        // 添加每张图片作为可选择的替换目标
+                        data.images.forEach(image => {
+                            // 从文件名中提取索引号
+                            const match = image.name.match(/bg(\d+)\./);
+                            const index = match ? parseInt(match[1]) : 0;
+                            if (index > 0) {
+                                const col = document.createElement('div');
+                                col.className = 'col-md-4 mb-3';
+                                col.innerHTML = `
+                                    <div class="card">
+                                        <img src="${image.url}" class="card-img-top" alt="${image.name}" style="height: 160px; object-fit: cover;">
+                                        <div class="card-body p-2">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <small class="text-muted">${image.name}</small>
+                                                <button class="btn btn-sm btn-warning replace-this-image" data-index="${index}">
+                                                    <i class='bx bx-refresh'></i> 替换
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                                replaceImagesContainer.appendChild(col);
+                            }
+                        });
+                        
+                        // 添加替换按钮点击事件
+                        document.querySelectorAll('.replace-this-image').forEach(button => {
+                            button.addEventListener('click', function() {
+                                const replaceIndex = this.getAttribute('data-index');
+                                uploadCarouselImage(replaceIndex);
+                            });
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('获取替换选项失败:', error);
+                    showToast('error', '获取替换选项失败');
+                });
+        }
+        
+        // 保存轮播设置
+        function saveCarouselSettings() {
+            // 获取设置值
+            const settings = {
+                interval: document.getElementById('carouselInterval').value,
+                animation: document.getElementById('carouselAnimation').value,
+                indicatorStyle: document.getElementById('indicatorStyle').value,
+                indicatorColor: document.getElementById('indicatorColor').value,
+                showProgress: document.getElementById('showProgress').checked
+            };
+            
+            // 显示保存中提示
+            showToast('info', '正在保存轮播设置...');
+            
+            // 发送保存请求
+            fetch('/api/carousel/settings', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(settings)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // 保存成功
+                    showToast('success', '轮播设置已保存');
+                    
+                    // 应用设置到预览
+                    applyCarouselSettings();
+                } else {
+                    // 保存失败
+                    showToast('error', data.message || '保存轮播设置失败');
+                }
+            })
+            .catch(error => {
+                console.error('保存轮播设置失败:', error);
+                showToast('error', '保存轮播设置失败，请重试');
+            });
+        }
+        
+        // 获取轮播设置
+        function getCarouselSettings() {
+            // 显示加载中
+            showToast('info', '正在加载轮播设置...');
+            
+            // 发送获取请求
+            fetch('/api/carousel/settings')
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success' && data.settings) {
+                    const settings = data.settings;
+                    
+                    // 填充表单
+                    document.getElementById('carouselInterval').value = settings.interval;
+                    document.getElementById('carouselAnimation').value = settings.animation;
+                    document.getElementById('indicatorStyle').value = settings.indicatorStyle;
+                    document.getElementById('indicatorColor').value = settings.indicatorColor;
+                    document.getElementById('showProgress').checked = settings.showProgress;
+                    
+                    // 更新间隔显示
+                    const intervalDisplay = document.getElementById('intervalDisplay');
+                    if (intervalDisplay) {
+                        intervalDisplay.textContent = (settings.interval / 1000) + '秒';
+                    }
+                    
+                    // 应用设置到预览
+                    setTimeout(applyCarouselSettings, 500);
+                } else {
+                    // 获取失败，使用默认设置
+                    console.warn('加载轮播设置失败，使用默认设置');
+                    // 应用默认设置到预览
+                    setTimeout(applyCarouselSettings, 500);
+                }
+            })
+            .catch(error => {
+                console.error('获取轮播设置失败:', error);
+                showToast('error', '加载轮播设置失败，使用默认设置');
+                // 应用默认设置到预览
+                setTimeout(applyCarouselSettings, 500);
+            });
+        }
+        
+        // 更新轮播预览
+        function updateCarouselPreview() {
+            const previewInner = document.getElementById('previewInner');
+            const previewIndicators = document.getElementById('previewIndicators');
+            
+            if (!previewInner || !previewIndicators) return;
+            
+            // 清空现有内容
+            previewInner.innerHTML = '';
+            previewIndicators.innerHTML = '';
+            
+            // 获取API中的图片
+            fetch('/api/carousel/images')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success' && data.images && data.images.length > 0) {
+                        // 创建预览项
+                        data.images.forEach((image, index) => {
+                            const isActive = index === 0 ? 'active' : '';
+                            
+                            // 添加指示器
+                            const indicator = document.createElement('button');
+                            indicator.type = 'button';
+                            indicator.dataset.bsTarget = '#carouselPreview';
+                            indicator.dataset.bsSlideTo = index;
+                            if (isActive) {
+                                indicator.classList.add('active');
+                                indicator.setAttribute('aria-current', 'true');
+                            }
+                            indicator.setAttribute('aria-label', `Slide ${index + 1}`);
+                            previewIndicators.appendChild(indicator);
+                            
+                            // 添加轮播项
+                            previewInner.innerHTML += `
+                                <div class="carousel-item ${isActive}">
+                                    <img src="${image.url}" class="d-block w-100" alt="${image.name}" style="height: 200px; object-fit: cover;">
+                                </div>
+                            `;
+                        });
+                        
+                        // 应用当前轮播设置到预览
+                        applyCarouselSettings();
+                    } else {
+                        // 无图片或加载失败
+                        previewInner.innerHTML = `
+                            <div class="carousel-item active">
+                                <div class="d-flex align-items-center justify-content-center h-100 bg-light">
+                                    <p class="text-muted">暂无图片</p>
+                                </div>
+                            </div>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    console.error('获取轮播图片失败:', error);
+                    // 加载失败
+                    previewInner.innerHTML = `
+                        <div class="carousel-item active">
+                            <div class="d-flex align-items-center justify-content-center h-100 bg-light">
+                                <p class="text-danger">加载图片失败</p>
+                            </div>
+                        </div>
+                    `;
+                });
+        }
+        
+        // 应用轮播设置到预览
+        function applyCarouselSettings() {
+            const preview = document.getElementById('carouselPreview');
+            const indicators = document.getElementById('previewIndicators');
+            
+            if (!preview || !indicators) return;
+            
+            // 获取设置值
+            const interval = document.getElementById('carouselInterval').value;
+            const animation = document.getElementById('carouselAnimation').value;
+            const indicatorStyle = document.getElementById('indicatorStyle').value;
+            const indicatorColor = document.getElementById('indicatorColor').value;
+            const showProgress = document.getElementById('showProgress').checked;
+            
+            // 设置轮播间隔
+            preview.dataset.bsInterval = interval;
+            
+            // 设置动画效果
+            preview.classList.remove('carousel-fade', 'carousel-slide', 'carousel-zoom');
+            if (animation === 'fade') {
+                preview.classList.add('carousel-fade');
+            } else if (animation === 'zoom') {
+                preview.classList.add('carousel-zoom');
+            }
+            
+            // 设置指示器样式
+            indicators.className = 'carousel-indicators carousel-indicators-custom';
+            if (indicatorStyle === 'circle') {
+                indicators.classList.add('carousel-indicators-circle');
+            } else if (indicatorStyle === 'rectangle') {
+                indicators.classList.add('carousel-indicators-rectangle');
+            }
+            
+            // 设置指示器颜色
+            document.querySelectorAll('#previewIndicators button').forEach(btn => {
+                btn.style.backgroundColor = indicatorColor;
+            });
+            
+            // 设置进度动画
+            const activeButton = indicators.querySelector('button.active');
+            if (activeButton && showProgress) {
+                // 设置动画持续时间与轮播间隔相同
+                activeButton.style.setProperty('--progress-duration', `${interval}ms`);
+                activeButton.style.animationDuration = `${interval}ms`;
+            }
+        }
+        
+        // 显示Toast通知
+        function showToast(type, message) {
+            const toastContainer = document.getElementById('toastContainer');
+            if (!toastContainer) return;
+            
+            const toast = document.createElement('div');
+            toast.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'primary'} border-0`;
+            toast.setAttribute('role', 'alert');
+            toast.setAttribute('aria-live', 'assertive');
+            toast.setAttribute('aria-atomic', 'true');
+            
+            toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            `;
+            
+            toastContainer.appendChild(toast);
+            
+            const bsToast = new bootstrap.Toast(toast, {
+                autohide: true,
+                delay: 3000
+            });
+            
+            bsToast.show();
+            
+            // 自动移除
+            toast.addEventListener('hidden.bs.toast', function() {
+                toastContainer.removeChild(toast);
+            });
+        }
+
+        // 数据库备份功能
+        
+        // 创建备份按钮点击事件
+        document.getElementById('createBackupBtn').addEventListener('click', function() {
+            createBackup();
+        });
+        
+        // 创建数据库备份
+        async function createBackup() {
+            try {
+                // 显示进度条
+                const progressBar = document.getElementById('backupProgress');
+                const progressBarInner = progressBar.querySelector('.progress-bar');
+                progressBar.style.display = 'block';
+                progressBarInner.style.width = '0%';
+                
+                // 禁用创建按钮
+                const createBtn = document.getElementById('createBackupBtn');
+                createBtn.disabled = true;
+                createBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 备份中...';
+                
+                // 模拟进度更新
+                let progress = 0;
+                const progressInterval = setInterval(() => {
+                    progress += 5;
+                    if (progress > 90) {
+                        clearInterval(progressInterval);
+                    }
+                    progressBarInner.style.width = progress + '%';
+                }, 200);
+                
+                // 发送创建备份请求
+                const response = await fetch('/api/database/backup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                // 清除进度条定时器
+                clearInterval(progressInterval);
+                
+                if (data.status === 'success') {
+                    // 完成进度条
+                    progressBarInner.style.width = '100%';
+                    
+                    // 显示成功消息
+                    showToast('success', '数据库备份创建成功');
+                    
+                    // 重新加载备份历史
+                    setTimeout(() => {
+                        loadBackupHistory();
+                        
+                        // 隐藏进度条并重置按钮
+                        setTimeout(() => {
+                            progressBar.style.display = 'none';
+                            createBtn.disabled = false;
+                            createBtn.innerHTML = '<i class="bx bx-download"></i> 创建新备份';
+                        }, 1000);
+                    }, 500);
+                } else {
+                    // 显示错误消息
+                    showToast('error', data.message || '创建备份失败');
+                    
+                    // 重置进度条和按钮
+                    progressBar.style.display = 'none';
+                    createBtn.disabled = false;
+                    createBtn.innerHTML = '<i class="bx bx-download"></i> 创建新备份';
+                }
+            } catch (error) {
+                console.error('创建备份失败:', error);
+                showToast('error', '创建备份失败: ' + error.message);
+                
+                // 重置进度条和按钮
+                const progressBar = document.getElementById('backupProgress');
+                const createBtn = document.getElementById('createBackupBtn');
+                progressBar.style.display = 'none';
+                createBtn.disabled = false;
+                createBtn.innerHTML = '<i class="bx bx-download"></i> 创建新备份';
+            }
+        }
+        
+        // 加载备份历史
+        async function loadBackupHistory() {
+            try {
+                const backupHistoryList = document.getElementById('backupHistoryList');
+                const noBackupsMessage = document.getElementById('noBackupsMessage');
+                
+                // 显示加载中
+                backupHistoryList.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-center">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">加载中...</span>
+                            </div>
+                            <p class="mt-2">正在加载备份历史...</p>
+                        </td>
+                    </tr>
+                `;
+                
+                // 发送获取备份历史请求
+                const response = await fetch('/api/database/backups');
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    if (data.backups && data.backups.length > 0) {
+                        // 显示备份列表
+                        backupHistoryList.innerHTML = '';
+                        
+                        data.backups.forEach(backup => {
+                            const row = document.createElement('tr');
+                            
+                            // 格式化日期时间
+                            const backupDate = new Date(backup.timestamp);
+                            const formattedDate = backupDate.toLocaleString('zh-CN', {
+                                year: 'numeric',
+                                month: '2-digit',
+                                day: '2-digit',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                second: '2-digit'
+                            });
+                            
+                            row.innerHTML = `
+                                <td>${formattedDate}</td>
+                                <td>${formatBytes(backup.size)}</td>
+                                <td>${backup.description || '系统自动备份'}</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-primary restore-backup" data-id="${backup.id}" data-date="${formattedDate}">
+                                            <i class="bx bx-reset"></i> 恢复
+                                        </button>
+                                        <button class="btn btn-outline-danger delete-backup" data-id="${backup.id}" data-date="${formattedDate}">
+                                            <i class="bx bx-trash"></i> 删除
+                                        </button>
+                                    </div>
+                                </td>
+                            `;
+                            
+                            backupHistoryList.appendChild(row);
+                        });
+                        
+                        // 添加恢复按钮点击事件
+                        document.querySelectorAll('.restore-backup').forEach(button => {
+                            button.addEventListener('click', function() {
+                                const backupId = this.getAttribute('data-id');
+                                const backupDate = this.getAttribute('data-date');
+                                showRestoreConfirmation(backupId, backupDate);
+                            });
+                        });
+                        
+                        // 添加删除按钮点击事件
+                        document.querySelectorAll('.delete-backup').forEach(button => {
+                            button.addEventListener('click', function() {
+                                const backupId = this.getAttribute('data-id');
+                                const backupDate = this.getAttribute('data-date');
+                                showDeleteConfirmation(backupId, backupDate);
+                            });
+                        });
+                        
+                        // 隐藏无备份消息
+                        noBackupsMessage.style.display = 'none';
+                    } else {
+                        // 显示无备份消息
+                        backupHistoryList.innerHTML = '';
+                        noBackupsMessage.style.display = 'block';
+                    }
+                } else {
+                    // 显示错误消息
+                    backupHistoryList.innerHTML = `
+                        <tr>
+                            <td colspan="4" class="text-center text-danger">
+                                <i class="bx bx-error-circle"></i> 加载备份历史失败
+                            </td>
+                        </tr>
+                    `;
+                    showToast('error', data.message || '加载备份历史失败');
+                }
+            } catch (error) {
+                console.error('加载备份历史失败:', error);
+                
+                const backupHistoryList = document.getElementById('backupHistoryList');
+                backupHistoryList.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-center text-danger">
+                            <i class="bx bx-error-circle"></i> 加载备份历史失败
+                        </td>
+                    </tr>
+                `;
+                
+                showToast('error', '加载备份历史失败: ' + error.message);
+            }
+        }
+        
+        // 显示恢复确认对话框
+        function showRestoreConfirmation(backupId, backupDate) {
+            const modal = new bootstrap.Modal(document.getElementById('restoreConfirmModal'));
+            document.getElementById('restoreBackupDate').textContent = backupDate;
+            
+            // 设置确认按钮点击事件
+            document.getElementById('confirmRestoreBtn').onclick = function() {
+                restoreBackup(backupId);
+                modal.hide();
+            };
+            
+            modal.show();
+        }
+        
+        // 显示删除确认对话框
+        function showDeleteConfirmation(backupId, backupDate) {
+            const modal = new bootstrap.Modal(document.getElementById('deleteBackupModal'));
+            document.getElementById('deleteBackupDate').textContent = backupDate;
+            
+            // 设置确认按钮点击事件
+            document.getElementById('confirmDeleteBtn').onclick = function() {
+                deleteBackup(backupId);
+                modal.hide();
+            };
+            
+            modal.show();
+        }
+        
+        // 恢复备份
+        async function restoreBackup(backupId) {
+            try {
+                showToast('info', '正在恢复备份，请稍候...');
+                
+                // 发送恢复备份请求
+                const response = await fetch(`/api/database/restore/${backupId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    showToast('success', '数据库恢复成功，系统将在5秒后刷新...');
+                    
+                    // 5秒后刷新页面
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 5000);
+                } else {
+                    showToast('error', data.message || '恢复备份失败');
+                }
+            } catch (error) {
+                console.error('恢复备份失败:', error);
+                showToast('error', '恢复备份失败: ' + error.message);
+            }
+        }
+        
+        // 删除备份
+        async function deleteBackup(backupId) {
+            try {
+                showToast('info', '正在删除备份...');
+                
+                // 发送删除备份请求
+                const response = await fetch(`/api/database/backup/${backupId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    showToast('success', '备份已成功删除');
+                    
+                    // 重新加载备份历史
+                    loadBackupHistory();
+                } else {
+                    showToast('error', data.message || '删除备份失败');
+                }
+            } catch (error) {
+                console.error('删除备份失败:', error);
+                showToast('error', '删除备份失败: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

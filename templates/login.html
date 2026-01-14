@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>德育AI智能系统 - 登录</title>
+    <!-- 引入 Bootstrap CSS -->
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/boxicons-local.css" rel="stylesheet">
+    <!-- 自定义样式 -->
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+            background-image: url('/img/backgrounds/bg01.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        
+        .login-wrapper {
+            display: flex;
+            align-items: center; /* 垂直居中 */
+            justify-content: center; /* 水平居中 */
+            height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .login-container {
+            /* 设置为三行布局 */
+            max-width: 800px;
+            width: 90%;
+            padding: 1.5rem 2rem;
+            /* 透明度改为15% */
+            background-color: rgba(255, 255, 255, 0.35);
+            border-radius: 10px;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.35);
+            backdrop-filter: blur(8px);
+            /* 位置保持在上方 */
+            transform: translateY(calc(40vh - 120px));
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            min-height: 250px;
+        }
+        
+        .login-header-section {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap; /* 允许在需要时换行 */
+        }
+        
+        .login-logo {
+            align-items: center;
+            width: 180px;
+            margin-right: 6rem; /* 增加右侧间距 */
+            flex-shrink: 0; /* 防止logo缩小 */
+            padding-right: 1rem; /* 添加额外右侧内边距 */
+            position: relative; /* 为伪元素定位 */
+        }
+        
+        .login-logo img {
+            max-width: 200%;
+            height: auto;
+            transform: scale(0.85); /* 稍微缩小图片避免重叠 */
+            transform-origin: left center; /* 从左侧开始缩放 */
+            margin-right: 1rem; /* 额外的间距 */
+        }
+        
+        .login-header {
+            margin-bottom: 0;
+            flex-grow: 1; /* 允许标题区域扩展 */
+            min-width: 200px; /* 确保标题有足够空间 */
+            padding-left: 1rem; /* 添加左侧内边距 */
+        }
+        
+        .login-header h1 {
+            color: #dc3545;
+            font-weight: 600;
+            font-size: 1.8rem;
+            margin-bottom: 0;
+            
+        }
+        
+        .login-form-section {
+            display: flex;
+            align-items: flex-end;
+            width: 100%;
+            margin-bottom: 1.5rem;
+            justify-content: center;
+            position: relative;
+            padding-top: 1rem;
+        }
+        
+        .form-group {
+            margin-right: 1rem;
+            margin-bottom: 0;
+            flex: 0 0 auto;
+            width: 200px;
+        }
+        
+        .form-control {
+            background-color: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #dc3545;
+        }
+        
+        .form-control::placeholder {
+            color: rgba(26, 95, 180, 0.6);
+        }
+        
+        .form-control:focus {
+            background-color: rgba(255, 255, 255, 0.25);
+            border-color: rgba(26, 95, 180, 0.5);
+            box-shadow: 0 0 0 0.25rem rgba(26, 95, 180, 0.1);
+            color: #dc3545;
+        }
+        
+        .form-label {
+            color: #ffffff;
+            font-size: 0.9rem;
+            font-weight: bold;
+            
+        }
+        
+        .btn-login {
+            background-color: rgba(26, 95, 180, 0.8);
+            border: none;
+            min-width: 80px;
+            height: 38px;
+            color: #fff;
+        }
+        
+        .btn-login:hover {
+            background-color: rgba(26, 95, 180, 1);
+        }
+        
+        .alert {
+            margin-bottom: 1rem;
+            background-color: rgba(220, 53, 69, 0.7);
+            border-color: rgba(220, 53, 69, 0.3);
+            position: absolute;
+            top: -40px;
+            left: 0;
+            right: 0;
+        }
+        
+        .copyright-section {
+            width: 100%;
+            text-align: center;
+            margin-top: auto;
+            padding-top: 1rem;
+        }
+        
+        .copyright {
+            color: #ffffff;
+            font-size: 0.8rem;
+            
+        }
+        
+        /* 在小屏幕上调整登录框位置和布局 */
+        @media (max-width: 768px) {
+            .login-container {
+                transform: translateY(calc(35vh - 100px));
+                padding: 1.2rem;
+                background-color: rgba(255, 255, 255, 0.1);
+                min-height: 320px;
+            }
+            
+            .login-header-section {
+                flex-direction: column;
+                text-align: center;
+                margin-bottom: 1.2rem;
+            }
+            
+            .login-logo {
+                width: 140px;
+                margin-right: 0;
+                margin-bottom: 0.8rem;
+            }
+            
+            .login-form-section {
+                flex-direction: column;
+                margin-bottom: 1.2rem;
+                padding-top: 0.5rem;
+            }
+            
+            .form-group {
+                margin-right: 0;
+                margin-bottom: 0.8rem;
+                width: 100%;
+            }
+            
+            .btn-login {
+                width: 100%;
+            }
+            
+            .copyright-section {
+                padding-top: 0.5rem;
+            }
+        }
+        
+        /* 添加样式 */
+        .timeout-message {
+            margin-bottom: 15px;
+        }
+        
+        .alert {
+            padding: 10px 15px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .alert-warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+        }
+        
+        .alert-danger {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .alert i {
+            margin-right: 8px;
+            font-size: 1.2em;
+        }
+    </style>
+    <script>
+        // 检查是否是由于会话超时导致的重定向
+        document.addEventListener('DOMContentLoaded', function() {
+            // 从URL参数中检查是否有超时标记
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('timeout') && urlParams.get('timeout') === 'true') {
+                // 不必添加额外的超时消息，模板已经处理了这个情况
+                console.log("检测到会话超时重定向");
+            }  
+        });
+    </script>
+</head>
+<body>
+    <div class="login-wrapper">
+        <div class="login-container">
+            <!-- 第一行：Logo和标题 -->
+            <div class="login-header-section">
+                <div class="login-logo">
+                    <img src="/img/logo.png" alt="泉州东海湾实验学校">
+                </div>
+                <div class="login-header">
+                    <h1>德育AI智能系统</h1>
+                </div>
+            </div>
+            
+            <!-- 第二行：登录表单 -->
+            <form method="post" action="/login" class="login-form-section">
+                {% if timeout %}
+                <div class="timeout-message">
+                    <div class="alert alert-warning">
+                        <i class='bx bx-time'></i>
+                        <span>您的会话已超时，请重新登录</span>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if error %}
+                <div class="error-message">
+                    <div class="alert alert-danger">
+                        <i class='bx bx-error'></i>
+                        <span>{{ error }}</span>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div class="form-group">
+                    <label for="username" class="form-label">用户名</label>
+                    <input type="text" class="form-control" id="username" name="username" required autofocus>
+                </div>
+                <div class="form-group">
+                    <label for="password" class="form-label">密码</label>
+                    <input type="password" class="form-control" id="password" name="password" required>
+                </div>
+                <button type="submit" class="btn btn-login">登录</button>
+            </form>
+            
+            <!-- 第三行：版权信息 -->
+            <div class="copyright-section">
+                <div class="copyright">
+                    © 2025 青柠半夏
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 引入 Bootstrap JS -->
+    <script src="/js/libs/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

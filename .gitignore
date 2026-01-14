@@ -1,0 +1,21 @@
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.log
+*.log.*
+*.xlsx
+*.csv
+*.json
+*.jsonl
+*.jsonl.gz
+*.jsonl.gz.part
+# 追加到.gitignore
+.DS_Store
+*~
+~$*.xlsx  # 忽略Excel临时文件
+*.log
+logs/
+*.db-wal
