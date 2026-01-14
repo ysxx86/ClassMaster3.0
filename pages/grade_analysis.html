@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>成绩分析 - 德育AI智能系统</title>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/boxicons-local.css" rel="stylesheet">
+    <link href="/css/grade_analysis.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            padding: 20px;
+        }
+        .page-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #3498db;
+        }
+        .action-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .card {
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            border: none;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+        .card-header {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #eee;
+            padding: 15px 20px;
+            font-weight: 600;
+            border-radius: 12px 12px 0 0 !important;
+        }
+        .card-body {
+            padding: 20px;
+        }
+        .table th {
+            font-weight: 600;
+            background-color: #f8f9fa;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 50px 0;
+            color: #666;
+        }
+        .empty-state i {
+            font-size: 4rem;
+            color: #ccc;
+            margin-bottom: 20px;
+        }
+        .empty-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+        .empty-state p {
+            font-size: 1rem;
+            margin-bottom: 20px;
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+        .stats-card {
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            background-color: #fff;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        }
+        .stats-card .stats-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+        .stats-card .stats-label {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        .notification-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            max-width: 350px;
+        }
+        .notification {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            margin-bottom: 10px;
+            padding: 12px;
+            display: flex;
+            align-items: flex-start;
+            animation: slide-in 0.3s ease-out;
+        }
+        .notification-hiding {
+            animation: slide-out 0.3s ease-out forwards;
+        }
+        @keyframes slide-in {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slide-out {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+        .notification-icon {
+            margin-right: 12px;
+            font-size: 1.5rem;
+        }
+        .notification-content {
+            flex: 1;
+        }
+        .notification-message {
+            font-size: 0.9rem;
+        }
+        .notification-close {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: #999;
+            margin-left: 10px;
+        }
+        .notification-success .notification-icon {
+            color: #2ecc71;
+        }
+        .notification-error .notification-icon {
+            color: #e74c3c;
+        }
+        .notification-warning .notification-icon {
+            color: #f39c12;
+        }
+        /* 进度条样式 */
+        .progress-bar-container {
+            width: 100%;
+            background-color: #f1f1f1;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 15px;
+            transition: width 0.6s ease;
+        }
+        /* 分数分布条 */
+        .distribution-bar {
+            display: flex;
+            height: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 5px 0;
+        }
+        .distribution-segment {
+            height: 100%;
+            transition: width 0.6s ease;
+        }
+        .segment-fail {
+            background-color: #e74c3c;
+        }
+        .segment-pass {
+            background-color: #f39c12;
+        }
+        .segment-good {
+            background-color: #3498db;
+        }
+        .segment-excellent {
+            background-color: #2ecc71;
+        }
+        /* 预览表格样式 */
+        .preview-table {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <!-- 页面标题 -->
+    <div class="page-title">成绩分析</div>
+    
+    <!-- 操作栏 -->
+    <div class="action-bar">
+        <div>
+            <button id="createExamBtn" class="btn btn-primary">
+                <i class='bx bx-plus'></i> 新建考试
+            </button>
+            <button id="compareExamsBtn" class="btn btn-info ms-2" disabled>
+                <i class='bx bx-analyse'></i> 对比分析
+            </button>
+        </div>
+        <div id="currentClassName" class="text-muted">
+            <!-- 当前班级名称由JS加载 -->
+        </div>
+    </div>
+    
+    <!-- 考试列表 -->
+    <div class="card">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <span>考试列表</span>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="selectAllExams">
+                    <label class="form-check-label" for="selectAllExams">全选</label>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div id="examsContainer">
+                <!-- 考试列表由JS加载 -->
+                <div class="empty-state">
+                    <i class='bx bx-analyse'></i>
+                    <h3>暂无考试数据</h3>
+                    <p>请点击"新建考试"按钮创建一次考试记录</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 考试详情（初始隐藏） -->
+    <div id="examDetailContainer" style="display: none;">
+        <div class="card">
+            <div class="card-header">
+                <span id="examDetailTitle">考试详情</span>
+                <button id="backToListBtn" class="btn btn-sm btn-outline-secondary float-end">
+                    <i class='bx bx-arrow-back'></i> 返回列表
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>考试名称：</strong><span id="examName"></span></p>
+                        <p><strong>考试日期：</strong><span id="examDate"></span></p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>班级：</strong><span id="examClass"></span></p>
+                        <p><strong>学科：</strong><span id="examSubjects"></span></p>
+                    </div>
+                </div>
+                
+                <!-- 成绩统计 -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <h5>成绩统计</h5>
+                        <ul class="nav nav-tabs" id="subjectTabs" role="tablist">
+                            <!-- 学科标签页由JS加载 -->
+                        </ul>
+                        <div class="tab-content pt-3" id="subjectTabContent">
+                            <!-- 学科内容由JS加载 -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 成绩详情表格 -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <h5>成绩详情</h5>
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>学号</th>
+                                        <th>姓名</th>
+                                        <!-- 学科列由JS加载 -->
+                                    </tr>
+                                </thead>
+                                <tbody id="scoresTableBody">
+                                    <!-- 成绩行由JS加载 -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 新建考试模态框 -->
+    <div class="modal fade" id="createExamModal" tabindex="-1" aria-labelledby="createExamModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createExamModalLabel">新建考试</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createExamForm">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="examNameInput" class="form-label">考试名称</label>
+                                <input type="text" class="form-control" id="examNameInput" required placeholder="例如：期中考试">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="examDateInput" class="form-label">考试日期</label>
+                                <input type="date" class="form-control" id="examDateInput" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">考试学科</label>
+                            <div class="row row-cols-2 row-cols-md-4 g-2" id="subjectsContainer">
+                                <div class="col">
+                                    <div class="form-check">
+                                        <input class="form-check-input subject-checkbox" type="checkbox" value="语文" id="subjectChinese">
+                                        <label class="form-check-label" for="subjectChinese">语文</label>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-check">
+                                        <input class="form-check-input subject-checkbox" type="checkbox" value="数学" id="subjectMath">
+                                        <label class="form-check-label" for="subjectMath">数学</label>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-check">
+                                        <input class="form-check-input subject-checkbox" type="checkbox" value="英语" id="subjectEnglish">
+                                        <label class="form-check-label" for="subjectEnglish">英语</label>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-check">
+                                        <input class="form-check-input subject-checkbox" type="checkbox" value="科学" id="subjectScience">
+                                        <label class="form-check-label" for="subjectScience">科学</label>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-check">
+                                        <input class="form-check-input subject-checkbox" type="checkbox" value="道德与法治" id="subjectMoral">
+                                        <label class="form-check-label" for="subjectMoral">道德与法治</label>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-check">
+                                        <input class="form-check-input subject-checkbox" type="checkbox" value="历史" id="subjectHistory">
+                                        <label class="form-check-label" for="subjectHistory">历史</label>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-check">
+                                        <input class="form-check-input subject-checkbox" type="checkbox" value="地理" id="subjectGeography">
+                                        <label class="form-check-label" for="subjectGeography">地理</label>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-check">
+                                        <input class="form-check-input subject-checkbox" type="checkbox" value="物理" id="subjectPhysics">
+                                        <label class="form-check-label" for="subjectPhysics">物理</label>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-check">
+                                        <input class="form-check-input subject-checkbox" type="checkbox" value="化学" id="subjectChemistry">
+                                        <label class="form-check-label" for="subjectChemistry">化学</label>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-check">
+                                        <input class="form-check-input subject-checkbox" type="checkbox" value="生物" id="subjectBiology">
+                                        <label class="form-check-label" for="subjectBiology">生物</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">成绩导入方式</label>
+                            <div class="d-flex gap-3">
+                                <button type="button" id="downloadTemplateBtn" class="btn btn-outline-primary">
+                                    <i class='bx bx-download'></i> 下载模板
+                                </button>
+                                <div class="form-file">
+                                    <input type="file" class="form-control" id="scoresFileInput" accept=".xlsx, .xls">
+                                </div>
+                            </div>
+                            <small class="form-text text-muted">先创建考试，然后可以上传成绩文件</small>
+                        </div>
+                    </form>
+                    
+                    <!-- 预览区域，初始隐藏 -->
+                    <div id="previewContainer" style="display: none;">
+                        <h6>成绩预览</h6>
+                        <div class="preview-table">
+                            <table class="table table-sm table-striped">
+                                <thead id="previewTableHead">
+                                    <!-- 表头由JS动态生成 -->
+                                </thead>
+                                <tbody id="previewTableBody">
+                                    <!-- 表格内容由JS动态生成 -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" id="createExamSubmitBtn">创建考试</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 上传成绩模态框 -->
+    <div class="modal fade" id="uploadScoresModal" tabindex="-1" aria-labelledby="uploadScoresModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="uploadScoresModalLabel">上传成绩</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="uploadScoresForm">
+                        <div class="mb-3">
+                            <label for="uploadExamId" class="form-label">考试</label>
+                            <input type="text" class="form-control" id="uploadExamName" readonly>
+                            <input type="hidden" id="uploadExamId">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">上传成绩文件</label>
+                            <div class="d-flex gap-3">
+                                <button type="button" id="uploadDownloadTemplateBtn" class="btn btn-outline-primary">
+                                    <i class='bx bx-download'></i> 下载模板
+                                </button>
+                                <div class="form-file">
+                                    <input type="file" class="form-control" id="uploadScoresFileInput" accept=".xlsx, .xls" required>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                    
+                    <!-- 预览区域，初始隐藏 -->
+                    <div id="uploadPreviewContainer" style="display: none;">
+                        <h6>成绩预览</h6>
+                        <div class="preview-table">
+                            <table class="table table-sm table-striped">
+                                <thead id="uploadPreviewTableHead">
+                                    <!-- 表头由JS动态生成 -->
+                                </thead>
+                                <tbody id="uploadPreviewTableBody">
+                                    <!-- 表格内容由JS动态生成 -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" id="uploadScoresSubmitBtn">上传成绩</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 编辑考试模态框 -->
+    <div class="modal fade" id="editExamModal" tabindex="-1" aria-labelledby="editExamModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editExamModalLabel">编辑考试</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editExamForm">
+                        <input type="hidden" id="editExamId">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="editExamNameInput" class="form-label">考试名称</label>
+                                <input type="text" class="form-control" id="editExamNameInput" required placeholder="例如：期中考试">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="editExamDateInput" class="form-label">考试日期</label>
+                                <input type="date" class="form-control" id="editExamDateInput" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">考试学科</label>
+                            <div class="row row-cols-2 row-cols-md-4 g-2" id="editSubjectsContainer">
+                                <div class="col">
+                                    <div class="form-check">
+                                        <input class="form-check-input edit-subject-checkbox" type="checkbox" value="语文" id="editSubjectChinese">
+                                        <label class="form-check-label" for="editSubjectChinese">语文</label>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-check">
+                                        <input class="form-check-input edit-subject-checkbox" type="checkbox" value="数学" id="editSubjectMath">
+                                        <label class="form-check-label" for="editSubjectMath">数学</label>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-check">
+                                        <input class="form-check-input edit-subject-checkbox" type="checkbox" value="英语" id="editSubjectEnglish">
+                                        <label class="form-check-label" for="editSubjectEnglish">英语</label>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-check">
+                                        <input class="form-check-input edit-subject-checkbox" type="checkbox" value="科学" id="editSubjectScience">
+                                        <label class="form-check-label" for="editSubjectScience">科学</label>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-check">
+                                        <input class="form-check-input edit-subject-checkbox" type="checkbox" value="道德与法治" id="editSubjectMoral">
+                                        <label class="form-check-label" for="editSubjectMoral">道德与法治</label>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-check">
+                                        <input class="form-check-input edit-subject-checkbox" type="checkbox" value="历史" id="editSubjectHistory">
+                                        <label class="form-check-label" for="editSubjectHistory">历史</label>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-check">
+                                        <input class="form-check-input edit-subject-checkbox" type="checkbox" value="地理" id="editSubjectGeography">
+                                        <label class="form-check-label" for="editSubjectGeography">地理</label>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-check">
+                                        <input class="form-check-input edit-subject-checkbox" type="checkbox" value="物理" id="editSubjectPhysics">
+                                        <label class="form-check-label" for="editSubjectPhysics">物理</label>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-check">
+                                        <input class="form-check-input edit-subject-checkbox" type="checkbox" value="化学" id="editSubjectChemistry">
+                                        <label class="form-check-label" for="editSubjectChemistry">化学</label>
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-check">
+                                        <input class="form-check-input edit-subject-checkbox" type="checkbox" value="生物" id="editSubjectBiology">
+                                        <label class="form-check-label" for="editSubjectBiology">生物</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" id="updateExamBtn">保存修改</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 通知容器 -->
+    <div class="notification-container" id="notificationContainer"></div>
+    
+    <!-- 学生个人成绩分析模态框 -->
+    <div class="modal fade" id="studentAnalysisModal" tabindex="-1" aria-labelledby="studentAnalysisModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="studentAnalysisModalLabel">学生成绩分析</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="student-info">
+                                <h4 id="studentName"></h4>
+                                <p>学号: <span id="studentId"></span></p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex justify-content-end align-items-center">
+                                <label for="studentSubjectSelect" class="me-2">学科:</label>
+                                <select id="studentSubjectSelect" class="form-select" style="width: auto;"></select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 成绩趋势图 -->
+                    <div class="card mb-4">
+                        <div class="card-header">成绩趋势</div>
+                        <div class="card-body">
+                            <div style="height: 300px;">
+                                <canvas id="studentScoreTrendChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 学科对比 -->
+                    <div class="card mb-4">
+                        <div class="card-header">各学科成绩对比</div>
+                        <div class="card-body">
+                            <div style="height: 300px;">
+                                <canvas id="studentSubjectsComparisonChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 详细成绩表格 -->
+                    <div class="card">
+                        <div class="card-header">详细成绩</div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover">
+                                    <thead id="studentScoresTableHead">
+                                        <tr>
+                                            <th>考试名称</th>
+                                            <th>考试日期</th>
+                                            <th>成绩</th>
+                                            <th>班级平均分</th>
+                                            <th>排名</th>
+                                            <th>与平均分差距</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="studentScoresTableBody">
+                                        <!-- 由JS填充 -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 成绩对比分析结果（初始隐藏） -->
+    <div id="compareResultContainer" style="display: none;">
+        <div class="card">
+            <div class="card-header">
+                <span id="compareResultTitle">考试成绩对比分析</span>
+                <button id="backToListFromCompareBtn" class="btn btn-sm btn-outline-secondary float-end">
+                    <i class='bx bx-arrow-back'></i> 返回列表
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-12">
+                        <h5>参与对比的考试</h5>
+                        <div id="comparedExamsList" class="mb-4">
+                            <!-- 对比的考试列表由JS加载 -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 学科对比选择 -->
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <div class="d-flex align-items-center">
+                            <label class="me-3">选择对比学科:</label>
+                            <select id="compareSubjectSelect" class="form-select w-auto"></select>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 平均分对比图表 -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card mb-4">
+                            <div class="card-header">平均分对比</div>
+                            <div class="card-body">
+                                <div style="height: 400px;">
+                                    <canvas id="averageScoreComparisonChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 雷达图和分数段变化图 -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card mb-4">
+                            <div class="card-header">各项指标雷达图</div>
+                            <div class="card-body">
+                                <div style="height: 400px;">
+                                    <canvas id="radarComparisonChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card mb-4">
+                            <div class="card-header">学生成绩变化分布</div>
+                            <div class="card-body">
+                                <div style="height: 400px;">
+                                    <canvas id="scoreChangesDistributionChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 及格率和优秀率对比图表 -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card mb-4">
+                            <div class="card-header">及格率对比</div>
+                            <div class="card-body">
+                                <div style="height: 300px;">
+                                    <canvas id="passRateComparisonChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card mb-4">
+                            <div class="card-header">优秀率对比</div>
+                            <div class="card-body">
+                                <div style="height: 300px;">
+                                    <canvas id="excellentRateComparisonChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 分数段分布对比 -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card mb-4">
+                            <div class="card-header">分数段分布对比</div>
+                            <div class="card-body">
+                                <div style="height: 400px;">
+                                    <canvas id="scoreDistributionComparisonChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 班级学生个人成绩对比 -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <h5>学生个人成绩对比</h5>
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead id="compareStudentsTableHead">
+                                    <!-- 表头由JS加载 -->
+                                </thead>
+                                <tbody id="compareStudentsTableBody">
+                                    <!-- 内容由JS加载 -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 必要的JavaScript库 -->
+    <script src="/js/libs/bootstrap.bundle.min.js"></script>
+    <script src="/js/libs/chart.js"></script>
+    <script src="/js/libs/jquery.min.js"></script>
+    <script src="/js/grade_analysis.js"></script>
+    
+    <!-- 上传试卷模态框 -->
+    <div class="modal fade" id="uploadPaperModal" tabindex="-1" aria-labelledby="uploadPaperModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="uploadPaperModalLabel">上传试卷PDF</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="uploadPaperForm">
+                        <div class="mb-3">
+                            <label for="paperExamId" class="form-label">考试</label>
+                            <input type="text" class="form-control" id="paperExamName" readonly>
+                            <input type="hidden" id="paperExamId">
+                        </div>
+                        <div class="mb-3">
+                            <label for="paperFileInput" class="form-label">试卷文件 (PDF格式)</label>
+                            <input type="file" class="form-control" id="paperFileInput" accept=".pdf" required>
+                            <div class="form-text">请上传清晰的试卷扫描件，包含所有题目和答案</div>
+                        </div>
+                    </form>
+                    <div class="alert alert-info">
+                        <i class='bx bx-info-circle'></i>
+                        系统将对试卷进行智能分析，识别每道题目及学生答案，生成详细的错题统计和教学建议
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" id="uploadPaperSubmitBtn">
+                        <i class='bx bx-upload'></i> 上传并分析
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 试卷分析结果模态框 -->
+    <div class="modal fade" id="paperAnalysisModal" tabindex="-1" aria-labelledby="paperAnalysisModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="paperAnalysisModalLabel">试卷分析</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="paperAnalysisLoading" class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">加载中...</span>
+                        </div>
+                        <p class="mt-2">正在加载分析结果...</p>
+                    </div>
+                    
+                    <div id="paperAnalysisContent" style="display: none;">
+                        <!-- 基本信息 -->
+                        <div class="card mb-4">
+                            <div class="card-header">试卷基本信息</div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <p><strong>考试名称：</strong><span id="paperExamNameDisplay"></span></p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <p><strong>学科：</strong><span id="paperSubjectDisplay"></span></p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <p><strong>试卷总分：</strong><span id="paperTotalScore">100</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 题目分析 -->
+                        <div class="card mb-4">
+                            <div class="card-header">题目分析</div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>题号</th>
+                                                <th>题型</th>
+                                                <th>分值</th>
+                                                <th>正确率</th>
+                                                <th>错误人数</th>
+                                                <th>难度等级</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="questionAnalysisTable">
+                                            <!-- 由JS填充 -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 错题分布图表 -->
+                        <div class="card mb-4">
+                            <div class="card-header">错题分布</div>
+                            <div class="card-body">
+                                <div style="height: 400px;">
+                                    <canvas id="errorDistributionChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- AI分析结果 -->
+                        <div class="card mb-4">
+                            <div class="card-header">AI教学分析</div>
+                            <div class="card-body">
+                                <h5>总体评价</h5>
+                                <div id="aiOverallAnalysis" class="mb-4">
+                                    <!-- 由JS填充 -->
+                                </div>
+                                
+                                <h5>薄弱知识点分析</h5>
+                                <div id="aiWeakPointsAnalysis" class="mb-4">
+                                    <!-- 由JS填充 -->
+                                </div>
+                                
+                                <h5>教学建议</h5>
+                                <div id="aiTeachingSuggestions">
+                                    <!-- 由JS填充 -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" id="downloadAnalysisReportBtn">
+                        <i class='bx bx-download'></i> 下载分析报告
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 
