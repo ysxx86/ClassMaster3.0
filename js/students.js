@@ -379,16 +379,16 @@ function createStudentCard(student) {
             </div>
             <div class="card-footer p-2">
                 <div class="d-flex justify-content-between flex-wrap">
-                    <button type="button" class="btn btn-outline-info btn-sm mb-1" onclick="viewStudentDetails('${student.id}', '${student.class_id}')">
+                    <button type="button" class="btn btn-outline-info btn-sm mb-1" onclick="viewStudentDetails('${student.id || ''}', '${student.class_id || ''}', '${student.rowid || ''}')">
                         <i class="bi bi-info-circle"></i> 详情
                     </button>
-                    <button type="button" class="btn btn-outline-success btn-sm mb-1" onclick="openCommentModal('${student.id}', '${student.class_id}')">
+                    <button type="button" class="btn btn-outline-success btn-sm mb-1" onclick="openCommentModal('${student.id || ''}', '${student.class_id || ''}', '${student.rowid || ''}')">
                         <i class="bi bi-chat-text"></i> 评语
                     </button>
-                    <button type="button" class="btn btn-outline-primary btn-sm mb-1" onclick="openEditStudentModal('${student.id}', '${student.class_id}')">
+                    <button type="button" class="btn btn-outline-primary btn-sm mb-1" onclick="openEditStudentModal('${student.id || ''}', '${student.class_id || ''}', '${student.rowid || ''}')">
                         <i class="bi bi-pencil"></i> 编辑
                     </button>
-                    <button type="button" class="btn btn-outline-danger btn-sm mb-1" onclick="deleteStudent('${student.id}', '${student.class_id}')">
+                    <button type="button" class="btn btn-outline-danger btn-sm mb-1" onclick="deleteStudent('${student.id || ''}', '${student.class_id || ''}', '${student.rowid || ''}')">
                         <i class="bi bi-trash"></i> 删除
                     </button>
                 </div>
@@ -400,7 +400,7 @@ function createStudentCard(student) {
 }
 
 // 查看学生详情
-function viewStudentDetails(studentId, classId) {
+function viewStudentDetails(studentId, classId, rowid) {
     // 如果没有提供classId，使用当前用户的班级ID
     if (!classId && currentUserClassId) {
         classId = currentUserClassId;
@@ -421,8 +421,18 @@ function viewStudentDetails(studentId, classId) {
     // 显示加载状态
     const loadingToast = showNotification('正在加载学生详细数据...', 'info', false);
     
-    // 从服务器获取学生数据，使用新的API路径和参数
-    fetch(`/api/student/${studentId}?class_id=${classId}`)
+    // 从服务器获取学生数据，使用 id 或 rowid
+    let url = '';
+    if (studentId) {
+        url = `/api/student/${encodeURIComponent(studentId)}?class_id=${encodeURIComponent(classId)}`;
+    } else if (rowid) {
+        url = `/api/student-by-rowid/${encodeURIComponent(rowid)}?class_id=${encodeURIComponent(classId)}`;
+    } else {
+        showNotification('无法加载学生详情：缺少标识', 'error');
+        return;
+    }
+
+    fetch(url)
         .then(response => {
             if (!response.ok) {
                 throw new Error(`服务器响应错误: ${response.status}`);
@@ -736,9 +746,10 @@ function generateHealthAnalysis(student) {
 
 // 添加学生
 function addStudent() {
-    const id = document.getElementById('studentId').value;
-    const name = document.getElementById('studentName').value;
-    const gender = document.querySelector('input[name="gender"]:checked').value;
+    const id = (document.getElementById('studentId').value || '').trim();
+    const name = (document.getElementById('studentName').value || '').trim();
+    const genderNode = document.querySelector('input[name="gender"]:checked');
+    const gender = genderNode ? genderNode.value : '';
     const studentClass = document.getElementById('studentClass').value;
     const height = document.getElementById('studentHeight').value;
     const weight = document.getElementById('studentWeight').value;
@@ -749,6 +760,18 @@ function addStudent() {
     const dentalCaries = document.getElementById('studentDental').value;
     const physicalTest = document.getElementById('studentPhysical').value;
     
+    // 简单前端验证：学号、姓名、性别为必填
+    if (!id || !name || !gender) {
+        showNotification('请填写学号、姓名并选择性别', 'error');
+        // 恢复按钮状态（如果由按钮触发）并返回
+        const saveBtnFail = document.querySelector('#addStudentModal .btn-primary');
+        if (saveBtnFail) {
+            saveBtnFail.disabled = false;
+            saveBtnFail.innerHTML = '保存';
+        }
+        return;
+    }
+
     // 创建学生对象 - 使用下划线命名风格以与服务器保持一致
     const student = {
         id,
@@ -824,7 +847,7 @@ function addStudent() {
 }
 
 // 打开编辑学生模态框
-function openEditStudentModal(studentId, classId) {
+function openEditStudentModal(studentId, classId, rowid) {
     // 如果没有提供classId，使用当前用户的班级ID
     if (!classId && currentUserClassId) {
         classId = currentUserClassId;
@@ -851,8 +874,18 @@ function openEditStudentModal(studentId, classId) {
     // 显示加载状态
     const loadingToast = showNotification('正在加载学生数据...', 'info', false);
     
-    // 从服务器获取学生数据，使用新的API路径和参数
-    fetch(`/api/student/${studentId}?class_id=${classId}`)
+    // 从服务器获取学生数据，使用 id 或 rowid
+    let url = '';
+    if (studentId) {
+        url = `/api/student/${encodeURIComponent(studentId)}?class_id=${encodeURIComponent(classId)}`;
+    } else if (rowid) {
+        url = `/api/student-by-rowid/${encodeURIComponent(rowid)}?class_id=${encodeURIComponent(classId)}`;
+    } else {
+        showNotification('无法加载学生信息：缺少标识', 'error');
+        return;
+    }
+
+    fetch(url)
         .then(response => {
             if (!response.ok) {
                 throw new Error(`服务器响应错误: ${response.status}`);
@@ -1045,7 +1078,7 @@ function notifyDataChanged() {
 }
 
 // 删除学生
-function deleteStudent(studentId, classId) {
+function deleteStudent(studentId, classId, rowid) {
     // 如果没有提供studentId参数，尝试从隐藏输入框获取
     if (!studentId) {
         studentId = document.getElementById('deleteStudentId').value;
@@ -1088,7 +1121,7 @@ function deleteStudent(studentId, classId) {
         studentName = student ? student.name : '未知学生';
     }
     
-    if (!studentId) {
+    if (!studentId && !rowid) {
         console.error('删除学生失败: 未找到学生ID');
         showNotification('删除学生失败: 未找到学生ID', 'error');
         return;
@@ -1110,6 +1143,14 @@ function deleteStudent(studentId, classId) {
             modalElement.querySelector('.modal-body').appendChild(classIdInput);
         }
         document.getElementById('deleteClassId').value = classId;
+        // 保存 rowid 到隐藏字段以便确认时使用
+        if (!document.getElementById('deleteRowId')) {
+            const rowInput = document.createElement('input');
+            rowInput.type = 'hidden';
+            rowInput.id = 'deleteRowId';
+            modalElement.querySelector('.modal-body').appendChild(rowInput);
+        }
+        document.getElementById('deleteRowId').value = rowid || '';
         
         // 显示确认删除模态框
         const deleteModal = new bootstrap.Modal(modalElement);
@@ -1124,8 +1165,17 @@ function deleteStudent(studentId, classId) {
         deleteBtn.disabled = true;
     }
     
-    // 首先尝试从服务器删除，使用新的API路径和参数
-    fetch(`/api/student/${studentId}?class_id=${classId}`, {
+    // 首先尝试从服务器删除，优先使用 studentId；如果没有 studentId，则使用 rowid 专用删除接口
+    let deleteUrl = '';
+    if (studentId) {
+        deleteUrl = `/api/student/${encodeURIComponent(studentId)}?class_id=${encodeURIComponent(classId)}`;
+    } else {
+        // 使用 rowid 删除
+        const idForRow = rowid || (document.getElementById('deleteRowId') ? document.getElementById('deleteRowId').value : '');
+        deleteUrl = `/api/student-by-rowid/${encodeURIComponent(idForRow)}?class_id=${encodeURIComponent(classId)}`;
+    }
+
+    fetch(deleteUrl, {
         method: 'DELETE'
     })
     .then(response => {
@@ -1992,7 +2042,7 @@ function showNotification(message, type = 'success') {
 }
 
 // 打开评语模态框
-function openCommentModal(studentId, classId) {
+function openCommentModal(studentId, classId, rowid) {
     // 如果没有提供classId，使用当前用户的班级ID
     if (!classId && currentUserClassId) {
         classId = currentUserClassId;
@@ -2013,8 +2063,18 @@ function openCommentModal(studentId, classId) {
     // 显示加载状态
     const loadingToast = showNotification('正在加载学生评语数据...', 'info', false);
     
-    // 从服务器获取学生数据，使用新的API路径和参数
-    fetch(`/api/student/${studentId}?class_id=${classId}`)
+    // 从服务器获取学生数据，使用 id 或 rowid
+    let url = '';
+    if (studentId) {
+        url = `/api/student/${encodeURIComponent(studentId)}?class_id=${encodeURIComponent(classId)}`;
+    } else if (rowid) {
+        url = `/api/student-by-rowid/${encodeURIComponent(rowid)}?class_id=${encodeURIComponent(classId)}`;
+    } else {
+        showNotification('无法加载评语：缺少学生标识', 'error');
+        return;
+    }
+
+    fetch(url)
         .then(response => {
             if (!response.ok) {
                 throw new Error(`服务器响应错误: ${response.status}`);
@@ -2389,30 +2449,35 @@ function clearAllStudents() {
     // 关闭模态框
     const clearStudentsModal = bootstrap.Modal.getInstance(document.getElementById('clearStudentsModal'));
     
-    // 调用清除学生的API
-    fetch('/api/clear-students', {
+    // 调用清除学生的API（使用 query 参数以避免部分服务器/代理丢弃 DELETE body）
+    let url = '/api/clear-students';
+    if (classId) {
+        url += `?class_id=${encodeURIComponent(classId)}`;
+    }
+
+    fetch(url, {
         method: 'DELETE',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ class_id: classId })
+        credentials: 'same-origin'
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            return response.text().then(text => {
+                throw new Error(`服务器响应错误: ${response.status} ${text}`);
+            });
+        }
+        return response.json();
+    })
     .then(data => {
-        clearStudentsModal.hide();
-        
-        if (data.status === 'ok') {
-            // 显示成功通知
+        if (clearStudentsModal) {
+            clearStudentsModal.hide();
+        }
+
+        if (data && data.status === 'ok') {
             showNotification('所有学生数据已成功清除', 'success');
-            
-            // 通知其他页面数据已变更
             notifyDataChanged();
-            
-            // 重新加载学生列表（应该是空的了）
             loadStudentsFromServer();
         } else {
-            // 显示错误消息
-            showNotification(`清除失败: ${data.message}`, 'error');
+            showNotification(`清除失败: ${data && data.message ? data.message : '未知错误'}`, 'error');
         }
     })
     .catch(error => {

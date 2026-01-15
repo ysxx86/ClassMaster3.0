@@ -147,7 +147,7 @@ def get_all_students():
         if class_id:
             logger.info(f"仅获取班级 {class_id} 的学生")
             cursor.execute('''
-                SELECT s.*, c.class_name 
+                SELECT s.rowid AS rowid, s.*, c.class_name 
                 FROM students s
                 LEFT JOIN classes c ON s.class_id = c.id
                 WHERE s.class_id = ? 
@@ -156,7 +156,7 @@ def get_all_students():
         else:
             logger.info(f"获取所有学生")
             cursor.execute('''
-                SELECT s.*, c.class_name 
+                SELECT s.rowid AS rowid, s.*, c.class_name 
                 FROM students s
                 LEFT JOIN classes c ON s.class_id = c.id
                 ORDER BY CAST(s.id AS INTEGER)
@@ -504,6 +504,117 @@ def delete_student(student_id):
         return jsonify({'error': f'删除学生失败: {str(e)}'}), 500
     finally:
         conn.close()
+
+
+@students_bp.route('/api/student-by-rowid/<int:rowid>', methods=['DELETE'])
+@login_required
+def delete_student_by_rowid(rowid):
+    """根据 SQLite 的 rowid 删除学生（用于那些没有学号的异常记录）。"""
+    try:
+        # 获取班级ID
+        class_id = request.args.get('class_id')
+        if not class_id:
+            return jsonify({'error': '缺少班级ID'}), 400
+
+        # 如果是班主任且没有分配班级，不允许删除学生
+        if not current_user.is_admin and not current_user.class_id:
+            logger.warning(f"班主任 {current_user.username} 未分配班级，不能删除学生")
+            return jsonify({'error': '您尚未被分配班级，无法删除学生'}), 403
+
+        # 班主任只能删除自己班级的学生
+        if not current_user.is_admin and str(current_user.class_id) != str(class_id):
+            return jsonify({'error': '您只能删除自己班级的学生'}), 403
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # 查询该 rowid 对应的学生并验证班级
+        cursor.execute('SELECT id, class_id FROM students WHERE rowid = ?', (rowid,))
+        row = cursor.fetchone()
+        if not row:
+            conn.close()
+            return jsonify({'error': '未找到该学生'}), 404
+
+        db_id = row['id'] if 'id' in row.keys() else None
+        db_class = row['class_id'] if 'class_id' in row.keys() else None
+
+        if str(db_class) != str(class_id):
+            conn.close()
+            return jsonify({'error': '班级ID不匹配，无法删除'}), 403
+
+        # 尝试删除关联评论
+        try:
+            # 如果学生有 id 值则用之，否则删除 student_id 为空或 NULL 的评论（可能与该记录相关）
+            if db_id:
+                cursor.execute('DELETE FROM comments WHERE student_id = ?', (db_id,))
+            else:
+                cursor.execute("DELETE FROM comments WHERE student_id IS NULL OR student_id = ''")
+        except Exception as e:
+            logger.warning(f"删除相关评语时出错（继续尝试删除学生）: {str(e)}")
+
+        # 删除学生记录（使用 rowid）
+        try:
+            cursor.execute('PRAGMA foreign_keys = OFF')
+            cursor.execute('DELETE FROM students WHERE rowid = ?', (rowid,))
+            conn.commit()
+        finally:
+            try:
+                cursor.execute('PRAGMA foreign_keys = ON')
+            except Exception:
+                logger.warning('重新启用 PRAGMA foreign_keys 时出错')
+
+        conn.close()
+        return jsonify({'message': '学生删除成功', 'data_changed': True, 'timestamp': datetime.datetime.now().timestamp()})
+
+    except Exception as e:
+        logger.exception(f"根据 rowid 删除学生时出错: {str(e)}")
+        try:
+            if 'conn' in locals() and conn:
+                conn.rollback()
+                conn.close()
+        except Exception:
+            pass
+        return jsonify({'error': f'删除学生失败: {str(e)}'}), 500
+
+
+@students_bp.route('/api/student-by-rowid/<int:rowid>', methods=['GET'])
+@login_required
+def get_student_by_rowid(rowid):
+    """根据 rowid 获取学生详情（用于处理无学号的记录）。"""
+    try:
+        class_id = request.args.get('class_id')
+        if not class_id:
+            return jsonify({'error': '缺少班级ID'}), 400
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute('SELECT rowid, s.*, c.class_name FROM students s LEFT JOIN classes c ON s.class_id = c.id WHERE rowid = ? AND s.class_id = ?', (rowid, class_id))
+        student = cursor.fetchone()
+        if not student:
+            conn.close()
+            return jsonify({'error': '未找到该学生'}), 404
+
+        student_dict = dict(student)
+
+        # 处理数值字段
+        numeric_fields = ['height', 'weight', 'chest_circumference', 'vital_capacity', 'vision_left', 'vision_right']
+        for field in numeric_fields:
+            if field in student_dict and student_dict[field] is not None:
+                try:
+                    student_dict[field] = float(student_dict[field])
+                except Exception:
+                    pass
+
+        conn.close()
+        return jsonify(student_dict)
+    except Exception as e:
+        logger.exception(f"根据 rowid 获取学生详情时出错: {str(e)}")
+        try:
+            if 'conn' in locals() and conn:
+                conn.close()
+        except Exception:
+            pass
+        return jsonify({'error': f'获取学生详情失败: {str(e)}'}), 500
 
 # 定义成绩等级和德育维度分数限制
 VALID_GRADES = ['优', '良', '及格', '待及格', '/']
@@ -1293,7 +1404,7 @@ def get_students():
         if not is_admin and current_user_class_id:
             logger.info(f"班主任查询自己班级 {current_user_class_id} 的学生")
             cursor.execute('''
-                SELECT s.*, c.class_name 
+                SELECT s.rowid AS rowid, s.*, c.class_name 
                 FROM students s 
                 LEFT JOIN classes c ON s.class_id = c.id 
                 WHERE s.class_id = ? 
@@ -1307,7 +1418,7 @@ def get_students():
                 int_class_id = int(class_id)
                 logger.info(f"以数字形式查询班级ID: {int_class_id}")
                 cursor.execute('''
-                    SELECT s.*, c.class_name 
+                    SELECT s.rowid AS rowid, s.*, c.class_name 
                     FROM students s 
                     LEFT JOIN classes c ON s.class_id = c.id 
                     WHERE s.class_id = ? 
@@ -1317,7 +1428,7 @@ def get_students():
                 # 如果无法转为整数，尝试按班级名称查询
                 logger.info(f"尝试以班级名称查询: {class_id}")
                 cursor.execute('''
-                    SELECT s.*, c.class_name 
+                    SELECT s.rowid AS rowid, s.*, c.class_name 
                     FROM students s 
                     LEFT JOIN classes c ON s.class_id = c.id 
                     WHERE s.class_id = ? 
@@ -1333,7 +1444,7 @@ def get_students():
             else:
                 # 重置游标位置
                 cursor.execute('''
-                    SELECT s.*, c.class_name 
+                    SELECT s.rowid AS rowid, s.*, c.class_name 
                     FROM students s 
                     LEFT JOIN classes c ON s.class_id = c.id 
                     WHERE s.class_id = ? 
@@ -1342,7 +1453,7 @@ def get_students():
         else:
             logger.info("管理员查询所有学生")
             cursor.execute('''
-                SELECT s.*, c.class_name 
+                SELECT s.rowid AS rowid, s.*, c.class_name 
                 FROM students s 
                 LEFT JOIN classes c ON s.class_id = c.id 
                 ORDER BY CAST(s.id AS INTEGER)
@@ -1411,8 +1522,26 @@ def clear_all_students():
                     'count': 0
                 })
             
+            # 先删除依赖表中的相关数据以避免外键冲突（例如 comments 表）
+            try:
+                cursor.execute('DELETE FROM comments WHERE student_id IN (SELECT id FROM students WHERE class_id = ?)', (class_id,))
+                logger.debug('已删除该班级关联的 comments 记录')
+            except Exception as e:
+                # 记录警告但继续尝试删除学生（有时外键定义不一致）
+                logger.warning(f"删除关联 comments 记录时出错: {e}")
+
             # 删除指定班级的所有学生
+            # 为了应对可能的 foreign key mismatch 问题，短暂关闭外键检查再执行删除
+            try:
+                cursor.execute('PRAGMA foreign_keys = OFF')
+            except Exception:
+                logger.warning('无法关闭 PRAGMA foreign_keys')
+
             cursor.execute('DELETE FROM students WHERE class_id = ?', (class_id,))
+            try:
+                cursor.execute('PRAGMA foreign_keys = ON')
+            except Exception:
+                logger.warning('无法重新启用 PRAGMA foreign_keys')
             
             # 提交事务
             conn.commit()
@@ -1436,6 +1565,67 @@ def clear_all_students():
     except Exception as e:
         logger.error(f"清除学生名单API出错: {str(e)}")
         return jsonify({'status': 'error', 'message': f'清除学生名单失败: {str(e)}'}), 500 
+
+
+@students_bp.route('/api/cleanup-students', methods=['POST'])
+@login_required
+def cleanup_students():
+    """删除某个班级中没有学号（id 为空或 NULL）的学生记录，并尝试删除相关评论。"""
+    try:
+        data = request.get_json()
+        class_id = data.get('class_id') if data else None
+
+        # 班主任只能操作自己班级
+        if not current_user.is_admin:
+            if not current_user.class_id:
+                return jsonify({'status': 'error', 'message': '您尚未被分配班级，无法执行清理'}), 403
+            class_id = current_user.class_id
+
+        if current_user.is_admin and not class_id:
+            return jsonify({'status': 'error', 'message': '管理员必须提供要清理的班级ID (class_id)'}), 400
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # 统计待删除记录数
+        cursor.execute("SELECT COUNT(*) FROM students WHERE (id IS NULL OR id = '') AND class_id = ?", (class_id,))
+        row = cursor.fetchone()
+        to_delete = row[0] if row else 0
+
+        if to_delete == 0:
+            conn.close()
+            return jsonify({'status': 'ok', 'message': '没有需要清理的学生', 'deleted': 0})
+
+        # 删除相关 comments（以 students.id 为关联字段）
+        try:
+            cursor.execute("DELETE FROM comments WHERE student_id IN (SELECT id FROM students WHERE (id IS NULL OR id = '') AND class_id = ?)", (class_id,))
+        except Exception as e:
+            logger.warning(f"清理 comments 时出错: {e}")
+
+        # 删除 students 中 id 为空或 NULL 的记录
+        try:
+            cursor.execute('BEGIN')
+        except Exception:
+            pass
+
+        cursor.execute("DELETE FROM students WHERE (id IS NULL OR id = '') AND class_id = ?", (class_id,))
+        deleted = cursor.rowcount if hasattr(cursor, 'rowcount') else to_delete
+
+        conn.commit()
+        conn.close()
+
+        logger.info(f"已清理班级 {class_id} 中 {deleted} 条无学号的学生记录")
+        return jsonify({'status': 'ok', 'message': f'已删除 {deleted} 条无学号学生', 'deleted': deleted})
+
+    except Exception as e:
+        logger.exception(f"清理无学号学生时出错: {str(e)}")
+        try:
+            if 'conn' in locals() and conn:
+                conn.rollback()
+                conn.close()
+        except Exception:
+            pass
+        return jsonify({'status': 'error', 'message': f'清理失败: {str(e)}'}), 500
 
 # 导出学生数据到Excel
 @students_bp.route('/api/students/export-excel', methods=['GET'])

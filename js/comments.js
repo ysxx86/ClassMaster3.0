@@ -795,8 +795,11 @@ function showPrintPreview() {
         });
     };
     
-    // 清空预览内容并添加iframe
+    // 清空预览内容并添加iframe（设置明确高度以确保 iframe 可见）
     previewContent.innerHTML = '';
+    // 设置预览内容和 iframe 的高度，避免 100% 高度在父容器未设置时为 0
+    previewContent.style.height = previewContent.style.height || '80vh';
+    previewFrame.style.height = previewFrame.style.height || '80vh';
     previewContent.appendChild(previewFrame);
     
     // 获取过滤参数
@@ -1442,8 +1445,8 @@ function bindEventListeners() {
         });
     }
     
-    // 绑定打印预览按钮
-    const previewBtn = document.getElementById('previewCommentsBtn');
+    // 绑定打印预览按钮（兼容两种ID命名）
+    const previewBtn = document.getElementById('previewCommentsBtn') || document.getElementById('printPreviewBtn');
     if (previewBtn) {
         previewBtn.addEventListener('click', showPrintPreview);
     }
