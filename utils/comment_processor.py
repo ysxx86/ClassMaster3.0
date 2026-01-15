@@ -677,8 +677,17 @@ def generate_preview_html(class_name=None, current_user=None):
             </div>
             """
         
-        # 结束HTML
+        # 在 HTML 末尾插入脚本，向父窗口发送加载完成的消息（便于前端 iframe 通知）
         html_content += """
+        <script>
+            try {
+                if (window.parent && window.parent !== window) {
+                    window.parent.postMessage({type: 'previewLoaded', timestamp: Date.now()}, '*');
+                }
+            } catch (e) {
+                // 忽略跨域或其他错误
+            }
+        </script>
         </body>
         </html>
         """
