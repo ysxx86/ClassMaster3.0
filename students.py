@@ -344,11 +344,13 @@ def update_student(student_id):
                 except (ValueError, TypeError):
                     return jsonify({'error': f'字段 {field} 的值无效'}), 400
         
-        # 处理其他字段
+        # 处理其他字段，忽略前端可能提交的 'class' 字段（数据库中使用 'class_id'）
         for field, value in data.items():
-            if field not in numeric_fields and field != 'class_id':
-                update_fields.append(f"{field} = ?")
-                update_values.append(value)
+            # 不允许更新主键 'id'，也忽略前端可能提交的 'class' 字段（数据库中使用 'class_id'）
+            if field in numeric_fields or field in ('class_id', 'class', 'id'):
+                continue
+            update_fields.append(f"{field} = ?")
+            update_values.append(value)
         
         # 添加更新时间
         update_fields.append("updated_at = ?")
@@ -363,14 +365,17 @@ def update_student(student_id):
             SET {', '.join(update_fields)}
             WHERE id = ? AND class_id = ?
         """
-        
+        logger.debug(f"update_sql: {update_sql}")
+        logger.debug(f"update_fields: {update_fields}")
+        logger.debug(f"update_values: {update_values}")
+
         cursor.execute(update_sql, update_values)
         conn.commit()
         
         return jsonify({'message': '学生信息更新成功'})
         
     except Exception as e:
-        logger.error(f"更新学生信息时出错: {str(e)}")
+        logger.exception(f"更新学生信息时出错: {str(e)}")
         return jsonify({'error': f'更新学生信息失败: {str(e)}'}), 500
     finally:
         conn.close()
@@ -445,12 +450,49 @@ def delete_student(student_id):
                       (student_id, class_id))
         if not cursor.fetchone():
             return jsonify({'error': '未找到该学生'}), 404
-        
+        # 记录调试信息：学生与班级，comments 计数与示例，以及 students 表的外键定义
+        try:
+            logger.debug(f"尝试删除学生，student_id={student_id}, class_id={class_id}")
+            cursor.execute('SELECT COUNT(*) as cnt FROM comments WHERE student_id = ?', (student_id,))
+            cnt_row = cursor.fetchone()
+            cnt = cnt_row[0] if cnt_row else 0
+            logger.debug(f"comments 中匹配该 student_id 的记录数: {cnt}")
+            # 取少量示例行以便查看 student_id 的存储形式
+            cursor.execute('SELECT rowid, student_id, class_id, comment FROM comments WHERE student_id = ? LIMIT 5', (student_id,))
+            sample_comments = cursor.fetchall()
+            logger.debug(f"comments 示例: {sample_comments}")
+            # 查看 students 表的外键定义，帮助确认 foreign key 的目标列
+            try:
+                cursor.execute("PRAGMA foreign_key_list('students')")
+                fk_list = cursor.fetchall()
+                logger.debug(f"students 表的 foreign_key_list: {fk_list}")
+            except Exception as fk_e:
+                logger.debug(f"获取 students 表外键信息时出错: {fk_e}")
+
+            # 先删除与学生相关的评语以避免外键约束冲突
+            try:
+                cursor.execute('DELETE FROM comments WHERE student_id = ?', (student_id,))
+            except Exception as e:
+                # 记录但不阻止删除操作，后续删除仍尝试执行
+                logger.warning(f"删除相关评语时出错（继续尝试删除学生）: {str(e)}")
+        except Exception as dbg_e:
+            logger.exception(f"删除学生前的调试查询出错: {dbg_e}")
+
         # 删除学生
-        cursor.execute('DELETE FROM students WHERE id = ? AND class_id = ?', 
-                      (student_id, class_id))
-        
-        conn.commit()
+        try:
+            # 为了应对数据库中外键定义不一致导致的 foreign key mismatch，
+            # 在删除操作时短暂关闭 foreign key 检查（先删除 comments 后再删 students）
+            logger.debug("短暂关闭 PRAGMA foreign_keys 以执行删除操作")
+            cursor.execute('PRAGMA foreign_keys = OFF')
+            cursor.execute('DELETE FROM students WHERE id = ? AND class_id = ?', 
+                          (student_id, class_id))
+            conn.commit()
+        finally:
+            try:
+                cursor.execute('PRAGMA foreign_keys = ON')
+                logger.debug('已重新启用 PRAGMA foreign_keys')
+            except Exception:
+                logger.warning('重新启用 PRAGMA foreign_keys 时出错')
         return jsonify({
             'message': '学生删除成功',
             'data_changed': True,  # 添加数据更改标志，用于通知前端刷新
@@ -458,7 +500,7 @@ def delete_student(student_id):
         })
         
     except Exception as e:
-        logger.error(f"删除学生时出错: {str(e)}")
+        logger.exception(f"删除学生时出错: {str(e)}")
         return jsonify({'error': f'删除学生失败: {str(e)}'}), 500
     finally:
         conn.close()

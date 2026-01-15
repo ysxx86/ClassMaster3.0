@@ -198,15 +198,13 @@ def export_comments_to_pdf(class_name=None, output_file=None, school_name=None, 
         
         # 查询语句，增加班级ID筛选
         if hasattr(current_user, 'is_authenticated') and current_user.is_authenticated and hasattr(current_user, 'is_admin') and not current_user.is_admin and hasattr(current_user, 'class_id') and current_user.class_id:
-            # 班主任只能导出本班级学生
-            if class_name:
-                query = 'SELECT id, name, gender, c.class_name as class, c.class_name as class_id, comments, updated_at FROM students s LEFT JOIN classes c ON s.class_id = c.id WHERE class_id = ? AND class_id = ? ORDER BY CAST(id AS INTEGER)'
-                logger.info(f"班主任模式: 执行查询: {query} 参数: {class_name}, {current_user.class_id}")
-                cursor.execute(query, (class_name, current_user.class_id))
-            else:
-                query = 'SELECT id, name, gender, c.class_name as class, c.class_name as class_id, comments, updated_at FROM students s LEFT JOIN classes c ON s.class_id = c.id WHERE class_id = ? ORDER BY CAST(id AS INTEGER)'
-                logger.info(f"班主任模式: 执行查询: {query} 参数: {current_user.class_id}")
-                cursor.execute(query, (current_user.class_id,))
+            # 班主任只能导出本班级学生，优先使用班主任自己的 class_id 进行筛选，避免使用不可靠的 class_name 参数
+            query = ('SELECT s.id as id, s.name as name, s.gender as gender, '
+                     'c.class_name as class, s.class_id as class_id, s.comments as comments, s.updated_at as updated_at '
+                     'FROM students s LEFT JOIN classes c ON s.class_id = c.id '
+                     'WHERE s.class_id = ? ORDER BY CAST(s.id AS INTEGER)')
+            logger.info(f"班主任模式: 执行查询: {query} 参数: {current_user.class_id}")
+            cursor.execute(query, (current_user.class_id,))
         else:
             # 管理员可以导出所有班级，未登录用户或会话过期的用户视为游客
             if not hasattr(current_user, 'is_authenticated') or not current_user.is_authenticated:
@@ -214,11 +212,27 @@ def export_comments_to_pdf(class_name=None, output_file=None, school_name=None, 
                 return {'status': 'error', 'message': '您需要登录后才能导出报告'}
                 
             if class_name:
-                query = 'SELECT id, name, gender, c.class_name as class, c.class_name as class_id, comments, updated_at FROM students s LEFT JOIN classes c ON s.class_id = c.id WHERE class_id = ? ORDER BY CAST(id AS INTEGER)'
-                logger.info(f"管理员模式: 执行查询: {query} 参数: {class_name}")
-                cursor.execute(query, (class_name,))
+                # class_name 可能是 class id（数字）或班级名称（字符串），分别处理
+                try:
+                    class_id_param = int(class_name)
+                    query = ('SELECT s.id as id, s.name as name, s.gender as gender, '
+                             'c.class_name as class, s.class_id as class_id, s.comments as comments, s.updated_at as updated_at '
+                             'FROM students s LEFT JOIN classes c ON s.class_id = c.id '
+                             'WHERE s.class_id = ? ORDER BY CAST(s.id AS INTEGER)')
+                    logger.info(f"管理员模式(按ID筛选): 执行查询: {query} 参数: {class_id_param}")
+                    cursor.execute(query, (class_id_param,))
+                except ValueError:
+                    # 按班级名称筛选
+                    query = ('SELECT s.id as id, s.name as name, s.gender as gender, '
+                             'c.class_name as class, s.class_id as class_id, s.comments as comments, s.updated_at as updated_at '
+                             'FROM students s LEFT JOIN classes c ON s.class_id = c.id '
+                             'WHERE c.class_name = ? ORDER BY CAST(s.id AS INTEGER)')
+                    logger.info(f"管理员模式(按名称筛选): 执行查询: {query} 参数: {class_name}")
+                    cursor.execute(query, (class_name,))
             else:
-                query = 'SELECT id, name, gender, c.class_name as class, c.class_name as class_id, comments, updated_at FROM students s LEFT JOIN classes c ON s.class_id = c.id ORDER BY class, CAST(id AS INTEGER)'
+                query = ('SELECT s.id as id, s.name as name, s.gender as gender, '
+                         'c.class_name as class, s.class_id as class_id, s.comments as comments, s.updated_at as updated_at '
+                         'FROM students s LEFT JOIN classes c ON s.class_id = c.id ORDER BY c.class_name, CAST(s.id AS INTEGER)')
                 logger.info(f"管理员模式: 执行查询: {query}")
                 cursor.execute(query)
         

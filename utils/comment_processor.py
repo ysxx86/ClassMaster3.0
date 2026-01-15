@@ -481,15 +481,21 @@ def generate_preview_html(class_name=None, current_user=None):
         cursor = conn.cursor()
         
         # 根据用户权限和班级参数构建查询
-        if current_user and not current_user.is_admin and current_user.class_id:
-            # 如果是班主任，只获取其班级的学生
-            cursor.execute('SELECT id, name, gender, c.class_name as class, comments, updated_at FROM students s LEFT JOIN classes c ON s.class_id = c.id WHERE class_id = ? ORDER BY CAST(id AS INTEGER)', (current_user.class_id,))
+        # 始终限定列名以防止 "ambiguous column name: id" 错误
+        select_sql = 'SELECT s.id, s.name, s.gender, c.class_name as class, s.comments, s.updated_at FROM students s LEFT JOIN classes c ON s.class_id = c.id'
+
+        if current_user and not getattr(current_user, 'is_admin', False) and getattr(current_user, 'class_id', None):
+            # 如果是班主任，只获取其班级的学生（按 class_id 过滤）
+            cursor.execute(select_sql + ' WHERE s.class_id = ? ORDER BY CAST(s.id AS INTEGER)', (current_user.class_id,))
         elif class_name:
-            # 如果指定了班级，获取该班级的学生
-            cursor.execute('SELECT id, name, gender, c.class_name as class, comments, updated_at FROM students s LEFT JOIN classes c ON s.class_id = c.id WHERE class_id = ? ORDER BY CAST(id AS INTEGER)', (class_name,))
+            # 如果指定了班级，支持传入 class_id（数字）或 class_name（字符串）
+            if str(class_name).isdigit():
+                cursor.execute(select_sql + ' WHERE s.class_id = ? ORDER BY CAST(s.id AS INTEGER)', (int(class_name),))
+            else:
+                cursor.execute(select_sql + ' WHERE c.class_name = ? ORDER BY CAST(s.id AS INTEGER)', (class_name,))
         else:
-            # 否则获取所有学生
-            cursor.execute('SELECT id, name, gender, c.class_name as class, comments, updated_at FROM students s LEFT JOIN classes c ON s.class_id = c.id ORDER BY class, CAST(id AS INTEGER)')
+            # 否则获取所有学生，按班级名和学号排序
+            cursor.execute(select_sql + ' ORDER BY c.class_name, CAST(s.id AS INTEGER)')
             
         students = cursor.fetchall()
         conn.close()
