@@ -19,8 +19,3 @@ __pycache__/
 *.log
 logs/
 *.db-wal
-*.db.backup
-*.db.bak
-*.bak
-*.backup
-
