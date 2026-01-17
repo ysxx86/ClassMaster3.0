@@ -16,6 +16,6 @@ __pycache__/
 .DS_Store
 *~
 ~$*.xlsx  # 忽略Excel临时文件
-*.log
+*.logs
 logs/
 *.db-wal
