@@ -27,6 +27,7 @@ except ImportError:
 # 导入评语相关的工具类
 from utils.comment_processor import batch_update_comments, generate_comments_pdf, generate_preview_html
 from utils.comment_generator import CommentGenerator
+from utils.permission_checker import can_access_comments, get_accessible_classes, require_head_teacher
 try:
     from utils.pdf_exporter_fixed import export_comments_to_pdf
 except ImportError:

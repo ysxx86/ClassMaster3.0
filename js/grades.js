@@ -46,65 +46,107 @@ function checkStudentDataChanged() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    // 初始化学期选择和数据
-    setupSemesterSelect();
-    
-    // 绑定搜索事件
-    const searchInput = document.getElementById('searchStudent');
-    if (searchInput) {
-        searchInput.addEventListener('input', function() {
-            filterGrades(this.value);
-        });
-    }
-    
-    // 绑定导出成绩按钮事件
-    const exportGradesBtn = document.getElementById('exportGradesBtn');
-    if (exportGradesBtn) {
-        exportGradesBtn.addEventListener('click', function() {
-            exportGrades();
-        });
-    }
-    
-    // 绑定"一键优"按钮事件
-    const setAllExcellentBtn = document.getElementById('setAllExcellentBtn');
-    if (setAllExcellentBtn) {
-        setAllExcellentBtn.addEventListener('click', function() {
-            setAllGradesExcellent();
-        });
-    }
-    
-    // 绑定清空所有成绩按钮事件
-    const clearAllGradesBtn = document.getElementById('clearAllGradesBtn');
-    if (clearAllGradesBtn) {
-        clearAllGradesBtn.addEventListener('click', function() {
-            clearAllGrades();
-        });
-    }
-    
-    // 初始化成绩导入功能
-    initGradesImport();
-    
-    // 绑定成绩选择框变化事件 - 使用事件委托
-    document.addEventListener('change', function(e) {
-        if (e.target && e.target.classList.contains('grade-select')) {
-            updateGrade(e.target);
+    // 获取用户权限信息
+    fetchUserPermissions().then(() => {
+        // 初始化学期选择和数据
+        setupSemesterSelect();
+        
+        // 绑定搜索事件
+        const searchInput = document.getElementById('searchStudent');
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                filterGrades(this.value);
+            });
         }
-    });
-    
-    // 初始化表格布局
-    adjustTableLayout();
-    
-    // 启动数据变更检查
-    startDataChangeChecking();
-    
-    // 设置数据变更事件监听
-    window.addEventListener('storage', function(e) {
-        if (e.key === 'studentDataChangeTimestamp') {
-            console.log('从localStorage事件检测到学生数据变更');
-            loadGrades();  // 重新加载成绩列表
+        
+        // 绑定导出成绩按钮事件
+        const exportGradesBtn = document.getElementById('exportGradesBtn');
+        if (exportGradesBtn) {
+            exportGradesBtn.addEventListener('click', function() {
+                exportGrades();
+            });
         }
+        
+        // 绑定"一键优"按钮事件
+        const setAllExcellentBtn = document.getElementById('setAllExcellentBtn');
+        if (setAllExcellentBtn) {
+            setAllExcellentBtn.addEventListener('click', function() {
+                setAllGradesExcellent();
+            });
+        }
+        
+        // 绑定清空所有成绩按钮事件
+        const clearAllGradesBtn = document.getElementById('clearAllGradesBtn');
+        if (clearAllGradesBtn) {
+            clearAllGradesBtn.addEventListener('click', function() {
+                clearAllGrades();
+            });
+        }
+        
+        // 初始化成绩导入功能
+        initGradesImport();
+        
+        // 绑定成绩选择框变化事件 - 使用事件委托
+        document.addEventListener('change', function(e) {
+            if (e.target && e.target.classList.contains('grade-select')) {
+                updateGrade(e.target);
+            }
+        });
+        
+        // 初始化表格布局
+        adjustTableLayout();
+        
+        // 启动数据变更检查
+        startDataChangeChecking();
+        
+        // 设置数据变更事件监听
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'studentDataChangeTimestamp') {
+                console.log('从localStorage事件检测到学生数据变更');
+                loadGrades();  // 重新加载成绩列表
+            }
+        });
     });
 });
+
+// 存储用户权限信息
+let userPermissions = null;
+
+// 获取用户权限信息
+async function fetchUserPermissions() {
+    try {
+        const response = await fetch('/api/current-user');
+        const data = await response.json();
+        if (data.status === 'ok' && data.permissions) {
+            userPermissions = data.permissions;
+            console.log('用户权限信息:', userPermissions);
+        }
+    } catch (error) {
+        console.error('获取用户权限失败:', error);
+    }
+}
+
+// 检查是否可以编辑某个学科
+function canEditSubject(subjectFieldName) {
+    if (!userPermissions) {
+        return false;
+    }
+    
+    // 超级管理员可以编辑所有学科
+    if (userPermissions.is_admin) {
+        return true;
+    }
+    
+    // 获取学科显示名称
+    const subjectDisplayName = subjectNames[subjectFieldName];
+    if (!subjectDisplayName) {
+        return false;
+    }
+    
+    // 检查是否在可编辑学科列表中
+    const editableSubjects = userPermissions.editable_subjects || [];
+    return editableSubjects.includes(subjectDisplayName);
+}
 
 // 设置学期选择器
 function setupSemesterSelect() {
@@ -284,11 +326,21 @@ function renderGradesTable(grades) {
             const cell = document.createElement('td');
             const gradeValue = studentGrade[subject] !== undefined ? studentGrade[subject] : '';
             
+            // 检查是否可以编辑该学科
+            const canEdit = canEditSubject(subject);
+            
             // 创建成绩选择框
             const select = document.createElement('select');
             select.className = 'form-select form-select-sm grade-select';
             select.setAttribute('data-student-id', studentGrade.student_id);
             select.setAttribute('data-subject', subject);
+            
+            // 如果没有编辑权限，禁用选择框并添加提示
+            if (!canEdit) {
+                select.disabled = true;
+                select.classList.add('disabled-subject');
+                select.title = '您没有权限编辑此学科';
+            }
             
             // 添加选项（支持优、良、及格、待及格、/五个等级）
             ['', '优', '良', '及格', '待及格', '/'].forEach(option => {

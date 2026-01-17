@@ -15,6 +15,7 @@ from werkzeug.utils import secure_filename
 from flask_login import login_required, current_user
 from utils.class_filter import class_filter, user_can_access
 from utils.grades_manager import GradesManager
+from utils.permission_checker import can_access_deyu, get_accessible_classes, require_head_teacher
 import logging
 import pandas as pd
 import numpy as np
