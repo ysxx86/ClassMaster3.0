@@ -265,11 +265,11 @@
                         </div>
                         <div class="mb-3">
                             <label for="class_id" class="form-label">管理班级</label>
-                            <input type="text" class="form-control" id="class_id" name="class_id" placeholder="班主任填写班级ID，管理员可留空">
+                            <input type="text" class="form-control" id="class_id" name="class_id" placeholder="班主任填写班级ID，超级管理员可留空">
                         </div>
                         <div class="mb-3 form-check">
                             <input type="checkbox" class="form-check-input" id="is_admin" name="is_admin">
-                            <label class="form-check-label" for="is_admin">设为管理员</label>
+                            <label class="form-check-label" for="is_admin">设为超级管理员</label>
                         </div>
                     </form>
                 </div>
@@ -302,11 +302,22 @@
                         </div>
                         <div class="mb-3">
                             <label for="editUserClassId" class="form-label">管理班级</label>
-                            <input type="text" class="form-control" id="editUserClassId" name="class_id" placeholder="班主任填写班级ID，管理员可留空">
+                            <input type="text" class="form-control" id="editUserClassId" name="class_id" placeholder="班主任填写班级ID，超级管理员可留空">
+                        </div>
+                        <div class="mb-3">
+                            <label for="editUserRole" class="form-label">角色</label>
+                            <select class="form-select" id="editUserRole" name="role">
+                                <option value="正班主任">正班主任</option>
+                                <option value="副班主任">副班主任</option>
+                                <option value="科任老师">科任老师</option>
+                                <option value="行政">行政</option>
+                                <option value="校级领导">校级领导</option>
+                                <option value="超级管理员">超级管理员</option>
+                            </select>
                         </div>
                         <div class="mb-3 form-check">
                             <input type="checkbox" class="form-check-input" id="editIsAdmin" name="is_admin">
-                            <label class="form-check-label" for="editIsAdmin">设为管理员</label>
+                            <label class="form-check-label" for="editIsAdmin">设为超级管理员</label>
                         </div>
                     </form>
                 </div>
@@ -474,7 +485,7 @@
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" id="includeAdmin">
                             <label class="form-check-label" for="includeAdmin">
-                                包含管理员账号
+                                包含超级管理员账号
                             </label>
                         </div>
                     </div>
@@ -743,6 +754,6 @@
     </div>
 
     <script src="/js/libs/bootstrap.bundle.min.js"></script>
-    <script src="../js/admin.js"></script>
+    <script src="../js/admin.js?v=20260117-3"></script>
 </body>
 </html>

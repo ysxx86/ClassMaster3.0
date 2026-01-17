@@ -6,7 +6,7 @@ const toastNotification = document.getElementById('toastNotification');
 const toastMessage = document.getElementById('toastMessage');
 const toast = new bootstrap.Toast(toastNotification);
 
-// 立即执行权限检查，确保只有管理员可访问此页面
+// 立即执行权限检查，确保只有超级管理员可访问此页面
 (function checkAdminPermission() {
     // 立即重定向到首页的函数
     function redirectToHome() {
@@ -34,7 +34,7 @@ const toast = new bootstrap.Toast(toastNotification);
         })
         .then(data => {
             if (data.status !== 'ok' || !data.user || !data.user.is_admin) {
-                // 如果不是管理员，重定向到首页
+                // 如果不是超级管理员，重定向到首页
                 redirectToHome();
             }
         })
@@ -92,7 +92,7 @@ function loadUsers() {
     fetch('/api/users')
     .then(response => {
         if (response.status === 403) {
-            throw new Error('权限不足：只有管理员可以访问用户管理功能');
+            throw new Error('权限不足：只有超级管理员可以访问用户管理功能');
         }
         return response.json();
     })
@@ -142,12 +142,42 @@ function renderUserTable(users) {
         `;
         
         const classCell = document.createElement('td');
-        classCell.textContent = user.class_id || '无';
+        classCell.textContent = user.class_name || '无';
         
         const typeCell = document.createElement('td');
         const badge = document.createElement('span');
-        badge.className = 'badge ' + (user.is_admin ? 'admin-badge' : 'teacher-badge');
-        badge.textContent = user.is_admin ? '管理员' : '班主任';
+        badge.className = 'badge ';
+        
+        // 根据角色设置不同的样式和文本
+        if (user.is_admin) {
+            badge.className += 'admin-badge';
+            badge.textContent = '超级管理员';
+        } else {
+            const role = user.primary_role || '科任老师';
+            switch(role) {
+                case '正班主任':
+                    badge.className += 'bg-primary';
+                    break;
+                case '副班主任':
+                    badge.className += 'bg-info';
+                    break;
+                case '科任老师':
+                    badge.className += 'bg-secondary';
+                    break;
+                case '行政':
+                    badge.className += 'bg-warning';
+                    break;
+                case '校级领导':
+                    badge.className += 'bg-success';
+                    break;
+                case '超级管理员':
+                    badge.className += 'bg-danger';
+                    break;
+                default:
+                    badge.className += 'bg-secondary';
+            }
+            badge.textContent = role;
+        }
         typeCell.appendChild(badge);
         
         const createdAtCell = document.createElement('td');
@@ -215,6 +245,7 @@ function openEditModal(user) {
     document.getElementById('editUsername').value = user.username;
     document.getElementById('editPassword').value = ''; // 密码输入框保持为空
     document.getElementById('editUserClassId').value = user.class_id || '';
+    document.getElementById('editUserRole').value = user.primary_role || '科任老师';
     document.getElementById('editIsAdmin').checked = user.is_admin;
     
     const editModal = new bootstrap.Modal(document.getElementById('editUserModal'));
@@ -293,7 +324,10 @@ document.getElementById('updateUserBtn').addEventListener('click', function() {
     const username = document.getElementById('editUsername').value;
     const password = document.getElementById('editPassword').value;
     const class_id = document.getElementById('editUserClassId').value;
+    const role = document.getElementById('editUserRole').value;
     const is_admin = document.getElementById('editIsAdmin').checked;
+    
+    console.log('准备更新用户，角色值:', role);
     
     if (!username) {
         showToast('用户名不能为空', 'warning');
@@ -307,8 +341,11 @@ document.getElementById('updateUserBtn').addEventListener('click', function() {
     const userData = {
         username: username,
         class_id: class_id || null,
+        primary_role: role,
         is_admin: is_admin
     };
+    
+    console.log('发送的用户数据:', userData);
     
     // 仅当密码不为空时才包含密码字段
     if (password) {
@@ -726,7 +763,7 @@ function loadClasses() {
     .then(response => {
         console.log('班级列表API响应状态:', response.status);
         if (response.status === 403) {
-            throw new Error('权限不足：只有管理员可以访问班级管理功能');
+            throw new Error('权限不足：只有超级管理员可以访问班级管理功能');
         }
         return response.json();
     })
