@@ -140,13 +140,16 @@
         
         /**
          * 启动定期检查
+         * 已禁用 - 每2秒轮询严重影响性能
          */
         startPeriodicCheck() {
-            setInterval(() => {
-                if (!this.isChecking) {
-                    this.checkForUpdates();
-                }
-            }, this.checkInterval);
+            // 禁用定期检查以提升性能
+            console.log('[实时同步] 定期检查已禁用以提升性能');
+            // setInterval(() => {
+            //     if (!this.isChecking) {
+            //         this.checkForUpdates();
+            //     }
+            // }, this.checkInterval);
         }
         
         /**
