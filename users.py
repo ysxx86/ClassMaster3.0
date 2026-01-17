@@ -897,20 +897,11 @@ def import_teachers_excel():
         conn.commit()
         conn.close()
         
-        logger.info(f"通过Excel批量导入班主任成功，添加: {len(added_users)}，跳过: {len(skipped_users)}")
-        
-        # 若有跳过的用户，在消息中添加详细信息
-        skipped_message = ""
-        if skipped_users:
-            skipped_message = "。跳过的班主任: "
-            for i, user in enumerate(skipped_users):
-                if i > 0:
-                    skipped_message += "；"
-                skipped_message += f"{user['username']}({user['class_id']})，原因: {user['reason']}"
+        logger.info(f"通过Excel批量导入教师成功，添加: {len(added_users)}，跳过: {len(skipped_users)}")
         
         return jsonify({
             'status': 'ok',
-            'message': f'成功添加 {len(added_users)} 个班主任账户，跳过 {len(skipped_users)} 个{skipped_message}',
+            'message': f'成功添加 {len(added_users)} 个教师账户，跳过 {len(skipped_users)} 个',
             'added_count': len(added_users),
             'skipped_count': len(skipped_users),
             'added': added_users,
@@ -919,35 +910,53 @@ def import_teachers_excel():
         })
         
     except Exception as e:
-        logger.error(f"Excel导入班主任时出错: {str(e)}")
+        logger.error(f"Excel导入教师时出错: {str(e)}")
         logger.error(traceback.format_exc())
         return jsonify({'status': 'error', 'message': f'导入失败: {str(e)}'}), 500
 
-# 创建班主任Excel导入模板
+# 创建教师Excel导入模板
 def create_teacher_import_template():
-    """创建班主任导入模板Excel文件"""
+    """创建教师导入模板Excel文件"""
     try:
         template_path = os.path.join('templates', 'teacher_import_template.xlsx')
         
         # 创建示例数据
         data = {
-            '用户名': ['teacher1', 'teacher2', 'teacher3', 'teacher4', '注意事项'],
+            '用户名': ['张老师', '李老师', '王老师', '注意事项：'],
+            '年级': ['一年级', '二年级', '三年级', '可选字段'],
+            '班级': ['一年级1班', '二年级3班', '三年级6班', '可选字段，需先创建班级'],
+            '角色': ['正班主任', '副班主任', '科任老师', '可选：正班主任/副班主任/科任老师/行政/校级领导'],
+            '任教学科': ['语文,数学', '英语', '体育,音乐', '可选，多个学科用逗号分隔']
         }
         
         # 创建DataFrame并保存为Excel
         df = pd.DataFrame(data)
         df.to_excel(template_path, index=False)
         
-        logger.info(f"成功创建班主任导入模板: {template_path}")
+        logger.info(f"成功创建教师导入模板: {template_path}")
         return template_path
     except Exception as e:
-        logger.error(f"创建班主任导入模板失败: {str(e)}")
+        logger.error(f"创建教师导入模板失败: {str(e)}")
         return None
 
-# 下载班主任导入模板
+# 下载教师导入模板
 @users_bp.route('/api/users/template', methods=['GET'])
 @login_required
 def download_teacher_template():
+    """下载教师导入模板"""
+    # 只有超级管理员可以下载模板
+    if not current_user.is_admin:
+        return jsonify({'status': 'error', 'message': '没有权限下载模板'}), 403
+    
+    try:
+        template_path = create_teacher_import_template()
+        if template_path and os.path.exists(template_path):
+            return send_file(template_path, as_attachment=True, download_name='教师导入模板.xlsx')
+        else:
+            return jsonify({'status': 'error', 'message': '模板文件不存在'}), 404
+    except Exception as e:
+        logger.error(f"下载教师导入模板失败: {str(e)}")
+        return jsonify({'status': 'error', 'message': f'下载失败: {str(e)}'}), 500
     """提供班主任Excel导入模板下载"""
     # 只有超级管理员可以下载模板
     if not current_user.is_admin:
@@ -1053,11 +1062,11 @@ def short_reset_user_password(user_id):
     """重置指定用户的密码 (短路径版本)"""
     return api_reset_user_password(user_id)
 
-# 导入班主任预览API
+# 导入教师预览API
 @users_bp.route('/api/users/preview-import', methods=['POST'])
 @login_required
 def preview_import_teachers():
-    """预览Excel文件中的班主任数据，不执行真正的导入"""
+    """预览Excel文件中的教师数据，不执行真正的导入"""
     # 只有超级管理员可以批量添加用户
     if not current_user.is_admin:
         return jsonify({'status': 'error', 'message': '没有权限批量添加用户'}), 403
@@ -1125,72 +1134,111 @@ def preview_import_teachers():
             return jsonify({'status': 'error', 'message': f'数据库连接失败: {str(db_error)}'}), 500
         
         try:
-            # 获取现有用户名列表
-            cursor.execute('SELECT username FROM users')
-            existing_usernames = set(row[0] for row in cursor.fetchall())
+            # 获取现有用户信息（包括角色和班级）
+            cursor.execute('SELECT u.username, u.primary_role, c.class_name FROM users u LEFT JOIN classes c ON u.class_id = c.id WHERE u.is_admin = 0')
+            existing_users = {}
+            for row in cursor.fetchall():
+                existing_users[row['username']] = {
+                    'role': row['primary_role'] if 'primary_role' in row.keys() else '科任老师',
+                    'class_name': row['class_name']
+                }
             
-            # 尝试从classes表获取所有班级
-            try:
-                cursor.execute('SELECT id, class_name FROM classes')
-                existing_classes = {row['class_name']: row['id'] for row in cursor.fetchall()}
-                use_classes_table = True
-                logger.info(f"使用classes表进行班级验证，找到 {len(existing_classes)} 个班级")
-            except sqlite3.OperationalError:
-                # 如果classes表不存在，则从students表获取
-                logger.warning("classes表不存在，从students表获取班级信息")
-                cursor.execute('SELECT DISTINCT c.class_name as class FROM students s LEFT JOIN classes c ON s.class_id = c.id WHERE class IS NOT NULL AND class != ""')
-                existing_classes = {row['class']: row['class'] for row in cursor.fetchall()}
-                use_classes_table = False
+            # 获取所有班级
+            cursor.execute('SELECT id, class_name FROM classes')
+            existing_classes = {row['class_name']: row['id'] for row in cursor.fetchall()}
+            
+            # 获取所有学科
+            cursor.execute('SELECT id, name FROM subjects')
+            existing_subjects = {row['name']: row['id'] for row in cursor.fetchall()}
             
             # 准备预览数据和统计
             preview_data = []
-            valid_count = 0
+            new_count = 0
+            update_count = 0
             invalid_count = 0
             
             # 处理每一行数据
             for idx, row in df.iterrows():
                 username = str(row['用户名']).strip() if pd.notna(row['用户名']) else ""
-                # 如果存在班级列则获取，否则设为空
+                grade = str(row['年级']).strip() if '年级' in row and pd.notna(row['年级']) else ""
                 class_name = str(row['班级']).strip() if '班级' in row and pd.notna(row['班级']) else ""
+                role = str(row['角色']).strip() if '角色' in row and pd.notna(row['角色']) else "科任老师"
+                subjects_str = str(row['任教学科']).strip() if '任教学科' in row and pd.notna(row['任教学科']) else ""
+                
+                # 解析任教学科
+                subject_list = [s.strip() for s in subjects_str.split(',') if s.strip()] if subjects_str else []
                 
                 # 判断数据有效性
                 is_valid = True
-                status = "有效"
+                status = "新增"
                 reason = ""
+                is_existing = False
                 
                 # 验证数据
                 if not username:
                     is_valid = False
                     status = "无效"
                     reason = "用户名为空"
+                    invalid_count += 1
                 # 检查用户名是否已存在
-                elif username in existing_usernames:
-                    is_valid = False
-                    status = "无效"
-                    reason = "用户名已存在"
-                # 只有当班级字段存在且不为空时才检查班级是否存在
-                elif class_name and class_name not in existing_classes:
+                elif username in existing_users:
+                    is_existing = True
+                    status = "更新"
+                    update_count += 1
+                else:
+                    new_count += 1
+                
+                # 验证班级（如果提供了班级）
+                if is_valid and class_name and class_name not in existing_classes:
                     is_valid = False
                     status = "无效"
                     reason = "班级不存在，请先创建班级"
+                    if not is_existing:
+                        new_count -= 1
+                    else:
+                        update_count -= 1
+                    invalid_count += 1
                 
-                # 统计结果
-                if is_valid:
-                    valid_count += 1
-                else:
+                # 验证角色
+                valid_roles = ['正班主任', '副班主任', '科任老师', '行政', '校级领导']
+                if is_valid and role and role not in valid_roles:
+                    is_valid = False
+                    status = "无效"
+                    reason = f"角色无效，必须是：{', '.join(valid_roles)}"
+                    if not is_existing:
+                        new_count -= 1
+                    else:
+                        update_count -= 1
+                    invalid_count += 1
+                
+                # 验证学科（如果提供了学科）
+                invalid_subjects = [s for s in subject_list if s not in existing_subjects]
+                if is_valid and invalid_subjects:
+                    is_valid = False
+                    status = "无效"
+                    reason = f"学科不存在：{', '.join(invalid_subjects)}"
+                    if not is_existing:
+                        new_count -= 1
+                    else:
+                        update_count -= 1
                     invalid_count += 1
                 
                 # 添加到预览数据
                 preview_data.append({
                     'row': idx + 2,  # Excel中的行号(从2开始，因为1是表头)
                     'username': username,
+                    'grade': grade,
                     'class_name': class_name,
+                    'role': role,
+                    'subjects': subject_list,
                     'status': status,
                     'reason': reason,
-                    'is_valid': is_valid
+                    'is_valid': is_valid,
+                    'is_existing': is_existing
                 })
         except Exception as process_error:
             logger.error(f"处理Excel数据时出错: {str(process_error)}")
+            logger.error(traceback.format_exc())
             return jsonify({'status': 'error', 'message': f'处理Excel数据时出错: {str(process_error)}'}), 500
         finally:
             # 确保关闭数据库连接
@@ -1200,27 +1248,28 @@ def preview_import_teachers():
         # 返回预览结果
         return jsonify({
             'status': 'ok',
-            'message': f'找到 {len(preview_data)} 名班主任数据，其中 {valid_count} 名有效，{invalid_count} 名无效',
+            'message': f'找到 {len(preview_data)} 条教师数据，其中 {new_count} 条新增，{update_count} 条更新，{invalid_count} 条无效',
             'preview': preview_data,
             'stats': {
                 'total': len(preview_data),
-                'valid': valid_count,
+                'new': new_count,
+                'update': update_count,
                 'invalid': invalid_count
             },
             'file_path': upload_path  # 返回保存的文件路径，用于后续导入
         })
         
     except Exception as e:
-        logger.error(f"预览Excel导入班主任时出错: {str(e)}")
+        logger.error(f"预览Excel导入教师时出错: {str(e)}")
         logger.error(traceback.format_exc())
         # 确保返回一个有效的JSON响应
         return jsonify({'status': 'error', 'message': f'预览失败: {str(e)}'}), 500
 
-# 确认导入班主任
+# 确认导入教师
 @users_bp.route('/api/users/confirm-import', methods=['POST'])
 @login_required
 def confirm_import_teachers():
-    """确认导入预览过的班主任数据"""
+    """确认导入预览过的教师数据，支持新增和更新"""
     # 只有超级管理员可以批量添加用户
     if not current_user.is_admin:
         return jsonify({'status': 'error', 'message': '没有权限批量添加用户'}), 403
@@ -1244,22 +1293,17 @@ def confirm_import_teachers():
         conn = get_db_connection()
         cursor = conn.cursor()
         
-        # 获取现有用户名列表
-        cursor.execute('SELECT username FROM users')
-        existing_usernames = set(row[0] for row in cursor.fetchall())
+        # 获取现有用户信息
+        cursor.execute('SELECT id, username FROM users WHERE is_admin = 0')
+        existing_users = {row['username']: row['id'] for row in cursor.fetchall()}
         
-        # 尝试从classes表获取所有班级
-        try:
-            cursor.execute('SELECT id, class_name FROM classes')
-            existing_classes = {row['class_name']: row['id'] for row in cursor.fetchall()}
-            use_classes_table = True
-            logger.info(f"使用classes表进行班级验证，找到 {len(existing_classes)} 个班级")
-        except sqlite3.OperationalError:
-            # 如果classes表不存在，则从students表获取
-            logger.warning("classes表不存在，从students表获取班级信息")
-            cursor.execute('SELECT DISTINCT c.class_name as class FROM students s LEFT JOIN classes c ON s.class_id = c.id WHERE class IS NOT NULL AND class != ""')
-            existing_classes = {row['class']: row['class'] for row in cursor.fetchall()}
-            use_classes_table = False
+        # 获取所有班级
+        cursor.execute('SELECT id, class_name FROM classes')
+        existing_classes = {row['class_name']: row['id'] for row in cursor.fetchall()}
+        
+        # 获取所有学科
+        cursor.execute('SELECT id, name FROM subjects')
+        existing_subjects = {row['name']: row['id'] for row in cursor.fetchall()}
         
         # 获取当前最大ID
         cursor.execute('SELECT MAX(CAST(id AS INTEGER)) FROM users')
@@ -1268,78 +1312,150 @@ def confirm_import_teachers():
         
         now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         added_users = []
+        updated_users = []
         skipped_users = []
         passwords = []  # 存储生成的密码，用于返回
         
         # 处理每一行数据
         for _, row in df.iterrows():
-            username = str(row['用户名']).strip()
-            # 如果存在班级列则获取，否则设为空
+            username = str(row['用户名']).strip() if pd.notna(row['用户名']) else ""
             class_name = str(row['班级']).strip() if '班级' in row and pd.notna(row['班级']) else ""
+            role = str(row['角色']).strip() if '角色' in row and pd.notna(row['角色']) else "科任老师"
+            subjects_str = str(row['任教学科']).strip() if '任教学科' in row and pd.notna(row['任教学科']) else ""
+            
+            # 解析任教学科
+            subject_list = [s.strip() for s in subjects_str.split(',') if s.strip()] if subjects_str else []
             
             # 验证数据
             if not username:
                 skipped_users.append({
-                    'username': username or '空用户名',
-                    'class_id': class_name or '空班级',
+                    'username': '空用户名',
                     'reason': '用户名为空'
                 })
                 continue
-                
-            # 检查用户名是否已存在
-            if username in existing_usernames:
-                skipped_users.append({
-                    'username': username,
-                    'class_id': class_name,
-                    'reason': '用户名已存在'
-                })
-                continue
             
-            # 只有当班级字段非空时才检查班级是否存在
+            # 获取班级ID
             class_id = None
             if class_name:
-                # 检查班级是否存在
                 if class_name not in existing_classes:
                     skipped_users.append({
                         'username': username,
-                        'class_id': class_name,
-                        'reason': '班级不存在，请先创建班级'
+                        'reason': '班级不存在'
                     })
                     continue
-                # 获取班级ID
                 class_id = existing_classes[class_name]
             
-            # 生成随机密码
-            password = generate_random_password(6)
-            password_hash = generate_password_hash(password)
+            # 验证角色
+            valid_roles = ['正班主任', '副班主任', '科任老师', '行政', '校级领导']
+            if role not in valid_roles:
+                skipped_users.append({
+                    'username': username,
+                    'reason': f'角色无效：{role}'
+                })
+                continue
             
-            # 添加到已存在用户名集合
-            existing_usernames.add(username)
+            # 验证学科
+            invalid_subjects = [s for s in subject_list if s not in existing_subjects]
+            if invalid_subjects:
+                skipped_users.append({
+                    'username': username,
+                    'reason': f'学科不存在：{", ".join(invalid_subjects)}'
+                })
+                continue
             
-            # 生成ID
-            current_id += 1
-            new_id = str(current_id)
-            
-            # 插入数据
-            cursor.execute('''
-            INSERT INTO users (id, username, password_hash, is_admin, class_id, reset_password, created_at, updated_at) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (new_id, username, password_hash, 0, class_id, password, now, now))
-            
-            added_users.append({
-                'id': new_id,
-                'username': username,
-                'class_id': class_id,
-                'created_at': now
-            })
-            
-            # 保存生成的密码
-            passwords.append({
-                'username': username,
-                'class_id': class_name,  # 使用班级名称而不是ID，方便用户阅读
-                'password': password
-            })
+            # 检查用户是否已存在
+            if username in existing_users:
+                # 更新现有用户
+                user_id = existing_users[username]
+                
+                cursor.execute('''
+                UPDATE users 
+                SET primary_role = ?, class_id = ?, updated_at = ?
+                WHERE id = ?
+                ''', (role, class_id, now, user_id))
+                
+                # 删除旧的任教学科
+                cursor.execute('DELETE FROM teacher_subjects WHERE teacher_id = ?', (user_id,))
+                
+                # 添加新的任教学科
+                for subject_name in subject_list:
+                    subject_id = existing_subjects[subject_name]
+                    cursor.execute('''
+                    INSERT INTO teacher_subjects (teacher_id, subject_id)
+                    VALUES (?, ?)
+                    ''', (user_id, subject_id))
+                
+                updated_users.append({
+                    'id': user_id,
+                    'username': username,
+                    'role': role,
+                    'class_name': class_name,
+                    'subjects': subject_list
+                })
+            else:
+                # 新增用户
+                # 生成随机密码
+                password = generate_random_password(6)
+                password_hash = generate_password_hash(password)
+                
+                # 生成ID
+                current_id += 1
+                new_id = str(current_id)
+                
+                # 插入用户
+                cursor.execute('''
+                INSERT INTO users (id, username, password_hash, is_admin, primary_role, class_id, reset_password, created_at, updated_at) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ''', (new_id, username, password_hash, 0, role, class_id, password, now, now))
+                
+                # 添加任教学科
+                for subject_name in subject_list:
+                    subject_id = existing_subjects[subject_name]
+                    cursor.execute('''
+                    INSERT INTO teacher_subjects (teacher_id, subject_id)
+                    VALUES (?, ?)
+                    ''', (new_id, subject_id))
+                
+                added_users.append({
+                    'id': new_id,
+                    'username': username,
+                    'role': role,
+                    'class_name': class_name,
+                    'subjects': subject_list
+                })
+                
+                # 保存生成的密码
+                passwords.append({
+                    'username': username,
+                    'class_name': class_name,
+                    'password': password
+                })
+                
+                # 添加到已存在用户集合
+                existing_users[username] = new_id
         
+        # 提交事务
+        conn.commit()
+        conn.close()
+        
+        logger.info(f"通过Excel批量导入教师成功，新增: {len(added_users)}，更新: {len(updated_users)}，跳过: {len(skipped_users)}")
+        
+        return jsonify({
+            'status': 'ok',
+            'message': f'成功新增 {len(added_users)} 个教师账户，更新 {len(updated_users)} 个教师账户，跳过 {len(skipped_users)} 个',
+            'added_count': len(added_users),
+            'updated_count': len(updated_users),
+            'skipped_count': len(skipped_users),
+            'added': added_users,
+            'updated': updated_users,
+            'skipped': skipped_users,
+            'passwords': passwords
+        })
+        
+    except Exception as e:
+        logger.error(f"Excel导入教师时出错: {str(e)}")
+        logger.error(traceback.format_exc())
+        return jsonify({'status': 'error', 'message': f'导入失败: {str(e)}'}), 500
         # 提交事务
         conn.commit()
         conn.close()
