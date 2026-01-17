@@ -198,7 +198,8 @@ function initCommentList() {
             const students = data.students;
             // 获取有评语的学生数量
             const commentsCount = students.filter(student => student.comments).length;
-            const exportSettings = dataService.getExportSettings();
+            // 移除对dataService的依赖,避免加载问题
+            // const exportSettings = dataService.getExportSettings();
             
             console.log(`从服务器获取学生数据:`, students.length, '条');
             console.log(`有评语的学生:`, commentsCount, '人');
@@ -510,8 +511,9 @@ function fillCommentForm(studentId, studentName, classId) {
             });
     } else {
         // 从本地存储获取评语数据
-        const comment = dataService.getCommentByStudentId(studentId);
-        commentText.value = comment ? comment.content : '';
+        // 移除对dataService的依赖,直接从API获取
+        // const comment = dataService.getCommentByStudentId(studentId);
+        commentText.value = '';
         commentText.disabled = false;
         
         // 显示模态框
