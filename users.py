@@ -82,13 +82,13 @@ def init_users():
             except sqlite3.Error as e:
                 logger.error(f"添加列 {column} 时出错: {e}")
     
-    # 检查是否有管理员账号
+    # 检查是否有超级管理员账号
     cursor.execute("SELECT COUNT(*) FROM users WHERE is_admin = 1")
     admin_count = cursor.fetchone()[0]
     
-    # 如果没有管理员，创建默认管理员账号
+    # 如果没有超级管理员，创建默认超级管理员账号
     if admin_count == 0:
-        logger.warning("未发现管理员账号，创建默认管理员")
+        logger.warning("未发现超级管理员账号，创建默认超级管理员")
         now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         default_password = "admin123"
         password_hash = generate_password_hash(default_password)
@@ -99,10 +99,10 @@ def init_users():
             VALUES (?, ?, ?, ?, ?, ?, ?)
             ''', ('1', 'admin', password_hash, 1, default_password, now, now))
             conn.commit()
-            logger.info("创建默认管理员成功")
-            print(f"\n✅ 已创建默认管理员账号 - 用户名: admin, 密码: {default_password}")
+            logger.info("创建默认超级管理员成功")
+            print(f"\n✅ 已创建默认超级管理员账号 - 用户名: admin, 密码: {default_password}")
         except sqlite3.Error as e:
-            logger.error(f"创建默认管理员时出错: {e}")
+            logger.error(f"创建默认超级管理员时出错: {e}")
     
     # 提交并关闭连接
     conn.commit()
@@ -258,14 +258,19 @@ def change_password():
 @login_required
 def get_users():
     """获取所有用户列表"""
-    # 只有管理员可以访问用户管理
+    # 只有超级管理员可以访问用户管理
     if not current_user.is_admin:
-        return jsonify({'status': 'error', 'message': '只有管理员可以访问用户管理功能'}), 403
+        return jsonify({'status': 'error', 'message': '只有超级管理员可以访问用户管理功能'}), 403
     
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute('SELECT id, username, password_hash, class_id, is_admin, created_at, updated_at, reset_password FROM users')
+        cursor.execute('''
+            SELECT u.id, u.username, u.password_hash, u.class_id, u.is_admin, 
+                   u.created_at, u.updated_at, u.reset_password, u.primary_role, c.class_name
+            FROM users u
+            LEFT JOIN classes c ON u.class_id = c.id
+        ''')
         users_data = cursor.fetchall()
         conn.close()
         
@@ -279,7 +284,9 @@ def get_users():
                 'is_admin': bool(user[4]),
                 'created_at': user[5],
                 'updated_at': user[6],
-                'reset_password': user[7] if len(user) > 7 else None
+                'reset_password': user[7] if len(user) > 7 else None,
+                'primary_role': user[8] if len(user) > 8 else '科任老师',
+                'class_name': user[9] if len(user) > 9 else None
             })
         
         return jsonify({'status': 'ok', 'users': users})
@@ -292,9 +299,9 @@ def get_users():
 @login_required
 def add_user():
     """添加新用户"""
-    # 只有管理员可以添加用户
+    # 只有超级管理员可以添加用户
     if not current_user.is_admin:
-        return jsonify({'status': 'error', 'message': '只有管理员可以添加用户'}), 403
+        return jsonify({'status': 'error', 'message': '只有超级管理员可以添加用户'}), 403
     
     data = request.json
     
@@ -393,7 +400,7 @@ def add_user():
 @login_required
 def batch_add_users():
     """批量添加用户，主要用于批量创建班主任"""
-    # 只有管理员可以批量添加用户
+    # 只有超级管理员可以批量添加用户
     if not current_user.is_admin:
         return jsonify({'status': 'error', 'message': '没有权限批量添加用户'}), 403
     
@@ -536,7 +543,7 @@ def batch_add_users():
 @login_required
 def update_user(user_id):
     """更新用户信息"""
-    # 只有管理员可以编辑用户
+    # 只有超级管理员可以编辑用户
     if not current_user.is_admin:
         return jsonify({'status': 'error', 'message': '没有权限编辑用户'}), 403
     
@@ -663,6 +670,19 @@ def update_user(user_id):
             update_fields.append("is_admin = ?")
             params.append(1 if data['is_admin'] else 0)
         
+        # 角色更新
+        if 'primary_role' in data:
+            logger.info(f"收到角色更新请求: {data['primary_role']}")
+            valid_roles = ['正班主任', '副班主任', '科任老师', '行政', '校级领导', '超级管理员']
+            if data['primary_role'] in valid_roles:
+                update_fields.append("primary_role = ?")
+                params.append(data['primary_role'])
+                logger.info(f"角色验证通过，将更新为: {data['primary_role']}")
+            else:
+                logger.warning(f"无效的角色: {data['primary_role']}")
+        else:
+            logger.warning("请求数据中没有primary_role字段")
+        
         # 更新时间
         update_fields.append("updated_at = ?")
         params.append(now)
@@ -698,7 +718,7 @@ def update_user(user_id):
 @login_required
 def delete_user(user_id):
     """删除用户"""
-    # 只有管理员可以删除用户
+    # 只有超级管理员可以删除用户
     if not current_user.is_admin:
         return jsonify({'status': 'error', 'message': '没有权限删除用户'}), 403
     
@@ -745,7 +765,7 @@ def generate_random_password(length=6):
 @login_required
 def import_teachers_excel():
     """通过Excel文件批量导入班主任"""
-    # 只有管理员可以批量添加用户
+    # 只有超级管理员可以批量添加用户
     if not current_user.is_admin:
         return jsonify({'status': 'error', 'message': '没有权限批量添加用户'}), 403
     
@@ -929,7 +949,7 @@ def create_teacher_import_template():
 @login_required
 def download_teacher_template():
     """提供班主任Excel导入模板下载"""
-    # 只有管理员可以下载模板
+    # 只有超级管理员可以下载模板
     if not current_user.is_admin:
         return jsonify({'status': 'error', 'message': '没有权限下载模板'}), 403
     
@@ -986,9 +1006,9 @@ def get_current_user():
 @login_required
 def api_reset_user_password(user_id):
     """直接API版本：重置指定用户的密码并返回新密码"""
-    # 只有管理员可以重置密码
+    # 只有超级管理员可以重置密码
     if not current_user.is_admin:
-        return jsonify({'status': 'error', 'message': '只有管理员可以重置用户密码'}), 403
+        return jsonify({'status': 'error', 'message': '只有超级管理员可以重置用户密码'}), 403
     
     try:
         # 生成随机密码
@@ -1037,7 +1057,7 @@ def short_reset_user_password(user_id):
 @login_required
 def preview_import_teachers():
     """预览Excel文件中的班主任数据，不执行真正的导入"""
-    # 只有管理员可以批量添加用户
+    # 只有超级管理员可以批量添加用户
     if not current_user.is_admin:
         return jsonify({'status': 'error', 'message': '没有权限批量添加用户'}), 403
     
@@ -1200,7 +1220,7 @@ def preview_import_teachers():
 @login_required
 def confirm_import_teachers():
     """确认导入预览过的班主任数据"""
-    # 只有管理员可以批量添加用户
+    # 只有超级管理员可以批量添加用户
     if not current_user.is_admin:
         return jsonify({'status': 'error', 'message': '没有权限批量添加用户'}), 403
     
@@ -1361,9 +1381,9 @@ def confirm_import_teachers():
 @login_required
 def export_users():
     """导出用户列表，包含用户名和密码信息"""
-    # 只有管理员可以导出用户列表
+    # 只有超级管理员可以导出用户列表
     if not current_user.is_admin:
-        return jsonify({'status': 'error', 'message': '只有管理员可以导出用户信息'}), 403
+        return jsonify({'status': 'error', 'message': '只有超级管理员可以导出用户信息'}), 403
     
     try:
         # 获取查询参数
@@ -1407,7 +1427,7 @@ def export_users():
                 'id': user_id,
                 'username': username,
                 'password': password,
-                'is_admin': '管理员' if is_admin else '班主任',
+                'is_admin': '超级管理员' if is_admin else '班主任',
                 'class_id': class_id or '',
                 'class_name': class_name
             })
@@ -1429,9 +1449,9 @@ def export_users():
 @login_required
 def export_users_excel():
     """导出用户列表为Excel文件，包含用户名和密码信息"""
-    # 只有管理员可以导出用户列表
+    # 只有超级管理员可以导出用户列表
     if not current_user.is_admin:
-        return jsonify({'status': 'error', 'message': '只有管理员可以导出用户信息'}), 403
+        return jsonify({'status': 'error', 'message': '只有超级管理员可以导出用户信息'}), 403
     
     try:
         # 获取查询参数
@@ -1475,7 +1495,7 @@ def export_users_excel():
                 'ID': user_id,
                 '用户名': username,
                 '密码': password,
-                '角色': '管理员' if is_admin else '班主任',
+                '角色': '超级管理员' if is_admin else '班主任',
                 '班级ID': class_id or '',
                 '班级名称': class_name
             })

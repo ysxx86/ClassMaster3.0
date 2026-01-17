@@ -69,6 +69,9 @@ from classes import classes_bp, init_classes
 # 导入数据库备份模块
 from database_backup import backup_bp, init_backup
 
+# 导入绩效考核模块
+from performance import performance_bp, init_performance
+
 # 导入仪表盘模块
 try:
     from dashboard import init_dashboard
@@ -246,6 +249,9 @@ app.register_blueprint(system_api_bp)
 from class_export import class_export_bp
 app.register_blueprint(class_export_bp)
 
+# 注册绩效考核蓝图
+app.register_blueprint(performance_bp)
+
 # 全局错误处理中间件
 @app.before_request
 def before_request():
@@ -287,6 +293,9 @@ init_classes()
 
 # 初始化数据库备份模块
 init_backup()
+
+# 初始化绩效考核模块
+init_performance()
 
 # 初始化仪表盘模块
 if dashboard_enabled:
