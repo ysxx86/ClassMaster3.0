@@ -506,7 +506,7 @@ function renderPreviewData(data) {
     previewTableBody.innerHTML = '';
     
     // 设置预览统计信息
-    previewStats.textContent = `(共 ${data.stats.total} 条，有效 ${data.stats.valid} 条，无效 ${data.stats.invalid} 条)`;
+    previewStats.textContent = `(共 ${data.stats.total} 条，新增 ${data.stats.new} 条，更新 ${data.stats.update} 条，无效 ${data.stats.invalid} 条)`;
     
     // 设置预览消息
     previewMessage.textContent = data.message;
@@ -515,9 +515,13 @@ function renderPreviewData(data) {
     data.preview.forEach(item => {
         const row = document.createElement('tr');
         
-        // 设置行样式
-        if (!item.is_valid) {
-            row.className = 'table-danger';
+        // 设置行样式：绿色表示新增，红色表示更新，灰色表示无效
+        if (item.is_existing && item.is_valid) {
+            row.className = 'table-danger';  // 红色：已存在，将更新
+        } else if (!item.is_existing && item.is_valid) {
+            row.className = 'table-success';  // 绿色：新增
+        } else {
+            row.className = 'table-secondary';  // 灰色：无效
         }
         
         // 添加单元格
@@ -527,8 +531,17 @@ function renderPreviewData(data) {
         const usernameCell = document.createElement('td');
         usernameCell.textContent = item.username;
         
+        const gradeCell = document.createElement('td');
+        gradeCell.textContent = item.grade || '-';
+        
         const classCell = document.createElement('td');
-        classCell.textContent = item.class_name;
+        classCell.textContent = item.class_name || '-';
+        
+        const roleCell = document.createElement('td');
+        roleCell.textContent = item.role || '-';
+        
+        const subjectsCell = document.createElement('td');
+        subjectsCell.textContent = item.subjects && item.subjects.length > 0 ? item.subjects.join(', ') : '-';
         
         const statusCell = document.createElement('td');
         statusCell.textContent = item.status;
@@ -539,7 +552,10 @@ function renderPreviewData(data) {
         // 添加单元格到行
         row.appendChild(rowNumCell);
         row.appendChild(usernameCell);
+        row.appendChild(gradeCell);
         row.appendChild(classCell);
+        row.appendChild(roleCell);
+        row.appendChild(subjectsCell);
         row.appendChild(statusCell);
         row.appendChild(reasonCell);
         
@@ -578,33 +594,71 @@ function confirmImport() {
     .then(response => response.json())
     .then(data => {
         if (data.status === 'ok') {
-            // 显示密码信息
-            document.getElementById('importSuccessMessage').textContent = 
-                `成功导入 ${data.added_count} 个班主任账户${data.skipped_count > 0 ? '，' + data.skipped_count + ' 个账户被跳过' : ''}`;
+            // 显示成功消息
+            document.getElementById('importSuccessMessage').textContent = data.message;
             
-            // 显示密码信息
-            const passwordTableBody = document.getElementById('passwordTableBody');
-            passwordTableBody.innerHTML = '';
+            // 显示新增账户的密码信息
+            if (data.passwords && data.passwords.length > 0) {
+                const passwordTableBody = document.getElementById('passwordTableBody');
+                passwordTableBody.innerHTML = '';
+                
+                data.passwords.forEach(item => {
+                    const row = document.createElement('tr');
+                    
+                    const usernameCell = document.createElement('td');
+                    usernameCell.textContent = item.username;
+                    
+                    const classCell = document.createElement('td');
+                    classCell.textContent = item.class_name || '-';
+                    
+                    const passwordCell = document.createElement('td');
+                    passwordCell.textContent = item.password;
+                    passwordCell.style.fontFamily = 'monospace';
+                    
+                    row.appendChild(usernameCell);
+                    row.appendChild(classCell);
+                    row.appendChild(passwordCell);
+                    
+                    passwordTableBody.appendChild(row);
+                });
+                
+                document.getElementById('importPasswordsContainer').style.display = 'block';
+            } else {
+                document.getElementById('importPasswordsContainer').style.display = 'none';
+            }
             
-            data.passwords.forEach(item => {
-                const row = document.createElement('tr');
+            // 显示更新的账户信息
+            if (data.updated && data.updated.length > 0) {
+                const updatedTableBody = document.getElementById('updatedTableBody');
+                updatedTableBody.innerHTML = '';
                 
-                const usernameCell = document.createElement('td');
-                usernameCell.textContent = item.username;
+                data.updated.forEach(item => {
+                    const row = document.createElement('tr');
+                    
+                    const usernameCell = document.createElement('td');
+                    usernameCell.textContent = item.username;
+                    
+                    const classCell = document.createElement('td');
+                    classCell.textContent = item.class_name || '-';
+                    
+                    const roleCell = document.createElement('td');
+                    roleCell.textContent = item.role || '-';
+                    
+                    const subjectsCell = document.createElement('td');
+                    subjectsCell.textContent = item.subjects && item.subjects.length > 0 ? item.subjects.join(', ') : '-';
+                    
+                    row.appendChild(usernameCell);
+                    row.appendChild(classCell);
+                    row.appendChild(roleCell);
+                    row.appendChild(subjectsCell);
+                    
+                    updatedTableBody.appendChild(row);
+                });
                 
-                const classCell = document.createElement('td');
-                classCell.textContent = item.class_id;
-                
-                const passwordCell = document.createElement('td');
-                passwordCell.textContent = item.password;
-                passwordCell.style.fontFamily = 'monospace';
-                
-                row.appendChild(usernameCell);
-                row.appendChild(classCell);
-                row.appendChild(passwordCell);
-                
-                passwordTableBody.appendChild(row);
-            });
+                document.getElementById('importUpdatedContainer').style.display = 'block';
+            } else {
+                document.getElementById('importUpdatedContainer').style.display = 'none';
+            }
             
             // 显示跳过的账户信息
             if (data.skipped && data.skipped.length > 0) {
@@ -617,15 +671,11 @@ function confirmImport() {
                     const usernameCell = document.createElement('td');
                     usernameCell.textContent = item.username;
                     
-                    const classCell = document.createElement('td');
-                    classCell.textContent = item.class_id;
-                    
                     const reasonCell = document.createElement('td');
                     reasonCell.textContent = item.reason;
                     reasonCell.className = 'text-danger';
                     
                     row.appendChild(usernameCell);
-                    row.appendChild(classCell);
                     row.appendChild(reasonCell);
                     
                     skippedTableBody.appendChild(row);
@@ -656,7 +706,7 @@ function confirmImport() {
     })
     .catch(error => {
         showToast(`导入失败: ${error.message}`, 'error');
-        console.error('确认导入班主任失败:', error);
+        console.error('确认导入教师失败:', error);
     })
     .finally(() => {
         // 恢复按钮状态
@@ -1826,3 +1876,47 @@ document.getElementById('downloadExportBtn').addEventListener('click', function(
         document.body.removeChild(link);
     }, 100);
 }); 
+
+// 复制密码信息按钮
+document.addEventListener('click', function(e) {
+    if (e.target && e.target.id === 'copyPasswordsBtn') {
+        const passwordTableBody = document.getElementById('passwordTableBody');
+        if (!passwordTableBody || passwordTableBody.children.length === 0) {
+            showToast('没有可复制的密码信息', 'warning');
+            return;
+        }
+        
+        // 构建复制文本
+        let copyText = '教师账户密码信息\n';
+        copyText += '='.repeat(50) + '\n\n';
+        
+        Array.from(passwordTableBody.children).forEach((row, index) => {
+            const cells = row.children;
+            const username = cells[0].textContent;
+            const className = cells[1].textContent;
+            const password = cells[2].textContent;
+            
+            copyText += `${index + 1}. 用户名: ${username}\n`;
+            copyText += `   班级: ${className}\n`;
+            copyText += `   密码: ${password}\n\n`;
+        });
+        
+        // 复制到剪贴板
+        navigator.clipboard.writeText(copyText).then(() => {
+            showToast('密码信息已复制到剪贴板', 'success');
+            e.target.innerHTML = '<i class="bx bx-check"></i> 已复制';
+            e.target.classList.remove('btn-outline-primary');
+            e.target.classList.add('btn-success');
+            
+            // 3秒后恢复按钮状态
+            setTimeout(() => {
+                e.target.innerHTML = '<i class="bx bx-copy"></i> 复制所有密码信息';
+                e.target.classList.remove('btn-success');
+                e.target.classList.add('btn-outline-primary');
+            }, 3000);
+        }).catch(err => {
+            console.error('复制失败:', err);
+            showToast('复制失败，请手动复制', 'error');
+        });
+    }
+});
