@@ -992,7 +992,8 @@ def get_current_user():
                     'display_name': f"{current_user.username}老师",
                     'class_id': current_user.class_id,
                     'class_name': class_name,
-                    'is_admin': current_user.is_admin
+                    'is_admin': current_user.is_admin,
+                    'primary_role': current_user.primary_role
                 }
             })
         finally:

@@ -32,6 +32,32 @@
             margin-right: 12px;
             color: #495057;
         }
+        
+        /* 不同角色的颜色样式 */
+        .user-name.role-super-admin {
+            color: #dc3545;
+            font-weight: 600;
+        }
+        .user-name.role-head-teacher {
+            color: #0d6efd;
+            font-weight: 600;
+        }
+        .user-name.role-vice-teacher {
+            color: #0dcaf0;
+            font-weight: 600;
+        }
+        .user-name.role-subject-teacher {
+            color: #6c757d;
+        }
+        .user-name.role-admin-staff {
+            color: #ffc107;
+            font-weight: 600;
+        }
+        .user-name.role-school-leader {
+            color: #198754;
+            font-weight: 600;
+        }
+        
         .dropdown-toggle::after {
             margin-left: 0.5em;
         }
@@ -352,6 +378,35 @@
             }
         }
 
+        // 获取角色显示名称
+        function getRoleDisplayName(user) {
+            if (user.is_admin) {
+                return '超级管理员';
+            }
+            
+            const role = user.primary_role || '科任老师';
+            return role;
+        }
+        
+        // 获取角色对应的CSS类
+        function getRoleClass(user) {
+            if (user.is_admin) {
+                return 'role-super-admin';
+            }
+            
+            const role = user.primary_role || '科任老师';
+            const roleClassMap = {
+                '正班主任': 'role-head-teacher',
+                '副班主任': 'role-vice-teacher',
+                '科任老师': 'role-subject-teacher',
+                '行政': 'role-admin-staff',
+                '校级领导': 'role-school-leader',
+                '超级管理员': 'role-super-admin'
+            };
+            
+            return roleClassMap[role] || 'role-default';
+        }
+
         // 预加载管理后台页面（如果是管理员）
         function preloadAdminPage(isAdmin) {
             if (isAdmin) {
@@ -406,8 +461,14 @@
                 
                 // 设置当前用户名和班级名称
                 if (data.status === 'ok') {
-                    // 设置用户名
-                    document.getElementById('currentUsername').textContent = data.user.username;
+                    // 设置用户名和角色
+                    const user = data.user;
+                    const roleText = getRoleDisplayName(user);
+                    const usernameElement = document.getElementById('currentUsername');
+                    usernameElement.textContent = `${roleText} ${user.username}`;
+                    
+                    // 根据角色设置不同的颜色
+                    usernameElement.className = 'user-name ' + getRoleClass(user);
                     
                     // 设置班级名称
                     const currentClassElement = document.getElementById('currentClass');

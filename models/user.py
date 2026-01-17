@@ -6,11 +6,12 @@ DATABASE = 'students.db'
 class User(UserMixin):
     """用户模型，实现了Flask-Login需要的接口"""
     
-    def __init__(self, id, username, password_hash, is_admin=False, class_id=None):
+    def __init__(self, id, username, password_hash, is_admin=False, class_id=None, primary_role=None):
         self.id = id
         self.username = username
         self.password_hash = password_hash
         self.is_admin = is_admin
+        self.primary_role = primary_role or '科任老师'
         
         # 确保class_id处理正确
         if class_id is not None:
@@ -42,12 +43,16 @@ class User(UserMixin):
             user_data = cursor.fetchone()
             
             if user_data:
+                # 检查primary_role字段是否存在
+                primary_role = user_data['primary_role'] if 'primary_role' in user_data.keys() else '科任老师'
+                
                 return cls(
                     id=user_data['id'],
                     username=user_data['username'],
                     password_hash=user_data['password_hash'],
                     is_admin=bool(user_data['is_admin']),
-                    class_id=user_data['class_id']
+                    class_id=user_data['class_id'],
+                    primary_role=primary_role
                 )
             return None
         finally:
@@ -64,12 +69,16 @@ class User(UserMixin):
             user_data = cursor.fetchone()
             
             if user_data:
+                # 检查primary_role字段是否存在
+                primary_role = user_data['primary_role'] if 'primary_role' in user_data.keys() else '科任老师'
+                
                 return cls(
                     id=user_data['id'],
                     username=user_data['username'],
                     password_hash=user_data['password_hash'],
                     is_admin=bool(user_data['is_admin']),
-                    class_id=user_data['class_id']
+                    class_id=user_data['class_id'],
+                    primary_role=primary_role
                 )
             return None
         finally:
