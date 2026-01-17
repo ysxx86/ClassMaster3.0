@@ -253,14 +253,15 @@ def change_password():
     # GET请求返回修改密码页面
     return render_template('change_password.html')
 
+# 导入权限检查工具
+from utils.permission_checker import require_admin, get_user_permissions
+
 # 获取所有用户
 @users_bp.route('/api/users', methods=['GET'])
 @login_required
+@require_admin
 def get_users():
     """获取所有用户列表"""
-    # 只有超级管理员可以访问用户管理
-    if not current_user.is_admin:
-        return jsonify({'status': 'error', 'message': '只有超级管理员可以访问用户管理功能'}), 403
     
     try:
         conn = get_db_connection()
@@ -297,11 +298,9 @@ def get_users():
 # 添加单个用户
 @users_bp.route('/api/users', methods=['POST'])
 @login_required
+@require_admin
 def add_user():
     """添加新用户"""
-    # 只有超级管理员可以添加用户
-    if not current_user.is_admin:
-        return jsonify({'status': 'error', 'message': '只有超级管理员可以添加用户'}), 403
     
     data = request.json
     
@@ -398,11 +397,9 @@ def add_user():
 # 批量添加用户
 @users_bp.route('/api/users/batch', methods=['POST'])
 @login_required
+@require_admin
 def batch_add_users():
     """批量添加用户，主要用于批量创建班主任"""
-    # 只有超级管理员可以批量添加用户
-    if not current_user.is_admin:
-        return jsonify({'status': 'error', 'message': '没有权限批量添加用户'}), 403
     
     data = request.json
     
@@ -541,11 +538,9 @@ def batch_add_users():
 # 编辑用户
 @users_bp.route('/api/users/<user_id>', methods=['PUT'])
 @login_required
+@require_admin
 def update_user(user_id):
     """更新用户信息"""
-    # 只有超级管理员可以编辑用户
-    if not current_user.is_admin:
-        return jsonify({'status': 'error', 'message': '没有权限编辑用户'}), 403
     
     data = request.json
     
@@ -716,11 +711,9 @@ def update_user(user_id):
 # 删除用户
 @users_bp.route('/api/users/<user_id>', methods=['DELETE'])
 @login_required
+@require_admin
 def delete_user(user_id):
     """删除用户"""
-    # 只有超级管理员可以删除用户
-    if not current_user.is_admin:
-        return jsonify({'status': 'error', 'message': '没有权限删除用户'}), 403
     
     # 不能删除自己
     if str(current_user.id) == str(user_id):
@@ -980,7 +973,7 @@ def download_teacher_template():
 @users_bp.route('/api/current-user', methods=['GET'])
 @login_required
 def get_current_user():
-    """获取当前登录用户的信息"""
+    """获取当前登录用户的信息和权限"""
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -993,6 +986,9 @@ def get_current_user():
             class_info = cursor.fetchone()
             class_name = class_info['class_name'] if class_info else None
             
+            # 获取用户权限信息
+            permissions = get_user_permissions(current_user)
+            
             return jsonify({
                 'status': 'ok',
                 'user': {
@@ -1003,7 +999,8 @@ def get_current_user():
                     'class_name': class_name,
                     'is_admin': current_user.is_admin,
                     'primary_role': current_user.primary_role
-                }
+                },
+                'permissions': permissions
             })
         finally:
             conn.close()

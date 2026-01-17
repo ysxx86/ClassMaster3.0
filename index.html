@@ -475,6 +475,44 @@
                     }
                 }
                 
+                // 根据权限显示/隐藏菜单项
+                if (data.status === 'ok' && data.permissions) {
+                    const permissions = data.permissions;
+                    
+                    // 学生管理 - 只有超级管理员和正班主任可见
+                    if (!permissions.can_access.students) {
+                        hideMenuItem('students');
+                    }
+                    
+                    // 德育管理 - 只有超级管理员和正班主任可见
+                    if (!permissions.can_access.deyu) {
+                        hideMenuItem('deyu');
+                    }
+                    
+                    // 评语管理 - 只有超级管理员和正班主任可见
+                    if (!permissions.can_access.comments) {
+                        hideMenuItem('comments');
+                    }
+                    
+                    // 班主任考核 - 只有超级管理员、行政、校级领导可见
+                    if (!permissions.can_access.performance) {
+                        hideMenuItem('performance');
+                    }
+                    
+                    // 导出报告 - 只有超级管理员和正班主任可见
+                    if (!permissions.can_access.export) {
+                        hideMenuItem('export');
+                    }
+                    
+                    // 管理后台 - 只有超级管理员可见
+                    if (!permissions.can_access.admin_panel) {
+                        hideMenuItem('admin');
+                        hideMenuItem('settings');
+                        hideMenuItem('subjects');
+                        hideMenuItem('teacher-assignment');
+                    }
+                }
+                
                 // 设置当前用户名和班级名称
                 if (data.status === 'ok') {
                     // 设置用户名和角色
@@ -539,6 +577,21 @@
             .catch(error => {
                 console.error('获取用户信息失败:', error);
             });
+        
+        // 隐藏菜单项的辅助函数
+        function hideMenuItem(menuId) {
+            // 隐藏侧边栏菜单项
+            const menuLink = document.querySelector(`a[href="#${menuId}"]`);
+            if (menuLink && menuLink.parentElement) {
+                menuLink.parentElement.style.display = 'none';
+            }
+            
+            // 移除对应的标签页内容
+            const tabPane = document.getElementById(menuId);
+            if (tabPane) {
+                tabPane.remove();
+            }
+        }
             
         // 处理密码修改
         document.getElementById('savePasswordBtn').addEventListener('click', function() {
