@@ -224,11 +224,11 @@ def get_exam_detail(exam_id):
         # 获取班级所有学生数量
         cursor.execute("SELECT COUNT(*) as count FROM students WHERE class_id = ?", (class_id,))
         class_student_count = cursor.fetchone()['count']
-        logger.info(f"班级 {class_name}(ID:{class_id}) 的实际学生总数: {class_student_count}")
+        # logger.info(f"班级 {class_name}(ID:{class_id}) 的实际学生总数: {class_student_count}")  # 性能优化:注释掉日志
         
         # 获取参加此次考试的所有记录
         cursor.execute('''
-        SELECT s.*, students.name as student_name, students.class as class_name
+        SELECT s.*, students.name as student_name, students.class_id as student_class_id
         FROM exam_scores s
         LEFT JOIN students ON s.student_id = students.id
         WHERE s.exam_id = ? AND s.class_id = ?
@@ -237,12 +237,12 @@ def get_exam_detail(exam_id):
         
         all_scores = [dict(row) for row in cursor.fetchall()]
         total_score_records = len(all_scores)
-        logger.info(f"考试ID: {exam_id}, 班级ID: {class_id} 的总成绩记录数: {total_score_records}")
+        # logger.info(f"考试ID: {exam_id}, 班级ID: {class_id} 的总成绩记录数: {total_score_records}")  # 性能优化:注释掉日志
         
         # 获取参加考试的学生ID集合
         student_ids = set(score['student_id'] for score in all_scores)
         actual_student_count = len(student_ids)
-        logger.info(f"实际参加考试的学生数: {actual_student_count}, 学生ID列表: {student_ids}")
+        # logger.info(f"实际参加考试的学生数: {actual_student_count}, 学生ID列表: {student_ids}")  # 性能优化:注释掉日志
         
         # 按学科组织成绩数据
         scores_by_subject = {}
@@ -253,15 +253,15 @@ def get_exam_detail(exam_id):
             scores_by_subject[subject].append(score)
         
         # 记录每个学科的记录数
-        logger.info(f"共有 {len(scores_by_subject)} 个学科的成绩")
+        # logger.info(f"共有 {len(scores_by_subject)} 个学科的成绩")  # 性能优化:注释掉日志
         for subject, subject_scores in scores_by_subject.items():
             subject_student_ids = [s['student_id'] for s in subject_scores]
             unique_student_ids = set(subject_student_ids)
-            logger.info(f"学科: {subject}, 记录数: {len(subject_scores)}, 去重后学生数: {len(unique_student_ids)}")
+            # logger.info(f"学科: {subject}, 记录数: {len(subject_scores)}, 去重后学生数: {len(unique_student_ids)}")  # 性能优化:注释掉日志
             
             if len(subject_student_ids) != len(unique_student_ids):
                 # 发现重复记录，需要处理
-                logger.warning(f"⚠️ {subject}科目中存在重复学生记录！总记录数: {len(subject_scores)}, 去重后: {len(unique_student_ids)}")
+                # logger.warning(f"⚠️ {subject}科目中存在重复学生记录！总记录数: {len(subject_scores)}, 去重后: {len(unique_student_ids)}")  # 性能优化:注释掉日志
                 # 按学生ID分组，保留最新的成绩记录
                 unique_scores = {}
                 for score in subject_scores:
@@ -271,7 +271,7 @@ def get_exam_detail(exam_id):
                 
                 # 更新为去重后的成绩列表
                 scores_by_subject[subject] = list(unique_scores.values())
-                logger.info(f"去重后 {subject} 科目的记录数: {len(scores_by_subject[subject])}")
+                # logger.info(f"去重后 {subject} 科目的记录数: {len(scores_by_subject[subject])}")  # 性能优化:注释掉日志
         
         # 计算每个学科的统计信息
         stats = {}
@@ -295,18 +295,18 @@ def get_exam_detail(exam_id):
                 # 检查其他有效分数
                 elif 0 < score_value <= 100:
                     valid_scores.append(score_value)
-                else:
-                    logger.warning(f"⚠️ 发现无效分数: 科目 {subject}, 学生 {score['student_name']}(ID:{student_id}), 分数: {score_value}")
+                # else:
+                #     logger.warning(f"⚠️ 发现无效分数: 科目 {subject}, 学生 {score['student_name']}(ID:{student_id}), 分数: {score_value}")  # 性能优化:注释掉日志
             
             # 计算各类人数
             on_exam_students = len(subject_student_ids)  # 应考人数
             actual_exam_students = on_exam_students - leave_students  # 实考人数
             
-            logger.info(f"科目 {subject} 的应考人数: {on_exam_students}, 实考人数: {actual_exam_students}, 请假人数: {leave_students}")
+            # logger.info(f"科目 {subject} 的应考人数: {on_exam_students}, 实考人数: {actual_exam_students}, 请假人数: {leave_students}")  # 性能优化:注释掉日志
             
             # 检查有效学生人数
             if actual_exam_students == 0:
-                logger.warning(f"⚠️ 科目 {subject} 没有有效成绩！")
+                # logger.warning(f"⚠️ 科目 {subject} 没有有效成绩！")  # 性能优化:注释掉日志
                 # 设置默认统计数据
                 stats[subject] = {
                     'average': 0,
@@ -343,18 +343,18 @@ def get_exam_detail(exam_id):
             from_80_to_89 = sum(1 for s in valid_scores if 80 <= s < 90)
             from_90_to_100 = sum(1 for s in valid_scores if s >= 90)
             
-            # 记录详细的分段信息用于调试
-            logger.info(f"科目: {subject}, 实考人数: {actual_exam_students}, 请假人数: {leave_students}")
-            logger.info(f"  0-59分: {below_60}人")
-            logger.info(f"  60-69分: {from_60_to_69}人")
-            logger.info(f"  70-79分: {from_70_to_79}人")
-            logger.info(f"  80-89分: {from_80_to_89}人")
-            logger.info(f"  90-100分: {from_90_to_100}人")
+            # 记录详细的分段信息用于调试 - 性能优化:注释掉所有日志
+            # logger.info(f"科目: {subject}, 实考人数: {actual_exam_students}, 请假人数: {leave_students}")
+            # logger.info(f"  0-59分: {below_60}人")
+            # logger.info(f"  60-69分: {from_60_to_69}人")
+            # logger.info(f"  70-79分: {from_70_to_79}人")
+            # logger.info(f"  80-89分: {from_80_to_89}人")
+            # logger.info(f"  90-100分: {from_90_to_100}人")
             
             # 验证总和是否等于实考学生总数
             total_count = below_60 + from_60_to_69 + from_70_to_79 + from_80_to_89 + from_90_to_100
-            if total_count != actual_exam_students:
-                logger.error(f"❌ 分数段统计总人数({total_count})与实考学生总数({actual_exam_students})不匹配！科目: {subject}")
+            # if total_count != actual_exam_students:
+            #     logger.error(f"❌ 分数段统计总人数({total_count})与实考学生总数({actual_exam_students})不匹配！科目: {subject}")  # 性能优化:注释掉日志
             
             # 基于实考人数计算及格率和优秀率
             pass_count = from_60_to_69 + from_70_to_79 + from_80_to_89 + from_90_to_100
@@ -1039,7 +1039,7 @@ def get_exams_for_comparison():
                 
             # 获取成绩统计
             cursor.execute('''
-            SELECT s.*, students.name as student_name, students.class as class_name
+            SELECT s.*, students.name as student_name, students.class_id as student_class_id
             FROM exam_scores s
             LEFT JOIN students ON s.student_id = students.id
             WHERE s.exam_id = ? AND s.class_id = ?
