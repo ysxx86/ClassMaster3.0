@@ -258,6 +258,11 @@ app.register_blueprint(performance_bp)
 # 注册学科管理蓝图
 app.register_blueprint(subjects_bp)
 
+# 注册实时更新蓝图
+from realtime_api import realtime_bp, init_realtime
+app.register_blueprint(realtime_bp)
+init_realtime(app)
+
 # 全局错误处理中间件
 @app.before_request
 def before_request():
