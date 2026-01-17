@@ -199,40 +199,40 @@
                     <div class="content-area">
                         <div class="tab-content" id="mainContent">
                             <div class="tab-pane fade show active" id="home">
-                                <iframe src="pages/home.html" frameborder="0" class="content-iframe"></iframe>
+                                <iframe src="pages/home.html" frameborder="0" class="content-iframe" data-loaded="true"></iframe>
                             </div>
                             <div class="tab-pane fade" id="students">
-                                <iframe src="pages/students.html" frameborder="0" class="content-iframe"></iframe>
+                                <iframe data-src="pages/students.html" frameborder="0" class="content-iframe"></iframe>
                             </div>
                             <div class="tab-pane fade" id="comments">
-                                <iframe src="pages/comments.html" frameborder="0" class="content-iframe"></iframe>
+                                <iframe data-src="pages/comments.html" frameborder="0" class="content-iframe"></iframe>
                             </div>
                             <div class="tab-pane fade" id="grades">
-                                <iframe src="pages/grades.html" frameborder="0" class="content-iframe"></iframe>
+                                <iframe data-src="pages/grades.html" frameborder="0" class="content-iframe"></iframe>
                             </div>
                             <div class="tab-pane fade" id="deyu" role="tabpanel">
-                                <iframe src="pages/deyu.html" frameborder="0" class="content-iframe" title="德育维度"></iframe>
+                                <iframe data-src="pages/deyu.html" frameborder="0" class="content-iframe" title="德育维度"></iframe>
                             </div>
                             <div class="tab-pane fade" id="grade_analysis" role="tabpanel">
-                                <iframe src="pages/grade_analysis.html" frameborder="0" class="content-iframe" title="成绩分析"></iframe>
+                                <iframe data-src="pages/grade_analysis.html" frameborder="0" class="content-iframe" title="成绩分析"></iframe>
                             </div>
                             <div class="tab-pane fade" id="performance" role="tabpanel">
-                                <iframe src="pages/performance.html" frameborder="0" class="content-iframe" title="班主任考核"></iframe>
+                                <iframe data-src="pages/performance.html" frameborder="0" class="content-iframe" title="班主任考核"></iframe>
                             </div>
                             <div class="tab-pane fade" id="export" role="tabpanel">
-                                <iframe src="pages/export.html" frameborder="0" class="content-iframe" title="导出报告"></iframe>
+                                <iframe data-src="pages/export.html" frameborder="0" class="content-iframe" title="导出报告"></iframe>
                             </div>
                             <div class="tab-pane fade" id="settings">
-                                <iframe src="pages/settings.html" frameborder="0" class="content-iframe"></iframe>
+                                <iframe data-src="pages/settings.html" frameborder="0" class="content-iframe"></iframe>
                             </div>
                             <div class="tab-pane fade" id="subjects">
-                                <iframe src="pages/subjects.html" frameborder="0" class="content-iframe"></iframe>
+                                <iframe data-src="pages/subjects.html" frameborder="0" class="content-iframe"></iframe>
                             </div>
                             <div class="tab-pane fade" id="teacher-assignment">
-                                <iframe src="pages/teacher_assignment.html" frameborder="0" class="content-iframe"></iframe>
+                                <iframe data-src="pages/teacher_assignment.html" frameborder="0" class="content-iframe"></iframe>
                             </div>
                             <div class="tab-pane fade" id="admin">
-                                <iframe src="pages/admin.html" frameborder="0" class="content-iframe"></iframe>
+                                <iframe data-src="pages/admin.html" frameborder="0" class="content-iframe"></iframe>
                             </div>
                         </div>
                     </div>
@@ -364,6 +364,8 @@
     </div>
 
     <script src="/js/libs/bootstrap.bundle.min.js"></script>
+    <script src="js/performance-optimizer.js"></script>
+    <script src="js/realtime-sync.js"></script>
     <script src="js/data.js"></script>
     <script src="js/main.js"></script>
     <script src="js/tutorial.js"></script>
