@@ -1,12 +1,16 @@
 /**
- * 学科管理JavaScript
+ * 学科管理JavaScript - 拖拽版本
  */
+
+// 全局变量
+let allTeachers = [];
+let allSubjects = [];
+let teacherSubjects = {}; // {teacherId: [subjectIds]}
 
 $(document).ready(function() {
     // 初始化
     loadSubjects();
     loadTeachers();
-    loadAssignments();
     
     // 标签页切换事件
     $('#subjects-tab').on('shown.bs.tab', function() {
@@ -14,7 +18,7 @@ $(document).ready(function() {
     });
     
     $('#assignments-tab').on('shown.bs.tab', function() {
-        loadAssignments();
+        loadDragDropInterface();
     });
     
     // 添加学科按钮
@@ -29,26 +33,6 @@ $(document).ready(function() {
     $('#save-subject-btn').click(function() {
         saveSubject();
     });
-    
-    // 保存分配
-    $('#save-assign-btn').click(function() {
-        saveBatchAssignment();
-    });
-    
-    // 全选学科
-    $('#select-all-subjects').click(function() {
-        $('#subject-checkboxes input[type="checkbox"]:not(:disabled)').prop('checked', true);
-    });
-    
-    // 取消全选
-    $('#deselect-all-subjects').click(function() {
-        $('#subject-checkboxes input[type="checkbox"]').prop('checked', false);
-    });
-    
-    // 筛选器变化
-    $('#filter-teacher, #filter-subject').change(function() {
-        loadAssignments();
-    });
 });
 
 // ==================== 学科管理 ====================
@@ -60,8 +44,8 @@ function loadSubjects() {
         method: 'GET',
         success: function(response) {
             if (response.status === 'ok') {
+                allSubjects = response.subjects;
                 displaySubjects(response.subjects);
-                updateSubjectFilter(response.subjects);
             } else {
                 showError('加载学科列表失败');
             }
@@ -194,10 +178,9 @@ function deleteSubject(id, name, teacherCount) {
     });
 }
 
-// ==================== 任教分配管理 ====================
+// ==================== 拖拽分配管理 ====================
 
 // 加载教师列表
-let allTeachers = [];
 function loadTeachers() {
     $.ajax({
         url: '/api/users',
@@ -205,287 +188,217 @@ function loadTeachers() {
         success: function(response) {
             if (response.status === 'ok') {
                 allTeachers = response.users.filter(u => !u.is_admin);
-                updateTeacherFilter();
             }
         }
     });
 }
 
-// 更新教师筛选器
-function updateTeacherFilter() {
-    const select = $('#filter-teacher');
-    select.find('option:not(:first)').remove();
+// 加载拖拽界面
+function loadDragDropInterface() {
+    // 加载教师卡片
+    loadTeacherCards();
+    
+    // 加载学科区域
+    loadSubjectBoxes();
+}
+
+// 加载教师卡片
+function loadTeacherCards() {
+    const container = $('#teachers-drag-list');
+    container.html('<div class="text-center text-muted w-100"><div class="spinner-border spinner-border-sm"></div> 加载中...</div>');
+    
+    if (allTeachers.length === 0) {
+        setTimeout(loadTeacherCards, 500);
+        return;
+    }
+    
+    container.empty();
     
     allTeachers.forEach(function(teacher) {
-        select.append(`<option value="${teacher.id}">${teacher.username} (${teacher.primary_role || '科任老师'})</option>`);
+        const card = $(`
+            <div class="teacher-card" draggable="true" data-teacher-id="${teacher.id}" data-teacher-name="${escapeHtml(teacher.username)}">
+                ${teacher.username}
+                <small class="ms-1 text-muted">(${teacher.primary_role || '科任老师'})</small>
+            </div>
+        `);
+        
+        // 拖拽开始
+        card.on('dragstart', function(e) {
+            $(this).addClass('dragging');
+            e.originalEvent.dataTransfer.effectAllowed = 'copy';
+            e.originalEvent.dataTransfer.setData('teacherId', teacher.id);
+            e.originalEvent.dataTransfer.setData('teacherName', teacher.username);
+        });
+        
+        // 拖拽结束
+        card.on('dragend', function() {
+            $(this).removeClass('dragging');
+        });
+        
+        container.append(card);
     });
 }
 
-// 更新学科筛选器
-function updateSubjectFilter(subjects) {
-    const select = $('#filter-subject');
-    select.find('option:not(:first)').remove();
+// 加载学科区域
+function loadSubjectBoxes() {
+    const container = $('#subjects-drop-area');
+    container.html('<div class="col-12 text-center text-muted"><div class="spinner-border spinner-border-sm"></div> 加载中...</div>');
     
-    subjects.forEach(function(subject) {
-        select.append(`<option value="${subject.id}">${subject.name}</option>`);
+    if (allSubjects.length === 0) {
+        setTimeout(loadSubjectBoxes, 500);
+        return;
+    }
+    
+    // 先加载所有教师的任教信息
+    loadAllTeacherSubjects().then(function() {
+        container.empty();
+        
+        allSubjects.forEach(function(subject) {
+            const box = createSubjectBox(subject);
+            container.append(box);
+        });
     });
 }
 
-// 加载任教分配列表
-function loadAssignments() {
-    const teacherId = $('#filter-teacher').val();
-    const subjectId = $('#filter-subject').val();
-    
-    const tbody = $('#assignments-table-body');
-    tbody.html('<tr><td colspan="5" class="text-center"><div class="spinner-border text-primary"></div></td></tr>');
-    
-    // 获取所有教师的任教信息
+// 加载所有教师的任教信息
+function loadAllTeacherSubjects() {
     const promises = allTeachers.map(teacher => {
         return $.ajax({
             url: `/api/teacher-subjects/${teacher.id}`,
             method: 'GET'
         }).then(response => {
-            return {
-                teacher: teacher,
-                subjects: response.subjects || []
-            };
+            teacherSubjects[teacher.id] = response.subjects.map(s => s.id);
         });
     });
     
-    Promise.all(promises).then(results => {
-        // 筛选
-        let filtered = results;
-        if (teacherId) {
-            filtered = filtered.filter(r => r.teacher.id == teacherId);
-        }
-        if (subjectId) {
-            filtered = filtered.filter(r => r.subjects.some(s => s.id == subjectId));
-        }
-        
-        displayAssignments(filtered);
+    return Promise.all(promises);
+}
+
+// 创建学科区域
+function createSubjectBox(subject) {
+    const col = $('<div class="col-md-6 col-lg-4"></div>');
+    const box = $(`
+        <div class="subject-box" data-subject-id="${subject.id}">
+            <div class="subject-box-header">
+                ${subject.name}
+                <small class="text-muted ms-2">${subject.description || ''}</small>
+            </div>
+            <div class="subject-box-teachers" data-subject-id="${subject.id}">
+                <div class="empty-hint">拖拽教师到这里</div>
+            </div>
+        </div>
+    `);
+    
+    // 拖拽进入
+    box.on('dragover', function(e) {
+        e.preventDefault();
+        e.originalEvent.dataTransfer.dropEffect = 'copy';
+        $(this).addClass('drag-over');
     });
-}
-
-// 显示任教分配列表
-function displayAssignments(data) {
-    const tbody = $('#assignments-table-body');
-    tbody.empty();
     
-    if (data.length === 0) {
-        tbody.append('<tr><td colspan="5" class="text-center text-muted">暂无数据</td></tr>');
-        return;
-    }
-    
-    data.forEach(function(item) {
-        const teacher = item.teacher;
-        const subjects = item.subjects;
-        
-        const subjectBadges = subjects.map(s => 
-            `<span class="badge bg-primary me-1">${s.name} <button type="button" class="btn-close btn-close-white" style="font-size: 0.6em;" onclick="removeSubject('${teacher.id}', ${s.id}, '${escapeHtml(teacher.username)}', '${escapeHtml(s.name)}')"></button></span>`
-        ).join('');
-        
-        const row = `
-            <tr>
-                <td><strong>${teacher.username}</strong></td>
-                <td><span class="badge ${getRoleBadgeClass(teacher)}">${teacher.primary_role || '科任老师'}</span></td>
-                <td>${teacher.class_name || '-'}</td>
-                <td>${subjectBadges || '<span class="text-muted">未分配学科</span>'}</td>
-                <td>
-                    <button class="btn btn-sm btn-outline-primary" onclick="quickAssign('${teacher.id}', '${escapeHtml(teacher.username)}')">
-                        <i class='bx bx-plus'></i> 添加学科
-                    </button>
-                </td>
-            </tr>
-        `;
-        tbody.append(row);
+    // 拖拽离开
+    box.on('dragleave', function() {
+        $(this).removeClass('drag-over');
     });
-}
-
-// 获取角色徽章样式
-function getRoleBadgeClass(teacher) {
-    if (teacher.is_admin) return 'bg-danger';
     
-    const roleMap = {
-        '正班主任': 'bg-primary',
-        '副班主任': 'bg-info',
-        '科任老师': 'bg-secondary',
-        '行政': 'bg-warning',
-        '校级领导': 'bg-success'
-    };
-    
-    return roleMap[teacher.primary_role] || 'bg-secondary';
-}
-
-// 快速分配学科
-function quickAssign(teacherId, teacherName) {
-    // 获取教师信息
-    const teacher = allTeachers.find(t => t.id == teacherId);
-    if (!teacher) {
-        alert('教师信息不存在');
-        return;
-    }
-    
-    // 设置教师信息
-    $('#assign-teacher-id').val(teacherId);
-    $('#assign-teacher-name').text(teacherName);
-    $('#assign-teacher-role').text(teacher.primary_role || '科任老师');
-    $('#assign-teacher-class').text(teacher.class_name || '无');
-    $('#assignModalTitle').text(`为 ${teacherName} 分配学科`);
-    
-    // 加载学科复选框
-    loadSubjectCheckboxes(teacherId);
-    
-    // 显示模态框
-    new bootstrap.Modal($('#assignModal')).show();
-}
-
-// 加载学科复选框
-function loadSubjectCheckboxes(teacherId) {
-    const container = $('#subject-checkboxes');
-    container.html('<div class="text-center text-muted"><div class="spinner-border spinner-border-sm"></div> 加载中...</div>');
-    
-    // 获取所有学科
-    $.ajax({
-        url: '/api/subjects',
-        method: 'GET',
-        success: function(response) {
-            if (response.status === 'ok') {
-                // 获取教师已分配的学科
-                $.ajax({
-                    url: `/api/teacher-subjects/${teacherId}`,
-                    method: 'GET',
-                    success: function(teacherResponse) {
-                        const assignedSubjectIds = teacherResponse.subjects.map(s => s.id);
-                        displaySubjectCheckboxes(response.subjects, assignedSubjectIds);
-                    },
-                    error: function() {
-                        displaySubjectCheckboxes(response.subjects, []);
-                    }
-                });
-            } else {
-                container.html('<div class="text-danger">加载学科失败</div>');
-            }
-        },
-        error: function() {
-            container.html('<div class="text-danger">加载学科失败</div>');
-        }
+    // 放下
+    box.on('drop', function(e) {
+        e.preventDefault();
+        $(this).removeClass('drag-over');
+        
+        const teacherId = e.originalEvent.dataTransfer.getData('teacherId');
+        const teacherName = e.originalEvent.dataTransfer.getData('teacherName');
+        const subjectId = subject.id;
+        
+        assignTeacherToSubject(teacherId, teacherName, subjectId, subject.name);
     });
+    
+    // 加载已分配的教师
+    loadSubjectTeachers(subject.id, box.find('.subject-box-teachers'));
+    
+    col.append(box);
+    return col;
 }
 
-// 显示学科复选框
-function displaySubjectCheckboxes(subjects, assignedSubjectIds) {
-    const container = $('#subject-checkboxes');
+// 加载学科的教师
+function loadSubjectTeachers(subjectId, container) {
+    // 找出任教该学科的教师
+    const teachers = allTeachers.filter(t => {
+        return teacherSubjects[t.id] && teacherSubjects[t.id].includes(subjectId);
+    });
+    
     container.empty();
     
-    if (subjects.length === 0) {
-        container.html('<div class="text-muted">暂无学科</div>');
+    if (teachers.length === 0) {
+        container.append('<div class="empty-hint">拖拽教师到这里</div>');
         return;
     }
     
-    // 创建复选框列表
-    subjects.forEach(function(subject) {
-        const isAssigned = assignedSubjectIds.includes(subject.id);
-        const checkbox = $(`
-            <div class="form-check mb-2">
-                <input class="form-check-input" type="checkbox" value="${subject.id}" id="subject-${subject.id}" ${isAssigned ? 'checked' : ''}>
-                <label class="form-check-label" for="subject-${subject.id}">
-                    <strong>${subject.name}</strong>
-                    ${subject.description ? `<small class="text-muted ms-2">${subject.description}</small>` : ''}
-                </label>
+    teachers.forEach(function(teacher) {
+        const tag = $(`
+            <div class="teacher-tag">
+                ${teacher.username}
+                <span class="remove-btn" data-teacher-id="${teacher.id}" data-subject-id="${subjectId}">×</span>
             </div>
         `);
-        container.append(checkbox);
+        
+        // 移除按钮点击事件
+        tag.find('.remove-btn').click(function() {
+            const tid = $(this).data('teacher-id');
+            const sid = $(this).data('subject-id');
+            removeTeacherFromSubject(tid, sid);
+        });
+        
+        container.append(tag);
     });
 }
 
-// 保存批量分配
-function saveBatchAssignment() {
-    const teacherId = $('#assign-teacher-id').val();
-    const teacherName = $('#assign-teacher-name').text();
-    
-    if (!teacherId) {
-        alert('教师信息错误');
+// 分配教师到学科
+function assignTeacherToSubject(teacherId, teacherName, subjectId, subjectName) {
+    // 检查是否已分配
+    if (teacherSubjects[teacherId] && teacherSubjects[teacherId].includes(subjectId)) {
+        showInfo(`${teacherName} 已任教 ${subjectName}`);
         return;
     }
     
-    // 获取所有选中的学科
-    const selectedSubjectIds = [];
-    $('#subject-checkboxes input[type="checkbox"]:checked').each(function() {
-        selectedSubjectIds.push(parseInt($(this).val()));
-    });
-    
-    // 获取教师当前已分配的学科
     $.ajax({
-        url: `/api/teacher-subjects/${teacherId}`,
-        method: 'GET',
+        url: '/api/teacher-subjects',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+            teacher_id: teacherId,
+            subject_id: subjectId
+        }),
         success: function(response) {
-            const currentSubjectIds = response.subjects.map(s => s.id);
-            
-            // 计算需要添加和删除的学科
-            const toAdd = selectedSubjectIds.filter(id => !currentSubjectIds.includes(id));
-            const toRemove = currentSubjectIds.filter(id => !selectedSubjectIds.includes(id));
-            
-            // 执行批量操作
-            performBatchAssignment(teacherId, teacherName, toAdd, toRemove);
+            if (response.status === 'ok') {
+                // 更新本地数据
+                if (!teacherSubjects[teacherId]) {
+                    teacherSubjects[teacherId] = [];
+                }
+                teacherSubjects[teacherId].push(subjectId);
+                
+                // 刷新学科区域
+                const container = $(`.subject-box-teachers[data-subject-id="${subjectId}"]`);
+                loadSubjectTeachers(subjectId, container);
+                
+                showSuccess(`${teacherName} 已分配到 ${subjectName}`);
+            } else {
+                alert(response.message);
+            }
         },
-        error: function() {
-            alert('获取教师任教信息失败');
+        error: function(xhr) {
+            const response = xhr.responseJSON;
+            alert(response ? response.message : '分配失败');
         }
     });
 }
 
-// 执行批量分配操作
-function performBatchAssignment(teacherId, teacherName, toAdd, toRemove) {
-    const promises = [];
+// 移除教师的学科
+function removeTeacherFromSubject(teacherId, subjectId) {
+    const teacher = allTeachers.find(t => t.id == teacherId);
+    const subject = allSubjects.find(s => s.id == subjectId);
     
-    // 添加学科
-    toAdd.forEach(function(subjectId) {
-        promises.push(
-            $.ajax({
-                url: '/api/teacher-subjects',
-                method: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({
-                    teacher_id: teacherId,
-                    subject_id: subjectId
-                })
-            })
-        );
-    });
-    
-    // 删除学科
-    toRemove.forEach(function(subjectId) {
-        promises.push(
-            $.ajax({
-                url: `/api/teacher-subjects/${teacherId}/${subjectId}`,
-                method: 'DELETE'
-            })
-        );
-    });
-    
-    // 等待所有操作完成
-    if (promises.length === 0) {
-        bootstrap.Modal.getInstance($('#assignModal')).hide();
-        showSuccess('没有变化');
-        return;
-    }
-    
-    Promise.all(promises)
-        .then(function() {
-            bootstrap.Modal.getInstance($('#assignModal')).hide();
-            showSuccess(`成功为 ${teacherName} 更新任教学科`);
-            loadAssignments();
-        })
-        .catch(function(error) {
-            console.error('批量分配失败:', error);
-            alert('部分操作失败，请刷新页面查看结果');
-            loadAssignments();
-        });
-}
-
-// 移除学科
-function removeSubject(teacherId, subjectId, teacherName, subjectName) {
-    if (!confirm(`确定要移除 ${teacherName} 的 ${subjectName} 学科吗？`)) {
+    if (!confirm(`确定要移除 ${teacher.username} 的 ${subject.name} 学科吗？`)) {
         return;
     }
     
@@ -494,8 +407,16 @@ function removeSubject(teacherId, subjectId, teacherName, subjectName) {
         method: 'DELETE',
         success: function(response) {
             if (response.status === 'ok') {
+                // 更新本地数据
+                if (teacherSubjects[teacherId]) {
+                    teacherSubjects[teacherId] = teacherSubjects[teacherId].filter(id => id != subjectId);
+                }
+                
+                // 刷新学科区域
+                const container = $(`.subject-box-teachers[data-subject-id="${subjectId}"]`);
+                loadSubjectTeachers(subjectId, container);
+                
                 showSuccess(response.message);
-                loadAssignments();
             } else {
                 alert(response.message);
             }
@@ -537,21 +458,23 @@ function escapeHtml(text) {
 
 // 显示成功消息
 function showSuccess(message) {
-    // 简单的提示，可以后续改为Toast
-    const alert = $(`
-        <div class="alert alert-success alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" style="z-index: 9999;">
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    `);
-    $('body').append(alert);
-    setTimeout(() => alert.alert('close'), 3000);
+    showToast(message, 'success');
 }
 
 // 显示错误消息
 function showError(message) {
+    showToast(message, 'danger');
+}
+
+// 显示信息消息
+function showInfo(message) {
+    showToast(message, 'info');
+}
+
+// 显示Toast消息
+function showToast(message, type) {
     const alert = $(`
-        <div class="alert alert-danger alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" style="z-index: 9999;">
+        <div class="alert alert-${type} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" style="z-index: 9999;">
             ${message}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>

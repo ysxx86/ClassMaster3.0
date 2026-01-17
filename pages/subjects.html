@@ -32,6 +32,93 @@
         .badge {
             font-size: 0.85em;
         }
+        
+        /* 拖拽样式 */
+        .teacher-card {
+            display: inline-block;
+            padding: 8px 16px;
+            background: white;
+            border: 2px solid #0d6efd;
+            border-radius: 20px;
+            cursor: move;
+            user-select: none;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+        
+        .teacher-card:hover {
+            background: #0d6efd;
+            color: white;
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .teacher-card.dragging {
+            opacity: 0.5;
+            transform: rotate(5deg);
+        }
+        
+        .subject-box {
+            background: white;
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            min-height: 150px;
+            transition: all 0.3s;
+        }
+        
+        .subject-box.drag-over {
+            background: #e7f3ff;
+            border-color: #0d6efd;
+            border-style: solid;
+            transform: scale(1.02);
+        }
+        
+        .subject-box-header {
+            font-weight: 600;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #dee2e6;
+            color: #0d6efd;
+        }
+        
+        .subject-box-teachers {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            min-height: 80px;
+        }
+        
+        .teacher-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            background: #0d6efd;
+            color: white;
+            border-radius: 15px;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+        
+        .teacher-tag .remove-btn {
+            margin-left: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+        
+        .teacher-tag .remove-btn:hover {
+            opacity: 1;
+        }
+        
+        .empty-hint {
+            color: #6c757d;
+            font-style: italic;
+            text-align: center;
+            padding: 20px;
+        }
     </style>
 </head>
 <body>
@@ -97,47 +184,34 @@
             <div class="tab-pane fade" id="assignments-panel">
                 <div class="table-container">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="mb-0">教师任教分配</h5>
+                        <h5 class="mb-0">拖拽分配任教学科</h5>
                         <div class="text-muted">
-                            <small><i class='bx bx-info-circle'></i> 点击教师行的"添加学科"按钮进行快速分配</small>
+                            <small><i class='bx bx-info-circle'></i> 将教师拖拽到学科框中即可分配</small>
                         </div>
                     </div>
                     
-                    <!-- 筛选器 -->
-                    <div class="row mb-3">
-                        <div class="col-md-4">
-                            <select class="form-select" id="filter-teacher">
-                                <option value="">所有教师</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <select class="form-select" id="filter-subject">
-                                <option value="">所有学科</option>
-                            </select>
+                    <!-- 教师列表区域 -->
+                    <div class="mb-4">
+                        <h6 class="mb-2">教师列表</h6>
+                        <div class="border rounded p-3 bg-light" style="min-height: 100px;">
+                            <div id="teachers-drag-list" class="d-flex flex-wrap gap-2">
+                                <div class="text-center text-muted w-100">
+                                    <div class="spinner-border spinner-border-sm" role="status"></div>
+                                    加载中...
+                                </div>
+                            </div>
                         </div>
                     </div>
                     
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>教师姓名</th>
-                                    <th>角色</th>
-                                    <th>班级</th>
-                                    <th>任教学科</th>
-                                    <th width="150">操作</th>
-                                </tr>
-                            </thead>
-                            <tbody id="assignments-table-body">
-                                <tr>
-                                    <td colspan="5" class="text-center">
-                                        <div class="spinner-border text-primary" role="status">
-                                            <span class="visually-hidden">加载中...</span>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    <!-- 学科分配区域 -->
+                    <div>
+                        <h6 class="mb-2">学科分配区域</h6>
+                        <div id="subjects-drop-area" class="row g-3">
+                            <div class="col-12 text-center text-muted">
+                                <div class="spinner-border spinner-border-sm" role="status"></div>
+                                加载中...
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -168,51 +242,6 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
                     <button type="button" class="btn btn-primary" id="save-subject-btn">保存</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 分配学科模态框 -->
-    <div class="modal fade" id="assignModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="assignModalTitle">为教师分配学科</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <input type="hidden" id="assign-teacher-id">
-                    
-                    <!-- 教师信息 -->
-                    <div class="alert alert-info mb-3">
-                        <strong>教师：</strong><span id="assign-teacher-name"></span>
-                        <span class="ms-3"><strong>角色：</strong><span id="assign-teacher-role"></span></span>
-                        <span class="ms-3"><strong>班级：</strong><span id="assign-teacher-class"></span></span>
-                    </div>
-                    
-                    <!-- 学科多选列表 -->
-                    <div class="mb-3">
-                        <label class="form-label">选择任教学科（可多选）</label>
-                        <div class="border rounded p-3" style="max-height: 400px; overflow-y: auto;">
-                            <div id="subject-checkboxes">
-                                <div class="text-center text-muted">
-                                    <div class="spinner-border spinner-border-sm" role="status"></div>
-                                    加载中...
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- 快速选择 -->
-                    <div class="d-flex gap-2 mb-3">
-                        <button type="button" class="btn btn-sm btn-outline-primary" id="select-all-subjects">全选</button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary" id="deselect-all-subjects">取消全选</button>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                    <button type="button" class="btn btn-primary" id="save-assign-btn">保存</button>
                 </div>
             </div>
         </div>
