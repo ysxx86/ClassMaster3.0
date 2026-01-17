@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return new bootstrap.Tooltip(tooltipTriggerEl);
     });
 
-    // 处理侧边栏和底部导航的点击事件
+    // 处理侧边栏和底部导航的点击事件 - 优化版本(懒加载iframe)
     const navLinks = document.querySelectorAll('.nav-link, .tab-item');
     navLinks.forEach(link => {
         link.addEventListener('click', function(e) {
@@ -62,12 +62,14 @@ document.addEventListener('DOMContentLoaded', function() {
             if (sidebarLink) sidebarLink.classList.add('active');
             if (bottomTabLink) bottomTabLink.classList.add('active');
             
-            // 加载相应的页面
+            // 懒加载iframe - 只在首次点击时加载
             const iframe = document.querySelector(`#${targetId} iframe`);
-            if (iframe) {
-                const src = this.getAttribute('data-iframe');
-                if (src && iframe.src.indexOf(src) === -1) {
-                    iframe.src = src;
+            if (iframe && !iframe.dataset.loaded) {
+                const dataSrc = iframe.getAttribute('data-src');
+                if (dataSrc) {
+                    console.log(`懒加载页面: ${dataSrc}`);
+                    iframe.src = dataSrc;
+                    iframe.dataset.loaded = 'true';
                 }
             }
         });

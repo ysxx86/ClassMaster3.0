@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>性能优化测试页面</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-card h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .status.warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-left: 4px solid #007bff;
+            font-family: monospace;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .metric {
+            display: inline-block;
+            margin: 10px 20px 10px 0;
+        }
+        .metric-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .metric-label {
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚀 性能优化测试页面</h1>
+    
+    <div class="test-card">
+        <h2>1. 基础功能检查</h2>
+        <button onclick="testBasicFeatures()">运行测试</button>
+        <div id="basicResults"></div>
+    </div>
+    
+    <div class="test-card">
+        <h2>2. 性能优化工具检查</h2>
+        <button onclick="testPerformanceTools()">运行测试</button>
+        <div id="performanceResults"></div>
+    </div>
+    
+    <div class="test-card">
+        <h2>3. 实时同步系统检查</h2>
+        <button onclick="testRealtimeSync()">运行测试</button>
+        <div id="realtimeResults"></div>
+    </div>
+    
+    <div class="test-card">
+        <h2>4. API缓存测试</h2>
+        <button onclick="testAPICache()">运行测试</button>
+        <div id="cacheResults"></div>
+    </div>
+    
+    <div class="test-card">
+        <h2>5. 数据库性能测试</h2>
+        <button onclick="testDatabasePerformance()">运行测试</button>
+        <div id="dbResults"></div>
+    </div>
+    
+    <div class="test-card">
+        <h2>6. 综合性能指标</h2>
+        <div id="metrics">
+            <div class="metric">
+                <div class="metric-value" id="loadTime">-</div>
+                <div class="metric-label">页面加载时间 (ms)</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value" id="domReady">-</div>
+                <div class="metric-label">DOM就绪时间 (ms)</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value" id="resourceCount">-</div>
+                <div class="metric-label">资源数量</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/performance-optimizer.js"></script>
+    <script src="js/realtime-sync.js"></script>
+    <script>
+        // 显示结果的辅助函数
+        function showResult(containerId, message, status = 'success') {
+            const container = document.getElementById(containerId);
+            const statusClass = status === 'success' ? 'success' : (status === 'error' ? 'error' : 'warning');
+            const statusText = status === 'success' ? '✓' : (status === 'error' ? '✗' : '⚠');
+            
+            const result = document.createElement('div');
+            result.className = 'test-result';
+            result.innerHTML = `<span class="status ${statusClass}">${statusText}</span> ${message}`;
+            container.appendChild(result);
+        }
+        
+        // 测试1: 基础功能检查
+        function testBasicFeatures() {
+            const container = document.getElementById('basicResults');
+            container.innerHTML = '';
+            
+            // 检查jQuery
+            if (typeof $ !== 'undefined') {
+                showResult('basicResults', 'jQuery已加载', 'success');
+            } else {
+                showResult('basicResults', 'jQuery未加载', 'warning');
+            }
+            
+            // 检查Bootstrap
+            if (typeof bootstrap !== 'undefined') {
+                showResult('basicResults', 'Bootstrap已加载', 'success');
+            } else {
+                showResult('basicResults', 'Bootstrap未加载', 'error');
+            }
+            
+            // 检查localStorage
+            try {
+                localStorage.setItem('test', 'test');
+                localStorage.removeItem('test');
+                showResult('basicResults', 'localStorage可用', 'success');
+            } catch (e) {
+                showResult('basicResults', 'localStorage不可用', 'error');
+            }
+        }
+        
+        // 测试2: 性能优化工具检查
+        function testPerformanceTools() {
+            const container = document.getElementById('performanceResults');
+            container.innerHTML = '';
+            
+            // 检查PerformanceOptimizer
+            if (typeof PerformanceOptimizer !== 'undefined') {
+                showResult('performanceResults', 'PerformanceOptimizer已加载', 'success');
+                
+                // 检查各个功能
+                if (PerformanceOptimizer.apiCache) {
+                    showResult('performanceResults', '✓ API缓存系统可用', 'success');
+                }
+                if (PerformanceOptimizer.debounce) {
+                    showResult('performanceResults', '✓ 防抖函数可用', 'success');
+                }
+                if (PerformanceOptimizer.throttle) {
+                    showResult('performanceResults', '✓ 节流函数可用', 'success');
+                }
+                if (PerformanceOptimizer.cachedFetch) {
+                    showResult('performanceResults', '✓ 缓存Fetch可用', 'success');
+                }
+                if (PerformanceOptimizer.VirtualScroller) {
+                    showResult('performanceResults', '✓ 虚拟滚动可用', 'success');
+                }
+                if (PerformanceOptimizer.PerformanceMonitor) {
+                    showResult('performanceResults', '✓ 性能监控可用', 'success');
+                }
+            } else {
+                showResult('performanceResults', 'PerformanceOptimizer未加载', 'error');
+            }
+        }
+        
+        // 测试3: 实时同步系统检查
+        function testRealtimeSync() {
+            const container = document.getElementById('realtimeResults');
+            container.innerHTML = '';
+            
+            // 检查RealtimeSync
+            if (typeof RealtimeSync !== 'undefined') {
+                showResult('realtimeResults', 'RealtimeSync已加载', 'success');
+                
+                // 测试事件触发和监听
+                let eventReceived = false;
+                RealtimeSync.on('test_event', function(data) {
+                    eventReceived = true;
+                    showResult('realtimeResults', '✓ 事件监听成功: ' + JSON.stringify(data.data), 'success');
+                });
+                
+                RealtimeSync.triggerDataChange('test_event', { test: 'data' });
+                
+                setTimeout(() => {
+                    if (!eventReceived) {
+                        showResult('realtimeResults', '✗ 事件监听失败', 'error');
+                    }
+                }, 100);
+                
+                // 检查事件类型
+                if (typeof RealtimeSyncEventTypes !== 'undefined') {
+                    showResult('realtimeResults', '✓ 事件类型定义可用', 'success');
+                    showResult('realtimeResults', `支持的事件: ${Object.keys(RealtimeSyncEventTypes).length}个`, 'success');
+                }
+            } else {
+                showResult('realtimeResults', 'RealtimeSync未加载', 'error');
+            }
+        }
+        
+        // 测试4: API缓存测试
+        async function testAPICache() {
+            const container = document.getElementById('cacheResults');
+            container.innerHTML = '';
+            
+            if (typeof PerformanceOptimizer === 'undefined') {
+                showResult('cacheResults', 'PerformanceOptimizer未加载', 'error');
+                return;
+            }
+            
+            const testUrl = '/api/current-user';
+            
+            // 第一次请求 - 从服务器获取
+            const start1 = performance.now();
+            try {
+                const response1 = await PerformanceOptimizer.cachedFetch(testUrl);
+                const data1 = await response1.json();
+                const time1 = (performance.now() - start1).toFixed(2);
+                showResult('cacheResults', `第一次请求: ${time1}ms (从服务器)`, 'success');
+                
+                // 第二次请求 - 从缓存获取
+                const start2 = performance.now();
+                const response2 = await PerformanceOptimizer.cachedFetch(testUrl);
+                const data2 = await response2.json();
+                const time2 = (performance.now() - start2).toFixed(2);
+                showResult('cacheResults', `第二次请求: ${time2}ms (从缓存)`, 'success');
+                
+                // 计算性能提升
+                const improvement = ((time1 - time2) / time1 * 100).toFixed(0);
+                showResult('cacheResults', `性能提升: ${improvement}% (快了${(time1 / time2).toFixed(1)}倍)`, 'success');
+            } catch (error) {
+                showResult('cacheResults', `测试失败: ${error.message}`, 'error');
+            }
+        }
+        
+        // 测试5: 数据库性能测试
+        async function testDatabasePerformance() {
+            const container = document.getElementById('dbResults');
+            container.innerHTML = '';
+            
+            showResult('dbResults', '开始测试数据库查询性能...', 'success');
+            
+            // 测试学生列表查询
+            const start = performance.now();
+            try {
+                const response = await fetch('/api/students');
+                const data = await response.json();
+                const time = (performance.now() - start).toFixed(2);
+                
+                if (data.status === 'ok') {
+                    showResult('dbResults', `学生列表查询: ${time}ms (${data.students.length}条记录)`, 'success');
+                    
+                    if (time < 100) {
+                        showResult('dbResults', '✓ 查询性能优秀 (<100ms)', 'success');
+                    } else if (time < 500) {
+                        showResult('dbResults', '⚠ 查询性能良好 (100-500ms)', 'warning');
+                    } else {
+                        showResult('dbResults', '✗ 查询性能需要优化 (>500ms)', 'error');
+                    }
+                } else {
+                    showResult('dbResults', `查询失败: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                showResult('dbResults', `测试失败: ${error.message}`, 'error');
+            }
+        }
+        
+        // 页面加载时显示性能指标
+        window.addEventListener('load', function() {
+            // 页面加载时间
+            const loadTime = performance.timing.loadEventEnd - performance.timing.navigationStart;
+            document.getElementById('loadTime').textContent = loadTime;
+            
+            // DOM就绪时间
+            const domReady = performance.timing.domContentLoadedEventEnd - performance.timing.navigationStart;
+            document.getElementById('domReady').textContent = domReady;
+            
+            // 资源数量
+            const resources = performance.getEntriesByType('resource');
+            document.getElementById('resourceCount').textContent = resources.length;
+        });
+        
+        // 自动运行所有测试
+        window.addEventListener('DOMContentLoaded', function() {
+            console.log('='.repeat(50));
+            console.log('性能优化测试页面已加载');
+            console.log('='.repeat(50));
+        });
+    </script>
+</body>
+</html>
