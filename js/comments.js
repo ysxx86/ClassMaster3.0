@@ -151,9 +151,9 @@ async function exportStudentData() {
 // 在页面加载完成后初始化
 document.addEventListener('DOMContentLoaded', initialize);
 
-// 初始化评语列表
+// 初始化评语列表 - 支持分页和虚拟滚动
 function initCommentList() {
-    console.log('初始化评语列表...');
+    console.log('初始化评语列表(按需加载模式)...');
     const startTime = performance.now();
     
     const commentCards = document.getElementById('commentCards');
@@ -175,194 +175,233 @@ function initCommentList() {
         </div>
     `;
     
-    // 从服务器获取学生数据
-    fetch('/api/students')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`服务器响应错误: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.error) {
+    // 使用分页加载 - 第一次只加载100个学生
+    const pageSize = 100;
+    let currentPage = 1;
+    let totalPages = 1;
+    let allStudents = [];
+    let isLoading = false;
+    
+    // 加载指定页的数据
+    function loadPage(page) {
+        if (isLoading) return;
+        isLoading = true;
+        
+        console.log(`加载第 ${page} 页数据...`);
+        
+        fetch(`/api/students?page=${page}&page_size=${pageSize}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`服务器响应错误: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.error) {
+                    commentCards.innerHTML = `
+                        <div class="col-12">
+                            <div class="alert alert-danger">
+                                <i class='bx bx-error-circle'></i> ${data.error}
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                const students = data.students;
+                totalPages = data.total_pages || 1;
+                
+                console.log(`✅ 第${page}页加载完成: ${students.length}个学生 (共${data.total}个)`);
+                
+                // 合并到总列表
+                allStudents = allStudents.concat(students);
+                
+                // 如果是第一页，初始化页面
+                if (page === 1) {
+                    initializePage(data);
+                }
+                
+                // 渲染当前页的学生
+                renderStudents(students, page === 1);
+                
+                // 如果还有更多页，显示"加载更多"按钮
+                if (page < totalPages) {
+                    showLoadMoreButton();
+                } else {
+                    hideLoadMoreButton();
+                }
+                
+                const endTime = performance.now();
+                console.log(`✅ 第${page}页渲染完成，用时: ${(endTime - startTime).toFixed(2)}ms`);
+                
+                isLoading = false;
+            })
+            .catch(error => {
+                console.error('加载学生数据时出错:', error);
                 commentCards.innerHTML = `
                     <div class="col-12">
                         <div class="alert alert-danger">
-                            <i class='bx bx-error-circle'></i> ${data.error}
+                            <i class='bx bx-error-circle'></i> 加载失败: ${error.message}
                         </div>
                     </div>
                 `;
-                return;
-            }
-            
-            const students = data.students;
-            // 获取有评语的学生数量
-            const commentsCount = students.filter(student => student.comments).length;
-            const exportSettings = dataService.getExportSettings();
-            
-            console.log(`从服务器获取学生数据:`, students.length, '条');
-            console.log(`有评语的学生:`, commentsCount, '人');
-            
-            // 获取当前用户信息并设置页面标题
-            if (commentsHeader) {
-                fetch('/api/current-user')
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.status === 'ok') {
-                            const user = data.user;
-                            const className = user.class_name || (students.length > 0 ? students[0].class_name : '未设置');
-                            commentsHeader.innerHTML = `
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <h1 class="page-title">评语管理</h1>
-                                    <div class="text-muted">
-                                        <span>班级：${className}</span> | 
-                                        <span>班主任：${user.display_name || '未设置'}</span> | 
-                                        <span>学生数：${students.length}</span> | 
-                                        <span>评语数：${commentsCount}</span>
-                                    </div>
-                                </div>
-                            `;
-                        }
-                    })
-                    .catch(error => {
-                        console.error('获取用户信息失败:', error);
-                        const className = students.length > 0 ? students[0].class_name : '未设置';
+                isLoading = false;
+            });
+    }
+    
+    // 初始化页面信息
+    function initializePage(data) {
+        const commentsCount = allStudents.filter(s => s.comments).length;
+        
+        // 设置页面标题
+        if (commentsHeader) {
+            fetch('/api/current-user')
+                .then(response => response.json())
+                .then(userData => {
+                    if (userData.status === 'ok') {
+                        const user = userData.user;
+                        const className = user.class_name || '全部班级';
                         commentsHeader.innerHTML = `
                             <div class="d-flex justify-content-between align-items-center">
                                 <h1 class="page-title">评语管理</h1>
                                 <div class="text-muted">
                                     <span>班级：${className}</span> | 
-                                    <span>班主任：未设置</span> | 
-                                    <span>学生数：${students.length}</span> | 
-                                    <span>评语数：${commentsCount}</span>
+                                    <span>班主任：${user.display_name || '未设置'}</span> | 
+                                    <span>学生总数：${data.total}</span> | 
+                                    <span>已加载：<span id="loadedCount">${allStudents.length}</span></span>
                                 </div>
                             </div>
                         `;
-                    });
-            }
-            
-            // 使用文档片段减少DOM操作，提高性能
-            const fragment = document.createDocumentFragment();
-            
-            // 显示空状态或评语卡片
-            if (students.length === 0) {
-                if (emptyState) emptyState.classList.remove('d-none');
-                // 清空评语区域
-                commentCards.innerHTML = '';
-            } else {
-                if (emptyState) emptyState.classList.add('d-none');
-                
-                // 按班级分组学生
-                const studentsByClass = {};
-                students.forEach(student => {
-                    const className = student.class_name || '未分班';
-                    if (!studentsByClass[className]) {
-                        studentsByClass[className] = [];
                     }
-                    studentsByClass[className].push(student);
+                })
+                .catch(error => {
+                    console.error('获取用户信息失败:', error);
                 });
-                
-                // 清空容器
-                commentCards.innerHTML = '';
-                
-                // 收集所有学生并排序
-                const allStudents = [];
-                Object.keys(studentsByClass).sort().forEach(className => {
-                    // 对班级内的学生按学号排序
-                    studentsByClass[className].sort((a, b) => {
-                        return parseInt(a.id) - parseInt(b.id);
-                    });
-                    
-                    allStudents.push({
-                        type: 'classTitle',
-                        className: className,
-                        count: studentsByClass[className].length
-                    });
-                    
-                    studentsByClass[className].forEach(student => {
-                        allStudents.push({
-                            type: 'student',
-                            data: student
-                        });
-                    });
-                });
-                
-                // 分批渲染 - 立即显示第一批，然后逐步渲染剩余的
-                const BATCH_SIZE = 50;
-                let currentIndex = 0;
-                
-                function renderBatch() {
-                    const fragment = document.createDocumentFragment();
-                    const endIndex = Math.min(currentIndex + BATCH_SIZE, allStudents.length);
-                    
-                    for (let i = currentIndex; i < endIndex; i++) {
-                        const item = allStudents[i];
-                        
-                        if (item.type === 'classTitle') {
-                            // 添加班级标题
-                            const classTitle = document.createElement('div');
-                            classTitle.className = 'col-12 mt-4 mb-2';
-                            classTitle.innerHTML = `
-                                <h4 class="class-title">
-                                    <i class='bx bx-group'></i> ${item.className}
-                                    <span class="badge bg-primary ms-2">${item.count} 名学生</span>
-                                </h4>
-                                <hr>
-                            `;
-                            fragment.appendChild(classTitle);
-                        } else {
-                            // 添加学生卡片
-                            const student = item.data;
-                            const commentData = student.comments ? {
-                                studentId: student.id,
-                                content: student.comments,
-                                updateDate: student.updated_at
-                            } : null;
-                            
-                            const card = createCommentCard(student, commentData);
-                            fragment.appendChild(card);
-                        }
-                    }
-                    
-                    commentCards.appendChild(fragment);
-                    currentIndex = endIndex;
-                    
-                    // 如果还有更多数据，继续渲染
-                    if (currentIndex < allStudents.length) {
-                        // 使用requestAnimationFrame确保不阻塞UI
-                        requestAnimationFrame(renderBatch);
-                    } else {
-                        const endTime = performance.now();
-                        console.log(`✅ 评语列表渲染完成，共 ${students.length} 个学生，用时: ${(endTime - startTime).toFixed(2)}ms`);
-                    }
-                }
-                
-                // 立即开始渲染第一批
-                console.log(`开始分批渲染 ${students.length} 个学生，每批 ${BATCH_SIZE} 个...`);
-                renderBatch();
+        }
+        
+        // 清空容器
+        commentCards.innerHTML = '';
+        
+        // 隐藏空状态
+        if (emptyState) emptyState.classList.add('d-none');
+    }
+    
+    // 渲染学生列表
+    function renderStudents(students, clearFirst = false) {
+        if (clearFirst) {
+            commentCards.innerHTML = '';
+        }
+        
+        // 按班级分组
+        const studentsByClass = {};
+        students.forEach(student => {
+            const className = student.class_name || '未分班';
+            if (!studentsByClass[className]) {
+                studentsByClass[className] = [];
             }
-            
-            // 注意：不在这里打印完成日志，因为渲染是分批的
-        })
-        .catch(error => {
-            console.error('加载学生数据时出错:', error);
-            commentCards.innerHTML = `
-                <div class="col-12">
-                    <div class="alert alert-danger">
-                        <i class='bx bx-error-circle'></i> 加载学生数据时出错，请确保后端服务器已启动并且可以访问。错误详情: ${error.message}
-                    </div>
-                    <div class="alert alert-info">
-                        <h5>排查步骤：</h5>
-                        <ol>
-                            <li>确认后端服务器正在运行</li>
-                            <li>验证网络连接正常</li>
-                            <li>检查浏览器控制台(F12)获取更多错误信息</li>
-                            <li>尝试重新启动服务器和浏览器</li>
-                        </ol>
-                    </div>
-                </div>
-            `;
+            studentsByClass[className].push(student);
         });
+        
+        // 渲染每个班级
+        Object.keys(studentsByClass).sort().forEach(className => {
+            // 检查是否已经有这个班级的标题
+            let classSection = commentCards.querySelector(`[data-class-section="${className}"]`);
+            
+            if (!classSection) {
+                // 添加班级标题
+                const classTitle = document.createElement('div');
+                classTitle.className = 'col-12 mt-4 mb-2';
+                classTitle.setAttribute('data-class-section', className);
+                classTitle.innerHTML = `
+                    <h4 class="class-title">
+                        <i class='bx bx-group'></i> ${className}
+                        <span class="badge bg-primary ms-2">${studentsByClass[className].length} 名学生</span>
+                    </h4>
+                    <hr>
+                `;
+                commentCards.appendChild(classTitle);
+                classSection = classTitle;
+            }
+            
+            // 对班级内的学生按学号排序
+            studentsByClass[className].sort((a, b) => {
+                return parseInt(a.id) - parseInt(b.id);
+            });
+            
+            // 渲染学生卡片
+            const fragment = document.createDocumentFragment();
+            studentsByClass[className].forEach(student => {
+                const commentData = student.comments ? {
+                    studentId: student.id,
+                    content: student.comments,
+                    updateDate: student.updated_at
+                } : null;
+                
+                const card = createCommentCard(student, commentData);
+                fragment.appendChild(card);
+            });
+            
+            // 插入到班级标题后面
+            let nextElement = classSection.nextElementSibling;
+            while (nextElement && !nextElement.hasAttribute('data-class-section')) {
+                nextElement = nextElement.nextElementSibling;
+            }
+            
+            if (nextElement) {
+                commentCards.insertBefore(fragment, nextElement);
+            } else {
+                commentCards.appendChild(fragment);
+            }
+        });
+        
+        // 更新已加载数量
+        const loadedCountEl = document.getElementById('loadedCount');
+        if (loadedCountEl) {
+            loadedCountEl.textContent = allStudents.length;
+        }
+    }
+    
+    // 显示"加载更多"按钮
+    function showLoadMoreButton() {
+        let loadMoreBtn = document.getElementById('loadMoreBtn');
+        
+        if (!loadMoreBtn) {
+            loadMoreBtn = document.createElement('div');
+            loadMoreBtn.id = 'loadMoreBtn';
+            loadMoreBtn.className = 'col-12 text-center my-4';
+            loadMoreBtn.innerHTML = `
+                <button class="btn btn-primary btn-lg" onclick="loadMoreStudents()">
+                    <i class='bx bx-down-arrow-circle'></i> 加载更多 (第${currentPage + 1}页)
+                </button>
+                <p class="text-muted mt-2">已加载 ${allStudents.length} 个学生</p>
+            `;
+            commentCards.appendChild(loadMoreBtn);
+        } else {
+            loadMoreBtn.querySelector('button').innerHTML = `
+                <i class='bx bx-down-arrow-circle'></i> 加载更多 (第${currentPage + 1}页)
+            `;
+            loadMoreBtn.querySelector('p').textContent = `已加载 ${allStudents.length} 个学生`;
+        }
+    }
+    
+    // 隐藏"加载更多"按钮
+    function hideLoadMoreButton() {
+        const loadMoreBtn = document.getElementById('loadMoreBtn');
+        if (loadMoreBtn) {
+            loadMoreBtn.remove();
+        }
+    }
+    
+    // 全局函数：加载更多学生
+    window.loadMoreStudents = function() {
+        if (currentPage < totalPages) {
+            currentPage++;
+            loadPage(currentPage);
+        }
+    };
+    
+    // 开始加载第一页
+    loadPage(1);
 }
 
 // 创建评语卡片
@@ -1867,58 +1906,122 @@ function renderImportPreview(data) {
     importSummary.textContent = `共发现${data.total_count}条评语记录，其中${data.match_count}条可以匹配到学生。`;
 }
 
-// 下载导入模板
-function downloadImportTemplate() {
-    try {
-        // 检查ExcelJS是否可用
-        if (typeof ExcelJS === 'undefined') {
-            showNotification('ExcelJS库未加载，无法生成Excel文件', 'error');
+// ExcelJS延迟加载
+let excelJSLoaded = false;
+let excelJSLoading = false;
+
+function loadExcelJS() {
+    return new Promise((resolve, reject) => {
+        // 如果已经加载，直接返回
+        if (excelJSLoaded || typeof ExcelJS !== 'undefined') {
+            excelJSLoaded = true;
+            resolve();
             return;
         }
         
-        // 创建一个工作簿
-        const workbook = new ExcelJS.Workbook();
-        const worksheet = workbook.addWorksheet('评语导入模板');
+        // 如果正在加载，等待加载完成
+        if (excelJSLoading) {
+            const checkInterval = setInterval(() => {
+                if (excelJSLoaded || typeof ExcelJS !== 'undefined') {
+                    clearInterval(checkInterval);
+                    excelJSLoaded = true;
+                    resolve();
+                }
+            }, 100);
+            return;
+        }
         
-        // 添加表头
-        worksheet.columns = [
-            { header: '姓名', key: 'name', width: 15 },
-            { header: '评语', key: 'comment', width: 60 }
-        ];
+        // 开始加载
+        excelJSLoading = true;
+        console.log('开始加载ExcelJS库...');
         
-        // 添加示例数据
-        worksheet.addRow({ name: '张三', comment: '这是张三的评语示例，请替换为实际内容。' });
-        worksheet.addRow({ name: '李四', comment: '这是李四的评语示例，请替换为实际内容。' });
-        worksheet.addRow({ name: '王五', comment: '这是王五的评语示例，请替换为实际内容。' });
-        
-        // 设置表头样式
-        worksheet.getRow(1).font = { bold: true };
-        worksheet.getRow(1).fill = {
-            type: 'pattern',
-            pattern: 'solid',
-            fgColor: { argb: 'FFD3D3D3' }
+        const script = document.createElement('script');
+        script.src = 'https://cdn.bootcdn.net/ajax/libs/exceljs/4.3.0/exceljs.min.js';
+        script.onload = () => {
+            console.log('✅ ExcelJS库加载成功');
+            excelJSLoaded = true;
+            excelJSLoading = false;
+            resolve();
         };
-        
-        // 导出Excel文件
-        workbook.xlsx.writeBuffer().then(function(buffer) {
-            const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-            const url = URL.createObjectURL(blob);
-            
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = '评语导入模板.xlsx';
-            a.click();
-            
-            URL.revokeObjectURL(url);
-            showNotification('模板下载成功', 'success');
-        }).catch(function(error) {
-            console.error('生成Excel文件失败:', error);
-            showNotification('生成Excel文件失败: ' + error.message, 'error');
+        script.onerror = () => {
+            console.error('❌ ExcelJS库加载失败');
+            excelJSLoading = false;
+            reject(new Error('ExcelJS库加载失败'));
+        };
+        document.head.appendChild(script);
+    });
+}
+
+// 下载导入模板
+function downloadImportTemplate() {
+    // 显示加载提示
+    const btn = document.getElementById('downloadImportTemplateBtn');
+    const originalHTML = btn.innerHTML;
+    btn.innerHTML = '<i class="bx bx-loader-alt bx-spin me-1"></i> 加载中...';
+    btn.disabled = true;
+    
+    // 延迟加载ExcelJS
+    loadExcelJS()
+        .then(() => {
+            try {
+                // 创建一个工作簿
+                const workbook = new ExcelJS.Workbook();
+                const worksheet = workbook.addWorksheet('评语导入模板');
+                
+                // 添加表头
+                worksheet.columns = [
+                    { header: '姓名', key: 'name', width: 15 },
+                    { header: '评语', key: 'comment', width: 60 }
+                ];
+                
+                // 添加示例数据
+                worksheet.addRow({ name: '张三', comment: '这是张三的评语示例，请替换为实际内容。' });
+                worksheet.addRow({ name: '李四', comment: '这是李四的评语示例，请替换为实际内容。' });
+                worksheet.addRow({ name: '王五', comment: '这是王五的评语示例，请替换为实际内容。' });
+                
+                // 设置表头样式
+                worksheet.getRow(1).font = { bold: true };
+                worksheet.getRow(1).fill = {
+                    type: 'pattern',
+                    pattern: 'solid',
+                    fgColor: { argb: 'FFD3D3D3' }
+                };
+                
+                // 导出Excel文件
+                workbook.xlsx.writeBuffer().then(function(buffer) {
+                    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                    const url = URL.createObjectURL(blob);
+                    
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = '评语导入模板.xlsx';
+                    a.click();
+                    
+                    URL.revokeObjectURL(url);
+                    showNotification('模板下载成功', 'success');
+                }).catch(function(error) {
+                    console.error('生成Excel文件失败:', error);
+                    showNotification('生成Excel文件失败: ' + error.message, 'error');
+                }).finally(() => {
+                    // 恢复按钮状态
+                    btn.innerHTML = originalHTML;
+                    btn.disabled = false;
+                });
+            } catch (error) {
+                console.error('下载模板失败:', error);
+                showNotification('下载模板失败: ' + error.message, 'error');
+                // 恢复按钮状态
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
+            }
+        })
+        .catch(error => {
+            console.error('加载ExcelJS失败:', error);
+            showNotification('加载Excel库失败，请检查网络连接', 'error');
+            // 恢复按钮状态
+            btn.innerHTML = originalHTML;
+            btn.disabled = false;
         });
-    } catch (error) {
-        console.error('下载模板失败:', error);
-        showNotification('下载模板失败: ' + error.message, 'error');
-    }
 }
 
 // 显示评语导入预览
