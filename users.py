@@ -1162,7 +1162,7 @@ def preview_import_teachers():
                 username = str(row['用户名']).strip() if pd.notna(row['用户名']) else ""
                 grade = str(row['年级']).strip() if '年级' in row and pd.notna(row['年级']) else ""
                 class_name = str(row['班级']).strip() if '班级' in row and pd.notna(row['班级']) else ""
-                role = str(row['角色']).strip() if '角色' in row and pd.notna(row['角色']) else "科任老师"
+                role = str(row['角色']).strip() if '角色' in row and pd.notna(row['角色']) else ""
                 subjects_str = str(row['任教学科']).strip() if '任教学科' in row and pd.notna(row['任教学科']) else ""
                 
                 # 解析任教学科
@@ -1199,7 +1199,7 @@ def preview_import_teachers():
                         update_count -= 1
                     invalid_count += 1
                 
-                # 验证角色
+                # 验证角色（如果提供了角色）
                 valid_roles = ['正班主任', '副班主任', '科任老师', '行政', '校级领导']
                 if is_valid and role and role not in valid_roles:
                     is_valid = False
@@ -1212,16 +1212,17 @@ def preview_import_teachers():
                     invalid_count += 1
                 
                 # 验证学科（如果提供了学科）
-                invalid_subjects = [s for s in subject_list if s not in existing_subjects]
-                if is_valid and invalid_subjects:
-                    is_valid = False
-                    status = "无效"
-                    reason = f"学科不存在：{', '.join(invalid_subjects)}"
-                    if not is_existing:
-                        new_count -= 1
-                    else:
-                        update_count -= 1
-                    invalid_count += 1
+                if is_valid and subject_list:
+                    invalid_subjects = [s for s in subject_list if s not in existing_subjects]
+                    if invalid_subjects:
+                        is_valid = False
+                        status = "无效"
+                        reason = f"学科不存在：{', '.join(invalid_subjects)}"
+                        if not is_existing:
+                            new_count -= 1
+                        else:
+                            update_count -= 1
+                        invalid_count += 1
                 
                 # 添加到预览数据
                 preview_data.append({
@@ -1320,7 +1321,7 @@ def confirm_import_teachers():
         for _, row in df.iterrows():
             username = str(row['用户名']).strip() if pd.notna(row['用户名']) else ""
             class_name = str(row['班级']).strip() if '班级' in row and pd.notna(row['班级']) else ""
-            role = str(row['角色']).strip() if '角色' in row and pd.notna(row['角色']) else "科任老师"
+            role = str(row['角色']).strip() if '角色' in row and pd.notna(row['角色']) else ""
             subjects_str = str(row['任教学科']).strip() if '任教学科' in row and pd.notna(row['任教学科']) else ""
             
             # 解析任教学科
@@ -1334,9 +1335,11 @@ def confirm_import_teachers():
                 })
                 continue
             
-            # 获取班级ID
+            # 获取班级ID（如果提供了班级）
             class_id = None
+            has_class = False
             if class_name:
+                has_class = True
                 if class_name not in existing_classes:
                     skipped_users.append({
                         'username': username,
@@ -1345,58 +1348,90 @@ def confirm_import_teachers():
                     continue
                 class_id = existing_classes[class_name]
             
-            # 验证角色
-            valid_roles = ['正班主任', '副班主任', '科任老师', '行政', '校级领导']
-            if role not in valid_roles:
-                skipped_users.append({
-                    'username': username,
-                    'reason': f'角色无效：{role}'
-                })
-                continue
+            # 验证角色（如果提供了角色）
+            has_role = False
+            if role:
+                has_role = True
+                valid_roles = ['正班主任', '副班主任', '科任老师', '行政', '校级领导']
+                if role not in valid_roles:
+                    skipped_users.append({
+                        'username': username,
+                        'reason': f'角色无效：{role}'
+                    })
+                    continue
             
-            # 验证学科
-            invalid_subjects = [s for s in subject_list if s not in existing_subjects]
-            if invalid_subjects:
-                skipped_users.append({
-                    'username': username,
-                    'reason': f'学科不存在：{", ".join(invalid_subjects)}'
-                })
-                continue
+            # 验证学科（如果提供了学科）
+            has_subjects = len(subject_list) > 0
+            if has_subjects:
+                invalid_subjects = [s for s in subject_list if s not in existing_subjects]
+                if invalid_subjects:
+                    skipped_users.append({
+                        'username': username,
+                        'reason': f'学科不存在：{", ".join(invalid_subjects)}'
+                    })
+                    continue
             
             # 检查用户是否已存在
             if username in existing_users:
-                # 更新现有用户
+                # 更新现有用户 - 只更新Excel中提供的字段
                 user_id = existing_users[username]
                 
-                cursor.execute('''
-                UPDATE users 
-                SET primary_role = ?, class_id = ?, updated_at = ?
-                WHERE id = ?
-                ''', (role, class_id, now, user_id))
+                # 构建动态更新SQL
+                update_fields = []
+                update_params = []
                 
-                # 删除旧的任教学科
-                cursor.execute('DELETE FROM teacher_subjects WHERE teacher_id = ?', (user_id,))
+                if has_role:
+                    update_fields.append("primary_role = ?")
+                    update_params.append(role)
                 
-                # 添加新的任教学科
-                for subject_name in subject_list:
-                    subject_id = existing_subjects[subject_name]
-                    cursor.execute('''
-                    INSERT INTO teacher_subjects (teacher_id, subject_id)
-                    VALUES (?, ?)
-                    ''', (user_id, subject_id))
+                if has_class:
+                    update_fields.append("class_id = ?")
+                    update_params.append(class_id)
+                
+                # 总是更新updated_at
+                update_fields.append("updated_at = ?")
+                update_params.append(now)
+                
+                # 添加WHERE条件的参数
+                update_params.append(user_id)
+                
+                # 执行更新（只有提供了字段才更新）
+                if len(update_fields) > 1:  # 除了updated_at还有其他字段
+                    cursor.execute(f'''
+                    UPDATE users 
+                    SET {', '.join(update_fields)}
+                    WHERE id = ?
+                    ''', update_params)
+                
+                # 更新任教学科（如果提供了学科）
+                if has_subjects:
+                    # 删除旧的任教学科
+                    cursor.execute('DELETE FROM teacher_subjects WHERE teacher_id = ?', (user_id,))
+                    
+                    # 添加新的任教学科
+                    for subject_name in subject_list:
+                        subject_id = existing_subjects[subject_name]
+                        cursor.execute('''
+                        INSERT INTO teacher_subjects (teacher_id, subject_id)
+                        VALUES (?, ?)
+                        ''', (user_id, subject_id))
                 
                 updated_users.append({
                     'id': user_id,
                     'username': username,
-                    'role': role,
-                    'class_name': class_name,
-                    'subjects': subject_list
+                    'role': role if has_role else '(未更新)',
+                    'class_name': class_name if has_class else '(未更新)',
+                    'subjects': subject_list if has_subjects else []
                 })
             else:
                 # 新增用户
                 # 生成随机密码
                 password = generate_random_password(6)
                 password_hash = generate_password_hash(password)
+                
+                # 新增用户时，如果没有提供角色，默认为"科任老师"
+                if not role:
+                    role = "科任老师"
                 
                 # 生成ID
                 current_id += 1

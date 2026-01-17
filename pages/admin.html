@@ -17,7 +17,7 @@
                     <i class='bx bx-list-plus'></i> 批量创建班级
                 </button>
                 <button type="button" class="btn btn-outline-success me-2" id="importExcelBtn">
-                    <i class='bx bx-import'></i> Excel导入班主任
+                    <i class='bx bx-import'></i> Excel导入教师名单
                 </button>
             </div>
         </div>
@@ -40,10 +40,10 @@
         <div class="tab-content" id="adminTabsContent">
             <!-- 用户管理选项卡 -->
             <div class="tab-pane fade show active" id="usersTab" role="tabpanel" aria-labelledby="users-tab">
-        <!-- Excel导入班主任表单 -->
+        <!-- Excel导入教师名单表单 -->
         <div id="importExcelForm" class="import-excel-form mb-4" style="display: none;">
-            <h4><i class='bx bx-import'></i> Excel导入班主任</h4>
-            <p class="text-muted">通过Excel表格批量导入班主任账户，系统将为每个班主任生成随机密码。</p>
+            <h4><i class='bx bx-import'></i> Excel导入教师名单</h4>
+            <p class="text-muted">通过Excel表格批量导入教师账户，支持新增和更新教师信息。</p>
             
             <form id="excelUploadForm" enctype="multipart/form-data">
                 <div class="mb-3">
@@ -52,9 +52,16 @@
                     <div class="excel-template-note">
                         <p class="mt-2 mb-1">Excel文件必须包含以下列：</p>
                         <ul>
-                            <li><strong>用户名</strong> - 班主任账户的登录名</li>
+                            <li><strong>用户名</strong> - 教师账户的登录名（必填）</li>
+                            <li><strong>年级</strong> - 教师所在年级（可选）</li>
+                            <li><strong>班级</strong> - 教师所在班级（可选，需先创建班级）</li>
+                            <li><strong>角色</strong> - 正班主任/副班主任/科任老师/行政/校级领导（可选）</li>
+                            <li><strong>任教学科</strong> - 多个学科用逗号分隔（可选）</li>
                         </ul>
-                        <p class="mt-2 mb-0">系统会自动为每个账户生成6位随机密码，导入后会显示密码信息。您可以在系统中稍后为班主任分配班级。</p>
+                        <p class="mt-2 mb-0">
+                            <span class="text-success">绿色</span>表示新增用户，<span class="text-danger">红色</span>表示已存在用户（将更新信息）。
+                            系统会自动为新用户生成6位随机密码。
+                        </p>
                         <a href="/api/users/template" class="btn btn-sm btn-outline-secondary mt-2" target="_blank">
                             <i class='bx bx-download'></i> 下载Excel模板
                         </a>
@@ -78,7 +85,10 @@
                                         <tr>
                                             <th>行号</th>
                                             <th>用户名</th>
+                                            <th>年级</th>
                                             <th>班级</th>
+                                            <th>角色</th>
+                                            <th>任教学科</th>
                                             <th>状态</th>
                                             <th>原因</th>
                                         </tr>
@@ -196,8 +206,8 @@
                 <div class="modal-body">
                     <div id="importSuccessMessage" class="alert alert-success"></div>
                     
-                    <div id="importPasswordsContainer">
-                        <h5>账户密码信息</h5>
+                    <div id="importPasswordsContainer" style="display: none;">
+                        <h5>新增账户密码信息</h5>
                         <p class="text-danger">重要提示：请立即保存这些密码，关闭此窗口后将无法再次查看！</p>
                         
                         <div class="password-table">
@@ -222,13 +232,29 @@
                         </div>
                     </div>
                     
+                    <div id="importUpdatedContainer" class="mt-4" style="display:none;">
+                        <h5>更新的教师账户</h5>
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>用户名</th>
+                                    <th>班级</th>
+                                    <th>角色</th>
+                                    <th>任教学科</th>
+                                </tr>
+                            </thead>
+                            <tbody id="updatedTableBody">
+                                <!-- 更新的记录列表将通过JS动态生成 -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
                     <div id="importSkippedContainer" class="mt-4" style="display:none;">
                         <h5>导入跳过的记录</h5>
                         <table class="table table-bordered">
                             <thead>
                                 <tr>
                                     <th>用户名</th>
-                                    <th>班级</th>
                                     <th>原因</th>
                                 </tr>
                             </thead>
