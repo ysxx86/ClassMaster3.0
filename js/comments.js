@@ -198,8 +198,7 @@ function initCommentList() {
             const students = data.students;
             // 获取有评语的学生数量
             const commentsCount = students.filter(student => student.comments).length;
-            // 移除对dataService的依赖,避免加载问题
-            // const exportSettings = dataService.getExportSettings();
+            const exportSettings = dataService.getExportSettings();
             
             console.log(`从服务器获取学生数据:`, students.length, '条');
             console.log(`有评语的学生:`, commentsCount, '人');
@@ -263,45 +262,87 @@ function initCommentList() {
                     studentsByClass[className].push(student);
                 });
                 
-                // 展示已分组的学生
+                // 清空容器
                 commentCards.innerHTML = '';
+                
+                // 收集所有学生并排序
+                const allStudents = [];
                 Object.keys(studentsByClass).sort().forEach(className => {
-                    // 添加班级标题
-                    const classTitle = document.createElement('div');
-                    classTitle.className = 'col-12 mt-4 mb-2';
-                    classTitle.innerHTML = `
-                        <h4 class="class-title">
-                            <i class='bx bx-group'></i> ${className}
-                            <span class="badge bg-primary ms-2">${studentsByClass[className].length} 名学生</span>
-                        </h4>
-                        <hr>
-                    `;
-                    fragment.appendChild(classTitle);
-                    
-                    // 先对班级内的学生按学号排序
+                    // 对班级内的学生按学号排序
                     studentsByClass[className].sort((a, b) => {
                         return parseInt(a.id) - parseInt(b.id);
                     });
                     
-                    // 添加该班级的学生卡片
+                    allStudents.push({
+                        type: 'classTitle',
+                        className: className,
+                        count: studentsByClass[className].length
+                    });
+                    
                     studentsByClass[className].forEach(student => {
-                        // 直接使用学生数据中的comments字段
-                        const commentData = student.comments ? {
-                            studentId: student.id,
-                            content: student.comments,
-                            updateDate: student.updated_at
-                        } : null;
-                        
-                        const card = createCommentCard(student, commentData);
-                        fragment.appendChild(card);
+                        allStudents.push({
+                            type: 'student',
+                            data: student
+                        });
                     });
                 });
                 
-                commentCards.appendChild(fragment);
+                // 分批渲染 - 立即显示第一批，然后逐步渲染剩余的
+                const BATCH_SIZE = 50;
+                let currentIndex = 0;
+                
+                function renderBatch() {
+                    const fragment = document.createDocumentFragment();
+                    const endIndex = Math.min(currentIndex + BATCH_SIZE, allStudents.length);
+                    
+                    for (let i = currentIndex; i < endIndex; i++) {
+                        const item = allStudents[i];
+                        
+                        if (item.type === 'classTitle') {
+                            // 添加班级标题
+                            const classTitle = document.createElement('div');
+                            classTitle.className = 'col-12 mt-4 mb-2';
+                            classTitle.innerHTML = `
+                                <h4 class="class-title">
+                                    <i class='bx bx-group'></i> ${item.className}
+                                    <span class="badge bg-primary ms-2">${item.count} 名学生</span>
+                                </h4>
+                                <hr>
+                            `;
+                            fragment.appendChild(classTitle);
+                        } else {
+                            // 添加学生卡片
+                            const student = item.data;
+                            const commentData = student.comments ? {
+                                studentId: student.id,
+                                content: student.comments,
+                                updateDate: student.updated_at
+                            } : null;
+                            
+                            const card = createCommentCard(student, commentData);
+                            fragment.appendChild(card);
+                        }
+                    }
+                    
+                    commentCards.appendChild(fragment);
+                    currentIndex = endIndex;
+                    
+                    // 如果还有更多数据，继续渲染
+                    if (currentIndex < allStudents.length) {
+                        // 使用requestAnimationFrame确保不阻塞UI
+                        requestAnimationFrame(renderBatch);
+                    } else {
+                        const endTime = performance.now();
+                        console.log(`✅ 评语列表渲染完成，共 ${students.length} 个学生，用时: ${(endTime - startTime).toFixed(2)}ms`);
+                    }
+                }
+                
+                // 立即开始渲染第一批
+                console.log(`开始分批渲染 ${students.length} 个学生，每批 ${BATCH_SIZE} 个...`);
+                renderBatch();
             }
             
-            const endTime = performance.now();
-            console.log(`评语列表更新完成，用时: ${(endTime - startTime).toFixed(2)}ms`);
+            // 注意：不在这里打印完成日志，因为渲染是分批的
         })
         .catch(error => {
             console.error('加载学生数据时出错:', error);
@@ -511,9 +552,8 @@ function fillCommentForm(studentId, studentName, classId) {
             });
     } else {
         // 从本地存储获取评语数据
-        // 移除对dataService的依赖,直接从API获取
-        // const comment = dataService.getCommentByStudentId(studentId);
-        commentText.value = '';
+        const comment = dataService.getCommentByStudentId(studentId);
+        commentText.value = comment ? comment.content : '';
         commentText.disabled = false;
         
         // 显示模态框

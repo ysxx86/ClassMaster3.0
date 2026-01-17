@@ -142,11 +142,19 @@ def get_all_students():
     cursor = conn.cursor()
     
     try:
-        # 只查询有权限的班级
+        # 只查询有权限的班级，且只返回评语管理需要的字段
         placeholders = ','.join('?' * len(accessible_classes))
         logger.info(f"用户 {current_user.username} 可访问的班级: {accessible_classes}")
         cursor.execute(f'''
-            SELECT s.rowid AS rowid, s.*, c.class_name 
+            SELECT 
+                s.rowid AS rowid,
+                s.id,
+                s.name,
+                s.gender,
+                s.class_id,
+                s.comments,
+                s.updated_at,
+                c.class_name
             FROM students s
             LEFT JOIN classes c ON s.class_id = c.id
             WHERE s.class_id IN ({placeholders})

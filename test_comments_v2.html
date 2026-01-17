@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>评语管理 v2.0 测试</title>
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href='css/boxicons.min.css' rel='stylesheet'>
+    <link href="css/comments.css" rel="stylesheet">
+    <style>
+        body {
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-info {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-info h3 {
+            color: #007bff;
+            margin-bottom: 15px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .status.loading {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="test-info">
+            <h3>🚀 评语管理 v2.0.0 - 极速优化版测试</h3>
+            <p><strong>测试目的:</strong> 验证新版本是否正确加载,性能是否提升</p>
+            <p><strong>当前时间:</strong> <span id="currentTime"></span></p>
+            <div id="versionStatus" class="status loading">正在检测版本...</div>
+            <div id="loadStatus" class="status loading">准备加载数据...</div>
+        </div>
+
+        <div id="commentsHeader">
+            <h1 class="page-title">评语管理</h1>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="ca
