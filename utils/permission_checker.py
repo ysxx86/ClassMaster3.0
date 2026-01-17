@@ -280,7 +280,8 @@ def get_editable_subjects(user, class_id=None):
             return []
     
     # 正班主任可以编辑自己班级的所有学科
-    if is_head_teacher(user) and class_id and str(user.class_id) == str(class_id):
+    # 注意：正班主任在成绩管理页面只能看到自己的班级，所以这里不需要检查class_id
+    if is_head_teacher(user):
         try:
             conn = get_db_connection()
             cursor = conn.cursor()

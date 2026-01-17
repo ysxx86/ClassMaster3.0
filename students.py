@@ -15,6 +15,7 @@ from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.utils import get_column_letter
 from flask_login import login_required, current_user
 from utils.class_filter import class_filter, user_can_access
+from utils.permission_checker import can_access_students, get_accessible_classes, require_head_teacher
 import logging
 import openpyxl
 from io import BytesIO
@@ -125,42 +126,32 @@ def create_student_template():
 @students_bp.route('/api/students', methods=['GET'], strict_slashes=False)
 @login_required
 def get_all_students():
-    class_id = None
+    # 获取用户有权限访问的班级列表
+    accessible_classes = get_accessible_classes(current_user)
     
-    # 班主任只能查看自己班级的学生
-    if not current_user.is_admin:
-        # 如果班主任没有被分配班级，则返回空列表
-        if not current_user.class_id:
-            logger.warning(f"班主任 {current_user.username} 未分配班级，不能查看任何学生")
-            return jsonify({
-                'status': 'ok',
-                'count': 0,
-                'students': [],
-                'message': '您尚未被分配班级，无法查看学生信息'
-            })
-        class_id = current_user.class_id
+    if not accessible_classes:
+        logger.warning(f"用户 {current_user.username} 没有权限访问任何班级")
+        return jsonify({
+            'status': 'ok',
+            'count': 0,
+            'students': [],
+            'message': '您没有权限查看任何班级的学生'
+        })
     
     conn = get_db_connection()
     cursor = conn.cursor()
     
     try:
-        if class_id:
-            logger.info(f"仅获取班级 {class_id} 的学生")
-            cursor.execute('''
-                SELECT s.rowid AS rowid, s.*, c.class_name 
-                FROM students s
-                LEFT JOIN classes c ON s.class_id = c.id
-                WHERE s.class_id = ? 
-                ORDER BY CAST(s.id AS INTEGER)
-            ''', (class_id,))
-        else:
-            logger.info(f"获取所有学生")
-            cursor.execute('''
-                SELECT s.rowid AS rowid, s.*, c.class_name 
-                FROM students s
-                LEFT JOIN classes c ON s.class_id = c.id
-                ORDER BY CAST(s.id AS INTEGER)
-            ''')
+        # 只查询有权限的班级
+        placeholders = ','.join('?' * len(accessible_classes))
+        logger.info(f"用户 {current_user.username} 可访问的班级: {accessible_classes}")
+        cursor.execute(f'''
+            SELECT s.rowid AS rowid, s.*, c.class_name 
+            FROM students s
+            LEFT JOIN classes c ON s.class_id = c.id
+            WHERE s.class_id IN ({placeholders})
+            ORDER BY CAST(s.id AS INTEGER)
+        ''', accessible_classes)
             
         students = [dict(row) for row in cursor.fetchall()]
         
@@ -234,15 +225,15 @@ def add_student():
         if field not in data:
             return jsonify({'error': f'缺少必要的字段: {field}'}), 400
     
-    # 如果是班主任且没有分配班级，不允许添加学生
-    if not current_user.is_admin and not current_user.class_id:
-        return jsonify({'error': '您尚未被分配班级，无法添加学生'}), 403
+    # 检查是否有权限添加学生
+    if not can_access_students(current_user):
+        return jsonify({'error': '您没有权限添加学生'}), 403
     
-    # 如果是班主任，自动设置班级ID
+    # 如果是正班主任，自动设置班级ID
     if not current_user.is_admin and current_user.class_id:
         # 检查是否已提供了class_id，如果是，确保与班主任的class_id一致
         if 'class_id' in data and data['class_id'] != current_user.class_id:
-            return jsonify({'error': '班主任只能添加本班学生'}), 403
+            return jsonify({'error': '正班主任只能添加本班学生'}), 403
         
         # 设置班级ID
         data['class_id'] = current_user.class_id
@@ -305,19 +296,15 @@ def update_student(student_id):
         if not data:
             return jsonify({'error': '没有提供更新数据'}), 400
         
-        # 如果是班主任且没有分配班级，不允许更新学生
-        if not current_user.is_admin and not current_user.class_id:
-            return jsonify({'error': '您尚未被分配班级，无法更新学生信息'}), 403
-            
         # 获取班级ID
         class_id = data.get('class_id')
         if not class_id:
             return jsonify({'error': '缺少班级ID'}), 400
-            
-        # 班主任只能更新自己班级的学生
-        if not current_user.is_admin and str(current_user.class_id) != str(class_id):
-            return jsonify({'error': '您只能更新自己班级的学生信息'}), 403
         
+        # 检查是否有权限访问该班级的学生
+        if not can_access_students(current_user, class_id):
+            return jsonify({'error': '您没有权限更新该班级的学生信息'}), 403
+            
         # 获取数据库连接
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -431,15 +418,10 @@ def delete_student(student_id):
         class_id = request.args.get('class_id')
         if not class_id:
             return jsonify({'error': '缺少班级ID'}), 400
-            
-        # 如果是班主任且没有分配班级，不允许删除学生
-        if not current_user.is_admin and not current_user.class_id:
-            logger.warning(f"班主任 {current_user.username} 未分配班级，不能删除学生")
-            return jsonify({'error': '您尚未被分配班级，无法删除学生'}), 403
-            
-        # 班主任只能删除自己班级的学生
-        if not current_user.is_admin and str(current_user.class_id) != str(class_id):
-            return jsonify({'error': '您只能删除自己班级的学生'}), 403
+        
+        # 检查是否有权限删除该班级的学生
+        if not can_access_students(current_user, class_id):
+            return jsonify({'error': '您没有权限删除该班级的学生'}), 403
             
         # 获取数据库连接
         conn = get_db_connection()
