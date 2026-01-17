@@ -98,9 +98,9 @@
                 <div class="table-container">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="mb-0">教师任教分配</h5>
-                        <button class="btn btn-primary" id="assign-subject-btn">
-                            <i class='bx bx-plus'></i> 分配学科
-                        </button>
+                        <div class="text-muted">
+                            <small><i class='bx bx-info-circle'></i> 点击教师行的"添加学科"按钮进行快速分配</small>
+                        </div>
                     </div>
                     
                     <!-- 筛选器 -->
@@ -175,27 +175,40 @@
 
     <!-- 分配学科模态框 -->
     <div class="modal fade" id="assignModal" tabindex="-1">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">分配学科</h5>
+                    <h5 class="modal-title" id="assignModalTitle">为教师分配学科</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="assign-form">
-                        <div class="mb-3">
-                            <label for="assign-teacher" class="form-label">选择教师 <span class="text-danger">*</span></label>
-                            <select class="form-select" id="assign-teacher" required>
-                                <option value="">请选择教师</option>
-                            </select>
+                    <input type="hidden" id="assign-teacher-id">
+                    
+                    <!-- 教师信息 -->
+                    <div class="alert alert-info mb-3">
+                        <strong>教师：</strong><span id="assign-teacher-name"></span>
+                        <span class="ms-3"><strong>角色：</strong><span id="assign-teacher-role"></span></span>
+                        <span class="ms-3"><strong>班级：</strong><span id="assign-teacher-class"></span></span>
+                    </div>
+                    
+                    <!-- 学科多选列表 -->
+                    <div class="mb-3">
+                        <label class="form-label">选择任教学科（可多选）</label>
+                        <div class="border rounded p-3" style="max-height: 400px; overflow-y: auto;">
+                            <div id="subject-checkboxes">
+                                <div class="text-center text-muted">
+                                    <div class="spinner-border spinner-border-sm" role="status"></div>
+                                    加载中...
+                                </div>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="assign-subject" class="form-label">选择学科 <span class="text-danger">*</span></label>
-                            <select class="form-select" id="assign-subject" required>
-                                <option value="">请选择学科</option>
-                            </select>
-                        </div>
-                    </form>
+                    </div>
+                    
+                    <!-- 快速选择 -->
+                    <div class="d-flex gap-2 mb-3">
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="select-all-subjects">全选</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="deselect-all-subjects">取消全选</button>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
