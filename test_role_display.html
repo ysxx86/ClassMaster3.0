@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试角色显示</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-result {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+        .user-display {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 10px 0;
+        }
+        .role-super-admin { color: #dc3545; }
+        .role-head-teacher { color: #0d6efd; }
+        .role-vice-teacher { color: #0dcaf0; }
+        .role-subject-teacher { color: #6c757d; }
+        .role-admin-staff { color: #ffc107; }
+        .role-school-leader { color: #198754; }
+    </style>
+</head>
+<body>
+    <h1>角色显示功能测试</h1>
+    
+    <div id="test-results"></div>
+    
+    <script>
+        // 获取角色显示名称
+        function getRoleDisplayName(user) {
+            if (user.is_admin) {
+                return '超级管理员';
+            }
+            
+            const role = user.primary_role || '科任老师';
+            return role;
+        }
+        
+        // 获取角色对应的CSS类
+        function getRoleClass(user) {
+            if (user.is_admin) {
+                return 'role-super-admin';
+            }
+            
+            const role = user.primary_role || '科任老师';
+            const roleClassMap = {
+                '正班主任': 'role-head-teacher',
+                '副班主任': 'role-vice-teacher',
+                '科任老师': 'role-subject-teacher',
+                '行政': 'role-admin-staff',
+                '校级领导': 'role-school-leader',
+                '超级管理员': 'role-super-admin'
+            };
+            
+            return roleClassMap[role] || 'role-default';
+        }
+        
+        // 测试API
+        fetch('/api/current-user')
+            .then(response => response.json())
+            .then(data => {
+                const resultsDiv = document.getElementById('test-results');
+                
+                if (data.status === 'ok') {
+                    const user = data.user;
+                    const roleText = getRoleDisplayName(user);
+                    const roleClass = getRoleClass(user);
+                    
+                    resultsDiv.innerHTML = `
+                        <div class="test-result success">
+                            <h3>✅ API调用成功</h3>
+                            <p><strong>用户ID:</strong> ${user.id}</p>
+                            <p><strong>用户名:</strong> ${user.username}</p>
+                            <p><strong>是否管理员:</strong> ${user.is_admin ? '是' : '否'}</p>
+                            <p><strong>主要角色:</strong> ${user.primary_role || '未设置'}</p>
+                            <p><strong>班级ID:</strong> ${user.class_id || '无'}</p>
+                            <p><strong>班级名称:</strong> ${user.class_name || '无'}</p>
+                            <hr>
+                            <h4>显示效果：</h4>
+                            <div class="user-display ${roleClass}">
+                                ${roleText} ${user.username}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="test-result error">
+                            <h3>❌ API调用失败</h3>
+                            <p>${data.message || '未知错误'}</p>
+                        </div>
+                    `;
+                }
+            })
+            .catch(error => {
+                const resultsDiv = document.getElementById('test-results');
+                resultsDiv.innerHTML = `
+                    <div class="test-result error">
+                        <h3>❌ 请求失败</h3>
+                        <p>${error.message}</p>
+                        <p>请确保已登录系统</p>
+                    </div>
+                `;
+            });
+    </script>
+</body>
+</html>
