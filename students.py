@@ -122,10 +122,15 @@ def create_student_template():
     print("学生Excel模板创建完成")
     return template_path
 
-# 获取所有学生API
+# 获取所有学生API - 支持分页和按需加载
 @students_bp.route('/api/students', methods=['GET'], strict_slashes=False)
 @login_required
 def get_all_students():
+    # 获取分页参数
+    page = request.args.get('page', type=int, default=1)
+    page_size = request.args.get('page_size', type=int, default=100)
+    class_filter = request.args.get('class_id', type=str, default=None)
+    
     # 获取用户有权限访问的班级列表
     accessible_classes = get_accessible_classes(current_user)
     
@@ -134,17 +139,46 @@ def get_all_students():
         return jsonify({
             'status': 'ok',
             'count': 0,
+            'total': 0,
+            'page': page,
+            'page_size': page_size,
             'students': [],
             'message': '您没有权限查看任何班级的学生'
         })
+    
+    # 如果指定了班级筛选，验证权限
+    if class_filter and class_filter not in [str(c) for c in accessible_classes]:
+        return jsonify({
+            'status': 'error',
+            'message': '您没有权限访问该班级'
+        }), 403
     
     conn = get_db_connection()
     cursor = conn.cursor()
     
     try:
-        # 只查询有权限的班级，且只返回评语管理需要的字段
-        placeholders = ','.join('?' * len(accessible_classes))
-        logger.info(f"用户 {current_user.username} 可访问的班级: {accessible_classes}")
+        # 构建查询条件
+        if class_filter:
+            where_clause = 'WHERE s.class_id = ?'
+            params = [class_filter]
+        else:
+            placeholders = ','.join('?' * len(accessible_classes))
+            where_clause = f'WHERE s.class_id IN ({placeholders})'
+            params = accessible_classes
+        
+        # 先获取总数
+        cursor.execute(f'''
+            SELECT COUNT(*) as total
+            FROM students s
+            {where_clause}
+        ''', params)
+        total = cursor.fetchone()['total']
+        
+        # 计算偏移量
+        offset = (page - 1) * page_size
+        
+        # 分页查询，只返回评语管理需要的字段
+        logger.info(f"用户 {current_user.username} 查询第{page}页，每页{page_size}条")
         cursor.execute(f'''
             SELECT 
                 s.rowid AS rowid,
@@ -157,15 +191,20 @@ def get_all_students():
                 c.class_name
             FROM students s
             LEFT JOIN classes c ON s.class_id = c.id
-            WHERE s.class_id IN ({placeholders})
-            ORDER BY CAST(s.id AS INTEGER)
-        ''', accessible_classes)
+            {where_clause}
+            ORDER BY c.class_name, CAST(s.id AS INTEGER)
+            LIMIT ? OFFSET ?
+        ''', params + [page_size, offset])
             
         students = [dict(row) for row in cursor.fetchall()]
         
         return jsonify({
             'status': 'ok',
             'count': len(students),
+            'total': total,
+            'page': page,
+            'page_size': page_size,
+            'total_pages': (total + page_size - 1) // page_size,
             'students': students
         })
     except Exception as e:
