@@ -10,20 +10,12 @@ import logging
 from datetime import datetime
 from functools import wraps
 from database import get_db_connection
+from utils.permission_checker import require_performance_access
 
 logger = logging.getLogger(__name__)
 
 # 创建蓝图
 performance_bp = Blueprint('performance', __name__, url_prefix='/api/performance')
-
-def admin_required(f):
-    """管理员权限装饰器"""
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if not current_user.is_admin:
-            return jsonify({'status': 'error', 'message': '需要管理员权限'}), 403
-        return f(*args, **kwargs)
-    return decorated_function
 
 def init_performance():
     """初始化绩效考核模块数据库表"""
@@ -153,6 +145,7 @@ def init_performance():
 
 @performance_bp.route('/items', methods=['GET'])
 @login_required
+@require_performance_access
 def get_items():
     """获取所有考核项目"""
     try:
@@ -189,10 +182,13 @@ def get_items():
 
 @performance_bp.route('/items', methods=['POST'])
 @login_required
-@admin_required
+@require_performance_access
 def add_item():
     """添加考核项目"""
     try:
+        # 只有超级管理员可以添加考核项目
+        if not current_user.is_admin:
+            return jsonify({'status': 'error', 'message': '只有超级管理员可以添加考核项目'}), 403
         data = request.json
         category = data.get('category')
         item_name = data.get('item_name')
@@ -226,10 +222,13 @@ def add_item():
 
 @performance_bp.route('/items/<int:item_id>', methods=['PUT'])
 @login_required
-@admin_required
+@require_performance_access
 def update_item(item_id):
     """更新考核项目"""
     try:
+        # 只有超级管理员可以更新考核项目
+        if not current_user.is_admin:
+            return jsonify({'status': 'error', 'message': '只有超级管理员可以更新考核项目'}), 403
         data = request.json
         
         conn = get_db_connection()
@@ -256,10 +255,13 @@ def update_item(item_id):
 
 @performance_bp.route('/items/<int:item_id>', methods=['DELETE'])
 @login_required
-@admin_required
+@require_performance_access
 def delete_item(item_id):
     """删除考核项目（软删除）"""
     try:
+        # 只有超级管理员可以删除考核项目
+        if not current_user.is_admin:
+            return jsonify({'status': 'error', 'message': '只有超级管理员可以删除考核项目'}), 403
         conn = get_db_connection()
         cursor = conn.cursor()
         
@@ -283,10 +285,13 @@ def delete_item(item_id):
 
 @performance_bp.route('/evaluators', methods=['GET'])
 @login_required
-@admin_required
+@require_performance_access
 def get_evaluators():
     """获取所有评分人员"""
     try:
+        # 只有超级管理员可以查看评分人员
+        if not current_user.is_admin:
+            return jsonify({'status': 'error', 'message': '只有超级管理员可以查看评分人员'}), 403
         conn = get_db_connection()
         cursor = conn.cursor()
         
@@ -322,10 +327,13 @@ def get_evaluators():
 
 @performance_bp.route('/evaluators', methods=['POST'])
 @login_required
-@admin_required
+@require_performance_access
 def add_evaluator():
     """添加评分人员"""
     try:
+        # 只有超级管理员可以添加评分人员
+        if not current_user.is_admin:
+            return jsonify({'status': 'error', 'message': '只有超级管理员可以添加评分人员'}), 403
         data = request.json
         user_id = data.get('user_id')
         item_id = data.get('item_id')
@@ -358,10 +366,13 @@ def add_evaluator():
 
 @performance_bp.route('/evaluators/<int:evaluator_id>', methods=['DELETE'])
 @login_required
-@admin_required
+@require_performance_access
 def delete_evaluator(evaluator_id):
     """删除评分人员"""
     try:
+        # 只有超级管理员可以删除评分人员
+        if not current_user.is_admin:
+            return jsonify({'status': 'error', 'message': '只有超级管理员可以删除评分人员'}), 403
         conn = get_db_connection()
         cursor = conn.cursor()
         
@@ -383,6 +394,7 @@ def delete_evaluator(evaluator_id):
 
 @performance_bp.route('/scores', methods=['POST'])
 @login_required
+@require_performance_access
 def submit_score():
     """提交评分"""
     try:
@@ -433,6 +445,7 @@ def submit_score():
 
 @performance_bp.route('/scores/<semester>', methods=['GET'])
 @login_required
+@require_performance_access
 def get_all_scores(semester):
     """获取某学期所有正班主任的评分矩阵"""
     try:
@@ -514,10 +527,13 @@ def get_all_scores(semester):
 
 @performance_bp.route('/calculate/<semester>', methods=['POST'])
 @login_required
-@admin_required
+@require_performance_access
 def calculate_results(semester):
     """计算考核结果（去掉最高最低分后取平均）"""
     try:
+        # 只有超级管理员可以计算考核结果
+        if not current_user.is_admin:
+            return jsonify({'status': 'error', 'message': '只有超级管理员可以计算考核结果'}), 403
         conn = get_db_connection()
         cursor = conn.cursor()
         
@@ -602,6 +618,7 @@ def calculate_results(semester):
 
 @performance_bp.route('/results/<semester>', methods=['GET'])
 @login_required
+@require_performance_access
 def get_results(semester):
     """获取考核结果"""
     try:
@@ -649,6 +666,7 @@ def get_results(semester):
 
 @performance_bp.route('/teachers', methods=['GET'])
 @login_required
+@require_performance_access
 def get_teachers():
     """获取所有教师列表"""
     try:
@@ -689,10 +707,13 @@ def get_teachers():
 
 @performance_bp.route('/teachers/<int:teacher_id>/role', methods=['PUT'])
 @login_required
-@admin_required
+@require_performance_access
 def update_teacher_role(teacher_id):
     """更新教师角色"""
     try:
+        # 只有超级管理员可以更新教师角色
+        if not current_user.is_admin:
+            return jsonify({'status': 'error', 'message': '只有超级管理员可以更新教师角色'}), 403
         data = request.json
         role = data.get('role')
         

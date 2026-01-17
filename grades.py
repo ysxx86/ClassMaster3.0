@@ -15,6 +15,7 @@ from werkzeug.utils import secure_filename
 from flask_login import login_required, current_user
 from utils.class_filter import class_filter, user_can_access
 from utils.grades_manager import GradesManager
+from utils.permission_checker import can_edit_grade, get_editable_subjects, can_access_students
 import logging
 import pandas as pd
 import numpy as np
@@ -189,12 +190,36 @@ def save_student_grade(student_id):
         if not semester:
             logger.error("缺少必要参数: semester")
             return jsonify({'status': 'error', 'message': '缺少必要参数: semester'})
-            
-        # 移除semester和class_id，因为在save_grade函数中已经单独处理了
+        
+        # 学科名称映射（数据库字段名 -> 显示名称）
+        subject_display_names = {
+            'yuwen': '语文',
+            'shuxue': '数学',
+            'yingyu': '英语',
+            'daof': '道法',
+            'kexue': '科学',
+            'zonghe': '综合',
+            'tiyu': '体育',
+            'yinyue': '音乐',
+            'meishu': '美术',
+            'laodong': '劳动',
+            'xinxi': '信息',
+            'shufa': '书法',
+            'xinli': '心理'
+        }
+        
+        # 检查每个学科的编辑权限
         grade_data = {}
         for field in data:
-            if field not in ['semester', 'class_id'] and field in ['daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 
-                     'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'xinli']:
+            if field not in ['semester', 'class_id'] and field in subject_display_names:
+                subject_name = subject_display_names[field]
+                # 检查是否有权限编辑该学科
+                if not can_edit_grade(current_user, class_id, subject_name):
+                    logger.warning(f"用户 {current_user.username} 尝试编辑无权限的学科: {subject_name}")
+                    return jsonify({
+                        'status': 'error', 
+                        'message': f'您没有权限编辑{subject_name}成绩'
+                    }), 403
                 grade_data[field] = data.get(field, '')
         
         logger.info(f"提取的成绩数据: {grade_data}")
