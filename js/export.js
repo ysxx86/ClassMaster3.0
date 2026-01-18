@@ -2395,6 +2395,9 @@ function initExportFunctions() {
 // 隐藏进度模态框
 function hideProgressModal() {
     try {
+        // ⭐ 首先停止轮询进度
+        stopPollingProgress();
+        
         const progressModal = bootstrap.Modal.getInstance(document.getElementById('progressModal'));
         if (progressModal) {
             progressModal.hide();
