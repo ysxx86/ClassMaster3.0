@@ -545,3 +545,326 @@ def get_subject_teachers(subject_id):
             'status': 'error',
             'message': f'获取学科教师失败: {str(e)}'
         }), 500
+
+# ==================== 教师班级分配 API ====================
+
+# 获取教师任教的班级列表
+@subjects_bp.route('/api/teacher-classes/<teacher_id>', methods=['GET'])
+@login_required
+def get_teacher_classes(teacher_id):
+    """获取教师任教的班级和学科列表"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            SELECT 
+                ta.id,
+                ta.class_id,
+                c.class_name,
+                s.id as subject_id,
+                s.name as subject_name,
+                ta.created_at
+            FROM teaching_assignments ta
+            JOIN classes c ON CAST(ta.class_id AS INTEGER) = c.id
+            JOIN subjects s ON ta.subject = s.name
+            WHERE ta.teacher_id = ?
+            ORDER BY c.class_name, s.name
+        ''', (teacher_id,))
+        
+        assignments = []
+        for row in cursor.fetchall():
+            assignments.append({
+                'id': row['id'],
+                'class_id': row['class_id'],
+                'class_name': row['class_name'],
+                'subject_id': row['subject_id'],
+                'subject_name': row['subject_name'],
+                'created_at': row['created_at']
+            })
+        
+        conn.close()
+        
+        return jsonify({
+            'status': 'ok',
+            'assignments': assignments
+        })
+        
+    except Exception as e:
+        logger.error(f"获取教师班级分配时出错: {e}")
+        return jsonify({
+            'status': 'error',
+            'message': f'获取教师班级分配失败: {str(e)}'
+        }), 500
+
+# 分配教师到班级和学科
+@subjects_bp.route('/api/teacher-classes', methods=['POST'])
+@login_required
+def assign_teacher_to_classes():
+    """分配教师到多个班级的某个学科"""
+    try:
+        data = request.get_json()
+        teacher_id = data.get('teacher_id')
+        subject_id = data.get('subject_id')
+        class_ids = data.get('class_ids', [])  # 班级ID列表
+        
+        if not teacher_id or not subject_id or not class_ids:
+            return jsonify({
+                'status': 'error',
+                'message': '缺少必要参数'
+            }), 400
+        
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # 获取学科名称
+        cursor.execute('SELECT name FROM subjects WHERE id = ?', (subject_id,))
+        subject_row = cursor.fetchone()
+        if not subject_row:
+            conn.close()
+            return jsonify({
+                'status': 'error',
+                'message': '学科不存在'
+            }), 404
+        
+        subject_name = subject_row['name']
+        
+        # 先删除该教师该学科的所有班级分配
+        cursor.execute('''
+            DELETE FROM teaching_assignments 
+            WHERE teacher_id = ? AND subject = ?
+        ''', (teacher_id, subject_name))
+        
+        # 添加新的班级分配
+        success_count = 0
+        for class_id in class_ids:
+            try:
+                cursor.execute('''
+                    INSERT INTO teaching_assignments (teacher_id, class_id, subject)
+                    VALUES (?, ?, ?)
+                ''', (teacher_id, str(class_id), subject_name))
+                success_count += 1
+            except sqlite3.IntegrityError:
+                # 如果已存在，跳过
+                logger.warning(f"教师 {teacher_id} 已分配到班级 {class_id} 的学科 {subject_name}")
+        
+        conn.commit()
+        conn.close()
+        
+        return jsonify({
+            'status': 'ok',
+            'message': f'成功分配 {success_count} 个班级'
+        })
+        
+    except Exception as e:
+        logger.error(f"分配教师班级时出错: {e}")
+        return jsonify({
+            'status': 'error',
+            'message': f'分配教师班级失败: {str(e)}'
+        }), 500
+
+# 移除教师的班级分配
+@subjects_bp.route('/api/teacher-classes/<int:assignment_id>', methods=['DELETE'])
+@login_required
+def remove_teacher_class_assignment(assignment_id):
+    """移除教师的某个班级学科分配"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute('DELETE FROM teaching_assignments WHERE id = ?', (assignment_id,))
+        
+        if cursor.rowcount == 0:
+            conn.close()
+            return jsonify({
+                'status': 'error',
+                'message': '分配记录不存在'
+            }), 404
+        
+        conn.commit()
+        conn.close()
+        
+        return jsonify({
+            'status': 'ok',
+            'message': '移除成功'
+        })
+        
+    except Exception as e:
+        logger.error(f"移除教师班级分配时出错: {e}")
+        return jsonify({
+            'status': 'error',
+            'message': f'移除失败: {str(e)}'
+        }), 500
+
+# 获取某个班级某个学科的任教教师
+@subjects_bp.route('/api/class-subject-teachers/<int:class_id>/<int:subject_id>', methods=['GET'])
+@login_required
+def get_class_subject_teachers(class_id, subject_id):
+    """获取某个班级某个学科的任教教师"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # 获取学科名称
+        cursor.execute('SELECT name FROM subjects WHERE id = ?', (subject_id,))
+        subject_row = cursor.fetchone()
+        if not subject_row:
+            conn.close()
+            return jsonify({
+                'status': 'error',
+                'message': '学科不存在'
+            }), 404
+        
+        subject_name = subject_row['name']
+        
+        cursor.execute('''
+            SELECT 
+                u.id,
+                u.username,
+                u.primary_role,
+                ta.created_at
+            FROM teaching_assignments ta
+            JOIN users u ON ta.teacher_id = u.id
+            WHERE ta.class_id = ? AND ta.subject = ?
+            ORDER BY u.username
+        ''', (str(class_id), subject_name))
+        
+        teachers = []
+        for row in cursor.fetchall():
+            teachers.append({
+                'id': row['id'],
+                'username': row['username'],
+                'primary_role': row['primary_role'] if 'primary_role' in row.keys() else '科任老师',
+                'assigned_at': row['created_at']
+            })
+        
+        conn.close()
+        
+        return jsonify({
+            'status': 'ok',
+            'teachers': teachers
+        })
+        
+    except Exception as e:
+        logger.error(f"获取班级学科教师时出错: {e}")
+        return jsonify({
+            'status': 'error',
+            'message': f'获取失败: {str(e)}'
+        }), 500
+
+# 获取所有教师的分配情况
+@subjects_bp.route('/api/all-teacher-assignments', methods=['GET'])
+@login_required
+def get_all_teacher_assignments():
+    """获取所有教师的角色、班级和学科分配情况"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # 获取所有教师（排除超级管理员）
+        cursor.execute('''
+            SELECT 
+                u.id,
+                u.username,
+                u.primary_role,
+                u.class_id,
+                c.class_name
+            FROM users u
+            LEFT JOIN classes c ON u.class_id = c.id
+            WHERE u.is_admin = 0
+            ORDER BY u.username
+        ''')
+        
+        teachers = []
+        for row in cursor.fetchall():
+            teacher_id = row['id']
+            teacher_role = row['primary_role'] if row['primary_role'] else '科任老师'
+            teacher_class_id = row['class_id']
+            teacher_class_name = row['class_name']
+            
+            # 1. 获取该教师的任教学科（从 teacher_subjects 表）
+            cursor.execute('''
+                SELECT s.name
+                FROM teacher_subjects ts
+                JOIN subjects s ON ts.subject_id = s.id
+                WHERE ts.teacher_id = ?
+                ORDER BY s.name
+            ''', (teacher_id,))
+            
+            teacher_subjects_list = [r['name'] for r in cursor.fetchall()]
+            
+            # 2. 获取该教师的学科班级分配（从 teaching_assignments 表）
+            cursor.execute('''
+                SELECT 
+                    ta.subject,
+                    c.class_name
+                FROM teaching_assignments ta
+                JOIN classes c ON CAST(ta.class_id AS INTEGER) = c.id
+                WHERE ta.teacher_id = ?
+                ORDER BY ta.subject, c.class_name
+            ''', (teacher_id,))
+            
+            # 按学科分组班级
+            subject_class_map = {}
+            for assignment_row in cursor.fetchall():
+                subject_name = assignment_row['subject']
+                class_name = assignment_row['class_name']
+                
+                if subject_name not in subject_class_map:
+                    subject_class_map[subject_name] = []
+                subject_class_map[subject_name].append(class_name)
+            
+            # 3. 合并两种分配信息
+            subject_assignments = []
+            
+            # 先添加有班级分配的学科
+            for subject_name, class_names in subject_class_map.items():
+                subject_assignments.append({
+                    'subject_name': subject_name,
+                    'classes': class_names,
+                    'has_class_assignment': True
+                })
+            
+            # 处理只有学科分配但没有班级分配的学科
+            assigned_subjects = set(subject_class_map.keys())
+            for subject_name in teacher_subjects_list:
+                if subject_name not in assigned_subjects:
+                    # 如果是正班主任或副班主任，且有分配班级，自动关联到该班级
+                    if (teacher_role in ['正班主任', '副班主任']) and teacher_class_id and teacher_class_name:
+                        subject_assignments.append({
+                            'subject_name': subject_name,
+                            'classes': [teacher_class_name],
+                            'has_class_assignment': True,
+                            'auto_assigned': True  # 标记为自动分配
+                        })
+                    else:
+                        # 其他角色或未分配班级的，显示未分配
+                        subject_assignments.append({
+                            'subject_name': subject_name,
+                            'classes': ['未分配班级'],
+                            'has_class_assignment': False
+                        })
+            
+            teachers.append({
+                'id': teacher_id,
+                'username': row['username'],
+                'role': teacher_role,
+                'class_id': teacher_class_id,
+                'class_name': teacher_class_name,
+                'teacher_subjects': teacher_subjects_list,  # 任教学科列表
+                'subject_assignments': subject_assignments  # 学科班级分配
+            })
+        
+        conn.close()
+        
+        return jsonify({
+            'status': 'ok',
+            'assignments': teachers
+        })
+        
+    except Exception as e:
+        logger.error(f"获取所有教师分配时出错: {e}")
+        return jsonify({
+            'status': 'error',
+            'message': f'获取失败: {str(e)}'
+        }), 500

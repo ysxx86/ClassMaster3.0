@@ -297,6 +297,16 @@
                     <i class='bx bx-book'></i> 班级分配
                 </button>
             </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="subject-class-tab" data-bs-toggle="tab" data-bs-target="#subjectClassAssignment" type="button" role="tab">
+                    <i class='bx bx-chalkboard'></i> 学科班级分配
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="all-assignments-tab" data-bs-toggle="tab" data-bs-target="#allAssignments" type="button" role="tab">
+                    <i class='bx bx-list-ul'></i> 全部分配
+                </button>
+            </li>
         </ul>
 
         <div class="tab-content">
@@ -335,7 +345,7 @@
                 <div class="assignment-container">
                     <div class="info-box">
                         <i class='bx bx-info-circle'></i>
-                        <strong>操作说明：</strong>将教师卡片拖拽到对应的班级框中即可分配班级。每位教师只能分配一个班级。
+                        <strong>操作说明：</strong>将教师卡片拖拽到对应的班级框中即可分配班级。主要用于正班主任和副班主任的班级分配。
                     </div>
 
                     <!-- 教师列表 -->
@@ -356,6 +366,97 @@
                     </h5>
                     <div class="assignment-grid" id="classAssignmentGrid">
                         <!-- 班级框将通过JS动态生成 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 学科班级分配选项卡 -->
+            <div class="tab-pane fade" id="subjectClassAssignment" role="tabpanel">
+                <div class="assignment-container">
+                    <div class="info-box">
+                        <i class='bx bx-info-circle'></i>
+                        <strong>操作说明：</strong>选择教师和学科后，勾选班级进行批量分配。正班主任会自动分配到自己班级的所有学科，无需手动分配。
+                    </div>
+
+                    <!-- 分配表单 -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <label class="form-label">选择教师</label>
+                            <select class="form-select" id="selectTeacher">
+                                <option value="">请选择教师</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">选择学科</label>
+                            <select class="form-select" id="selectSubject">
+                                <option value="">请选择学科</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button class="btn btn-primary w-100" id="btnAssignSubjectClass">
+                                <i class='bx bx-check'></i> 分配选中的班级
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 班级复选框列表 -->
+                    <div class="mb-4" id="classCheckboxContainer" style="display: none;">
+                        <label class="form-label">选择班级（可多选）</label>
+                        <div class="border rounded p-3" style="max-height: 300px; overflow-y: auto;">
+                            <div id="classCheckboxList" class="row g-2">
+                                <!-- 复选框将通过JS动态生成 -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 当前分配列表 -->
+                    <h5 class="mb-3">
+                        <i class='bx bx-list-ul'></i> 当前分配
+                    </h5>
+                    <div id="currentAssignments">
+                        <p class="text-muted text-center py-4">请先选择教师查看分配情况</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 全部分配选项卡 -->
+            <div class="tab-pane fade" id="allAssignments" role="tabpanel">
+                <div class="assignment-container">
+                    <div class="info-box">
+                        <i class='bx bx-info-circle'></i>
+                        <strong>说明：</strong>显示所有教师的角色、班级和学科分配情况。
+                    </div>
+
+                    <!-- 筛选和搜索 -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <label class="form-label">按角色筛选</label>
+                            <select class="form-select" id="filterRole">
+                                <option value="">全部角色</option>
+                                <option value="正班主任">正班主任</option>
+                                <option value="副班主任">副班主任</option>
+                                <option value="科任老师">科任老师</option>
+                                <option value="行政">行政</option>
+                                <option value="校级领导">校级领导</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">搜索教师</label>
+                            <input type="text" class="form-control" id="searchTeacher" placeholder="输入教师姓名">
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button class="btn btn-primary w-100" id="btnRefreshAll">
+                                <i class='bx bx-refresh'></i> 刷新数据
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 全部分配列表 -->
+                    <div id="allAssignmentsList">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <p>加载分配数据中...</p>
+                        </div>
                     </div>
                 </div>
             </div>

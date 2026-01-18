@@ -444,3 +444,497 @@ async function removeAssignment(teacherId, type) {
         showToast('移除失败: ' + error.message, 'error');
     }
 }
+
+
+// ==================== 学科班级分配功能 ====================
+
+let subjects = [];
+let currentSelectedTeacher = null;
+
+// 监听学科班级分配标签页
+document.getElementById('subject-class-tab').addEventListener('click', function() {
+    loadSubjectClassAssignment();
+});
+
+// 监听全部分配标签页
+document.getElementById('all-assignments-tab').addEventListener('click', function() {
+    loadAllAssignments();
+});
+
+// 加载学科班级分配
+async function loadSubjectClassAssignment() {
+    try {
+        // 加载教师列表
+        await loadTeachers();
+        
+        // 加载学科列表
+        await loadSubjects();
+        
+        // 加载班级列表
+        await loadClasses();
+        
+        // 填充教师下拉框
+        populateTeacherSelect();
+        
+        // 填充学科下拉框
+        populateSubjectSelect();
+        
+        // 绑定事件
+        bindSubjectClassEvents();
+        
+    } catch (error) {
+        console.error('加载学科班级分配失败:', error);
+        showToast('加载失败: ' + error.message, 'error');
+    }
+}
+
+// 加载学科列表
+async function loadSubjects() {
+    const response = await fetch('/api/subjects');
+    const data = await response.json();
+    
+    if (data.status === 'ok') {
+        subjects = data.subjects || [];
+        return subjects;
+    } else {
+        throw new Error(data.message || '加载学科列表失败');
+    }
+}
+
+// 填充教师下拉框
+function populateTeacherSelect() {
+    const select = document.getElementById('selectTeacher');
+    select.innerHTML = '<option value="">请选择教师</option>';
+    
+    teachers.forEach(teacher => {
+        const option = document.createElement('option');
+        option.value = teacher.id;
+        option.textContent = `${teacher.username} (${teacher.primary_role || '科任老师'})`;
+        option.dataset.role = teacher.primary_role || '科任老师';
+        option.dataset.classId = teacher.class_id || '';
+        select.appendChild(option);
+    });
+}
+
+// 填充学科下拉框
+function populateSubjectSelect() {
+    const select = document.getElementById('selectSubject');
+    select.innerHTML = '<option value="">请选择学科</option>';
+    
+    subjects.forEach(subject => {
+        const option = document.createElement('option');
+        option.value = subject.id;
+        option.textContent = subject.name;
+        select.appendChild(option);
+    });
+}
+
+// 绑定学科班级分配事件
+function bindSubjectClassEvents() {
+    const teacherSelect = document.getElementById('selectTeacher');
+    const subjectSelect = document.getElementById('selectSubject');
+    const assignBtn = document.getElementById('btnAssignSubjectClass');
+    
+    // 教师选择变化
+    teacherSelect.addEventListener('change', async function() {
+        const teacherId = this.value;
+        currentSelectedTeacher = teacherId;
+        
+        if (teacherId) {
+            // 加载该教师的分配情况
+            await loadTeacherAssignments(teacherId);
+            
+            // 检查是否是正班主任
+            const selectedOption = this.options[this.selectedIndex];
+            const role = selectedOption.dataset.role;
+            const classId = selectedOption.dataset.classId;
+            
+            if (role === '正班主任' && classId) {
+                // 正班主任：隐藏班级选择
+                document.getElementById('classCheckboxContainer').style.display = 'none';
+                showToast('正班主任会自动分配到自己班级的所有学科，无需手动分配', 'info');
+            } else {
+                // 其他角色：显示班级复选框
+                document.getElementById('classCheckboxContainer').style.display = 'block';
+                if (subjectSelect.value) {
+                    renderClassCheckboxes();
+                }
+            }
+        } else {
+            currentSelectedTeacher = null;
+            document.getElementById('currentAssignments').innerHTML = '<p class="text-muted text-center py-4">请先选择教师查看分配情况</p>';
+            document.getElementById('classCheckboxContainer').style.display = 'none';
+        }
+    });
+    
+    // 学科选择变化
+    subjectSelect.addEventListener('change', function() {
+        if (currentSelectedTeacher && this.value) {
+            const teacherSelect = document.getElementById('selectTeacher');
+            const selectedOption = teacherSelect.options[teacherSelect.selectedIndex];
+            const role = selectedOption.dataset.role;
+            
+            if (role !== '正班主任') {
+                renderClassCheckboxes();
+            }
+        }
+    });
+    
+    // 分配按钮点击
+    assignBtn.addEventListener('click', async function() {
+        await assignSubjectToClasses();
+    });
+}
+
+// 渲染班级复选框
+function renderClassCheckboxes() {
+    const container = document.getElementById('classCheckboxList');
+    container.innerHTML = '';
+    
+    if (classes.length === 0) {
+        container.innerHTML = '<div class="col-12"><p class="text-muted">暂无班级数据</p></div>';
+        return;
+    }
+    
+    classes.forEach(classItem => {
+        const col = document.createElement('div');
+        col.className = 'col-md-3 col-sm-4 col-6';
+        
+        col.innerHTML = `
+            <div class="form-check">
+                <input class="form-check-input class-checkbox" type="checkbox" value="${classItem.id}" id="class_${classItem.id}">
+                <label class="form-check-label" for="class_${classItem.id}">
+                    ${classItem.class_name}
+                </label>
+            </div>
+        `;
+        
+        container.appendChild(col);
+    });
+}
+
+// 加载教师的分配情况
+async function loadTeacherAssignments(teacherId) {
+    try {
+        console.log('加载教师分配情况，教师ID:', teacherId);
+        const response = await fetch(`/api/teacher-classes/${teacherId}`);
+        const data = await response.json();
+        
+        console.log('API返回数据:', data);
+        
+        if (data.status === 'ok') {
+            renderTeacherAssignments(data.assignments || []);
+        } else {
+            console.error('API返回错误:', data.message);
+            showToast('加载失败: ' + data.message, 'error');
+        }
+    } catch (error) {
+        console.error('加载教师分配失败:', error);
+        showToast('加载失败: ' + error.message, 'error');
+    }
+}
+
+// 渲染教师分配情况
+function renderTeacherAssignments(assignments) {
+    const container = document.getElementById('currentAssignments');
+    
+    console.log('渲染分配情况，数据条数:', assignments.length);
+    
+    if (assignments.length === 0) {
+        container.innerHTML = '<p class="text-muted text-center py-4">该教师暂无学科班级分配</p>';
+        return;
+    }
+    
+    // 按学科分组
+    const groupedBySubject = {};
+    assignments.forEach(assignment => {
+        const subjectName = assignment.subject_name;
+        if (!groupedBySubject[subjectName]) {
+            groupedBySubject[subjectName] = [];
+        }
+        groupedBySubject[subjectName].push(assignment);
+    });
+    
+    console.log('按学科分组后:', groupedBySubject);
+    
+    let html = '<div class="table-responsive"><table class="table table-hover table-bordered">';
+    html += '<thead class="table-light"><tr><th style="width: 150px;">学科</th><th>任教班级</th><th style="width: 100px;">操作</th></tr></thead><tbody>';
+    
+    for (const subjectName in groupedBySubject) {
+        const subjectAssignments = groupedBySubject[subjectName];
+        const classNames = subjectAssignments.map(a => a.class_name).join('、');
+        const assignmentIds = subjectAssignments.map(a => a.id);
+        
+        html += `
+            <tr>
+                <td><strong>${subjectName}</strong></td>
+                <td>${classNames}</td>
+                <td class="text-center">
+                    <button class="btn btn-sm btn-danger" onclick="removeSubjectAssignments([${assignmentIds.join(',')}])">
+                        <i class='bx bx-trash'></i> 移除
+                    </button>
+                </td>
+            </tr>
+        `;
+    }
+    
+    html += '</tbody></table></div>';
+    container.innerHTML = html;
+}
+
+// 分配学科到班级
+async function assignSubjectToClasses() {
+    const teacherId = document.getElementById('selectTeacher').value;
+    const subjectId = document.getElementById('selectSubject').value;
+    
+    if (!teacherId) {
+        showToast('请选择教师', 'warning');
+        return;
+    }
+    
+    if (!subjectId) {
+        showToast('请选择学科', 'warning');
+        return;
+    }
+    
+    // 获取选中的班级（从复选框）
+    const checkboxes = document.querySelectorAll('.class-checkbox:checked');
+    const selectedClasses = Array.from(checkboxes).map(cb => cb.value);
+    
+    if (selectedClasses.length === 0) {
+        showToast('请至少选择一个班级', 'warning');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/teacher-classes', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                teacher_id: teacherId,
+                subject_id: subjectId,
+                class_ids: selectedClasses
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.status === 'ok') {
+            showToast(data.message || '分配成功', 'success');
+            
+            // 重新加载教师的分配情况
+            await loadTeacherAssignments(teacherId);
+            
+            // 清空复选框选择
+            checkboxes.forEach(cb => cb.checked = false);
+        } else {
+            showToast('分配失败: ' + data.message, 'error');
+        }
+    } catch (error) {
+        console.error('分配失败:', error);
+        showToast('分配失败: ' + error.message, 'error');
+    }
+}
+
+// 移除学科分配
+async function removeSubjectAssignments(assignmentIds) {
+    if (!confirm('确定要移除这些分配吗？')) {
+        return;
+    }
+    
+    try {
+        // 逐个删除
+        for (const id of assignmentIds) {
+            const response = await fetch(`/api/teacher-classes/${id}`, {
+                method: 'DELETE'
+            });
+            
+            const data = await response.json();
+            if (data.status !== 'ok') {
+                throw new Error(data.message);
+            }
+        }
+        
+        showToast('移除成功', 'success');
+        
+        // 重新加载教师的分配情况
+        if (currentSelectedTeacher) {
+            await loadTeacherAssignments(currentSelectedTeacher);
+        }
+    } catch (error) {
+        console.error('移除失败:', error);
+        showToast('移除失败: ' + error.message, 'error');
+    }
+}
+
+
+// ==================== 全部分配功能 ====================
+
+let allAssignmentsData = [];
+
+// 加载全部分配
+async function loadAllAssignments() {
+    try {
+        const container = document.getElementById('allAssignmentsList');
+        container.innerHTML = '<div class="loading"><div class="spinner"></div><p>加载分配数据中...</p></div>';
+        
+        // 获取所有教师的分配数据
+        const response = await fetch('/api/all-teacher-assignments');
+        const data = await response.json();
+        
+        if (data.status === 'ok') {
+            allAssignmentsData = data.assignments || [];
+            renderAllAssignments(allAssignmentsData);
+            
+            // 绑定筛选和搜索事件
+            bindAllAssignmentsFilters();
+        } else {
+            container.innerHTML = `<p class="text-danger text-center py-4">加载失败: ${data.message}</p>`;
+        }
+    } catch (error) {
+        console.error('加载全部分配失败:', error);
+        const container = document.getElementById('allAssignmentsList');
+        container.innerHTML = `<p class="text-danger text-center py-4">加载失败: ${error.message}</p>`;
+    }
+}
+
+// 渲染全部分配
+function renderAllAssignments(assignments) {
+    const container = document.getElementById('allAssignmentsList');
+    
+    if (assignments.length === 0) {
+        container.innerHTML = '<p class="text-muted text-center py-4">暂无分配数据</p>';
+        return;
+    }
+    
+    let html = '<div class="table-responsive">';
+    html += '<table class="table table-hover table-bordered">';
+    html += '<thead class="table-light">';
+    html += '<tr>';
+    html += '<th style="width: 120px;">教师姓名</th>';
+    html += '<th style="width: 100px;">角色</th>';
+    html += '<th style="width: 120px;">班级</th>';
+    html += '<th style="width: 200px;">任教学科</th>';
+    html += '<th>学科班级分配</th>';
+    html += '</tr>';
+    html += '</thead>';
+    html += '<tbody>';
+    
+    assignments.forEach(teacher => {
+        html += '<tr>';
+        html += `<td><strong>${teacher.username}</strong></td>`;
+        html += `<td>`;
+        html += `<span class="badge bg-${getRoleBadgeColor(teacher.role)}">${teacher.role}</span>`;
+        html += `</td>`;
+        html += `<td>${teacher.class_name || '<span class="text-muted">未分配</span>'}</td>`;
+        
+        // 任教学科列（来自 teacher_subjects 表）
+        html += '<td>';
+        if (teacher.teacher_subjects && teacher.teacher_subjects.length > 0) {
+            html += teacher.teacher_subjects.map(s => `<span class="badge bg-secondary me-1">${s}</span>`).join('');
+        } else {
+            html += '<span class="text-muted">未分配</span>';
+        }
+        html += '</td>';
+        
+        // 学科班级分配列（来自 teaching_assignments 表）
+        html += '<td>';
+        if (teacher.subject_assignments && teacher.subject_assignments.length > 0) {
+            const assignmentTexts = teacher.subject_assignments.map(assignment => {
+                const classText = assignment.classes.join('、');
+                let style = '';
+                let suffix = '';
+                
+                if (!assignment.has_class_assignment) {
+                    // 未分配班级，灰色显示
+                    style = 'color: #999;';
+                } else if (assignment.auto_assigned) {
+                    // 自动分配（正副班主任），添加标识
+                    suffix = ' <small class="text-muted">(自动)</small>';
+                }
+                
+                return `<div style="${style}"><strong>${assignment.subject_name}:</strong> ${classText}${suffix}</div>`;
+            });
+            html += assignmentTexts.join('');
+        } else {
+            html += '<span class="text-muted">未分配</span>';
+        }
+        html += '</td>';
+        
+        html += '</tr>';
+    });
+    
+    html += '</tbody>';
+    html += '</table>';
+    html += '</div>';
+    
+    // 添加说明
+    html += '<div class="alert alert-info mt-3">';
+    html += '<small>';
+    html += '<strong>说明：</strong><br>';
+    html += '• <strong>任教学科</strong>：教师可以任教的学科（在学科管理中分配）<br>';
+    html += '• <strong>学科班级分配</strong>：教师在具体哪些班级任教哪些学科<br>';
+    html += '• 正班主任和副班主任的任教学科会自动关联到其班级（标记为"自动"）<br>';
+    html += '• 如需在其他班级任教，请在"学科班级分配"标签页中额外添加<br>';
+    html += '• 灰色文字表示学科已分配但未指定具体班级';
+    html += '</small>';
+    html += '</div>';
+    
+    container.innerHTML = html;
+}
+
+// 获取角色徽章颜色
+function getRoleBadgeColor(role) {
+    const colorMap = {
+        '正班主任': 'primary',
+        '副班主任': 'info',
+        '科任老师': 'secondary',
+        '行政': 'warning',
+        '校级领导': 'success'
+    };
+    return colorMap[role] || 'secondary';
+}
+
+// 绑定全部分配的筛选和搜索事件
+function bindAllAssignmentsFilters() {
+    const filterRole = document.getElementById('filterRole');
+    const searchTeacher = document.getElementById('searchTeacher');
+    const btnRefresh = document.getElementById('btnRefreshAll');
+    
+    // 角色筛选
+    filterRole.addEventListener('change', function() {
+        filterAndRenderAssignments();
+    });
+    
+    // 教师搜索
+    searchTeacher.addEventListener('input', function() {
+        filterAndRenderAssignments();
+    });
+    
+    // 刷新按钮
+    btnRefresh.addEventListener('click', function() {
+        loadAllAssignments();
+    });
+}
+
+// 筛选并渲染分配数据
+function filterAndRenderAssignments() {
+    const roleFilter = document.getElementById('filterRole').value;
+    const searchText = document.getElementById('searchTeacher').value.trim().toLowerCase();
+    
+    let filtered = allAssignmentsData;
+    
+    // 按角色筛选
+    if (roleFilter) {
+        filtered = filtered.filter(t => t.role === roleFilter);
+    }
+    
+    // 按姓名搜索
+    if (searchText) {
+        filtered = filtered.filter(t => t.username.toLowerCase().includes(searchText));
+    }
+    
+    renderAllAssignments(filtered);
+}
