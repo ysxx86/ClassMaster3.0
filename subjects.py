@@ -481,24 +481,40 @@ def remove_subject_from_teacher(teacher_id, subject_id):
                 'message': '该教师未任教此学科'
             }), 404
         
-        # 移除学科
+        # 获取学科名称（用于删除 teaching_assignments 表的记录）
+        cursor.execute('SELECT name FROM subjects WHERE id = ?', (subject_id,))
+        subject_row = cursor.fetchone()
+        subject_name = subject_row['name'] if subject_row else None
+        
+        # 1. 移除任教学科（teacher_subjects 表）
         cursor.execute('''
             DELETE FROM teacher_subjects 
             WHERE teacher_id = ? AND subject_id = ?
         ''', (teacher_id, subject_id))
         
+        # 2. 同步删除学科班级分配（teaching_assignments 表）
+        if subject_name:
+            cursor.execute('''
+                DELETE FROM teaching_assignments 
+                WHERE teacher_id = ? AND subject = ?
+            ''', (teacher_id, subject_name))
+            deleted_assignments = cursor.rowcount
+            logger.info(f"同步删除了 {deleted_assignments} 条学科班级分配记录")
+        
         conn.commit()
         conn.close()
         
-        logger.info(f"成功移除教师 {teacher_id} 的学科 {subject_id}")
+        logger.info(f"成功移除教师 {teacher_id} 的学科 {subject_id}（学科名：{subject_name}）")
         
         return jsonify({
             'status': 'ok',
-            'message': '学科移除成功'
+            'message': '学科移除成功，相关班级分配也已清除'
         })
         
     except Exception as e:
         logger.error(f"移除学科时出错: {e}")
+        if conn:
+            conn.rollback()
         return jsonify({
             'status': 'error',
             'message': f'移除学科失败: {str(e)}'
