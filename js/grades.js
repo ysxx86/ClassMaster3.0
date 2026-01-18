@@ -212,49 +212,68 @@ function canEditSubject(subjectFieldName, classId) {
 }
 
 // 设置学期选择器
-function setupSemesterSelect() {
+async function setupSemesterSelect() {
     const semesterSelect = document.getElementById('semesterSelect');
     const importSemesterSelect = document.getElementById('importSemester');
     
-    // 自动计算当前学期
-    const now = new Date();
-    const currentYear = now.getFullYear();
-    const currentMonth = now.getMonth() + 1; // 月份从0开始，需要+1
-    
-    let academicYear, semester;
-    
-    // 3-8月为下学期（春季），9-2月为上学期（秋季）
-    if (currentMonth >= 3 && currentMonth <= 8) {
-        // 春季 - 下学期
-        academicYear = `${currentYear-1}-${currentYear}`;
-        semester = `下学期`;
-    } else {
-        // 秋季 - 上学期（包括9-12月和1-2月）
-        if (currentMonth >= 9) {
-            // 当年秋季
-            academicYear = `${currentYear}-${currentYear+1}`;
+    try {
+        // ⭐ 从数据库获取学年和学期设置
+        const response = await fetch('/api/system-settings');
+        const data = await response.json();
+        
+        let academicYear, semester, semesterText;
+        
+        if (data.status === 'ok' && data.settings) {
+            // 从数据库获取
+            academicYear = data.settings.school_year || '2025-2026';
+            const semesterNum = data.settings.semester || '1';
+            
+            // 转换为文字
+            semesterText = semesterNum === '1' ? '第一学期' : '第二学期';
+            semester = semesterText;
+            
+            console.log('从数据库获取学期设置:', { academicYear, semester });
         } else {
-            // 次年初（1-2月）
-            academicYear = `${currentYear-1}-${currentYear}`;
+            // 如果API失败，使用默认值
+            console.warn('无法从数据库获取学期设置，使用默认值');
+            academicYear = '2025-2026';
+            semester = '第一学期';
         }
-        semester = `上学期`;
+        
+        // 设置当前学期
+        currentSemester = `${academicYear}学年${semester}`;
+        
+        // 更新显示
+        if (semesterSelect) {
+            semesterSelect.textContent = currentSemester;
+        }
+        
+        if (importSemesterSelect) {
+            importSemesterSelect.value = currentSemester;
+        }
+        
+        console.log('当前学期:', currentSemester);
+        
+        // 加载成绩数据
+        loadGrades();
+        
+    } catch (error) {
+        console.error('获取学期设置失败:', error);
+        
+        // 使用默认值
+        currentSemester = '2025-2026学年第一学期';
+        
+        if (semesterSelect) {
+            semesterSelect.textContent = currentSemester;
+        }
+        
+        if (importSemesterSelect) {
+            importSemesterSelect.value = currentSemester;
+        }
+        
+        // 仍然尝试加载成绩
+        loadGrades();
     }
-    
-    // 设置当前学期
-    currentSemester = `${academicYear}学年${semester}`;
-    
-    if (semesterSelect) {
-        // 设置学期显示文本
-        semesterSelect.textContent = currentSemester;
-    }
-    
-    if (importSemesterSelect) {
-        // 设置导入模态框中的学期文本
-        importSemesterSelect.value = currentSemester;
-    }
-
-    // 加载初始数据
-    loadGrades();
 }
 
 // 加载成绩数据
