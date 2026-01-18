@@ -131,7 +131,7 @@ body {
     box-shadow: var(--box-shadow);
     padding: 20px;
     height: calc(100vh - 100px);
-    overflow: hidden;
+    overflow: auto; /* ✅ 改为auto，允许滚动 */
 }
 
 .content-iframe {
