@@ -144,11 +144,11 @@
         
         /* 固定表头样式 */
         .table-responsive.grades-table {
-            height: calc(100vh - 200px);
+            max-height: calc(100vh - 250px);
             overflow-y: auto;
             overflow-x: auto;
             min-width: 100%;
-            margin-bottom: 20px;
+            margin-bottom: 80px; /* 增加底部边距，避免被底部导航栏遮挡 */
         }
         
         /* 确保表格内容足够宽，以便在窗口缩小时触发滚动条 */
