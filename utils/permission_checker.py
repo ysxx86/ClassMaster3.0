@@ -111,11 +111,21 @@ def can_edit_grade(user, target_class_id, target_subject):
     if is_head_teacher(user) and str(user.class_id) == str(target_class_id):
         return True
     
-    # 其他角色只能编辑自己任教学科的成绩
-    user_subjects = get_user_subjects(user.id)
-    subject_names = [s['name'] for s in user_subjects]
-    
-    return target_subject in subject_names
+    # 其他角色：必须精确匹配班级和学科（从 teaching_assignments 表）
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT COUNT(*) as count
+            FROM teaching_assignments
+            WHERE teacher_id = ? AND class_id = ? AND subject = ?
+        ''', (user.id, str(target_class_id), target_subject))
+        result = cursor.fetchone()
+        conn.close()
+        return result['count'] > 0
+    except Exception as e:
+        logger.error(f"检查编辑权限失败: {str(e)}")
+        return False
 
 def can_access_deyu(user, target_class_id=None):
     """
@@ -252,8 +262,35 @@ def get_accessible_classes(user):
     if is_head_teacher(user) and user.class_id:
         return [user.class_id]
     
-    # 其他角色不能访问班级
-    return []
+    # 其他角色（科任老师、副班主任、行政、校级领导）从 teacher_classes 表获取任教的班级
+    return get_teaching_classes(user.id)
+
+def get_teaching_classes(user_id):
+    """
+    获取教师任教的班级列表（从 teaching_assignments 表）
+    
+    Args:
+        user_id: 用户ID
+    
+    Returns:
+        list: 班级ID列表（去重）
+    """
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT DISTINCT class_id 
+            FROM teaching_assignments 
+            WHERE teacher_id = ?
+            ORDER BY class_id
+        ''', (user_id,))
+        classes = cursor.fetchall()
+        conn.close()
+        # class_id 在 teaching_assignments 表中是 TEXT 类型，需要转换为整数
+        return [int(c['class_id']) for c in classes if c['class_id']]
+    except Exception as e:
+        logger.error(f"获取教师任教班级失败: {str(e)}")
+        return []
 
 def get_editable_subjects(user, class_id=None):
     """
@@ -261,7 +298,7 @@ def get_editable_subjects(user, class_id=None):
     
     Args:
         user: 当前用户对象
-        class_id: 班级ID（可选）
+        class_id: 班级ID（必需，用于精确匹配）
     
     Returns:
         list: 学科名称列表
@@ -280,8 +317,7 @@ def get_editable_subjects(user, class_id=None):
             return []
     
     # 正班主任可以编辑自己班级的所有学科
-    # 注意：正班主任在成绩管理页面只能看到自己的班级，所以这里不需要检查class_id
-    if is_head_teacher(user):
+    if is_head_teacher(user) and str(user.class_id) == str(class_id):
         try:
             conn = get_db_connection()
             cursor = conn.cursor()
@@ -293,9 +329,24 @@ def get_editable_subjects(user, class_id=None):
             logger.error(f"获取所有学科失败: {str(e)}")
             return []
     
-    # 其他角色只能编辑自己任教的学科
-    user_subjects = get_user_subjects(user.id)
-    return [s['name'] for s in user_subjects]
+    # 其他角色：从 teaching_assignments 表获取该班级的任教学科
+    if not class_id:
+        return []
+    
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT DISTINCT subject
+            FROM teaching_assignments
+            WHERE teacher_id = ? AND class_id = ?
+        ''', (user.id, str(class_id)))
+        subjects = cursor.fetchall()
+        conn.close()
+        return [s['subject'] for s in subjects]
+    except Exception as e:
+        logger.error(f"获取任教学科失败: {str(e)}")
+        return []
 
 # 装饰器：要求超级管理员权限
 def require_admin(f):
@@ -351,11 +402,36 @@ def get_user_permissions(user):
     """
     role = getattr(user, 'primary_role', '科任老师')
     
+    # 获取教师的任教信息（班级-学科映射）
+    teaching_map = {}
+    if not is_super_admin(user):
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute('''
+                SELECT class_id, subject
+                FROM teaching_assignments
+                WHERE teacher_id = ?
+            ''', (user.id,))
+            assignments = cursor.fetchall()
+            conn.close()
+            
+            # 构建映射：{class_id: [subject1, subject2, ...]}
+            for assignment in assignments:
+                class_id = assignment['class_id']
+                subject = assignment['subject']
+                if class_id not in teaching_map:
+                    teaching_map[class_id] = []
+                teaching_map[class_id].append(subject)
+        except Exception as e:
+            logger.error(f"获取任教信息失败: {str(e)}")
+    
     permissions = {
         'role': role,
         'is_admin': is_super_admin(user),
         'class_id': getattr(user, 'class_id', None),
         'subjects': get_user_subjects(user.id),
+        'teaching_map': teaching_map,  # 新增：班级-学科映射
         'can_access': {
             'students': can_access_students(user),
             'grades': True,  # 所有人都能访问成绩管理（但编辑权限不同）

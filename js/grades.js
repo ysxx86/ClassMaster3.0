@@ -126,8 +126,8 @@ async function fetchUserPermissions() {
     }
 }
 
-// 检查是否可以编辑某个学科
-function canEditSubject(subjectFieldName) {
+// 检查是否可以编辑某个学科（需要传入班级ID）
+function canEditSubject(subjectFieldName, classId) {
     if (!userPermissions) {
         return false;
     }
@@ -143,9 +143,15 @@ function canEditSubject(subjectFieldName) {
         return false;
     }
     
-    // 检查是否在可编辑学科列表中
-    const editableSubjects = userPermissions.editable_subjects || [];
-    return editableSubjects.includes(subjectDisplayName);
+    // 正班主任可以编辑自己班级的所有学科
+    if (userPermissions.role === '正班主任' && userPermissions.class_id == classId) {
+        return true;
+    }
+    
+    // 其他角色：检查 teaching_map 中是否有该班级的该学科
+    const teachingMap = userPermissions.teaching_map || {};
+    const classSubjects = teachingMap[String(classId)] || [];
+    return classSubjects.includes(subjectDisplayName);
 }
 
 // 设置学期选择器
@@ -219,6 +225,15 @@ function loadGrades() {
             console.log('成绩API返回数据:', data);
             if (data.status === 'ok') {
                 console.log('成功获取成绩数据, 学生数量:', data.grades ? data.grades.length : 0);
+                
+                // 检查是否有空班级
+                if (data.empty_classes && data.empty_classes.length > 0) {
+                    console.log('空班级:', data.empty_classes);
+                    // 显示空班级提示
+                    const emptyClassNames = data.empty_classes.map(c => c.class_name).join('、');
+                    showNotification(`提示：${emptyClassNames} 暂无学生数据`, 'info');
+                }
+                
                 renderGradesTable(data.grades || []);
             } else {
                 showNotification(data.message || '加载成绩失败', 'error');
@@ -314,6 +329,7 @@ function renderGradesTable(grades) {
         // 创建学生行
         const row = document.createElement('tr');
         row.setAttribute('data-student-id', studentGrade.student_id);
+        row.setAttribute('data-class-id', studentGrade.class_id);  // 添加班级ID属性
         
         // 添加学号和姓名单元格
         row.innerHTML = `
@@ -326,8 +342,8 @@ function renderGradesTable(grades) {
             const cell = document.createElement('td');
             const gradeValue = studentGrade[subject] !== undefined ? studentGrade[subject] : '';
             
-            // 检查是否可以编辑该学科
-            const canEdit = canEditSubject(subject);
+            // 检查是否可以编辑该学科（传入班级ID）
+            const canEdit = canEditSubject(subject, studentGrade.class_id);
             
             // 创建成绩选择框
             const select = document.createElement('select');
@@ -529,6 +545,10 @@ function updateGrade(selectElement) {
     const subject = selectElement.getAttribute('data-subject');
     const value = selectElement.value;
     
+    // 获取学生所在的班级ID（从行数据中获取）
+    const row = selectElement.closest('tr');
+    const classId = row ? row.getAttribute('data-class-id') : null;
+    
     // 显示保存中状态
     const originalBg = selectElement.style.backgroundColor;
     selectElement.style.backgroundColor = '#e6f7ff'; // 浅蓝色表示正在保存
@@ -549,11 +569,12 @@ function updateGrade(selectElement) {
     
     // 准备要发送的数据
     const gradeData = {
-        semester: currentSemester
+        semester: currentSemester,
+        class_id: classId  // 添加班级ID
     };
     gradeData[subject] = value;
     
-    console.log(`保存学生 ${studentId} 的 ${subject} 成绩: ${value}`);
+    console.log(`保存学生 ${studentId} (班级ID: ${classId}) 的 ${subject} 成绩: ${value}`);
     
     // 发送到服务器
     fetch(`/api/grades/${studentId}`, {
@@ -966,6 +987,10 @@ function setAllGradesExcellent() {
             const studentId = select.getAttribute('data-student-id');
             const subject = select.getAttribute('data-subject');
             
+            // 获取班级ID
+            const row = select.closest('tr');
+            const classId = row ? row.getAttribute('data-class-id') : null;
+            
             // 如果已经是"优"，则不需要更新
             if (select.value !== '优') {
                 // 更新选择框的值
@@ -976,7 +1001,7 @@ function setAllGradesExcellent() {
                 
                 // 将数据添加到更新列表中
                 if (!updatedGrades[studentId]) {
-                    updatedGrades[studentId] = {};
+                    updatedGrades[studentId] = { class_id: classId };
                 }
                 updatedGrades[studentId][subject] = '优';
             }
@@ -1067,6 +1092,10 @@ function clearAllGrades() {
             const studentId = select.getAttribute('data-student-id');
             const subject = select.getAttribute('data-subject');
             
+            // 获取班级ID
+            const row = select.closest('tr');
+            const classId = row ? row.getAttribute('data-class-id') : null;
+            
             // 如果已经是空的，则不需要更新
             if (select.value !== '') {
                 // 更新选择框的值
@@ -1077,7 +1106,7 @@ function clearAllGrades() {
                 
                 // 将数据添加到更新列表中
                 if (!updatedGrades[studentId]) {
-                    updatedGrades[studentId] = {};
+                    updatedGrades[studentId] = { class_id: classId };
                 }
                 updatedGrades[studentId][subject] = '';
             }
@@ -1503,6 +1532,10 @@ function processPastedText(text) {
         const select = gradeSelects[i];
         const studentId = select.getAttribute('data-student-id');
         
+        // 获取班级ID
+        const row = select.closest('tr');
+        const classId = row ? row.getAttribute('data-class-id') : null;
+        
         // 直接使用复制的等级值
         let gradeValue = value.trim();
         
@@ -1543,7 +1576,7 @@ function processPastedText(text) {
             
             // 添加到要保存的数据中
             if (!updatedGrades[studentId]) {
-                updatedGrades[studentId] = {};
+                updatedGrades[studentId] = { class_id: classId };
             }
             updatedGrades[studentId][selectedSubject] = gradeValue;
             validUpdatesCount++;
