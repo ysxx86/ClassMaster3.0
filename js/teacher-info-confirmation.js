@@ -144,16 +144,20 @@ function createTeacherInfoModal(reason, currentSemester) {
                         <div class="info-section mb-4">
                             <h6 class="section-title">
                                 学科班级分配
+                                ${teacherInfo.role !== '正班主任' ? `
                                 <button class="btn btn-sm btn-outline-primary float-end" onclick="editAssignments()">
                                     <i class='bx bx-edit'></i> 修改
                                 </button>
+                                ` : ''}
                             </h6>
                             <div id="assignmentsDisplay">
                                 ${renderAssignmentsDisplay()}
                             </div>
+                            ${teacherInfo.role !== '正班主任' ? `
                             <div id="assignmentsEdit" style="display: none;">
                                 ${renderAssignmentsEdit()}
                             </div>
+                            ` : ''}
                         </div>
                         
                         <div class="alert alert-warning">
@@ -224,6 +228,21 @@ function renderSubjectsEdit() {
 
 // 渲染学科班级分配显示
 function renderAssignmentsDisplay() {
+    // 如果是正班主任且有班级，自动显示所有学科对应该班级
+    if (teacherInfo.role === '正班主任' && teacherInfo.class_name && teacherInfo.subjects && teacherInfo.subjects.length > 0) {
+        let html = '<div class="table-responsive"><table class="table table-sm table-bordered">';
+        html += '<thead><tr><th>学科</th><th>任教班级</th></tr></thead><tbody>';
+        
+        teacherInfo.subjects.forEach(subject => {
+            html += `<tr><td><strong>${subject.name}</strong></td><td>${teacherInfo.class_name} <span class="badge bg-success">自动</span></td></tr>`;
+        });
+        
+        html += '</tbody></table></div>';
+        html += '<p class="text-muted small mt-2"><i class="bx bx-info-circle"></i> 正班主任的所有任教学科自动关联到本班级</p>';
+        return html;
+    }
+    
+    // 其他角色：从 teaching_assignments 获取
     if (!teacherInfo.assignments || teacherInfo.assignments.length === 0) {
         return '<p class="text-muted">暂无学科班级分配</p>';
     }
@@ -376,9 +395,9 @@ function showModifyOptions() {
 }
 
 // 处理模态框关闭
-function handleModalClose() {
+async function handleModalClose() {
     // 标记为已查看（即使没有修改）
-    markAsViewed();
+    await markAsViewed();
     
     // 添加右上角按钮
     addTeacherInfoButton();
@@ -397,6 +416,28 @@ async function markAsViewed() {
         const data = await response.json();
         if (data.status === 'ok') {
             console.log('已标记为已查看');
+            
+            // ⭐ 新增：同时调用确认API，更新确认状态
+            const confirmResponse = await fetch('/api/teacher-info/confirm', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    info: {
+                        subjects: teacherInfo.subjects.map(s => s.id),
+                        assignments: teacherInfo.assignments.map(a => ({
+                            class_id: a.class_id,
+                            subject_name: a.subject
+                        }))
+                    }
+                })
+            });
+            
+            const confirmData = await confirmResponse.json();
+            if (confirmData.status === 'ok') {
+                console.log('确认状态已更新');
+            }
         }
     } catch (error) {
         console.error('标记失败:', error);
@@ -437,19 +478,61 @@ async function saveChanges() {
             throw new Error(updateData.message);
         }
         
+        // 确认信息（更新确认状态）
+        const confirmResponse = await fetch('/api/teacher-info/confirm', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                info: {
+                    subjects: subjectIds,
+                    assignments: assignments
+                }
+            })
+        });
+        
+        const confirmData = await confirmResponse.json();
+        console.log('确认响应:', confirmData);
+        
+        if (confirmData.status !== 'ok') {
+            console.warn('确认状态更新失败:', confirmData.message);
+        }
+        
         // 关闭模态框
         const modal = bootstrap.Modal.getInstance(document.getElementById('teacherInfoModal'));
         modal.hide();
         
-        // 显示成功提示
-        showSuccessToast('任教信息保存成功！');
+        // 显示Toast提示
+        showSuccessToast('任教信息保存成功！正在更新页面...');
+        
+        // ⭐ 触发权限刷新事件（通知所有页面）
+        window.dispatchEvent(new CustomEvent('teacherInfoUpdated', {
+            detail: {
+                subjects: subjectIds,
+                assignments: assignments,
+                timestamp: Date.now()
+            }
+        }));
+        
+        // ⭐ 使用localStorage通知其他标签页/iframe
+        localStorage.setItem('teacherInfoUpdateTimestamp', Date.now().toString());
+        
+        // ⭐ 如果当前在首页，刷新首页数据
+        if (window.location.pathname.includes('home.html') || 
+            document.querySelector('iframe[src*="home.html"]')) {
+            console.log('刷新首页数据...');
+            if (typeof loadSubjectTeacherTodos === 'function') {
+                loadSubjectTeacherTodos();
+            }
+        }
         
         // 添加右上角按钮
         addTeacherInfoButton();
         
     } catch (error) {
         console.error('保存失败:', error);
-        alert('保存失败: ' + error.message);
+        showErrorToast('保存失败: ' + error.message);
     }
 }
 
@@ -460,23 +543,59 @@ async function confirmTeacherInfo() {
 
 // 显示成功提示
 function showSuccessToast(message) {
-    // 如果页面有Toast组件，使用它
-    if (typeof showToast === 'function') {
-        showToast(message, 'success');
-    } else {
-        alert(message);
-    }
+    // 创建Toast元素
+    const toastHTML = `
+        <div class="position-fixed top-0 end-0 p-3" style="z-index: 9999">
+            <div class="toast align-items-center text-white bg-success border-0 show" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class='bx bx-check-circle me-2'></i>${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // 添加到页面
+    document.body.insertAdjacentHTML('beforeend', toastHTML);
+    
+    // 3秒后自动移除
+    setTimeout(() => {
+        const toastElement = document.querySelector('.toast');
+        if (toastElement) {
+            toastElement.remove();
+        }
+    }, 3000);
 }
 
-// 页面加载完成后检查
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        setTimeout(checkTeacherInfoConfirmation, 1000);
-    });
-} else {
-    setTimeout(checkTeacherInfoConfirmation, 1000);
+// 显示错误提示
+function showErrorToast(message) {
+    // 创建Toast元素
+    const toastHTML = `
+        <div class="position-fixed top-0 end-0 p-3" style="z-index: 9999">
+            <div class="toast align-items-center text-white bg-danger border-0 show" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class='bx bx-error-circle me-2'></i>${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // 添加到页面
+    document.body.insertAdjacentHTML('beforeend', toastHTML);
+    
+    // 5秒后自动移除
+    setTimeout(() => {
+        const toastElement = document.querySelector('.toast.bg-danger');
+        if (toastElement) {
+            toastElement.remove();
+        }
+    }, 5000);
 }
-
 
 // 添加右上角任教信息按钮
 function addTeacherInfoButton() {
@@ -577,16 +696,20 @@ function createEditableTeacherInfoModal() {
                         <div class="info-section mb-4">
                             <h6 class="section-title">
                                 学科班级分配
+                                ${teacherInfo.role !== '正班主任' ? `
                                 <button class="btn btn-sm btn-outline-primary float-end" onclick="editAssignments()">
                                     <i class='bx bx-edit'></i> 修改
                                 </button>
+                                ` : ''}
                             </h6>
                             <div id="assignmentsDisplay">
                                 ${renderAssignmentsDisplay()}
                             </div>
+                            ${teacherInfo.role !== '正班主任' ? `
                             <div id="assignmentsEdit" style="display: none;">
                                 ${renderAssignmentsEdit()}
                             </div>
+                            ` : ''}
                         </div>
                         
                         <div class="alert alert-success">

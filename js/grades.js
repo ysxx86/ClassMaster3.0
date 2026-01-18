@@ -99,6 +99,63 @@ document.addEventListener('DOMContentLoaded', function() {
         // 启动数据变更检查
         startDataChangeChecking();
         
+        // ⭐ 监听教师信息更新事件（实时更新）
+        window.addEventListener('teacherInfoUpdated', function(e) {
+            console.log('✅ 检测到教师信息更新，立即重新加载数据...', e.detail);
+            
+            // 显示提示
+            showNotification('任教信息已更新，正在刷新数据...', 'info');
+            
+            // 1. 重新获取用户权限（从服务器）
+            fetchUserPermissions().then(() => {
+                console.log('✅ 权限已更新');
+                
+                // 2. 重新加载成绩数据（从数据库）
+                console.log('✅ 开始重新加载成绩列表...');
+                loadGrades();
+                
+                // 3. 显示成功提示
+                setTimeout(() => {
+                    showNotification('数据已更新！', 'success');
+                }, 500);
+            }).catch(error => {
+                console.error('❌ 更新权限失败:', error);
+                showNotification('更新失败，请刷新页面', 'error');
+            });
+        });
+        
+        // ⭐ 监听localStorage变化（跨标签页/iframe通信）
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'teacherInfoUpdateTimestamp') {
+                console.log('✅ 检测到其他页面更新了教师信息（storage事件）');
+                
+                // 重新获取权限并加载数据
+                fetchUserPermissions().then(() => {
+                    loadGrades();
+                    showNotification('数据已同步更新！', 'success');
+                });
+            }
+        });
+        
+        // ⭐ 定期检查localStorage（用于同一标签页内的iframe通信）
+        let lastTeacherInfoUpdate = localStorage.getItem('teacherInfoUpdateTimestamp') || '0';
+        
+        setInterval(() => {
+            const currentUpdate = localStorage.getItem('teacherInfoUpdateTimestamp') || '0';
+            
+            if (currentUpdate !== lastTeacherInfoUpdate && currentUpdate !== '0') {
+                console.log('✅ 检测到教师信息更新（轮询检查）');
+                lastTeacherInfoUpdate = currentUpdate;
+                
+                // 重新获取权限并加载数据
+                fetchUserPermissions().then(() => {
+                    console.log('✅ 重新加载成绩数据...');
+                    loadGrades();
+                    showNotification('数据已自动更新！', 'success');
+                });
+            }
+        }, 2000); // 每2秒检查一次
+        
         // 设置数据变更事件监听
         window.addEventListener('storage', function(e) {
             if (e.key === 'studentDataChangeTimestamp') {
