@@ -22,3 +22,9 @@ logs/
 "*.db-shm" 
 "*.db-shm" 
 "*.db-wal" 
+
+# 导出文件夹 - 忽略所有导出的PDF和Word文件
+exports/
+exports/*.pdf
+exports/*.docx
+exports/*.doc
