@@ -105,4 +105,37 @@ def database_info():
         return jsonify({
             'status': 'error',
             'message': f'获取数据库信息失败: {str(e)}'
+        }), 500
+
+@system_api_bp.route('/system-settings', methods=['GET'])
+def get_system_settings():
+    """获取系统设置（学年、学期等）"""
+    try:
+        conn = config.get_db_connection()
+        cursor = conn.cursor()
+        
+        # 获取学年设置
+        cursor.execute("SELECT value FROM system_settings WHERE key = 'school_year'")
+        school_year_row = cursor.fetchone()
+        school_year = school_year_row['value'] if school_year_row else '2025-2026'
+        
+        # 获取学期设置
+        cursor.execute("SELECT value FROM system_settings WHERE key = 'semester'")
+        semester_row = cursor.fetchone()
+        semester = semester_row['value'] if semester_row else '1'
+        
+        conn.close()
+        
+        return jsonify({
+            'status': 'ok',
+            'settings': {
+                'school_year': school_year,
+                'semester': semester
+            }
+        })
+    except Exception as e:
+        logger.error(f"获取系统设置失败: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': f'获取系统设置失败: {str(e)}'
         }), 500 
