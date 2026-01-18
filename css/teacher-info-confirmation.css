@@ -1,0 +1,272 @@
+/**
+ * 教师信息确认样式
+ */
+
+/* 模态框样式 */
+#teacherInfoModal .modal-content {
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+#teacherInfoModal .modal-header {
+    border-bottom: none;
+    padding: 20px 24px;
+}
+
+#teacherInfoModal .modal-title {
+    font-size: 20px;
+    font-weight: 600;
+}
+
+#teacherInfoModal .modal-title i {
+    font-size: 24px;
+    margin-right: 8px;
+}
+
+#teacherInfoModal .modal-body {
+    padding: 24px;
+    max-height: 70vh;
+}
+
+/* 信息区块 */
+.info-section {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 16px;
+}
+
+.section-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #dee2e6;
+}
+
+/* 学科徽章 */
+.info-section .badge {
+    font-size: 14px;
+    padding: 6px 12px;
+    font-weight: 500;
+}
+
+/* 表格样式 */
+.info-section .table {
+    margin-bottom: 0;
+    background: white;
+}
+
+.info-section .table th {
+    background: #e9ecef;
+    font-weight: 600;
+    color: #495057;
+}
+
+.info-section .table td {
+    vertical-align: middle;
+}
+
+/* 复选框区域 */
+.form-check {
+    padding-left: 1.5rem;
+}
+
+.form-check-input {
+    width: 18px;
+    height: 18px;
+    margin-top: 0.15rem;
+    cursor: pointer;
+}
+
+.form-check-label {
+    cursor: pointer;
+    user-select: none;
+    margin-left: 0.25rem;
+}
+
+.form-check-input:checked {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+/* 学科班级分配编辑区域 */
+#assignmentEditArea > div {
+    background: #f8f9fa;
+}
+
+#assignmentEditArea h6 {
+    color: #0d6efd;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+/* 提示框 */
+.alert {
+    border-radius: 8px;
+    border: none;
+}
+
+.alert-info {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.alert-warning {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.alert i {
+    font-size: 18px;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+/* 按钮样式 */
+#teacherInfoModal .btn {
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-weight: 500;
+}
+
+#teacherInfoModal .btn i {
+    margin-right: 4px;
+}
+
+#teacherInfoModal .btn-sm {
+    padding: 4px 12px;
+    font-size: 13px;
+}
+
+/* 底部按钮 */
+#teacherInfoModal .modal-footer {
+    border-top: none;
+    padding: 16px 24px;
+    background: #f8f9fa;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    #teacherInfoModal .modal-body {
+        padding: 16px;
+    }
+    
+    .info-section {
+        padding: 12px;
+    }
+    
+    .section-title {
+        font-size: 14px;
+    }
+    
+    #teacherInfoModal .modal-title {
+        font-size: 18px;
+    }
+    
+    .form-check {
+        margin-bottom: 8px;
+    }
+}
+
+/* 动画效果 */
+#teacherInfoModal .modal-content {
+    animation: slideInDown 0.3s ease-out;
+}
+
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 编辑状态过渡 */
+#subjectsDisplay,
+#subjectsEdit,
+#assignmentsDisplay,
+#assignmentsEdit {
+    transition: all 0.3s ease;
+}
+
+/* 悬停效果 */
+.form-check:hover {
+    background: #f0f0f0;
+    border-radius: 4px;
+    padding: 4px;
+    margin: -4px;
+}
+
+/* 保存按钮特殊样式 */
+.btn-success {
+    background: #28a745;
+    border-color: #28a745;
+}
+
+.btn-success:hover {
+    background: #218838;
+    border-color: #1e7e34;
+}
+
+
+/* 右上角任教信息按钮 */
+.teacher-info-button-container {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    z-index: 999;
+}
+
+.teacher-info-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    transition: all 0.3s ease;
+}
+
+.teacher-info-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(102, 126, 234, 0.5);
+}
+
+.teacher-info-btn:active {
+    transform: translateY(0);
+}
+
+.teacher-info-btn i {
+    font-size: 18px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .teacher-info-button-container {
+        top: 70px;
+        right: 15px;
+    }
+    
+    .teacher-info-btn {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+    
+    .teacher-info-btn span {
+        display: none;
+    }
+    
+    .teacher-info-btn i {
+        font-size: 20px;
+    }
+}
