@@ -258,6 +258,10 @@ app.register_blueprint(performance_bp)
 # 注册学科管理蓝图
 app.register_blueprint(subjects_bp)
 
+# 注册教师信息API蓝图
+from teacher_info_api import teacher_info_bp
+app.register_blueprint(teacher_info_bp)
+
 # 注册实时更新蓝图
 from realtime_api import realtime_bp, init_realtime
 app.register_blueprint(realtime_bp)
