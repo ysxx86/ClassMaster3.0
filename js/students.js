@@ -339,6 +339,9 @@ function resetEditStudentSaveButton() {
 
 // 创建学生卡片
 function createStudentCard(student) {
+    // 调试：打印学生数据
+    console.log('创建学生卡片，数据:', student);
+    
     // 创建卡片容器
     const card = document.createElement('div');
     card.className = 'col-md-4 col-sm-6 col-lg-2 mb-3';
@@ -348,7 +351,7 @@ function createStudentCard(student) {
         if (value === 0 || value === 0.0) {
             return '0';
         }
-        return value !== null && value !== undefined ? value : '-';
+        return value !== null && value !== undefined && value !== '' ? value : '-';
     };
     
     // 定义一个辅助函数来处理文本字段显示
@@ -361,12 +364,12 @@ function createStudentCard(student) {
         <div class="card student-card h-100">
             <div class="card-header p-2">
                 <div class="d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">${student.name}</h5>
-                    <span class="badge ${student.gender === '男' ? 'bg-primary' : 'bg-danger'}">${student.gender}</span>
+                    <h5 class="mb-0">${student.name || '未知'}</h5>
+                    <span class="badge ${student.gender === '男' ? 'bg-primary' : 'bg-danger'}">${student.gender || '未知'}</span>
                 </div>
             </div>
             <div class="card-body p-2">
-                <p class="mb-1"><strong>学号:</strong> ${student.id}</p>
+                <p class="mb-1"><strong>学号:</strong> ${student.id || student.student_id || '-'}</p>
                 <p class="mb-1"><strong>班级:</strong> ${student.class_name || '未分配班级'}</p>
                 <p class="mb-1"><strong>身高:</strong> ${displayNumericValue(student.height)} cm</p>
                 <p class="mb-1"><strong>体重:</strong> ${displayNumericValue(student.weight)} kg</p>

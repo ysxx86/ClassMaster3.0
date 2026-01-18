@@ -177,7 +177,7 @@ def get_all_students():
         # 计算偏移量
         offset = (page - 1) * page_size
         
-        # 分页查询，只返回评语管理需要的字段
+        # 分页查询，返回完整的学生信息
         logger.info(f"用户 {current_user.username} 查询第{page}页，每页{page_size}条")
         cursor.execute(f'''
             SELECT 
@@ -186,6 +186,14 @@ def get_all_students():
                 s.name,
                 s.gender,
                 s.class_id,
+                s.height,
+                s.weight,
+                s.chest_circumference,
+                s.vital_capacity,
+                s.vision_left,
+                s.vision_right,
+                s.dental_caries,
+                s.physical_test_status,
                 s.comments,
                 s.updated_at,
                 c.class_name
