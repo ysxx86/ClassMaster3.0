@@ -19,3 +19,6 @@ __pycache__/
 *.logs
 logs/
 *.db-wal
+"*.db-shm" 
+"*.db-shm" 
+"*.db-wal" 
