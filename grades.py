@@ -80,7 +80,10 @@ def get_all_grades():
         # - 超级管理员：可以查看所有班级
         # - 正班主任：只能查看自己的班级
         # - 科任老师/副班主任/行政/校级领导：只能查看自己任教的班级
-        from utils.permission_checker import get_accessible_classes
+        from utils.permission_checker import get_accessible_classes, get_user_permissions
+        
+        # 获取用户权限信息（包含任教学科）
+        user_permissions = get_user_permissions(current_user)
         
         if not current_user.is_admin:
             # 获取用户有权限访问的班级列表
@@ -90,6 +93,7 @@ def get_all_grades():
                 return jsonify({
                     'status': 'ok',
                     'grades': [],
+                    'allowed_subjects': [],
                     'message': '您尚未被分配任教班级，无法查看学生成绩'
                 })
             
@@ -130,14 +134,28 @@ def get_all_grades():
                 logger.info(f"总共合并了 {len(all_grades)} 条成绩记录")
                 logger.info(f"空班级: {empty_classes}")
                 
+                # 获取用户可以查看的学科列表（所有任教班级的学科合集）
+                allowed_subjects = set()
+                for cid in accessible_classes:
+                    class_subjects = user_permissions['teaching_map'].get(str(cid), [])
+                    allowed_subjects.update(class_subjects)
+                
                 return jsonify({
                     'status': 'ok', 
                     'grades': all_grades,
-                    'empty_classes': empty_classes  # 返回空班级信息
+                    'empty_classes': empty_classes,
+                    'allowed_subjects': list(allowed_subjects),  # 返回允许查看的学科列表
+                    'user_permissions': user_permissions  # 返回完整权限信息
                 })
             
         grades = grades_manager.get_all_grades(semester, class_id)
-        return jsonify({'status': 'ok', 'grades': grades})
+        
+        # 返回数据时包含用户权限信息
+        return jsonify({
+            'status': 'ok', 
+            'grades': grades,
+            'user_permissions': user_permissions  # 返回完整权限信息
+        })
     except Exception as e:
         logger.error(f'获取学生成绩时出错: {str(e)}')
         return jsonify({'status': 'error', 'message': f'获取学生成绩失败: {str(e)}'})
