@@ -168,6 +168,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // 存储用户权限信息
 let userPermissions = null;
+let allowedSubjects = null;  // 用户可以查看的学科列表
 
 // 获取用户权限信息
 async function fetchUserPermissions() {
@@ -256,7 +257,6 @@ async function setupSemesterSelect() {
         
         // 加载成绩数据
         loadGrades();
-        
     } catch (error) {
         console.error('获取学期设置失败:', error);
         
@@ -301,6 +301,18 @@ function loadGrades() {
             console.log('成绩API返回数据:', data);
             if (data.status === 'ok') {
                 console.log('成功获取成绩数据, 学生数量:', data.grades ? data.grades.length : 0);
+                
+                // ⭐ 保存用户权限信息和允许查看的学科列表
+                if (data.user_permissions) {
+                    userPermissions = data.user_permissions;
+                    console.log('用户权限信息:', userPermissions);
+                }
+                
+                // ⭐ 保存允许查看的学科列表
+                if (data.allowed_subjects) {
+                    allowedSubjects = data.allowed_subjects;
+                    console.log('允许查看的学科:', allowedSubjects);
+                }
                 
                 // 检查是否有空班级
                 if (data.empty_classes && data.empty_classes.length > 0) {
@@ -380,16 +392,92 @@ function renderGradesTable(grades) {
         return parseInt(a.student_id) - parseInt(b.student_id);
     });
     
+    // ⭐ 确定要渲染的学科列表
+    // 所有学科的完整列表
+    const allSubjects = [
+        'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 
+        'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'xinli'
+    ];
+    
+    let subjectsToRender = allSubjects;
+    
+    // 如果用户不是超级管理员且不是正班主任，只显示任教的学科
+    if (userPermissions && !userPermissions.is_admin && userPermissions.role !== '正班主任') {
+        // 从 allowedSubjects 或 teaching_map 获取任教学科
+        let teachingSubjects = [];
+        
+        if (allowedSubjects && allowedSubjects.length > 0) {
+            // 使用 allowedSubjects（学科中文名）
+            teachingSubjects = allowedSubjects;
+            console.log('使用 allowedSubjects:', teachingSubjects);
+        } else if (userPermissions.teaching_map) {
+            // 从 teaching_map 提取所有学科（去重）
+            const subjectSet = new Set();
+            for (const classId in userPermissions.teaching_map) {
+                const subjects = userPermissions.teaching_map[classId];
+                subjects.forEach(s => subjectSet.add(s));
+            }
+            teachingSubjects = Array.from(subjectSet);
+            console.log('从 teaching_map 提取学科:', teachingSubjects);
+        }
+        
+        // 将中文学科名转换为字段名
+        if (teachingSubjects.length > 0) {
+            subjectsToRender = [];
+            teachingSubjects.forEach(chineseName => {
+                // 查找对应的字段名
+                for (const [fieldName, displayName] of Object.entries(subjectNames)) {
+                    if (displayName === chineseName) {
+                        subjectsToRender.push(fieldName);
+                        break;
+                    }
+                }
+            });
+            
+            console.log('科任老师只显示任教学科:', subjectsToRender);
+            
+            // 如果没有找到任何学科，显示提示
+            if (subjectsToRender.length === 0) {
+                gradesTable.innerHTML = `
+                    <tr>
+                        <td colspan="15" class="text-center py-5">
+                            <div class="empty-state">
+                                <i class='bx bx-info-circle'></i>
+                                <h3>暂无任教学科</h3>
+                                <p>您尚未被分配任教学科，请联系管理员</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+        }
+    } else {
+        console.log('超级管理员或正班主任，显示所有学科');
+    }
+    
+    // ⭐ 更新表头，只显示要渲染的学科
+    const tableHeader = document.querySelector('.grades-table table thead tr');
+    if (tableHeader) {
+        // 清空表头
+        tableHeader.innerHTML = '<th>学号</th><th>姓名</th>';
+        
+        // 添加学科列
+        subjectsToRender.forEach(subject => {
+            const th = document.createElement('th');
+            th.textContent = subjectNames[subject] || subject;
+            tableHeader.appendChild(th);
+        });
+        
+        console.log('表头已更新，显示学科:', subjectsToRender.map(s => subjectNames[s]));
+    }
+    
     // 清空表格
     gradesTable.innerHTML = '';
     
     // 分班级渲染学生成绩表
     console.log('开始渲染成绩表格');
     let currentClass = null;
-    const subjectsToRender = [
-        'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 
-        'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'xinli'
-    ];
     
     grades.forEach(studentGrade => {
         // 如果是新班级，添加班级标题行
@@ -398,7 +486,8 @@ function renderGradesTable(grades) {
             
             const classRow = document.createElement('tr');
             classRow.className = 'table-light';
-            classRow.innerHTML = `<td colspan="15"><strong>${currentClass}</strong></td>`;
+            // colspan 需要根据实际列数调整
+            classRow.innerHTML = `<td colspan="${subjectsToRender.length + 2}"><strong>${currentClass}</strong></td>`;
             gradesTable.appendChild(classRow);
         }
         
@@ -413,7 +502,7 @@ function renderGradesTable(grades) {
             <td>${studentGrade.student_name}</td>
         `;
         
-        // 添加各科目成绩单元格
+        // ⭐ 只添加要渲染的学科成绩单元格
         subjectsToRender.forEach(subject => {
             const cell = document.createElement('td');
             const gradeValue = studentGrade[subject] !== undefined ? studentGrade[subject] : '';
