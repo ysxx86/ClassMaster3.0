@@ -556,6 +556,9 @@ function renderGradesTable(grades) {
     
     // 渲染完成后调整表格布局
     adjustTableLayout();
+    
+    // 重新初始化列选择和粘贴功能
+    initColumnSelectAndPaste();
 }
 
 /**
