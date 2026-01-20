@@ -191,6 +191,45 @@ def get_my_info():
                 'subject': row['subject']
             })
         
+        # 如果是副班主任且有class_id，确保该班级在分配列表中
+        if user_info['primary_role'] == '副班主任' and user_info['class_id']:
+            # 检查是否已经有该班级的分配
+            has_own_class = any(a['class_id'] == str(user_info['class_id']) for a in assignments)
+            
+            if not has_own_class and len(subjects) > 0:
+                # 自动为副班主任的班级创建分配记录（使用第一个任教学科）
+                logger.info(f"副班主任 {current_user.username} 缺少班级 {user_info['class_id']} 的分配，自动创建")
+                for subject in subjects:
+                    cursor.execute('''
+                        INSERT INTO teaching_assignments (teacher_id, class_id, subject)
+                        VALUES (?, ?, ?)
+                    ''', (current_user.id, str(user_info['class_id']), subject['name']))
+                    logger.info(f"自动创建分配: {current_user.username} - {user_info['class_name']} - {subject['name']}")
+                
+                conn.commit()
+                
+                # 重新查询分配列表
+                cursor.execute('''
+                    SELECT 
+                        ta.id,
+                        ta.class_id,
+                        c.class_name,
+                        ta.subject
+                    FROM teaching_assignments ta
+                    JOIN classes c ON CAST(ta.class_id AS INTEGER) = c.id
+                    WHERE ta.teacher_id = ?
+                    ORDER BY c.class_name, ta.subject
+                ''', (current_user.id,))
+                
+                assignments = []
+                for row in cursor.fetchall():
+                    assignments.append({
+                        'id': row['id'],
+                        'class_id': row['class_id'],
+                        'class_name': row['class_name'],
+                        'subject': row['subject']
+                    })
+        
         # 获取当前系统学期
         current_semester = get_current_semester_display()
         
@@ -388,6 +427,42 @@ def update_info():
                 VALUES (?, ?, ?)
             ''', (current_user.id, class_id, subject_name))
             logger.info(f"添加分配: teacher_id={current_user.id}, class_id={class_id}, subject={subject_name}")
+        
+        # 如果是副班主任，确保其班级的所有任教学科都有分配
+        cursor.execute('SELECT primary_role, class_id FROM users WHERE id = ?', (current_user.id,))
+        user_role_info = cursor.fetchone()
+        
+        if user_role_info and user_role_info['primary_role'] == '副班主任' and user_role_info['class_id']:
+            vice_class_id = str(user_role_info['class_id'])
+            
+            # 获取该副班主任的所有任教学科
+            cursor.execute('''
+                SELECT s.name
+                FROM teacher_subjects ts
+                JOIN subjects s ON ts.subject_id = s.id
+                WHERE ts.teacher_id = ?
+            ''', (current_user.id,))
+            
+            all_subjects = [row['name'] for row in cursor.fetchall()]
+            
+            # 检查副班主任的班级是否有所有学科的分配
+            for subject_name in all_subjects:
+                # 检查是否已存在
+                cursor.execute('''
+                    SELECT COUNT(*) as count
+                    FROM teaching_assignments
+                    WHERE teacher_id = ? AND class_id = ? AND subject = ?
+                ''', (current_user.id, vice_class_id, subject_name))
+                
+                exists = cursor.fetchone()['count'] > 0
+                
+                if not exists:
+                    # 自动添加副班主任班级的分配
+                    cursor.execute('''
+                        INSERT INTO teaching_assignments (teacher_id, class_id, subject)
+                        VALUES (?, ?, ?)
+                    ''', (current_user.id, vice_class_id, subject_name))
+                    logger.info(f"自动补充副班主任分配: teacher_id={current_user.id}, class_id={vice_class_id}, subject={subject_name}")
         
         # 3. 记录修改历史
         now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
