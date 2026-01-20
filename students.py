@@ -52,6 +52,135 @@ def get_db_connection():
     conn.execute('PRAGMA foreign_keys = ON')  # 启用外键约束
     return conn
 
+def normalize_class_name(class_name_input):
+    """
+    将各种格式的班级名称标准化为数据库格式
+    
+    支持的输入格式：
+    - 204 -> 二年级4班
+    - 二年级4班 -> 二年级4班
+    - 二年4班 -> 二年级4班
+    - 二年级四班 -> 二年级4班
+    - 二年四班 -> 二年级4班
+    - 2024级4班 -> 二年级4班
+    - 小学2024级4班 -> 二年级4班
+    
+    返回: (标准班级名称, 是否成功匹配)
+    """
+    if not class_name_input:
+        return None, False
+    
+    import re
+    
+    # 去除空格和特殊字符
+    class_name = str(class_name_input).strip().replace(' ', '').replace('　', '')
+    
+    # 中文数字到阿拉伯数字的映射
+    chinese_to_num = {
+        '一': '1', '二': '2', '三': '3', '四': '4', '五': '5',
+        '六': '6', '七': '7', '八': '8', '九': '9', '十': '10'
+    }
+    
+    # 年级映射（处理2024级这种格式）
+    current_year = 2026  # 当前年份
+    
+    # 模式1: 纯数字格式 "204" -> "二年级4班"
+    match = re.match(r'^(\d)0?(\d{1,2})$', class_name)
+    if match:
+        grade_num = match.group(1)
+        class_num = match.group(2).lstrip('0') or '0'  # 去除前导0
+        grade_map = {'1': '一', '2': '二', '3': '三', '4': '四', '5': '五', '6': '六'}
+        if grade_num in grade_map:
+            return f"{grade_map[grade_num]}年级{class_num}班", True
+    
+    # 模式2: "2024级4班" 或 "小学2024级4班" -> "二年级4班"
+    match = re.search(r'(\d{4})级(\d+)班', class_name)
+    if match:
+        year = int(match.group(1))
+        class_num = match.group(2)
+        # 计算年级：
+        # 2024年9月入学 -> 2024-2025学年一年级 -> 2025-2026学年二年级
+        # 当前是2026年1月，正在读二年级上学期
+        # 所以：当前年份(2026) - 入学年份(2024) = 2年级
+        grade = current_year - year
+        if 1 <= grade <= 6:
+            grade_map = {1: '一', 2: '二', 3: '三', 4: '四', 5: '五', 6: '六'}
+            return f"{grade_map[grade]}年级{class_num}班", True
+    
+    # 模式3: "二年4班" -> "二年级4班"
+    match = re.match(r'^([一二三四五六])年(\d+)班$', class_name)
+    if match:
+        grade_chinese = match.group(1)
+        class_num = match.group(2)
+        return f"{grade_chinese}年级{class_num}班", True
+    
+    # 模式4: "二年级四班" -> "二年级4班"
+    match = re.match(r'^([一二三四五六])年级([一二三四五六七八九十]+)班$', class_name)
+    if match:
+        grade_chinese = match.group(1)
+        class_chinese = match.group(2)
+        # 转换班级数字
+        class_num = chinese_to_num.get(class_chinese, class_chinese)
+        return f"{grade_chinese}年级{class_num}班", True
+    
+    # 模式5: "二年四班" -> "二年级4班"
+    match = re.match(r'^([一二三四五六])年([一二三四五六七八九十]+)班$', class_name)
+    if match:
+        grade_chinese = match.group(1)
+        class_chinese = match.group(2)
+        class_num = chinese_to_num.get(class_chinese, class_chinese)
+        return f"{grade_chinese}年级{class_num}班", True
+    
+    # 模式6: 已经是标准格式 "二年级4班"
+    match = re.match(r'^([一二三四五六])年级(\d+)班$', class_name)
+    if match:
+        return class_name, True
+    
+    # 无法识别的格式
+    return None, False
+
+def find_class_id_by_name(cursor, class_name_input):
+    """
+    根据班级名称查找班级ID，支持模糊匹配
+    
+    返回: (class_id, normalized_name, error_message)
+    """
+    # 先尝试标准化班级名称
+    normalized_name, success = normalize_class_name(class_name_input)
+    
+    if success and normalized_name:
+        # 使用标准化后的名称查询
+        cursor.execute('SELECT id, class_name FROM classes WHERE class_name = ?', (normalized_name,))
+        result = cursor.fetchone()
+        if result:
+            return result['id'], normalized_name, None
+    
+    # 如果标准化后仍然找不到，尝试直接查询原始名称
+    cursor.execute('SELECT id, class_name FROM classes WHERE class_name = ?', (class_name_input,))
+    result = cursor.fetchone()
+    if result:
+        return result['id'], result['class_name'], None
+    
+    # 获取所有班级列表，用于错误提示
+    cursor.execute('SELECT class_name FROM classes ORDER BY class_name')
+    all_classes = [row['class_name'] for row in cursor.fetchall()]
+    
+    # 生成错误提示
+    if normalized_name:
+        error_msg = f'班级 "{class_name_input}" 标准化为 "{normalized_name}" 后仍未找到。'
+    else:
+        error_msg = f'无法识别班级格式 "{class_name_input}"。'
+    
+    error_msg += f'\n\n可用的班级有：{", ".join(all_classes)}'
+    error_msg += f'\n\n支持的格式示例：'
+    error_msg += f'\n  - 标准格式：二年级4班'
+    error_msg += f'\n  - 简写格式：二年4班'
+    error_msg += f'\n  - 数字格式：204（2表示二年级，04表示4班）'
+    error_msg += f'\n  - 年份格式：2024级4班（自动计算年级）'
+    error_msg += f'\n  - 中文数字：二年级四班'
+    
+    return None, normalized_name, error_msg
+
 # 创建学生导入模板
 def create_student_template():
     template_dir = 'templates'
@@ -900,46 +1029,77 @@ def import_students_preview():
                         else:
                             student[field_name] = None
             
-            # 检查必填字段
-            if not student.get('id') or not student.get('name'):
+            # 检查必填字段 - 只需要姓名和班级
+            if not student.get('name'):
                 error_records.append({
                     'row': row_idx,
-                    'reason': '学号或姓名为空'
+                    'reason': '姓名为空'
                 })
                 skipped_count += 1
                 continue
             
-            # 如果是班主任，检查Excel中的班级字段是否与班主任的班级匹配
+            # 如果是班主任，检查Excel中的班级字段是否与班主任的班级匹配（支持智能匹配）
             if not current_user.is_admin and current_user.class_id:
                 # 检查Excel中的班级字段是否与班主任的班级一致
                 excel_class_name = student.get('class')
-                if excel_class_name and teacher_class_name and excel_class_name != teacher_class_name:
-                    # 添加错误标记，但仍然添加到预览数据中
-                    student['class_mismatch'] = True
-                    student['teacher_class'] = teacher_class_name
-                    student['error_reason'] = f'班级不匹配: Excel中为"{excel_class_name}", 您的班级是"{teacher_class_name}"'
-                    # 记录错误信息
-                    error_records.append({
-                        'row': row_idx,
-                        'reason': f'班级不匹配: Excel中为"{excel_class_name}", 您的班级是"{teacher_class_name}"'
-                    })
-                    # 增加不匹配计数
-                    class_mismatch_count += 1
-                    # 标记整体状态为不匹配
-                    all_classes_match = False
+                
+                if excel_class_name:
+                    # 尝试标准化Excel中的班级名称
+                    normalized_excel_class, success = normalize_class_name(excel_class_name)
+                    
+                    # 记录标准化信息
+                    if success and normalized_excel_class != excel_class_name:
+                        logger.info(f"行 {row_idx}: 班级名称 '{excel_class_name}' 已标准化为 '{normalized_excel_class}'")
+                        student['class_normalized'] = normalized_excel_class
+                        student['class_original'] = excel_class_name
+                    
+                    # 使用标准化后的名称进行比较
+                    compare_class_name = normalized_excel_class if success else excel_class_name
+                    
+                    if teacher_class_name and compare_class_name != teacher_class_name:
+                        # 班级不匹配
+                        student['class_mismatch'] = True
+                        student['teacher_class'] = teacher_class_name
+                        if success and normalized_excel_class != excel_class_name:
+                            student['error_reason'] = f'班级不匹配: Excel中为"{excel_class_name}"（标准化为"{normalized_excel_class}"），您的班级是"{teacher_class_name}"'
+                        else:
+                            student['error_reason'] = f'班级不匹配: Excel中为"{excel_class_name}", 您的班级是"{teacher_class_name}"'
+                        # 记录错误信息
+                        error_records.append({
+                            'row': row_idx,
+                            'reason': student['error_reason']
+                        })
+                        # 增加不匹配计数
+                        class_mismatch_count += 1
+                        # 标记整体状态为不匹配
+                        all_classes_match = False
+                        skipped_count += 1
+                        continue
+                    else:
+                        # 班级匹配，更新student中的class为标准化后的名称
+                        if success and normalized_excel_class:
+                            student['class'] = normalized_excel_class
+                else:
+                    # Excel中没有班级信息，使用班主任的班级
+                    student['class'] = teacher_class_name
                 
                 student['class_id'] = current_user.class_id
             else:
-                # 管理员模式：根据班级名称查找班级ID
+                # 管理员模式：根据班级名称查找班级ID（支持智能匹配）
                 if student.get('class'):
-                    cursor.execute('SELECT id FROM classes WHERE class_name = ?', (student['class'],))
-                    class_result = cursor.fetchone()
-                    if class_result:
-                        student['class_id'] = class_result['id']
+                    class_id, normalized_name, error_msg = find_class_id_by_name(cursor, student['class'])
+                    
+                    if class_id:
+                        student['class_id'] = class_id
+                        # 如果班级名称被标准化了，记录下来
+                        if normalized_name != student['class']:
+                            student['class_normalized'] = normalized_name
+                            student['class_original'] = student['class']
+                            logger.info(f"班级名称 '{student['class']}' 已标准化为 '{normalized_name}'")
                     else:
                         error_records.append({
                             'row': row_idx,
-                            'reason': f'班级 "{student["class"]}" 不存在'
+                            'reason': error_msg
                         })
                         skipped_count += 1
                         continue
@@ -951,23 +1111,37 @@ def import_students_preview():
                     skipped_count += 1
                     continue
             
-            # 检查学生是否已存在（使用复合主键检查）
-            cursor.execute('SELECT id FROM students WHERE id = ? AND class_id = ?', 
-                          (student['id'], student['class_id']))
-            if cursor.fetchone():
+            # 检查学生是否已存在（使用姓名+班级ID匹配）
+            cursor.execute('SELECT id, name FROM students WHERE name = ? AND class_id = ?', 
+                          (student['name'], student['class_id']))
+            existing_student_record = cursor.fetchone()
+            
+            if existing_student_record:
+                # 学生已存在，记录数据库中的学号
+                db_student_id = existing_student_record['id']
+                
+                # 如果Excel中有学号，使用Excel的学号；否则使用数据库的学号
+                if student.get('id'):
+                    student['final_id'] = student['id']
+                    student['id_changed'] = (student['id'] != db_student_id)
+                else:
+                    student['final_id'] = db_student_id
+                    student['id'] = db_student_id
+                    student['id_changed'] = False
+                
                 updated_count += 1
                 
                 # 查询数据库中已有的学生信息，用于字段比对
                 cursor.execute('''
-                    SELECT id, name, height, weight, chest_circumference, vital_capacity, 
+                    SELECT id, name, gender, height, weight, chest_circumference, vital_capacity, 
                            vision_left, vision_right, dental_caries, physical_test_status,
                            yuwen, shuxue, yingyu, laodong, tiyu, yinyue, meishu, kexue,
                            zonghe, xinxi, shufa, xinli,
                            pinzhi, xuexi, jiankang, shenmei, shijian, shenghuo,
                            comments
                     FROM students 
-                    WHERE id = ? AND class_id = ?
-                ''', (student['id'], student['class_id']))
+                    WHERE name = ? AND class_id = ?
+                ''', (student['name'], student['class_id']))
                 existing_data = cursor.fetchone()
                 
                 if existing_data:
@@ -976,6 +1150,7 @@ def import_students_preview():
                     
                     # 添加需要更新的字段信息
                     student['fields_to_update'] = []
+                    student['fields_unchanged'] = []
                     
                     # 比对各个字段
                     fields_to_compare = [
@@ -1036,17 +1211,60 @@ def import_students_preview():
                                         'old_value': db_value,
                                         'new_value': student[field]
                                     })
+                                else:
+                                    student['fields_unchanged'].append({
+                                        'field': field,
+                                        'display_name': display_name,
+                                        'value': student[field]
+                                    })
                             else:
                                 # 非数值字段比较
-                                if existing_student.get(field) != student[field]:
+                                db_value = existing_student.get(field)
+                                # 特殊处理学号字段
+                                if field == 'id':
+                                    # 如果Excel中有学号且与数据库不同，标记为更新
+                                    if student.get('id') and student['id'] != db_value:
+                                        student['fields_to_update'].append({
+                                            'field': field,
+                                            'display_name': display_name,
+                                            'old_value': db_value,
+                                            'new_value': student['id']
+                                        })
+                                    else:
+                                        student['fields_unchanged'].append({
+                                            'field': field,
+                                            'display_name': display_name,
+                                            'value': db_value
+                                        })
+                                elif db_value != student[field]:
                                     student['fields_to_update'].append({
                                         'field': field,
                                         'display_name': display_name,
-                                        'old_value': existing_student.get(field),
+                                        'old_value': db_value,
                                         'new_value': student[field]
                                     })
+                                else:
+                                    student['fields_unchanged'].append({
+                                        'field': field,
+                                        'display_name': display_name,
+                                        'value': student[field]
+                                    })
             else:
+                # 新增学生
                 added_count += 1
+                # 如果Excel中没有学号，需要生成一个
+                if not student.get('id'):
+                    # 查询该班级最大的学号
+                    cursor.execute('SELECT MAX(CAST(id AS INTEGER)) as max_id FROM students WHERE class_id = ?', 
+                                 (student['class_id'],))
+                    max_id_result = cursor.fetchone()
+                    max_id = max_id_result['max_id'] if max_id_result and max_id_result['max_id'] else 0
+                    student['id'] = str(max_id + 1)
+                    student['final_id'] = student['id']
+                    student['id_auto_generated'] = True
+                else:
+                    student['final_id'] = student['id']
+                    student['id_auto_generated'] = False
                 
             students_data.append(student)
         
@@ -1147,10 +1365,41 @@ def confirm_import():
                     error_details.append(f"学生 {student.get('name', '未知')} (ID: {student_id}) {student.get('error_reason', '班级不匹配')}")
                     continue
                 
-                # 检查该学生是否已存在
-                cursor.execute('SELECT id FROM students WHERE id = ? AND class_id = ?', 
-                            (student_id, class_id))
+                # 检查该学生是否已存在（使用姓名+班级ID匹配）
+                student_name = student.get('name')
+                if not student_name:
+                    error_count += 1
+                    error_details.append(f"学生 (ID: {student_id}) 缺少姓名")
+                    continue
+                
+                cursor.execute('SELECT id FROM students WHERE name = ? AND class_id = ?', 
+                            (student_name, class_id))
                 existing_student = cursor.fetchone()
+                
+                # 如果学生已存在，使用数据库中的学号（除非Excel中提供了新学号）
+                if existing_student:
+                    db_student_id = existing_student['id']
+                    # 如果Excel中有学号且与数据库不同，使用Excel的学号
+                    if student_id and student_id != db_student_id:
+                        # 需要更新学号
+                        final_student_id = student_id
+                    else:
+                        # 使用数据库的学号
+                        final_student_id = db_student_id
+                else:
+                    # 新学生，使用Excel的学号或生成新学号
+                    if not student_id:
+                        # 生成新学号
+                        cursor.execute('SELECT MAX(CAST(id AS INTEGER)) as max_id FROM students WHERE class_id = ?', 
+                                     (class_id,))
+                        max_id_result = cursor.fetchone()
+                        max_id = max_id_result['max_id'] if max_id_result and max_id_result['max_id'] else 0
+                        final_student_id = str(max_id + 1)
+                    else:
+                        final_student_id = student_id
+                
+                # 更新student字典中的id
+                student['id'] = final_student_id
                 
                 # 准备数据，只包含数据库存在的列
                 db_fields = []
