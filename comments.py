@@ -1076,8 +1076,9 @@ def convert_docx_to_pdf(input_file, output_file, request_id=None):
                 try:
                     word.Quit()
                     logger.info("Word应用已退出")
-                except:
-                    logger.warning("退出Word时出错")
+                except Exception as e:
+                    # Word 退出失败通常不影响功能，降级为 debug 日志
+                    logger.debug(f"退出Word时出错（可忽略）: {str(e)}")
                 
             except ImportError:
                 # 如果win32com不可用，尝试使用docx2pdf
@@ -1802,13 +1803,13 @@ def api_export_reports():
                                         conn = get_db_connection()
                                         cursor = conn.cursor()
                                         
-                                        # 查询classes表获取班级名称
-                                        cursor.execute('SELECT name FROM classes WHERE id = ?', (class_id,))
+                                        # 查询classes表获取班级名称（使用正确的列名 class_name）
+                                        cursor.execute('SELECT class_name FROM classes WHERE id = ?', (class_id,))
                                         class_record = cursor.fetchone()
                                         conn.close()
                                         
-                                        if class_record and 'name' in class_record:
-                                            class_name = class_record['name']
+                                        if class_record and 'class_name' in class_record:
+                                            class_name = class_record['class_name']
                                             logger.info(f"从数据库获取班级名称: '{class_name}'")
                                         else:
                                             logger.warning(f"未找到class_id为{class_id}的班级记录")

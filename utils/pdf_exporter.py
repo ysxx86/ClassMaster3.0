@@ -69,36 +69,49 @@ def register_fonts():
         except Exception as e:
             logger.error(f"创建字体目录失败: {str(e)}")
     
-    # 尝试注册常见中文字体 - 优先使用macOS系统字体
-    font_files = [
-        # macOS系统字体
-        ('/System/Library/Fonts/PingFang.ttc', 'PingFang'),
-        ('/System/Library/Fonts/STHeiti Light.ttc', 'STHeiti'),
-        ('/System/Library/Fonts/STHeiti Medium.ttc', 'STHeiti-Medium'),
-        ('/System/Library/Fonts/Hiragino Sans GB.ttc', 'Hiragino'),
-        ('/Library/Fonts/Microsoft/SimSun.ttf', 'SimSun'),
-        ('/Library/Fonts/Arial Unicode.ttf', 'Arial-Unicode'),
-        # 项目字体目录
-        (f'{FONTS_FOLDER}/SimSun.ttf', 'SimSun'),
-        (f'{FONTS_FOLDER}/SourceHanSerifCN-Regular.otf', 'SourceHan'),
-        # Windows系统字体
-        ('C:/Windows/Fonts/simsun.ttc', 'SimSun-Win'),
-        ('C:/Windows/Fonts/simhei.ttf', 'SimHei-Win')
-    ]
+    # 根据操作系统选择字体路径
+    import platform
+    system = platform.system()
+    
+    font_files = []
+    
+    if system == "Windows":
+        # Windows系统字体（优先）
+        font_files = [
+            ('C:/Windows/Fonts/simsun.ttc', 'SimSun'),
+            ('C:/Windows/Fonts/simhei.ttf', 'SimHei'),
+            ('C:/Windows/Fonts/msyh.ttc', 'Microsoft-YaHei'),
+            # 项目字体目录
+            (f'{FONTS_FOLDER}/SimSun.ttf', 'SimSun-Custom'),
+            (f'{FONTS_FOLDER}/SourceHanSerifCN-Regular.otf', 'SourceHan')
+        ]
+    elif system == "Darwin":  # macOS
+        font_files = [
+            ('/System/Library/Fonts/PingFang.ttc', 'PingFang'),
+            ('/System/Library/Fonts/STHeiti Light.ttc', 'STHeiti'),
+            ('/System/Library/Fonts/Hiragino Sans GB.ttc', 'Hiragino'),
+            ('/Library/Fonts/Microsoft/SimSun.ttf', 'SimSun'),
+            (f'{FONTS_FOLDER}/SimSun.ttf', 'SimSun-Custom'),
+            (f'{FONTS_FOLDER}/SourceHanSerifCN-Regular.otf', 'SourceHan')
+        ]
+    else:  # Linux
+        font_files = [
+            ('/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc', 'WQY-ZenHei'),
+            ('/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc', 'NotoSans'),
+            (f'{FONTS_FOLDER}/SimSun.ttf', 'SimSun-Custom'),
+            (f'{FONTS_FOLDER}/SourceHanSerifCN-Regular.otf', 'SourceHan')
+        ]
     
     # 尝试所有可能的字体，直到成功注册一个
     for font_path, font_name in font_files:
         try:
             if os.path.exists(font_path):
-                logger.info(f"找到字体文件: {font_path}")
+                logger.debug(f"找到字体文件: {font_path}")
                 pdfmetrics.registerFont(TTFont(font_name, font_path))
-                logger.info(f"成功注册中文字体: {font_path} 作为 {font_name}")
+                logger.info(f"成功注册中文字体: {font_name} ({system})")
                 return font_name
-            else:
-                logger.info(f"字体文件不存在: {font_path}")
         except Exception as e:
-            logger.warning(f"注册字体 {font_path} 失败: {str(e)}")
-            logger.warning(traceback.format_exc())
+            logger.debug(f"注册字体 {font_path} 失败: {str(e)}")
     
     # 如果无法找到中文字体，尝试使用默认字体
     logger.warning("无法注册中文字体，将使用默认字体")

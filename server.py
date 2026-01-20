@@ -264,7 +264,7 @@ app.register_blueprint(teacher_info_bp)
 
 # 注册实时更新蓝图
 from realtime_api import realtime_bp, init_realtime
-app.register_blueprint(realtime_bp)
+# app.register_blueprint(realtime_bp)  # 已在 init_realtime() 中注册，避免重复
 init_realtime(app)
 
 # 全局错误处理中间件
