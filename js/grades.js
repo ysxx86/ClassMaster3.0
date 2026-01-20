@@ -1417,6 +1417,12 @@ function initColumnSelectAndPaste() {
     if (cancelColumnSelectBtn) {
         cancelColumnSelectBtn.addEventListener('click', cancelColumnSelection);
     }
+    
+    // 绑定撤销粘贴按钮事件
+    const undoPasteBtn = document.getElementById('undoPasteBtn');
+    if (undoPasteBtn) {
+        undoPasteBtn.addEventListener('click', undoLastPaste);
+    }
 }
 
 // 选择列
@@ -1482,26 +1488,30 @@ function cancelColumnSelection() {
     });
 }
 
+// 存储粘贴前的状态，用于撤销
+let lastPasteState = null;
+
 // 将复制的内容粘贴到选中列
 function pasteToSelectedColumn() {
     if (selectedColumn === null || selectedSubject === null) {
-        showNotification('请先选择要粘贴的列', 'warning');
+        showNotification('请先点击表头选择要粘贴的列', 'warning');
         return;
     }
     
-    // 显示粘贴操作指南
-    showNotification(`准备粘贴到「${selectedSubject}」列，请确保您的剪贴板中包含了要粘贴的成绩数据（优、良、及格、待及格）`, 'info');
-    
     // 检查navigator.clipboard是否可用
     if (navigator.clipboard && navigator.clipboard.readText) {
-        // 现代浏览器API
+        // 现代浏览器API - 直接读取剪贴板
         navigator.clipboard.readText()
             .then(text => {
+                if (!text || !text.trim()) {
+                    showNotification('剪贴板内容为空，请先复制成绩数据 (优、良、及格、待及格)', 'warning');
+                    return;
+                }
                 handlePastedText(text);
             })
             .catch(err => {
                 console.error('无法读取剪贴板内容:', err);
-                showNotification('无法直接读取剪贴板，请手动粘贴(Ctrl+V)或点击右键选择"粘贴"', 'warning');
+                showNotification('您的浏览器不支持自动读取剪贴板，请手动粘贴(Ctrl+V)或点击右键选择"粘贴"', 'warning');
                 promptForManualPaste();
             });
     } else {
@@ -1520,11 +1530,12 @@ function promptForManualPaste() {
     textarea.style.top = '50%';
     textarea.style.left = '50%';
     textarea.style.transform = 'translate(-50%, -50%)';
-    textarea.style.width = '300px';
-    textarea.style.height = '150px';
+    textarea.style.width = '400px';
+    textarea.style.height = '200px';
     textarea.style.zIndex = '9999';
     textarea.style.border = '2px solid #007bff';
     textarea.style.padding = '10px';
+    textarea.style.fontSize = '14px';
     textarea.placeholder = '请在此处粘贴复制的数据 (Ctrl+V)，然后点击外部区域';
     
     // 创建遮罩层
@@ -1686,6 +1697,13 @@ function processPastedText(text) {
         console.log(`找到 ${gradeSelects.length} 个选择框用于粘贴`);
     }
     
+    // 保存粘贴前的状态，用于撤销
+    lastPasteState = {
+        subject: selectedSubject,
+        column: selectedColumn,
+        changes: []
+    };
+    
     // 验证有效的等级
     const validGrades = ['优', '良', '及格', '待及格', '/'];
     
@@ -1699,6 +1717,10 @@ function processPastedText(text) {
         const value = lines[i].trim();
         const select = gradeSelects[i];
         const studentId = select.getAttribute('data-student-id');
+        
+        // 保存原始值
+        const oldValue = select.value;
+        const oldClassName = select.className;
         
         // 获取班级ID
         const row = select.closest('tr');
@@ -1725,6 +1747,14 @@ function processPastedText(text) {
         
         // 检查是否是有效的等级
         if (validGrades.includes(gradeValue)) {
+            // 保存到撤销状态
+            lastPasteState.changes.push({
+                select: select,
+                oldValue: oldValue,
+                oldClassName: oldClassName,
+                newValue: gradeValue
+            });
+            
             // 更新选择框
             select.value = gradeValue;
             
@@ -1756,12 +1786,83 @@ function processPastedText(text) {
     
     // 如果没有有效更新，显示错误
     if (validUpdatesCount === 0) {
-        showNotification(`无效的数据格式，请确保复制的内容包含有效的成绩等级（优、良、差或相应的数字分数）`, 'error');
+        lastPasteState = null; // 清除撤销状态
+        showNotification(`无效的数据格式，请确保复制的内容包含有效的成绩等级（优、良、及格、待及格、/）`, 'error');
         return;
+    }
+    
+    // 显示撤销按钮
+    const undoPasteBtn = document.getElementById('undoPasteBtn');
+    if (undoPasteBtn) {
+        undoPasteBtn.style.display = 'inline-block';
     }
     
     // 保存更新的成绩
     saveUpdatedGrades(updatedGrades, validUpdatesCount, errorsCount);
+}
+
+// 撤销上次粘贴操作
+function undoLastPaste() {
+    if (!lastPasteState || !lastPasteState.changes || lastPasteState.changes.length === 0) {
+        showNotification('没有可撤销的粘贴操作', 'warning');
+        return;
+    }
+    
+    console.log('撤销粘贴操作，恢复 ' + lastPasteState.changes.length + ' 个成绩');
+    
+    // 恢复所有更改
+    const updatedGrades = {};
+    lastPasteState.changes.forEach(change => {
+        // 恢复选择框的值和样式
+        change.select.value = change.oldValue;
+        change.select.className = change.oldClassName;
+        
+        // 记录要保存到数据库的数据
+        const studentId = change.select.getAttribute('data-student-id');
+        const row = change.select.closest('tr');
+        const classId = row ? row.getAttribute('data-class-id') : null;
+        
+        if (!updatedGrades[studentId]) {
+            updatedGrades[studentId] = { class_id: classId };
+        }
+        updatedGrades[studentId][lastPasteState.subject] = change.oldValue;
+    });
+    
+    // 保存到数据库
+    const promises = [];
+    for (const studentId in updatedGrades) {
+        const gradeData = {
+            semester: currentSemester,
+            ...updatedGrades[studentId]
+        };
+        
+        const promise = fetch(`/api/grades/${studentId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(gradeData)
+        })
+        .then(response => response.json());
+        
+        promises.push(promise);
+    }
+    
+    Promise.all(promises).then(() => {
+        showNotification(`已撤销粘贴操作，恢复了 ${lastPasteState.changes.length} 个成绩`, 'success');
+        
+        // 清除撤销状态
+        lastPasteState = null;
+        
+        // 隐藏撤销按钮
+        const undoPasteBtn = document.getElementById('undoPasteBtn');
+        if (undoPasteBtn) {
+            undoPasteBtn.style.display = 'none';
+        }
+    }).catch(err => {
+        console.error('撤销失败:', err);
+        showNotification('撤销失败，请刷新页面重试', 'error');
+    });
 }
 
 // 保存更新的成绩数据
