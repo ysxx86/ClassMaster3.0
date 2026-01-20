@@ -89,6 +89,12 @@ def can_access_students(user, target_class_id=None):
             return True  # 可以访问学生管理页面
         return str(user.class_id) == str(target_class_id)
     
+    # 副班主任可以访问自己班级的学生
+    if is_vice_teacher(user):
+        if target_class_id is None:
+            return True  # 可以访问学生管理页面
+        return str(user.class_id) == str(target_class_id)
+    
     return False
 
 def can_edit_grade(user, target_class_id, target_subject):
@@ -262,7 +268,11 @@ def get_accessible_classes(user):
     if is_head_teacher(user) and user.class_id:
         return [user.class_id]
     
-    # 其他角色（科任老师、副班主任、行政、校级领导）从 teacher_classes 表获取任教的班级
+    # 副班主任只能访问自己的班级
+    if is_vice_teacher(user) and user.class_id:
+        return [user.class_id]
+    
+    # 其他角色（科任老师、行政、校级领导）从 teacher_classes 表获取任教的班级
     return get_teaching_classes(user.id)
 
 def get_teaching_classes(user_id):
