@@ -13,17 +13,17 @@ def check_and_install(package, version=None):
     
     try:
         __import__(package)
-        print(f"✓ {package} 已安装")
+        print(f"[OK] {package} 已安装")
         return True
     except ImportError:
-        print(f"! 未找到 {package} 模块，正在安装...")
+        print(f"[!] 未找到 {package} 模块，正在安装...")
         try:
             subprocess.check_call([sys.executable, "-m", "pip", "install", 
                                   package_with_version, "--no-cache-dir"])
-            print(f"✓ {package} 安装成功")
+            print(f"[OK] {package} 安装成功")
             return True
         except Exception as e:
-            print(f"! {package} 安装失败: {str(e)}")
+            print(f"[!] {package} 安装失败: {str(e)}")
             print(f"  请手动运行: pip install {package_with_version}")
             return False
 
@@ -56,17 +56,17 @@ def check_optional_dependencies():
     # 检查requests (AI评语功能需要)
     try:
         import requests
-        print("✓ requests 已安装")
+        print("[OK] requests 已安装")
     except ImportError:
-        print("! 未找到 requests 模块，评语AI生成功能将不可用")
+        print("[!] 未找到 requests 模块，评语AI生成功能将不可用")
         print("  如需使用AI生成评语，请运行: pip install requests==2.31.0")
 
     # 检查reportlab (PDF导出功能需要)  
     try:
         import reportlab
-        print("✓ reportlab 已安装")
+        print("[OK] reportlab 已安装")
     except ImportError:
-        print("! 未找到 reportlab 模块，PDF导出功能将不可用")
+        print("[!] 未找到 reportlab 模块，PDF导出功能将不可用")
         print("  如需使用PDF导出功能，请运行: pip install reportlab==4.1.0")
 
 if __name__ == "__main__":
