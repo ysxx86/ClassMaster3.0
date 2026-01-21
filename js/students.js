@@ -1,14 +1,30 @@
 // @charset UTF-8
+// 页面加载完成后初始化（合并所有初始化逻辑到一个地方）
 document.addEventListener('DOMContentLoaded', function() {
     console.log("页面加载完成，初始化学生管理功能...");
+    
+    // 加载当前用户信息
+    fetch('/api/current-user')
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'ok' && data.user) {
+                // 保存当前用户的班级ID
+                currentUserClassId = data.user.class_id;
+                console.log('当前用户班级ID:', currentUserClassId);
+            }
+            // 加载学生列表
+            loadStudentsFromServer();
+        })
+        .catch(error => {
+            console.error('获取当前用户信息出错:', error);
+            // 仍然尝试加载学生列表
+            loadStudentsFromServer();
+        });
     
     // 检查当前页面是否包含学生管理相关元素
     if (document.getElementById('studentCards') || 
         document.getElementById('importModal') || 
         document.getElementById('addStudentForm')) {
-        
-        // 初始化学生列表 - 从服务器加载数据而不是从本地存储
-        loadStudentsFromServer();
         
         // 初始化导入功能
         initImportStudents();
@@ -59,13 +75,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
         
-    // 绑定下载模板按钮事件
-    const downloadTemplateBtn = document.getElementById('downloadTemplateBtn');
-    if (downloadTemplateBtn) {
-        downloadTemplateBtn.addEventListener('click', function() {
-            downloadTemplate();
-        });
-    }
+    // 绑定下载模板按钮事件（已在其他地方绑定，这里移除重复）
+    // const downloadTemplateBtn = document.getElementById('downloadTemplateBtn');
+    // if (downloadTemplateBtn) {
+    //     downloadTemplateBtn.addEventListener('click', function() {
+    //         downloadTemplate();
+    //     });
+    // }
         
     // 绑定清除学生名单确认按钮事件
     const confirmClearStudents = document.getElementById('confirmClearStudents');
@@ -200,13 +216,13 @@ function initEventListeners() {
         });
     }
     
-    // 绑定下载模板按钮事件
-    const templateBtn = document.getElementById('downloadTemplateBtn');
-    if (templateBtn) {
-        templateBtn.addEventListener('click', function() {
-            downloadTemplate();
-        });
-    }
+    // 绑定下载模板按钮事件（已在其他地方绑定，这里移除重复）
+    // const templateBtn = document.getElementById('downloadTemplateBtn');
+    // if (templateBtn) {
+    //     templateBtn.addEventListener('click', function() {
+    //         downloadTemplate();
+    //     });
+    // }
     
     // 绑定导入学生按钮事件
     const importFileInput = document.getElementById('importFile');
@@ -238,29 +254,28 @@ function initEventListeners() {
     console.log('事件监听器初始化完成');
 }
 
-// 页面加载完成后初始化
-document.addEventListener('DOMContentLoaded', function() {
-    // 加载当前用户信息
-    fetch('/api/current-user')
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'ok' && data.user) {
-                // 保存当前用户的班级ID
-                currentUserClassId = data.user.class_id;
-                console.log('当前用户班级ID:', currentUserClassId);
-            }
-            // 加载学生列表
-            loadStudentsFromServer();
-        })
-        .catch(error => {
-            console.error('获取当前用户信息出错:', error);
-            // 仍然尝试加载学生列表
-            loadStudentsFromServer();
-        });
-
-    // 设置事件监听器和初始化
-    initEventListeners();
-});
+// 注释掉重复的DOMContentLoaded（已合并到文件开头）
+// document.addEventListener('DOMContentLoaded', function() {
+//     // 加载当前用户信息
+//     fetch('/api/current-user')
+//         .then(response => response.json())
+//         .then(data => {
+//             if (data.status === 'ok' && data.user) {
+//                 // 保存当前用户的班级ID
+//                 currentUserClassId = data.user.class_id;
+//                 console.log('当前用户班级ID:', currentUserClassId);
+//             }
+//             // 加载学生列表
+//             loadStudentsFromServer();
+//         })
+//         .catch(error => {
+//             console.error('获取当前用户信息出错:', error);
+//             // 仍然尝试加载学生列表
+//             loadStudentsFromServer();
+//         });
+//     // 设置事件监听器和初始化
+//     initEventListeners();
+// });
 
 // 添加模态框关闭事件监听和保存按钮重置函数
 function setupStudentModalEvents() {
@@ -1759,47 +1774,11 @@ function importStudents() {
 function downloadTemplate() {
     console.log("开始下载Excel模板...");
     
-    // 先检查服务器连接
-    checkServerConnection().then(connected => {
-        if (!connected) {
-            return;
-        }
-        
-        // 发送请求到服务器获取模板
-        fetch('http://localhost:8080/api/template', {
-            method: 'GET',
-            mode: 'cors'
-        })
-        .then(response => {
-            console.log("模板请求响应状态码:", response.status);
-            if (!response.ok) {
-                throw new Error(`服务器响应错误: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log("模板请求返回数据:", data);
-            
-            if (data.error) {
-                showNotification(data.error, 'error');
-                return;
-            }
-            
-            // 创建下载链接
-            const a = document.createElement('a');
-            a.href = 'http://localhost:8080' + data.template_url;
-            a.download = 'student_template.xlsx';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            
-            showNotification('模板下载成功', 'success');
-        })
-        .catch(error => {
-            console.error('下载模板时出错:', error);
-            showNotification('下载模板时出错，请确保后端服务器已启动并且可以访问', 'error');
-        });
-    });
+    // 直接使用window.location.href下载，避免两次弹窗
+    window.location.href = '/api/template/download';
+    
+    // 显示提示
+    showNotification('正在下载模板...', 'success');
 }
 
 // 筛选学生
