@@ -352,33 +352,16 @@ def delete_student_grade(student_id):
         logger.error(f'删除学生成绩时出错: {str(e)}')
         return jsonify({'status': 'error', 'message': f'删除学生成绩失败: {str(e)}'})
 
-# 预览成绩导入
+# 预览成绩导入 - 使用智能导入器
 @grades_bp.route('/api/grades/preview-import', methods=['POST'])
 @login_required
 def preview_grades_import():
     try:
+        from utils.smart_grade_importer import SmartGradeImporter
+        
         semester = request.form.get('semester', '上学期')
-        class_id = request.form.get('class_id')
         
-        # 权限控制：
-        # - 超级管理员：需要提供班级ID
-        # - 正班主任：自动使用自己的班级ID
-        # - 其他角色：需要提供班级ID
-        from utils.permission_checker import is_head_teacher
-        
-        if not current_user.is_admin:
-            if is_head_teacher(current_user):
-                # 正班主任自动使用自己的班级ID
-                if not current_user.class_id:
-                    return jsonify({'status': 'error', 'message': '您尚未被分配班级，无法导入成绩'}), 403
-                class_id = current_user.class_id
-            elif not class_id:
-                # 其他角色需要提供班级ID
-                return jsonify({'status': 'error', 'message': '缺少班级ID参数'}), 400
-        elif not class_id:
-            return jsonify({'status': 'error', 'message': '管理员需提供班级ID参数'}), 400
-            
-        logger.info(f"收到预览成绩导入请求，学期: {semester}, 班级: {class_id}")
+        logger.info(f"收到预览成绩导入请求，学期: {semester}, 用户: {current_user.username}")
         
         if 'file' not in request.files:
             logger.error("未提供文件")
@@ -414,9 +397,10 @@ def preview_grades_import():
         
         logger.info(f"文件大小: {os.path.getsize(file_path)} 字节")
         
-        # 调用预览功能
-        logger.info("开始预览成绩导入")
-        result = grades_manager.preview_grades_from_excel(file_path, semester, class_id)
+        # 使用智能导入器预览
+        logger.info("开始智能预览成绩导入")
+        importer = SmartGradeImporter()
+        result = importer.preview_import(file_path, current_user, semester)
         
         if result['status'] == 'ok':
             logger.info(f"成功预览成绩: {result['message']}")
@@ -424,60 +408,67 @@ def preview_grades_import():
         else:
             logger.error(f"预览成绩失败: {result['message']}")
             return jsonify(result), 400
-    except Exception as e:
-        logger.error(f"出错: {str(e)}")
-        return jsonify({"status": "error", "message": f"操作失败: {str(e)}"}), 500
+            
     except Exception as e:
         logger.error(f'预览成绩导入时出错: {str(e)}')
         logger.error(traceback.format_exc())
-    return jsonify({
-                    'status': 'error', 
+        return jsonify({
+            'status': 'error', 
             'message': f'预览成绩导入失败: {str(e)}'
         }), 500
 
-# 确认导入成绩
+# 确认导入成绩 - 使用智能导入器
 @grades_bp.route('/api/grades/confirm-import', methods=['POST'])
 @login_required
 def confirm_grades_import():
     try:
+        from utils.smart_grade_importer import SmartGradeImporter
+        
         data = request.json
         logger.info(f"收到确认导入成绩请求")
+        logger.info(f"请求数据类型: {type(data)}")
         
-        if not data or 'file_path' not in data:
-            logger.error("请求缺少文件路径")
-            return jsonify({'status': 'error', 'message': '缺少文件路径参数'}), 400
+        if not data:
+            logger.error("请求数据为空")
+            return jsonify({'status': 'error', 'message': '请求数据为空'}), 400
         
-        file_path = data.get('file_path')
-        semester = data.get('semester', '上学期')
-        class_id = data.get('class_id')
+        logger.info(f"请求数据键: {list(data.keys())}")
         
-        # 权限控制：
-        # - 超级管理员：需要提供班级ID
-        # - 正班主任：自动使用自己的班级ID
-        # - 其他角色：需要提供班级ID
-        from utils.permission_checker import is_head_teacher
+        # 从预览结果中获取数据
+        if 'preview_result' in data:
+            preview_result = data['preview_result']
+            logger.info(f"从preview_result获取数据")
+            logger.info(f"preview_result类型: {type(preview_result)}")
+            logger.info(f"preview_result键: {list(preview_result.keys()) if isinstance(preview_result, dict) else 'not a dict'}")
+        else:
+            logger.error("未找到preview_result键")
+            logger.info(f"可用的键: {list(data.keys())}")
+            return jsonify({'status': 'error', 'message': '缺少预览结果数据'}), 400
         
-        if not current_user.is_admin:
-            if is_head_teacher(current_user):
-                # 正班主任自动使用自己的班级ID
-                if not current_user.class_id:
-                    return jsonify({'status': 'error', 'message': '您尚未被分配班级，无法导入成绩'}), 403
-                class_id = current_user.class_id
-            elif not class_id:
-                # 其他角色需要提供班级ID
-                return jsonify({'status': 'error', 'message': '缺少班级ID参数'}), 400
-        elif not class_id:
-            return jsonify({'status': 'error', 'message': '管理员需提供班级ID参数'}), 400
+        # 检查必要字段
+        if 'status' not in preview_result:
+            logger.error("preview_result中缺少status字段")
+            return jsonify({'status': 'error', 'message': '预览结果格式错误：缺少status字段'}), 400
         
-        if not file_path:
-            return jsonify({'status': 'error', 'message': '文件路径不能为空'}), 400
-            
-        if not os.path.exists(file_path):
-            return jsonify({'status': 'error', 'message': '文件不存在，可能已被删除'}), 400
+        if preview_result['status'] != 'ok':
+            logger.error(f"预览状态不是ok: {preview_result['status']}")
+            return jsonify({'status': 'error', 'message': '预览数据无效'}), 400
         
-        # 导入成绩
-        logger.info(f"开始导入成绩，文件路径: {file_path}, 学期: {semester}, 班级: {class_id}")
-        success, message = grades_manager.import_grades_from_excel(file_path, semester, class_id)
+        # 检查数据字段（兼容两种格式）
+        has_preview_data = 'preview_data' in preview_result
+        has_grades = 'grades' in preview_result
+        
+        logger.info(f"has_preview_data: {has_preview_data}")
+        logger.info(f"has_grades: {has_grades}")
+        
+        if not has_preview_data and not has_grades:
+            logger.error("preview_result中既没有preview_data也没有grades字段")
+            return jsonify({'status': 'error', 'message': '预览结果格式错误：缺少数据字段'}), 400
+        
+        # 执行导入
+        logger.info("开始确认导入成绩")
+        importer = SmartGradeImporter()
+        success, message = importer.confirm_import(preview_result)
         
         if success:
             logger.info(f"成功导入成绩: {message}")
@@ -485,9 +476,7 @@ def confirm_grades_import():
         else:
             logger.error(f"导入成绩失败: {message}")
             return jsonify({'status': 'error', 'message': message}), 400
-    except Exception as e:
-        logger.error(f"出错: {str(e)}")
-        return jsonify({"status": "error", "message": f"操作失败: {str(e)}"}), 500
+            
     except Exception as e:
         logger.error(f'确认导入成绩时出错: {str(e)}')
         logger.error(traceback.format_exc())
