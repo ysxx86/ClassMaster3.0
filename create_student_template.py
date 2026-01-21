@@ -90,72 +90,64 @@ def create_custom_template(class_id):
         bottom=Side(style='thin')
     )
     
-    # 添加班级信息行
-    ws.merge_cells('A1:H1')
-    class_cell = ws.cell(row=1, column=1, value=f"班级: {class_name} - 学生信息导入模板")
-    class_cell.font = class_font
-    class_cell.fill = class_fill
-    class_cell.alignment = class_alignment
+    # 设置标题行（与通用模板保持一致，从第1行开始）
+    headers = ['学号', '姓名', '性别', '班级', '身高', '体重', 
+              '胸围', '肺活量', '龋齿', '视力左', '视力右', '体测情况',
+              '语文', '数学', '英语', '劳动', '体育', '音乐', '美术', 
+              '科学', '综合', '信息', '书法', '心理',
+              '品质', '学习', '健康', '审美', '实践', '生活',
+              '评语']
     
-    # 设置标题行
-    headers = ['学号', '姓名', '性别', '班级', '身高(cm)', '体重(kg)', '胸围(cm)', 
-               '肺活量(ml)', '龋齿', '视力左', '视力右', '体测情况']
+    # 创建红色字体样式（用于必填字段）
+    red_font = Font(bold=True, color="FF0000")
     
-    # 写入表头
+    # 写入表头（第1行）
     for i, header in enumerate(headers, 1):
-        cell = ws.cell(row=2, column=i, value=header)
-        cell.font = header_font
+        cell = ws.cell(row=1, column=i, value=header)
+        # 姓名和班级标红
+        if header in ['姓名', '班级']:
+            cell.font = red_font
+        else:
+            cell.font = header_font
         cell.fill = header_fill
         cell.alignment = header_alignment
         cell.border = thin_border
-        ws.column_dimensions[get_column_letter(i)].width = 15
+        # 为评语列设置更宽的列宽
+        if header == '评语':
+            ws.column_dimensions[get_column_letter(i)].width = 40
+        else:
+            ws.column_dimensions[get_column_letter(i)].width = 15
     
-    # 锁定班级列
-    # 添加示例数据行
-    for row in range(3, 8):  # 添加5行示例
-        # 学号格式示例: 001, 002...
-        ws.cell(row=row, column=1, value=f"{row-2:03d}")
-        
-        # 姓名示例
-        ws.cell(row=row, column=2, value=f"学生{row-2}")
-        
-        # 性别示例（交替男女）
-        ws.cell(row=row, column=3, value="男" if row % 2 == 0 else "女")
-        
-        # 班级 - 预填当前班级且设为浅灰色背景
-        class_cell = ws.cell(row=row, column=4, value=class_name)
-        class_cell.fill = PatternFill(start_color="DDDDDD", end_color="DDDDDD", fill_type="solid")
-        
-        # 其他字段示例值
-        ws.cell(row=row, column=5, value="135")  # 身高
-        ws.cell(row=row, column=6, value="32")   # 体重
-        ws.cell(row=row, column=7, value="65")   # 胸围
-        ws.cell(row=row, column=8, value="1500") # 肺活量
-        ws.cell(row=row, column=9, value="0")    # 龋齿
-        ws.cell(row=row, column=10, value="5.0") # 视力左
-        ws.cell(row=row, column=11, value="5.0") # 视力右
-        ws.cell(row=row, column=12, value="合格") # 体测情况
-    
-    # 添加说明信息
-    ws.merge_cells('A10:H10')
-    note_title = ws.cell(row=10, column=1, value="注意事项:")
-    note_title.font = Font(bold=True)
-    
-    notes = [
-        "1. 请按照示例格式填写学生信息",
-        "2. 性别请填写'男'或'女'",
-        f"3. 班级字段已预设为 '{class_name}'，请勿修改",
-        "4. 视力格式: 5.0 或 4.8 等",
-        "5. 体测情况建议填写: 优秀、良好、合格、不合格",
-        "6. 导入时班级必须与当前所管理班级一致，否则无法导入"
+    # 添加示例数据行（从第2行开始）
+    example_rows = [
+        ['1', '张三', '男', class_name, '135', '32', '65', '1500', '0', '5.0', '5.0', '健康',
+         '优', '良', '优', '良', '优', '良', '优', '良', '优', '良', '优', '良',
+         '25', '18', '18', '8', '8', '8', '该学生表现优秀'],
+        ['2', '李四', '女', class_name, '130', '28', '62', '1400', '0', '5.0', '4.8', '健康',
+         '良', '优', '良', '优', '良', '优', '良', '优', '良', '优', '良', '优',
+         '23', '17', '17', '7', '7', '7', '该学生学习认真'],
     ]
     
-    for i, note in enumerate(notes, 11):
-        ws.merge_cells(f'A{i}:H{i}')
-        note_cell = ws.cell(row=i, column=1, value=note)
-        # 如果是关于班级的注意事项，用红色字体突出显示
-        if i == 13:
-            note_cell.font = Font(color="FF0000", bold=True)
+    for row_idx, row_data in enumerate(example_rows, 2):
+        for col_idx, value in enumerate(row_data, 1):
+            cell = ws.cell(row=row_idx, column=col_idx, value=value)
+            # 班级列设为浅灰色背景
+            if col_idx == 4:
+                cell.fill = PatternFill(start_color="DDDDDD", end_color="DDDDDD", fill_type="solid")
+    
+    # 添加说明信息（从第5行开始）
+    ws.cell(row=5, column=1, value="说明事项：")
+    ws.cell(row=6, column=1, value="1. 带红色标注的字段为必填项（姓名、班级）")
+    ws.cell(row=7, column=1, value='2. 学号从1开始递增，如：1, 2, 3...（不是01, 001）')
+    ws.cell(row=8, column=1, value='3. 性别填写"男"或"女"')
+    ws.cell(row=9, column=1, value=f'4. 班级格式：二年级4班、204、2024级4班等')
+    ws.cell(row=10, column=1, value='5. 身高、体重等数值字段只填数字，不要带单位')
+    ws.cell(row=11, column=1, value='6. 学科成绩填写：优、良、及格、待及格')
+    ws.cell(row=12, column=1, value='7. 德育分数：品质(0~30)、学习(0~20)、健康(0~20)、审美(0~10)、实践(0~10)、生活(0~10)')
+    
+    # 班级预填提示（红色字体）
+    class_note = ws.cell(row=13, column=1, value=f'★ 班级字段已预设为 "{class_name}"，导入时班级必须与当前所管理班级一致')
+    class_note.font = Font(color="FF0000", bold=True)
     
     # 保存工作簿
     wb.save(template_path)

@@ -204,16 +204,25 @@ def create_student_template():
     ws = wb.active
     ws.title = "学生信息"
     
-    # 设置标题行 - 与导出功能保持一致的完整30个字段
-    headers = ['学号', '姓名', '性别', '班级', '身高(cm)', '体重(kg)', 
-              '胸围(cm)', '肺活量(ml)', '龋齿(个)', '视力左', '视力右', '体测情况',
+    # 设置标题行
+    headers = ['学号', '姓名', '性别', '班级', '身高', '体重', 
+              '胸围', '肺活量', '龋齿', '视力左', '视力右', '体测情况',
               '语文', '数学', '英语', '劳动', '体育', '音乐', '美术', 
               '科学', '综合', '信息', '书法', '心理',
               '品质', '学习', '健康', '审美', '实践', '生活',
               '评语']
+    
+    # 创建红色字体样式（用于必填字段）
+    red_font = Font(bold=True, color="FF0000")
+    normal_font = Font(bold=True)
+    
     for i, header in enumerate(headers, 1):
         cell = ws.cell(row=1, column=i, value=header)
-        cell.font = Font(bold=True)
+        # 姓名和班级标红
+        if header in ['姓名', '班级']:
+            cell.font = red_font
+        else:
+            cell.font = normal_font
         cell.alignment = Alignment(horizontal='center')
         # 为评语列设置更宽的列宽
         if header == '评语':
@@ -221,30 +230,32 @@ def create_student_template():
         else:
             ws.column_dimensions[get_column_letter(i)].width = 15
     
-    # 添加示例数据 - 包含所有31个字段的示例
-    example_data = [
-        '1', '张三', '男', '三年级一班', '135', '32', '65', '1500', '0', '5.0', '5.0', '健康',  # 基础信息
-        '优秀', '良好', '优秀', '良好', '优秀', '良好', '优秀', '良好', '优秀', '良好', '优秀', '良好',  # 学科成绩
-        '25', '18', '18', '8', '8', '8',  # 德育维度
-        '该学生表现优秀，德智体美劳全面发展。'  # 评语
+    # 添加示例数据（学号从1开始，不带前导0）
+    example_rows = [
+        ['1', '张三', '男', '三年级1班', '135', '32', '65', '1500', '0', '5.0', '5.0', '健康',
+         '优', '良', '优', '良', '优', '良', '优', '良', '优', '良', '优', '良',
+         '25', '18', '18', '8', '8', '8', '该学生表现优秀'],
+        ['2', '李四', '女', '三年级1班', '130', '28', '62', '1400', '0', '5.0', '4.8', '健康',
+         '良', '优', '良', '优', '良', '优', '良', '优', '良', '优', '良', '优',
+         '23', '17', '17', '7', '7', '7', '该学生学习认真'],
     ]
-    for i, value in enumerate(example_data, 1):
-        ws.cell(row=2, column=i, value=value)
+    
+    for row_idx, row_data in enumerate(example_rows, 2):
+        for col_idx, value in enumerate(row_data, 1):
+            ws.cell(row=row_idx, column=col_idx, value=value)
     
     # 添加说明文字
-    ws.cell(row=4, column=1, value="说明事项：")
-    ws.cell(row=5, column=1, value="1. 请按照示例格式填写学生信息")
-    ws.cell(row=6, column=1, value='2. 性别请填写"男"或"女"')
-    ws.cell(row=7, column=1, value="3. 班级格式: 三年级一班")
-    ws.cell(row=8, column=1, value="4. 视力格式: 5.0 或 4.8 等")
-    ws.cell(row=9, column=1, value="5. 学科成绩请填写: 优秀、良好、一般、待改进 中的一个")
-    ws.cell(row=10, column=1, value="6. 体测情况请填写: 健康、肥胖、营养不良 中的一个")
-    ws.cell(row=11, column=1, value="7. 德育维度分数: 品质(0-30)、学习(0-20)、健康(0-20)、审美(0-10)、实践(0-10)、生活(0-10)")
-    ws.cell(row=12, column=1, value="8. 评语不能超过260个字")
-    ws.cell(row=13, column=1, value="9. 班主任导入学生数据时，班级必须与当前所管理的班级一致，否则无法导入")
+    ws.cell(row=5, column=1, value="说明事项：")
+    ws.cell(row=6, column=1, value="1. 带★号的字段为必填项（姓名、班级）")
+    ws.cell(row=7, column=1, value='2. 学号从1开始递增，如：1, 2, 3...（不是01, 001）')
+    ws.cell(row=8, column=1, value='3. 性别填写"男"或"女"')
+    ws.cell(row=9, column=1, value="4. 班级格式：二年级4班、204、2024级4班等")
+    ws.cell(row=10, column=1, value="5. 身高、体重等数值字段只填数字，不要带单位")
+    ws.cell(row=11, column=1, value="6. 学科成绩填写：优、良、及格、待及格")
+    ws.cell(row=12, column=1, value="7. 德育分数：品质(0-30)、学习(0-20)、健康(0-20)、审美(0-10)、实践(0-10)、生活(0-10)")
     
     # 合并说明文字的单元格
-    for i in range(4, 14):
+    for i in range(5, 13):
         ws.merge_cells(start_row=i, start_column=1, end_row=i, end_column=8)
     
     wb.save(template_path)
@@ -1498,52 +1509,65 @@ def confirm_import():
         logger.error(traceback.format_exc())
         return jsonify({'error': f'确认导入失败: {str(e)}'}), 500
 
-# 下载模板API
-@students_bp.route('/api/template', methods=['GET'])
+# 下载模板API - 直接返回文件
+@students_bp.route('/api/template/download', methods=['GET'])
+@login_required
 def download_template():
-    # 检查是否是班主任
-    is_teacher = not current_user.is_admin and current_user.class_id
-    
-    if is_teacher:
-        # 为班主任生成班级特定的模板
-        from create_student_template import create_custom_template
+    try:
+        # 检查是否是班主任
+        is_teacher = not current_user.is_admin and current_user.class_id
         
-        try:
-            # 获取班级ID
-            class_id = current_user.class_id
+        if is_teacher:
+            # 为班主任生成班级特定的模板
+            from create_student_template import create_custom_template
             
-            # 创建自定义模板
-            template_path = create_custom_template(class_id)
-            
-            if template_path:
-                # 获取文件名
-                template_filename = os.path.basename(template_path)
-                return jsonify({
-                    'status': 'ok',
-                    'message': '已生成您班级专用的导入模板',
-                    'template_url': f'/download/template/{template_filename}'
-                })
-            else:
-                # 如果自定义模板创建失败，回退到标准模板
-                logger.warning(f"班主任 {current_user.username} 的自定义模板创建失败，使用标准模板")
-        except Exception as e:
-            logger.error(f"创建自定义模板时出错: {str(e)}")
-    
-    # 通用模板（管理员或自定义模板失败的情况）
-    template_path = os.path.join(TEMPLATE_FOLDER, 'student_template.xlsx')
-    if not os.path.exists(template_path):
-        create_student_template()
-    
-    return jsonify({
-        'status': 'ok',
-        'message': '已生成通用导入模板',
-        'template_url': f'/download/template/student_template.xlsx'
-    })
+            try:
+                # 获取班级ID
+                class_id = current_user.class_id
+                
+                # 创建自定义模板
+                template_path = create_custom_template(class_id)
+                
+                if template_path and os.path.exists(template_path):
+                    # 获取文件名
+                    template_filename = os.path.basename(template_path)
+                    logger.info(f"为班主任 {current_user.username} 生成班级专用模板: {template_filename}")
+                    
+                    return send_from_directory(
+                        TEMPLATE_FOLDER,
+                        template_filename,
+                        as_attachment=True,
+                        download_name=template_filename
+                    )
+                else:
+                    # 如果自定义模板创建失败，回退到标准模板
+                    logger.warning(f"班主任 {current_user.username} 的自定义模板创建失败，使用标准模板")
+            except Exception as e:
+                logger.error(f"创建自定义模板时出错: {str(e)}")
+        
+        # 通用模板（管理员或自定义模板失败的情况）
+        template_path = os.path.join(TEMPLATE_FOLDER, 'student_template.xlsx')
+        if not os.path.exists(template_path):
+            create_student_template()
+        
+        logger.info(f"用户 {current_user.username} 下载通用学生导入模板")
+        
+        return send_from_directory(
+            TEMPLATE_FOLDER,
+            'student_template.xlsx',
+            as_attachment=True,
+            download_name='student_template.xlsx'
+        )
+        
+    except Exception as e:
+        logger.error(f"下载模板失败: {str(e)}")
+        return jsonify({'status': 'error', 'message': f'下载模板失败: {str(e)}'}), 500
 
-# 提供模板下载
+# 提供模板下载（保留旧接口兼容性）
 @students_bp.route('/download/template/<filename>', methods=['GET'])
+@login_required
 def serve_template(filename):
-    return send_from_directory(TEMPLATE_FOLDER, filename)
+    return send_from_directory(TEMPLATE_FOLDER, filename, as_attachment=True)
 
 @students_bp.route('/api/students/<student_id>/update-subject', methods=['POST'])
 @login_required
