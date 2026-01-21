@@ -83,8 +83,13 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
         
-        // 初始化成绩导入功能
-        initGradesImport();
+        // 初始化智能成绩导入功能
+        if (typeof initSmartGradeImport === 'function') {
+            initSmartGradeImport();
+        } else {
+            // 降级到旧版导入
+            initGradesImport();
+        }
         
         // 绑定成绩选择框变化事件 - 使用事件委托
         document.addEventListener('change', function(e) {
