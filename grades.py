@@ -485,6 +485,117 @@ def confirm_grades_import():
             'message': f'确认导入成绩失败: {str(e)}'
         }), 500
 
+@grades_bp.route('/api/grades/export-pdf', methods=['GET'])
+@login_required
+def export_grades_pdf():
+    """导出班级成绩为PDF"""
+    try:
+        from utils.grade_exporter import GradeExporter
+        from utils.permission_checker import is_head_teacher
+        
+        class_id = request.args.get('class_id')
+        semester = request.args.get('semester', '上学期')
+        
+        # 权限控制
+        if not current_user.is_admin:
+            if is_head_teacher(current_user):
+                if not current_user.class_id:
+                    return jsonify({'status': 'error', 'message': '您尚未被分配班级'}), 403
+                class_id = current_user.class_id
+            elif not class_id:
+                return jsonify({'status': 'error', 'message': '缺少班级ID参数'}), 400
+        elif not class_id:
+            return jsonify({'status': 'error', 'message': '请指定班级ID'}), 400
+        
+        logger.info(f"导出成绩PDF - 班级: {class_id}, 学期: {semester}, 用户: {current_user.username}")
+        
+        # 确保导出目录存在
+        export_dir = 'exports'
+        if not os.path.exists(export_dir):
+            os.makedirs(export_dir)
+            logger.info(f"创建导出目录: {export_dir}")
+        
+        # 导出PDF
+        exporter = GradeExporter()
+        pdf_path = exporter.export_class_grades(class_id, semester)
+        
+        if not os.path.exists(pdf_path):
+            raise FileNotFoundError(f"PDF文件生成失败: {pdf_path}")
+        
+        logger.info(f"PDF文件已生成: {pdf_path}, 大小: {os.path.getsize(pdf_path)} 字节")
+        
+        # 返回文件
+        return send_file(
+            pdf_path,
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name=os.path.basename(pdf_path)
+        )
+        
+    except ValueError as e:
+        logger.error(f"导出失败: {str(e)}")
+        return jsonify({'status': 'error', 'message': str(e)}), 400
+    except Exception as e:
+        logger.error(f"导出成绩PDF时出错: {str(e)}")
+        logger.error(traceback.format_exc())
+        return jsonify({'status': 'error', 'message': f'导出失败: {str(e)}'}), 500
+
+
+@grades_bp.route('/api/grades/export-excel', methods=['GET'])
+@login_required
+def export_grades_excel():
+    """导出班级成绩为Excel"""
+    try:
+        from utils.grade_exporter import GradeExporter
+        from utils.permission_checker import is_head_teacher
+        
+        class_id = request.args.get('class_id')
+        semester = request.args.get('semester', '上学期')
+        
+        # 权限控制
+        if not current_user.is_admin:
+            if is_head_teacher(current_user):
+                if not current_user.class_id:
+                    return jsonify({'status': 'error', 'message': '您尚未被分配班级'}), 403
+                class_id = current_user.class_id
+            elif not class_id:
+                return jsonify({'status': 'error', 'message': '缺少班级ID参数'}), 400
+        elif not class_id:
+            return jsonify({'status': 'error', 'message': '请指定班级ID'}), 400
+        
+        logger.info(f"导出成绩Excel - 班级: {class_id}, 学期: {semester}, 用户: {current_user.username}")
+        
+        # 确保导出目录存在
+        export_dir = 'exports'
+        if not os.path.exists(export_dir):
+            os.makedirs(export_dir)
+        
+        # 导出Excel
+        exporter = GradeExporter()
+        excel_path = exporter.export_class_grades_excel(class_id, semester)
+        
+        if not os.path.exists(excel_path):
+            raise FileNotFoundError(f"Excel文件生成失败: {excel_path}")
+        
+        logger.info(f"Excel文件已生成: {excel_path}, 大小: {os.path.getsize(excel_path)} 字节")
+        
+        # 返回文件
+        return send_file(
+            excel_path,
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            as_attachment=True,
+            download_name=os.path.basename(excel_path)
+        )
+        
+    except ValueError as e:
+        logger.error(f"导出失败: {str(e)}")
+        return jsonify({'status': 'error', 'message': str(e)}), 400
+    except Exception as e:
+        logger.error(f"导出成绩Excel时出错: {str(e)}")
+        logger.error(traceback.format_exc())
+        return jsonify({'status': 'error', 'message': f'导出失败: {str(e)}'}), 500
+
+
 # 导入学生成绩
 @grades_bp.route('/api/grades/import', methods=['POST'])
 @login_required

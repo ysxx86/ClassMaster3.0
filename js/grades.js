@@ -1129,10 +1129,123 @@ function initGradesImport() {
 }
 
 // 导出成绩
-function exportGrades() {
-    // 未实现，可以通过前端Excel库如SheetJS实现，
-    // 或者可以添加后端API返回Excel文件
-    showNotification('导出功能尚未实现', 'info');
+async function exportGrades() {
+    try {
+        // 从系统设置获取当前学期
+        const response = await fetch('/api/system-settings');
+        const settings = await response.json();
+        const semester = settings.semester || currentSemester;
+        
+        if (!semester) {
+            showNotification('无法获取当前学期', 'warning');
+            return;
+        }
+        
+        // 获取班级ID
+        let classId = null;
+        if (userPermissions) {
+            if (userPermissions.is_admin) {
+                const firstRow = document.querySelector('tr[data-class-id]');
+                if (firstRow) {
+                    classId = firstRow.getAttribute('data-class-id');
+                }
+            } else if (userPermissions.class_id) {
+                classId = userPermissions.class_id;
+            }
+        }
+        
+        if (!classId) {
+            showNotification('无法确定班级ID，请确保已加载成绩数据', 'warning');
+            return;
+        }
+        
+        // 弹出格式选择对话框
+        const format = await showExportFormatDialog();
+        if (!format) {
+            return; // 用户取消
+        }
+        
+        // 显示加载提示
+        showNotification(`正在生成${format === 'pdf' ? 'PDF' : 'Excel'}，请稍候...`, 'info');
+        
+        // 构建下载URL
+        const endpoint = format === 'pdf' ? 'export-pdf' : 'export-excel';
+        const url = `/api/grades/${endpoint}?class_id=${classId}&semester=${encodeURIComponent(semester)}`;
+        
+        // 直接跳转触发下载
+        window.location.href = url;
+        
+        // 显示成功消息
+        setTimeout(() => {
+            showNotification(`${format === 'pdf' ? 'PDF' : 'Excel'}导出成功！请查看浏览器下载`, 'success');
+        }, 1000);
+        
+    } catch (error) {
+        console.error('导出失败:', error);
+        showNotification('导出失败: ' + error.message, 'error');
+    }
+}
+
+// 显示导出格式选择对话框
+function showExportFormatDialog() {
+    return new Promise((resolve) => {
+        // 创建模态框HTML
+        const modalHtml = `
+            <div class="modal fade" id="exportFormatModal" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">选择导出格式</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="d-grid gap-3">
+                                <button type="button" class="btn btn-outline-primary btn-lg" data-format="excel">
+                                    <i class="bx bxs-file-export"></i> Excel格式
+                                    <small class="d-block text-muted mt-1">可编辑，方便再次导入</small>
+                                </button>
+                                <button type="button" class="btn btn-outline-danger btn-lg" data-format="pdf">
+                                    <i class="bx bxs-file-pdf"></i> PDF格式
+                                    <small class="d-block text-muted mt-1">包含统计分析，适合打印</small>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // 移除旧的模态框（如果存在）
+        const oldModal = document.getElementById('exportFormatModal');
+        if (oldModal) {
+            oldModal.remove();
+        }
+        
+        // 添加到页面
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        
+        // 获取模态框元素
+        const modalElement = document.getElementById('exportFormatModal');
+        const modal = new bootstrap.Modal(modalElement);
+        
+        // 绑定按钮事件
+        modalElement.querySelectorAll('[data-format]').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const format = this.getAttribute('data-format');
+                modal.hide();
+                resolve(format);
+            });
+        });
+        
+        // 处理取消
+        modalElement.addEventListener('hidden.bs.modal', function() {
+            modalElement.remove();
+            resolve(null);
+        }, { once: true });
+        
+        // 显示模态框
+        modal.show();
+    });
 }
 
 // 一键将所有学生的所有科目成绩设为"优"
