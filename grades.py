@@ -111,6 +111,10 @@ def get_all_grades():
                     grades = grades_manager.get_all_grades(semester, cid)
                     logger.info(f"班级 {cid} 返回 {len(grades)} 条成绩记录")
                     
+                    # 打印前几条记录的班级信息
+                    if len(grades) > 0:
+                        logger.info(f"班级 {cid} 的前3条记录: {[{'id': g['student_id'], 'name': g['student_name'], 'class': g['class'], 'class_id': g['class_id']} for g in grades[:3]]}")
+                    
                     if len(grades) == 0:
                         # 班级没有学生，添加一个占位记录
                         try:
