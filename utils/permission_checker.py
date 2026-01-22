@@ -268,11 +268,20 @@ def get_accessible_classes(user):
     if is_head_teacher(user) and user.class_id:
         return [user.class_id]
     
-    # 副班主任只能访问自己的班级
-    if is_vice_teacher(user) and user.class_id:
-        return [user.class_id]
+    # 副班主任：优先返回自己的班级，如果还有任教其他班级，也一并返回
+    if is_vice_teacher(user):
+        accessible = []
+        # 添加自己的班级
+        if user.class_id:
+            accessible.append(user.class_id)
+        # 添加任教的其他班级
+        teaching_classes = get_teaching_classes(user.id)
+        for class_id in teaching_classes:
+            if class_id not in accessible:
+                accessible.append(class_id)
+        return accessible if accessible else []
     
-    # 其他角色（科任老师、行政、校级领导）从 teacher_classes 表获取任教的班级
+    # 其他角色（科任老师、行政、校级领导）从 teaching_assignments 表获取任教的班级
     return get_teaching_classes(user.id)
 
 def get_teaching_classes(user_id):

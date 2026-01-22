@@ -481,13 +481,22 @@ function renderGradesTable(grades) {
     gradesTable.innerHTML = '';
     
     // 分班级渲染学生成绩表
-    console.log('开始渲染成绩表格');
+    console.log('开始渲染成绩表格，总学生数:', grades.length);
+    
+    // 统计每个班级的学生数
+    const classCounts = {};
+    grades.forEach(g => {
+        classCounts[g.class] = (classCounts[g.class] || 0) + 1;
+    });
+    console.log('各班级学生数:', classCounts);
+    
     let currentClass = null;
     
     grades.forEach(studentGrade => {
         // 如果是新班级，添加班级标题行
         if (currentClass !== studentGrade.class) {
             currentClass = studentGrade.class;
+            console.log('添加班级标题行:', currentClass);
             
             const classRow = document.createElement('tr');
             classRow.className = 'table-light';
