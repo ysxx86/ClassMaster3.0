@@ -28,3 +28,6 @@ exports/
 exports/*.pdf
 exports/*.docx
 exports/*.doc
+utils/.DS_Store
+dashboard/.DS_Store
+models/.DS_Store
