@@ -171,11 +171,88 @@ document.addEventListener('DOMContentLoaded', function() {
 // 全局变量，用于跟踪保存状态
 let isSavingStudent = false;
 
-// 初始化学生列表
-function initStudentList() {
-    // 从服务器加载学生数据
-    loadStudentsFromServer();
+// 全局变量，记录当前用户的班级ID
+let currentUserClassId;
+
+// 初始化页面事件监听器
+function initEventListeners() {
+    // 绑定筛选事件
+    const filterInput = document.getElementById('searchStudent');
+    if (filterInput) {
+        filterInput.addEventListener('input', function() {
+            filterStudents(this.value);
+        });
+    }
+    
+    // 绑定添加学生按钮事件
+    const addStudentBtn = document.getElementById('addStudentBtn');
+    if (addStudentBtn) {
+        addStudentBtn.addEventListener('click', function() {
+            addStudent();
+        });
+    }
+    
+    // 绑定下载模板按钮事件
+    const templateBtn = document.getElementById('downloadTemplateBtn');
+    if (templateBtn) {
+        templateBtn.addEventListener('click', function() {
+            downloadTemplate();
+        });
+    }
+    
+    // 绑定导入学生按钮事件
+    const importFileInput = document.getElementById('importFile');
+    if (importFileInput) {
+        importFileInput.addEventListener('change', function(e) {
+            handleFileImport(e);
+        });
+    }
+    
+    // 绑定学生编辑保存按钮事件
+    const saveEditBtn = document.getElementById('saveEditStudentBtn');
+    if (saveEditBtn) {
+        saveEditBtn.addEventListener('click', function() {
+            saveEditedStudent();
+        });
+    }
+    
+    // 绑定评语保存按钮事件
+    const saveCommentBtn = document.getElementById('saveCommentBtn');
+    if (saveCommentBtn) {
+        saveCommentBtn.addEventListener('click', function() {
+            saveComment();
+        });
+    }
+    
+    // 设置导入学生功能
+    initImportStudents();
+    
+    console.log('事件监听器初始化完成');
 }
+
+// 页面加载完成后初始化
+document.addEventListener('DOMContentLoaded', function() {
+    // 加载当前用户信息
+    fetch('/api/current-user')
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'ok' && data.user) {
+                // 保存当前用户的班级ID
+                currentUserClassId = data.user.class_id;
+                console.log('当前用户班级ID:', currentUserClassId);
+            }
+            // 加载学生列表
+            loadStudentsFromServer();
+        })
+        .catch(error => {
+            console.error('获取当前用户信息出错:', error);
+            // 仍然尝试加载学生列表
+            loadStudentsFromServer();
+        });
+
+    // 设置事件监听器和初始化
+    initEventListeners();
+});
 
 // 添加模态框关闭事件监听和保存按钮重置函数
 function setupStudentModalEvents() {
@@ -198,7 +275,7 @@ function setupStudentModalEvents() {
 
 // 重置编辑学生保存按钮状态
 function resetEditStudentSaveButton() {
-    const saveBtn = document.querySelector('#editStudentModal .btn-primary');
+    const saveBtn = document.getElementById('saveEditStudentBtn');
     if (saveBtn) {
         saveBtn.disabled = false;
         saveBtn.innerHTML = '保存';
@@ -221,38 +298,44 @@ function createStudentCard(student) {
         return value !== null && value !== undefined ? value : '-';
     };
     
+    // 定义一个辅助函数来处理文本字段显示
+    const displayTextValue = (value) => {
+        return value && value !== '' ? value : '无';
+    };
+    
     // 卡片内容
     card.innerHTML = `
         <div class="card student-card h-100">
             <div class="card-header p-2">
                 <div class="d-flex justify-content-between align-items-center">
-                    <h6 class="card-title mb-0 student-name">${student.name}</h6>
+                    <h5 class="mb-0">${student.name}</h5>
                     <span class="badge ${student.gender === '男' ? 'bg-primary' : 'bg-danger'}">${student.gender}</span>
                 </div>
             </div>
             <div class="card-body p-2">
-                <p class="card-text small mb-1 student-id"><strong>学号:</strong> ${student.id}</p>
-                <p class="card-text small mb-1"><strong>班级:</strong> ${student.class || '未设置'}</p>
-                <p class="card-text small mb-1"><strong>身高:</strong> ${displayNumericValue(student.height)} cm</p>
-                <p class="card-text small mb-1"><strong>体重:</strong> ${displayNumericValue(student.weight)} kg</p>
-                <p class="card-text small mb-1"><strong>胸围:</strong> ${displayNumericValue(student.chest_circumference)} cm</p>
-                <p class="card-text small mb-1"><strong>肺活量:</strong> ${displayNumericValue(student.vital_capacity)} ml</p>
-                <p class="card-text small mb-1"><strong>龋齿:</strong> ${student.dental_caries || '-'}</p>
-                <p class="card-text small mb-1"><strong>视力:</strong> 左${displayNumericValue(student.vision_left)}/右${displayNumericValue(student.vision_right)}</p>
-                <p class="card-text small mb-1"><strong>体测情况:</strong> ${student.physical_test_status || '-'}</p>
+                <p class="mb-1"><strong>学号:</strong> ${student.id}</p>
+                <p class="mb-1"><strong>班级:</strong> ${student.class || '-'}</p>
+                <p class="mb-1"><strong>身高:</strong> ${displayNumericValue(student.height)} cm</p>
+                <p class="mb-1"><strong>体重:</strong> ${displayNumericValue(student.weight)} kg</p>
+                <p class="mb-1"><strong>胸围:</strong> ${displayNumericValue(student.chest_circumference)} cm</p>
+                <p class="mb-1"><strong>肺活量:</strong> ${displayNumericValue(student.vital_capacity)} ml</p>
+                <p class="mb-1"><strong>视力(左):</strong> ${displayNumericValue(student.vision_left)}</p>
+                <p class="mb-1"><strong>视力(右):</strong> ${displayNumericValue(student.vision_right)}</p>
+                <p class="mb-1"><strong>龋齿:</strong> ${displayTextValue(student.dental_caries)}</p>
+                <p class="mb-1"><strong>体测情况:</strong> ${displayTextValue(student.physical_test_status)}</p>
             </div>
             <div class="card-footer p-2">
                 <div class="d-flex justify-content-between flex-wrap">
-                    <button type="button" class="btn btn-outline-info btn-sm mb-1" onclick="viewStudentDetails('${student.id}')">
+                    <button type="button" class="btn btn-outline-info btn-sm mb-1" onclick="viewStudentDetails('${student.id}', '${student.class_id}')">
                         <i class="bi bi-info-circle"></i> 详情
                     </button>
-                    <button type="button" class="btn btn-outline-success btn-sm mb-1" onclick="openCommentModal('${student.id}')">
+                    <button type="button" class="btn btn-outline-success btn-sm mb-1" onclick="openCommentModal('${student.id}', '${student.class_id}')">
                         <i class="bi bi-chat-text"></i> 评语
                     </button>
-                    <button type="button" class="btn btn-outline-primary btn-sm mb-1" onclick="openEditStudentModal('${student.id}')">
+                    <button type="button" class="btn btn-outline-primary btn-sm mb-1" onclick="openEditStudentModal('${student.id}', '${student.class_id}')">
                         <i class="bi bi-pencil"></i> 编辑
                     </button>
-                    <button type="button" class="btn btn-outline-danger btn-sm mb-1" onclick="deleteStudent('${student.id}')">
+                    <button type="button" class="btn btn-outline-danger btn-sm mb-1" onclick="deleteStudent('${student.id}', '${student.class_id}')">
                         <i class="bi bi-trash"></i> 删除
                     </button>
                 </div>
@@ -264,12 +347,29 @@ function createStudentCard(student) {
 }
 
 // 查看学生详情
-function viewStudentDetails(studentId) {
+function viewStudentDetails(studentId, classId) {
+    // 如果没有提供classId，使用当前用户的班级ID
+    if (!classId && currentUserClassId) {
+        classId = currentUserClassId;
+    }
+    
+    // 如果仍然没有classId，尝试从学生列表中获取
+    if (!classId) {
+        const students = JSON.parse(localStorage.getItem('students') || '[]');
+        const student = students.find(s => s.id === studentId);
+        if (student && student.class_id) {
+            classId = student.class_id;
+        } else {
+            showNotification('无法获取班级ID，无法查看学生详情', 'error');
+            return;
+        }
+    }
+    
     // 显示加载状态
     const loadingToast = showNotification('正在加载学生详细数据...', 'info', false);
     
-    // 从服务器获取学生数据
-    fetch(`/api/students/${studentId}`)
+    // 从服务器获取学生数据，使用新的API路径和参数
+    fetch(`/api/student/${studentId}?class_id=${classId}`)
         .then(response => {
             if (!response.ok) {
                 throw new Error(`服务器响应错误: ${response.status}`);
@@ -282,7 +382,8 @@ function viewStudentDetails(studentId) {
                 return;
             }
             
-            const student = data.student;
+            // 直接使用返回的学生数据对象
+            const student = data;
             if (!student) {
                 showNotification('未找到该学生信息', 'error');
                 return;
@@ -303,7 +404,6 @@ function viewStudentDetails(studentId) {
             
             // 创建或获取详情模态框
             let detailsModal = document.getElementById('studentDetailsModal');
-            
             if (!detailsModal) {
                 // 创建模态框
                 detailsModal = document.createElement('div');
@@ -311,18 +411,17 @@ function viewStudentDetails(studentId) {
                 detailsModal.id = 'studentDetailsModal';
                 detailsModal.setAttribute('tabindex', '-1');
                 detailsModal.setAttribute('aria-labelledby', 'studentDetailsModalLabel');
-                // 不要在HTML中使用aria-hidden，让Bootstrap处理它
-                // detailsModal.setAttribute('aria-hidden', 'true');
+                detailsModal.setAttribute('aria-hidden', 'true');
                 
                 detailsModal.innerHTML = `
                     <div class="modal-dialog modal-lg">
                         <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="studentDetailsModalLabel">学生详细信息</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
+                            <div class="modal-header bg-primary text-white">
+                                <h5 class="modal-title" id="studentDetailsModalLabel">学生详情</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body" id="studentDetailsContent">
-                                <!-- 详细信息将在这里显示 -->
+                                <!-- 学生详情内容将在这里动态生成 -->
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
@@ -332,12 +431,6 @@ function viewStudentDetails(studentId) {
                 `;
                 
                 document.body.appendChild(detailsModal);
-                
-                // 给模态框添加事件监听器，确保在隐藏时正确处理焦点
-                detailsModal.addEventListener('hidden.bs.modal', function () {
-                    // 当模态框隐藏时，将焦点转移到安全的元素
-                    document.body.focus();
-                });
             }
             
             // 填充学生详细信息
@@ -421,6 +514,9 @@ function viewStudentDetails(studentId) {
                 </div>
             `;
             
+            // 保存classId到模态框，供后续操作使用
+            detailsModal.setAttribute('data-class-id', classId);
+            
             // 显示模态框
             const modal = new bootstrap.Modal(detailsModal);
             modal.show();
@@ -435,9 +531,14 @@ function viewStudentDetails(studentId) {
 function generateHealthAnalysis(student) {
     let analysis = '<ul class="list-group list-group-flush">';
     
-    // 身高体重指标
+    // 基本状态
+    analysis += `<li class="list-group-item">
+        <strong>基本状况:</strong> 
+        <span class="text-info">学生 ${student.name}, ${student.gender}, ${student.class || '未知班级'}</span>
+    </li>`;
+    
+    // BMI分析
     if (student.height && student.weight) {
-        // 计算BMI
         const height = parseFloat(student.height) / 100; // 转换为米
         const weight = parseFloat(student.weight);
         const bmi = weight / (height * height);
@@ -446,12 +547,12 @@ function generateHealthAnalysis(student) {
         let bmiClass = '';
         
         if (bmi < 18.5) {
-            bmiStatus = '偏瘦';
+            bmiStatus = '体重过轻';
             bmiClass = 'text-warning';
-        } else if (bmi < 24) {
-            bmiStatus = '正常';
+        } else if (bmi >= 18.5 && bmi < 24) {
+            bmiStatus = '体重正常';
             bmiClass = 'text-success';
-        } else if (bmi < 28) {
+        } else if (bmi >= 24 && bmi < 28) {
             bmiStatus = '超重';
             bmiClass = 'text-warning';
         } else {
@@ -460,29 +561,30 @@ function generateHealthAnalysis(student) {
         }
         
         analysis += `<li class="list-group-item">
-            <strong>BMI指数:</strong> ${bmi.toFixed(2)} 
-            <span class="${bmiClass}">（${bmiStatus}）</span>
+            <strong>BMI值:</strong> 
+            <span class="${bmiClass}">${bmi.toFixed(2)} (${bmiStatus})</span>
         </li>`;
     }
     
-    // 视力评估
+    // 视力分析
     if (student.vision_left || student.vision_right) {
-        const visionLeft = parseFloat(student.vision_left || 0);
-        const visionRight = parseFloat(student.vision_right || 0);
+        const visionLeft = parseFloat(student.vision_left) || 0;
+        const visionRight = parseFloat(student.vision_right) || 0;
+        const avgVision = (visionLeft + visionRight) / (visionLeft && visionRight ? 2 : 1);
         
         let visionStatus = '';
         let visionClass = '';
         
-        // 取较差的一只眼睛作为标准
-        const visionValue = Math.min(visionLeft || 5.0, visionRight || 5.0);
-        
-        if (visionValue >= 5.0) {
-            visionStatus = '正常';
+        if (avgVision >= 5.0) {
+            visionStatus = '视力正常';
             visionClass = 'text-success';
-        } else if (visionValue >= 4.6) {
+        } else if (avgVision >= 4.5) {
+            visionStatus = '视力轻度下降';
+            visionClass = 'text-info';
+        } else if (avgVision >= 4.0) {
             visionStatus = '轻度近视';
             visionClass = 'text-info';
-        } else if (visionValue >= 4.0) {
+        } else if (avgVision >= 3.0) {
             visionStatus = '中度近视';
             visionClass = 'text-warning';
         } else {
@@ -496,13 +598,12 @@ function generateHealthAnalysis(student) {
         </li>`;
     }
     
-    // 肺活量评估
+    // 肺活量分析
     if (student.vital_capacity) {
         const vitalCapacity = parseFloat(student.vital_capacity);
         let vcStatus = '';
         let vcClass = '';
         
-        // 根据性别不同，评估标准不同
         if (student.gender === '男') {
             if (vitalCapacity >= 3000) {
                 vcStatus = '优秀';
@@ -541,11 +642,17 @@ function generateHealthAnalysis(student) {
     
     // 龋齿情况
     if (student.dental_caries) {
-        let dentalClass = student.dental_caries.includes('无') ? 'text-success' : 'text-warning';
+        let dentalClass = student.dental_caries.includes('无') || student.dental_caries === '无' ? 
+                        'text-success' : 'text-warning';
         
         analysis += `<li class="list-group-item">
             <strong>牙齿状况:</strong> 
             <span class="${dentalClass}">${student.dental_caries || '无记录'}</span>
+        </li>`;
+    } else {
+        analysis += `<li class="list-group-item">
+            <strong>牙齿状况:</strong> 
+            <span class="text-success">无龋齿</span>
         </li>`;
     }
     
@@ -561,6 +668,11 @@ function generateHealthAnalysis(student) {
         analysis += `<li class="list-group-item">
             <strong>体测评价:</strong> 
             <span class="${physicalClass}">${student.physical_test_status}</span>
+        </li>`;
+    } else {
+        analysis += `<li class="list-group-item">
+            <strong>体测评价:</strong> 
+            <span class="text-secondary">未记录</span>
         </li>`;
     }
     
@@ -659,7 +771,24 @@ function addStudent() {
 }
 
 // 打开编辑学生模态框
-function openEditStudentModal(studentId) {
+function openEditStudentModal(studentId, classId) {
+    // 如果没有提供classId，使用当前用户的班级ID
+    if (!classId && currentUserClassId) {
+        classId = currentUserClassId;
+    }
+    
+    // 如果仍然没有classId，尝试从学生列表中获取
+    if (!classId) {
+        const students = JSON.parse(localStorage.getItem('students') || '[]');
+        const student = students.find(s => s.id === studentId);
+        if (student && student.class_id) {
+            classId = student.class_id;
+        } else {
+            showNotification('无法获取班级ID，无法编辑学生', 'error');
+            return;
+        }
+    }
+    
     // 重置保存状态
     isSavingStudent = false;
     
@@ -669,8 +798,8 @@ function openEditStudentModal(studentId) {
     // 显示加载状态
     const loadingToast = showNotification('正在加载学生数据...', 'info', false);
     
-    // 从服务器获取学生数据
-    fetch(`/api/students/${studentId}`)
+    // 从服务器获取学生数据，使用新的API路径和参数
+    fetch(`/api/student/${studentId}?class_id=${classId}`)
         .then(response => {
             if (!response.ok) {
                 throw new Error(`服务器响应错误: ${response.status}`);
@@ -683,7 +812,8 @@ function openEditStudentModal(studentId) {
                 return;
             }
             
-            const student = data.student;
+            // 直接使用返回的学生数据对象
+            const student = data;
             if (!student) {
                 showNotification('未找到该学生信息', 'error');
                 return;
@@ -709,15 +839,24 @@ function openEditStudentModal(studentId) {
             document.getElementById('editStudentHeight').value = student.height || '';
             document.getElementById('editStudentWeight').value = student.weight || '';
             document.getElementById('editStudentChest').value = student.chest_circumference || '';
+            document.getElementById('editStudentVitalCapacity').value = student.vital_capacity || '';
+            document.getElementById('editStudentDentalCaries').value = student.dental_caries || '';
             document.getElementById('editStudentVisionLeft').value = student.vision_left || '';
             document.getElementById('editStudentVisionRight').value = student.vision_right || '';
-            document.getElementById('editStudentVital').value = student.vital_capacity || '';
-            document.getElementById('editStudentDental').value = student.dental_caries || '';
-            document.getElementById('editStudentPhysical').value = student.physical_test_status || '';
+            document.getElementById('editStudentPhysicalStatus').value = student.physical_test_status || '';
             
-            // 显示模态框
-            const modal = new bootstrap.Modal(document.getElementById('editStudentModal'));
-            modal.show();
+            // 保存班级ID到隐藏字段，用于提交表单时使用
+            if (!document.getElementById('editStudentClassId')) {
+                const classIdInput = document.createElement('input');
+                classIdInput.type = 'hidden';
+                classIdInput.id = 'editStudentClassId';
+                document.getElementById('editStudentForm').appendChild(classIdInput);
+            }
+            document.getElementById('editStudentClassId').value = student.class_id || classId;
+            
+            // 显示编辑模态框
+            const editModal = new bootstrap.Modal(document.getElementById('editStudentModal'));
+            editModal.show();
         })
         .catch(error => {
             console.error('获取学生数据出错:', error);
@@ -725,86 +864,83 @@ function openEditStudentModal(studentId) {
         });
 }
 
-// 保存编辑的学生信息
+// 保存编辑后的学生信息
 function saveEditedStudent() {
-    // 如果已经在保存过程中，则不执行新的保存操作
+    // 如果正在保存，不重复提交
     if (isSavingStudent) {
-        showNotification('正在保存，请稍候...', 'info');
         return;
     }
     
-    const id = document.getElementById('editStudentId').value;
-    const name = document.getElementById('editStudentName').value;
-    const gender = document.querySelector('input[name="editGender"]:checked')?.value;
-    const studentClass = document.getElementById('editStudentClass').value;
-    const height = document.getElementById('editStudentHeight').value;
-    const weight = document.getElementById('editStudentWeight').value;
-    const chest = document.getElementById('editStudentChest').value;
-    const visionLeft = document.getElementById('editStudentVisionLeft').value;
-    const visionRight = document.getElementById('editStudentVisionRight').value;
-    const vitalCapacity = document.getElementById('editStudentVital').value;
-    const dentalCaries = document.getElementById('editStudentDental').value;
-    const physicalTest = document.getElementById('editStudentPhysical').value;
-    
-    // 验证必填字段
-    if (!id) {
-        showNotification('学号不能为空', 'error');
-        return;
-    }
-    if (!name) {
-        showNotification('姓名不能为空', 'error');
-        return;
-    }
-    if (!gender) {
-        showNotification('性别不能为空', 'error');
-        return;
-    }
-    
-    // 创建更新的学生对象 - 使用下划线命名风格以与服务器保持一致
-    const updatedStudent = {
-        id,
-        name,
-        gender,
-        class: studentClass,
-        height: height || null,
-        weight: weight || null,
-        chest_circumference: chest || null,
-        vision_left: visionLeft || null,
-        vision_right: visionRight || null,
-        vital_capacity: vitalCapacity || null,
-        dental_caries: dentalCaries || '',
-        physical_test_status: physicalTest || ''
-    };
-    
-    console.log('待更新的学生数据:', updatedStudent);
-    
-    // 设置保存状态为true
+    // 设置保存状态
     isSavingStudent = true;
     
-    // 显示处理状态
-    const saveBtn = document.querySelector('#editStudentModal .btn-primary');
+    // 设置按钮状态
+    const saveBtn = document.getElementById('saveEditStudentBtn');
     if (saveBtn) {
         saveBtn.disabled = true;
         saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 保存中...';
     }
     
-    // 显示全局加载通知
-    const loadingNotification = showNotification('正在保存学生信息...', 'loading');
+    // 获取表单数据
+    const id = document.getElementById('editStudentId').value;
+    const name = document.getElementById('editStudentName').value;
+    const gender = document.querySelector('input[name="editGender"]:checked').value;
+    const studentClass = document.getElementById('editStudentClass').value;
+    const height = document.getElementById('editStudentHeight').value;
+    const weight = document.getElementById('editStudentWeight').value;
+    const chest = document.getElementById('editStudentChest').value;
+    const vitalCapacity = document.getElementById('editStudentVitalCapacity').value;
+    const dentalCaries = document.getElementById('editStudentDentalCaries').value;
+    const visionLeft = document.getElementById('editStudentVisionLeft').value;
+    const visionRight = document.getElementById('editStudentVisionRight').value;
+    const physicalTest = document.getElementById('editStudentPhysicalStatus').value;
     
-    // 设置超时处理，确保按钮状态不会永久停留在"保存中"
-    const resetTimeout = setTimeout(() => {
-        // 如果5秒内没有收到响应，重置按钮状态和保存状态
+    // 获取班级ID
+    let classId = document.getElementById('editStudentClassId') ? 
+                 document.getElementById('editStudentClassId').value : 
+                 currentUserClassId;
+    
+    // 验证必填字段
+    if (!id || !name || !gender) {
+        showNotification('学号、姓名和性别为必填项', 'error');
         resetEditStudentSaveButton();
+        return;
+    }
+    
+    // 如果没有班级ID，使用当前班级ID或从模态框获取
+    if (!classId) {
+        classId = currentUserClassId || 
+                 document.getElementById('editStudentModal').getAttribute('data-class-id');
         
-        if (loadingNotification) {
-            loadingNotification.close();
+        if (!classId) {
+            showNotification('无法获取班级ID，请刷新页面后重试', 'error');
+            resetEditStudentSaveButton();
+            return;
         }
-        showNotification('保存操作超时，请重试', 'warning');
-    }, 5000);
+    }
+    
+    // 准备更新数据
+    const updatedStudent = {
+        id,
+        name,
+        gender,
+        class: studentClass,
+        class_id: classId,
+        height: height || null,
+        weight: weight || null,
+        chest_circumference: chest || null,
+        vital_capacity: vitalCapacity || null,
+        dental_caries: dentalCaries || '',
+        vision_left: visionLeft || null,
+        vision_right: visionRight || null,
+        physical_test_status: physicalTest || ''
+    };
+    
+    console.log('准备更新学生数据:', updatedStudent);
     
     // 使用服务器API更新学生信息
     try {
-        fetch(`/api/students/${id}`, {
+        fetch(`/api/student/${id}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
@@ -812,106 +948,72 @@ function saveEditedStudent() {
             body: JSON.stringify(updatedStudent)
         })
         .then(response => {
-            console.log('服务器响应状态码:', response.status);
-            console.log('服务器响应头:', [...response.headers.entries()]);
-            
-            // 清除超时定时器
-            clearTimeout(resetTimeout);
-            
-            // 尝试获取响应文本，以便查看原始响应
-            return response.text().then(text => {
-                console.log('原始响应内容:', text);
-                
-                // 尝试将文本解析为JSON
-                try {
-                    const data = text ? JSON.parse(text) : {};
-                    if (!response.ok) {
-                        return Promise.reject(data.error || `服务器错误(${response.status}): ${response.statusText}`);
-                    }
-                    return data;
-                } catch (e) {
-                    console.error('解析响应JSON时出错:', e);
-                    resetEditStudentSaveButton(); // 解析错误时重置按钮
-                    return Promise.reject(`无法解析服务器响应: ${e.message}\n原始响应: ${text}`);
-                }
-            }).catch(err => {
-                console.error('处理文本响应时出错:', err);
-                resetEditStudentSaveButton(); // 处理响应错误时重置按钮
-                return Promise.reject(err);
-            });
+            if (!response.ok) {
+                throw new Error(`服务器响应错误: ${response.status}`);
+            }
+            return response.json();
         })
         .then(data => {
-            console.log('更新学生成功，服务器响应:', data);
-            
-            // 关闭加载通知
-            if (loadingNotification) {
-                loadingNotification.close();
+            if (data.error) {
+                throw new Error(data.error);
             }
             
-            // 重置保存状态
-            isSavingStudent = false;
+            // 显示成功消息
+            showNotification('学生信息更新成功', 'success');
             
-            if (data.status === 'ok') {
-                // 关闭模态框
-                const modal = bootstrap.Modal.getInstance(document.getElementById('editStudentModal'));
-                if (modal) modal.hide();
-                
-                // 显示成功消息
-                showNotification(data.message || '学生信息已更新', 'success');
-                
-                // 刷新学生列表
-                loadStudentsFromServer();
-            } else {
-                // 服务器可能返回了非错误状态码但包含错误信息
-                showNotification(data.message || '更新失败，请稍后重试', 'warning');
-                
-                // 恢复保存按钮状态
-                resetEditStudentSaveButton();
+            // 关闭模态框
+            const modal = bootstrap.Modal.getInstance(document.getElementById('editStudentModal'));
+            if (modal) {
+                modal.hide();
             }
+            
+            // 重新加载学生列表
+            loadStudentsFromServer();
         })
         .catch(error => {
-            console.error('更新学生出错:', error);
-            
-            // 清除超时定时器
-            clearTimeout(resetTimeout);
-            
-            // 关闭加载通知
-            if (loadingNotification) {
-                loadingNotification.close();
-            }
-            
-            // 显示错误消息
-            showNotification(`更新学生信息出错: ${error}`, 'error');
-            
-            // 恢复保存按钮状态
-            resetEditStudentSaveButton();
+            console.error('更新学生信息时出错:', error);
+            showNotification('更新学生信息失败: ' + error.message, 'error');
         })
         .finally(() => {
-            // 确保无论如何都重置状态
-            setTimeout(() => {
-                resetEditStudentSaveButton();
-            }, 500);
+            resetEditStudentSaveButton();
         });
-    } catch (uncaughtError) {
-        // 捕获其他未预期的异常
-        console.error('执行保存操作时发生未预期的错误:', uncaughtError);
-        clearTimeout(resetTimeout);
-        
-        if (loadingNotification) {
-            loadingNotification.close();
-        }
-        
-        showNotification(`保存时发生错误: ${uncaughtError.message}`, 'error');
+    } catch (error) {
+        console.error('提交更新请求时出错:', error);
+        showNotification('提交更新请求时出错: ' + error.message, 'error');
         resetEditStudentSaveButton();
     }
 }
 
 // 删除学生
-function deleteStudent(studentId) {
-    // 如果直接传递了ID参数，使用该参数
+function deleteStudent(studentId, classId) {
+    // 如果没有提供studentId参数，尝试从隐藏输入框获取
     if (!studentId) {
-        // 尝试从隐藏输入框获取ID
         studentId = document.getElementById('deleteStudentId').value;
+    }
+    
+    // 如果没有提供classId，尝试从隐藏输入框获取
+    if (!classId) {
+        const classIdInput = document.getElementById('deleteClassId');
+        if (classIdInput) {
+            classId = classIdInput.value;
+        }
+    }
+    
+    // 如果还没有classId，使用当前用户的班级ID
+    if (!classId && currentUserClassId) {
+        classId = currentUserClassId;
+    }
+    
+    // 如果仍然没有classId，尝试从学生列表中获取
+    if (!classId) {
+        const students = JSON.parse(localStorage.getItem('students') || '[]');
+        const student = students.find(s => s.id === studentId);
+        if (student && student.class_id) {
+            classId = student.class_id;
+        } else {
+            showNotification('无法获取班级ID，无法删除学生', 'error');
+            return;
+        }
     }
     
     // 获取学生姓名
@@ -940,6 +1042,15 @@ function deleteStudent(studentId) {
         document.getElementById('deleteStudentId').value = studentId;
         document.getElementById('deleteStudentName').textContent = studentName;
         
+        // 保存班级ID到隐藏字段
+        if (!document.getElementById('deleteClassId')) {
+            const classIdInput = document.createElement('input');
+            classIdInput.type = 'hidden';
+            classIdInput.id = 'deleteClassId';
+            modalElement.querySelector('.modal-body').appendChild(classIdInput);
+        }
+        document.getElementById('deleteClassId').value = classId;
+        
         // 显示确认删除模态框
         const deleteModal = new bootstrap.Modal(modalElement);
         deleteModal.show();
@@ -953,13 +1064,18 @@ function deleteStudent(studentId) {
         deleteBtn.disabled = true;
     }
     
-    // 首先尝试从服务器删除
-    fetch(`/api/students/${studentId}`, {
+    // 首先尝试从服务器删除，使用新的API路径和参数
+    fetch(`/api/student/${studentId}?class_id=${classId}`, {
         method: 'DELETE'
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`服务器响应错误: ${response.status}`);
+        }
+        return response.json();
+    })
     .then(data => {
-        if (data.status === 'ok') {
+        if (data.message) {
             // 服务器删除成功
             showNotification(`成功删除学生: ${studentName}`, 'success');
             
@@ -977,38 +1093,7 @@ function deleteStudent(studentId) {
     })
     .catch(error => {
         console.error('删除学生时出错:', error);
-        
-        // 从本地存储中删除
-        try {
-            const studentsData = localStorage.getItem('students');
-            if (studentsData) {
-                const students = JSON.parse(studentsData);
-                // 检查是否使用id或student_id作为键
-                const updatedStudents = students.filter(student => 
-                    (student.student_id !== studentId && student.id !== studentId)
-                );
-                localStorage.setItem('students', JSON.stringify(updatedStudents));
-                
-                // 隐藏模态框
-                const modal = bootstrap.Modal.getInstance(document.getElementById('deleteStudentModal'));
-                if (modal) {
-                    modal.hide();
-                }
-                
-                // 显示成功提示
-                showNotification(`学生 "${studentName}" 已从本地数据中删除`, 'success');
-                
-                // 刷新学生列表
-                loadStudentsFromServer();
-                return;
-            }
-            
-            // 如果没有本地数据，显示原始错误
-            showNotification('删除学生失败: ' + error.message, 'error');
-        } catch (e) {
-            console.error('从本地存储删除学生时出错:', e);
-            showNotification('删除学生失败: ' + e.message, 'error');
-        }
+        showNotification('删除学生失败: ' + error.message, 'error');
     })
     .finally(() => {
         // 恢复按钮状态
@@ -1409,36 +1494,177 @@ function filterStudents(keyword) {
 
 // 初始化学生导入功能
 function initImportStudents() {
-    console.log("初始化学生导入功能...");
-    
-    // 绑定文件选择事件
+    const dropZone = document.getElementById('dropZone');
     const fileInput = document.getElementById('importFile');
-    if (fileInput) {
-        fileInput.addEventListener('change', function(event) {
-            const file = event.target.files[0];
-            if (file) {
-                console.log("选择了文件:", file.name);
+    const selectedFileName = document.getElementById('selectedFileName');
     
-    // 检查文件类型
-    if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
-                    showNotification('请选择Excel文件(.xlsx或.xls格式)', 'error');
-                    this.value = null;
-        return;
-                }
+    // 如果页面上没有这些元素，直接返回
+    if (!dropZone || !fileInput) return;
+    
+    // 文件输入事件
+    fileInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            // 显示所选文件名
+            if (selectedFileName) {
+                selectedFileName.textContent = `已选择文件: ${file.name} (${formatFileSize(file.size)})`;
+            }
+            
+            // 上传文件进行预览
+            uploadFileForPreview(file);
+        }
+    });
+    
+    // 拖放功能
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
+    });
+    
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, highlight, false);
+    });
+    
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, unhighlight, false);
+    });
+    
+    dropZone.addEventListener('drop', handleDrop, false);
+    
+    // 防止默认事件
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    
+    // 拖入高亮
+    function highlight() {
+        dropZone.classList.add('border-primary', 'bg-light');
+    }
+    
+    // 取消高亮
+    function unhighlight() {
+        dropZone.classList.remove('border-primary', 'bg-light');
+    }
+    
+    // 处理文件放置
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        
+        if (files.length > 0) {
+            const file = files[0];
+            
+            // 检查文件类型
+            if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
+                showNotification('仅支持Excel文件(.xlsx, .xls)', 'error');
+                return;
+            }
+            
+            // 显示所选文件名
+            if (selectedFileName) {
+                selectedFileName.textContent = `已选择文件: ${file.name} (${formatFileSize(file.size)})`;
+            }
+            
+            // 如果有文件输入元素，更新其值以保持状态同步
+            if (fileInput) {
+                // 由于安全限制，无法直接设置file input的值，我们可以触发change事件
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                fileInput.files = dataTransfer.files;
                 
-                // 上传文件预览
+                // 手动触发change事件
+                const event = new Event('change', { bubbles: true });
+                fileInput.dispatchEvent(event);
+            } else {
+                // 如果没有文件输入元素，直接上传文件
                 uploadFileForPreview(file);
             }
-        });
+        }
     }
     
-    // 绑定模板下载按钮
-    const downloadTemplateBtn = document.getElementById('downloadTemplate');
-    if (downloadTemplateBtn) {
-        downloadTemplateBtn.addEventListener('click', function() {
-            downloadTemplate();
-        });
+    // 下载模板按钮事件
+    const downloadBtn = document.getElementById('downloadTemplateBtn');
+    if (downloadBtn) {
+        downloadBtn.addEventListener('click', downloadTemplate);
     }
+}
+
+// 上传文件预览功能
+function uploadFileForPreview(file) {
+    // 添加延迟以展示加载状态
+    setTimeout(() => {
+        const previewContainer = document.getElementById('previewContainer');
+        if (!previewContainer) return;
+        
+        // 显示加载指示器
+        previewContainer.innerHTML = `
+            <div class="text-center p-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">上传中...</span>
+                </div>
+                <p class="mt-3">正在上传并解析文件，请稍候...</p>
+            </div>
+        `;
+        
+        // 禁用确认导入按钮
+        const confirmBtn = document.getElementById('confirmImportBtn');
+        if (confirmBtn) {
+            confirmBtn.disabled = true;
+        }
+        
+        // 创建FormData对象
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        // 发送文件到服务器预览
+        fetch('/api/import-students', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            return response.json().then(data => {
+                if (!response.ok) {
+                    throw new Error(data.error || '上传文件时出错');
+                }
+                return data;
+            });
+        })
+        .then(data => {
+            console.log("预览响应:", data);
+            
+            // 存储学生数据到隐藏字段
+            document.getElementById('importData').value = JSON.stringify(data.students || []);
+            
+            // 显示预览
+            if (data.html_preview) {
+                // 使用服务器生成的HTML
+                previewContainer.innerHTML = data.html_preview;
+            } else {
+                // 备用：使用客户端生成的预览
+                showLegacyPreview(previewContainer, data);
+            }
+            
+            // 启用确认导入按钮
+            if (confirmBtn) {
+                confirmBtn.disabled = false;
+            }
+        })
+        .catch(error => {
+            console.error('上传文件预览时出错:', error);
+            
+            // 显示错误信息
+            previewContainer.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class='bx bx-error-circle'></i> ${error.message || '上传文件时发生错误'}
+                </div>
+            `;
+            
+            // 禁用确认导入按钮
+            if (confirmBtn) {
+                confirmBtn.disabled = true;
+            }
+        });
+    }, 300);
 }
 
 // 显示通知
@@ -1480,12 +1706,29 @@ function showNotification(message, type = 'success') {
 }
 
 // 打开评语模态框
-function openCommentModal(studentId) {
+function openCommentModal(studentId, classId) {
+    // 如果没有提供classId，使用当前用户的班级ID
+    if (!classId && currentUserClassId) {
+        classId = currentUserClassId;
+    }
+    
+    // 如果仍然没有classId，尝试从学生列表中获取
+    if (!classId) {
+        const students = JSON.parse(localStorage.getItem('students') || '[]');
+        const student = students.find(s => s.id === studentId);
+        if (student && student.class_id) {
+            classId = student.class_id;
+        } else {
+            showNotification('无法获取班级ID，无法访问学生评语', 'error');
+            return;
+        }
+    }
+    
     // 显示加载状态
     const loadingToast = showNotification('正在加载学生评语数据...', 'info', false);
     
-    // 从服务器获取学生数据
-    fetch(`/api/students/${studentId}`)
+    // 从服务器获取学生数据，使用新的API路径和参数
+    fetch(`/api/student/${studentId}?class_id=${classId}`)
         .then(response => {
             if (!response.ok) {
                 throw new Error(`服务器响应错误: ${response.status}`);
@@ -1498,106 +1741,117 @@ function openCommentModal(studentId) {
                 return;
             }
             
-            const student = data.student;
+            // 直接使用返回的学生数据对象
+            const student = data;
             if (!student) {
                 showNotification('未找到该学生信息', 'error');
                 return;
             }
             
-            // 设置学生信息
+            // 关闭加载提示
+            if (loadingToast) {
+                loadingToast.hide();
+            }
+            
+            // 设置学生信息到表单
             document.getElementById('commentStudentId').value = student.id;
             document.getElementById('commentStudentName').textContent = student.name;
             
-            // 获取学生评语
-            fetch(`/api/comments/${studentId}`)
-                .then(response => response.json())
-                .then(commentData => {
-                    const commentText = document.getElementById('commentContent');
-                    if (commentData.status === 'ok' && commentData.comment) {
-                        commentText.value = commentData.comment.content || '';
-                    } else {
-                        commentText.value = '';
-                    }
-                    
-                    // 关闭加载提示
-                    if (loadingToast) {
-                        loadingToast.hide();
-                    }
-                    
-                    // 显示模态框
-                    const modal = new bootstrap.Modal(document.getElementById('commentModal'));
-                    modal.show();
-                })
-                .catch(error => {
-                    console.error('获取评语数据出错:', error);
-                    showNotification('获取评语数据出错: ' + error.message, 'error');
-                });
+            // 设置现有评语内容
+            document.getElementById('commentContent').value = student.comments || '';
+            
+            // 保存班级ID到隐藏字段，用于提交表单时使用
+            if (!document.getElementById('commentClassId')) {
+                const classIdInput = document.createElement('input');
+                classIdInput.type = 'hidden';
+                classIdInput.id = 'commentClassId';
+                document.getElementById('commentForm').appendChild(classIdInput);
+            }
+            document.getElementById('commentClassId').value = student.class_id || classId;
+            
+            // 切换按钮可见性和文本
+            const aiCommentBtn = document.getElementById('generateAIComment');
+            if (aiCommentBtn) {
+                // 检查是否设置了AI评语按钮可见条件
+                const hasAiCommentFeature = document.getElementById('hasAiCommentFeature');
+                if (hasAiCommentFeature && hasAiCommentFeature.value === 'true') {
+                    aiCommentBtn.classList.remove('d-none');
+                } else {
+                    aiCommentBtn.classList.add('d-none');
+                }
+            }
+            
+            // 显示模态框
+            const commentModal = new bootstrap.Modal(document.getElementById('commentModal'));
+            commentModal.show();
         })
         .catch(error => {
-            console.error('获取学生数据出错:', error);
-            showNotification('获取学生数据出错: ' + error.message, 'error');
+            console.error('获取学生评语数据出错:', error);
+            showNotification('获取学生评语数据出错: ' + error.message, 'error');
         });
 }
 
 // 保存评语
 function saveComment() {
     const studentId = document.getElementById('commentStudentId').value;
-    const content = document.getElementById('commentContent').value;
+    const commentText = document.getElementById('commentContent').value;
+    const classId = document.getElementById('commentClassId').value;
     
-    if (!studentId || !content) {
-        showNotification('请输入评语内容', 'error');
+    if (!studentId) {
+        showNotification('错误：未找到学生ID', 'error');
         return;
     }
     
-    // 创建评语对象
-    const comment = {
-        studentId,
-        content,
-        updateDate: formatDate(new Date())
-    };
-    
-    // 显示处理状态
-    const saveBtn = document.querySelector('#commentModal .btn-primary');
-    if (saveBtn) {
-        saveBtn.disabled = true;
-        saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 保存中...';
+    if (!classId) {
+        showNotification('错误：未找到班级ID', 'error');
+        return;
     }
     
-    // 使用服务器API保存评语
-    fetch('/api/comments', {
-        method: 'POST',
+    // 显示保存中状态
+    const saveBtn = document.getElementById('saveCommentBtn');
+    saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 保存中...';
+    saveBtn.disabled = true;
+    
+    // 准备请求数据
+    const commentData = {
+        comments: commentText,
+        class_id: classId
+    };
+    
+    // 发送到服务器
+    fetch(`/api/student/${studentId}/comments`, {
+        method: 'PUT',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify(comment)
+        body: JSON.stringify(commentData)
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.status === 'ok') {
-            // 关闭模态框
-            const modal = bootstrap.Modal.getInstance(document.getElementById('commentModal'));
-            modal.hide();
-            
-            // 显示成功通知
-            showNotification('评语保存成功');
-            
-            // 刷新学生列表以显示更新后的评语
-            // 在实际应用中，如果性能要求高，可以只更新对应的评语卡片
-            loadStudentsFromServer();
-        } else {
-            showNotification('评语保存失败: ' + (data.message || '未知错误'), 'error');
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`服务器响应错误: ${response.status}`);
         }
+        return response.json();
+    })
+    .then(data => {
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        
+        // 显示成功消息
+        showNotification('评语保存成功', 'success');
+        
+        // 关闭模态框
+        const modal = bootstrap.Modal.getInstance(document.getElementById('commentModal'));
+        modal.hide();
     })
     .catch(error => {
         console.error('保存评语时出错:', error);
-        showNotification('保存评语时出错: ' + error.message, 'error');
+        showNotification('保存评语失败: ' + error.message, 'error');
     })
     .finally(() => {
         // 恢复按钮状态
-        if (saveBtn) {
-            saveBtn.disabled = false;
-            saveBtn.innerHTML = '保存评语';
-        }
+        saveBtn.innerHTML = '保存';
+        saveBtn.disabled = false;
     });
 }
 
@@ -1675,7 +1929,7 @@ function loadStudentsFromServer() {
         </div>
     `;
     
-    // 尝试从服务器加载数据
+    // 从服务器获取学生数据
     fetch('/api/students', {
         method: 'GET',
         headers: {
@@ -1693,23 +1947,32 @@ function loadStudentsFromServer() {
             throw new Error(data.error);
         }
         
+        // 获取学生列表
         const students = data.students;
+        console.log('成功获取学生数据:', students);
+        
+        // 保存到localStorage中备用
+        localStorage.setItem('students', JSON.stringify(students));
+        
+        // 清空容器准备重新加载
+        cardsContainer.innerHTML = '';
         
         // 检查是否有学生数据
         if (!students || students.length === 0) {
-            cardsContainer.innerHTML = '';
+            // 显示空状态
             if (emptyState) {
                 emptyState.classList.remove('d-none');
+            } else {
+                cardsContainer.innerHTML = `
+                    <div class="col-12 text-center py-5">
+                        <div class="alert alert-info">
+                            <i class="bx bx-info-circle me-2"></i>
+                            暂无学生数据。请添加学生或导入学生名单。
+                        </div>
+                    </div>
+                `;
             }
             return;
-        }
-        
-        // 将服务器数据同步到本地存储
-        try {
-            localStorage.setItem('students', JSON.stringify(students));
-            console.log('已将学生数据同步到本地存储');
-        } catch (e) {
-            console.error('无法将学生数据保存到本地存储:', e);
         }
         
         // 隐藏空状态
@@ -1717,74 +1980,37 @@ function loadStudentsFromServer() {
             emptyState.classList.add('d-none');
         }
         
-        // 渲染学生卡片
-        cardsContainer.innerHTML = '';
+        // 遍历学生数据创建卡片
         students.forEach(student => {
             const studentCard = createStudentCard(student);
             cardsContainer.appendChild(studentCard);
         });
         
-        console.log(`已加载 ${students.length} 名学生数据`);
+        // 如果存在搜索框，绑定搜索事件
+        const searchInput = document.getElementById('searchStudent');
+        if (searchInput) {
+            const currentFilter = searchInput.value.trim();
+            if (currentFilter) {
+                // 应用现有的过滤条件
+                filterStudents(currentFilter);
+            }
+        }
     })
     .catch(error => {
-        console.error('从服务器加载学生数据失败，尝试从本地存储加载:', error);
+        console.error('获取学生列表时出错:', error);
         
-        // 从本地存储加载学生数据
-        try {
-            const studentsData = localStorage.getItem('students');
-            if (studentsData) {
-                const students = JSON.parse(studentsData);
-                
-                if (students && students.length > 0) {
-                    // 隐藏空状态
-                    if (emptyState) {
-                        emptyState.classList.add('d-none');
-                    }
-                    
-                    // 渲染学生卡片
-                    cardsContainer.innerHTML = '';
-                    students.forEach(student => {
-                        const studentCard = createStudentCard(student);
-                        cardsContainer.appendChild(studentCard);
-                    });
-                    
-                    console.log(`从本地存储加载了 ${students.length} 名学生数据`);
-                    return;
-                }
-            }
-            
-            // 如果本地也没有数据，显示空状态
-            cardsContainer.innerHTML = '';
-            if (emptyState) {
-                emptyState.classList.remove('d-none');
-            } else {
-                cardsContainer.innerHTML = `
-                    <div class="col-12 text-center mt-4">
-                        <div class="alert alert-info">
-                            <i class='bx bx-info-circle me-2'></i> 没有找到学生数据。您可以添加新学生或导入学生数据。
-                        </div>
-                    </div>
-                `;
-            }
-        } catch (localError) {
-            console.error('从本地存储加载学生数据失败:', localError);
-            
-            cardsContainer.innerHTML = `
-                <div class="col-12">
-                    <div class="alert alert-danger">
-                        <i class='bx bx-error-circle'></i> 无法加载学生数据。服务器连接失败，本地存储访问也出错: ${localError.message}
-                    </div>
-                    <div class="alert alert-info">
-                        <h5>排查步骤：</h5>
-                        <ol>
-                            <li>确认浏览器没有禁用本地存储</li>
-                            <li>清除浏览器缓存后重试</li>
-                            <li>检查浏览器控制台(F12)获取更多错误信息</li>
-                        </ol>
-                    </div>
+        // 显示错误信息
+        cardsContainer.innerHTML = `
+            <div class="col-12 text-center py-5">
+                <div class="alert alert-danger">
+                    <i class="bx bx-error-circle me-2"></i>
+                    获取学生列表失败: ${error.message}
                 </div>
-            `;
-        }
+                <button class="btn btn-primary mt-3" onclick="loadStudentsFromServer()">
+                    <i class="bx bx-refresh me-2"></i> 重试
+                </button>
+            </div>
+        `;
     });
 }
 

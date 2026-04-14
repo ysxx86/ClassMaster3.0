@@ -239,6 +239,17 @@
             saveBtn.disabled = true;
 
             try {
+                // 首先获取学生的完整信息，包括班级ID
+                const studentResponse = await fetch(`/api/students/${studentId}`);
+                const studentData = await studentResponse.json();
+                
+                if (studentData.status !== 'ok') {
+                    throw new Error(studentData.message || '获取学生信息失败');
+                }
+                
+                // 从学生数据中获取班级ID
+                const classId = studentData.student?.class_id;
+                
                 const response = await fetch('/api/comments', {
                     method: 'POST',
                     headers: {
@@ -247,7 +258,7 @@
                     body: JSON.stringify({
                         studentId: studentId,
                         content: comment,
-                        updatedContent: comment
+                        classId: classId
                     })
                 });
 

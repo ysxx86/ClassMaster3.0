@@ -145,7 +145,7 @@ class DeepSeekAPI:
         additional_instructions = student_info.get('additional_instructions', '')
         
         prompt = f"""
-你是一名经验丰富的班主任，请为以下学生生成一段不超过{max_length}字的评语。
+你是一名经验丰富的班主任，请为以下学生生成一段评语。
 评语应该是{style}和{tone}的。
 
 学生信息:
@@ -157,7 +157,13 @@ class DeepSeekAPI:
 - 需要改进的方面: {student_info.get('improvement', '未提供')}
 
 请根据以上信息，生成一段全面、具体且有针对性的评语，突出{gender}的优点，同时也提出建设性的改进建议。
-评语的长度必须控制在{max_length}字以内，请确保评语内容积极向上且有指导意义。
+
+重要要求：
+1. 评语的字数必须精确控制在不超过{max_length}个字，请在生成前仔细计算字数，确保不会超出限制
+2. 不要生成超过{max_length}个字的评语然后截断，而是从一开始就精确控制好字数
+3. 评语内容必须完整，不能因字数限制而出现不完整的句子
+4. 确保评语内容积极向上且有指导意义
+
 {additional_instructions}
 不要在回复中写除了评语之外的任何内容。
 """
@@ -196,14 +202,9 @@ class DeepSeekAPI:
                 comment = result["choices"][0]["message"]["content"].strip()
                 logger.info(f"成功提取评语: {comment[:50]}...")
                 
-                # 严格确保评语不超过260字
-                if len(comment) > 260:
-                    comment = comment[:257] + "..."
-                    logger.warning(f"生成的评语超过260字，已截断。原长度: {len(comment)}")
-                # 确保评语不超过设定的最大长度（即使小于260）
+                # 检查评语字数
                 if len(comment) > max_length:
-                    comment = comment[:max_length]
-                    logger.info(f"评语已截断至{max_length}字")
+                    logger.warning(f"生成的评语超过{max_length}字，长度为{len(comment)}字。这表明API没有严格遵循字数限制要求。")
                 
                 return {
                     "status": "ok",

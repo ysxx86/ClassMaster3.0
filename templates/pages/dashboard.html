@@ -1,0 +1,124 @@
+<!-- 用户信息卡片 -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="d-flex align-items-center">
+            <div class="avatar-circle me-3">
+                <i class='bx bx-user'></i>
+            </div>
+            <div>
+                <h5 class="card-title mb-1" id="username"></h5>
+                <p class="card-text text-muted mb-0">
+                    <span id="userType"></span>
+                    <span class="mx-2">|</span>
+                    <span>当前班级：</span>
+                    <span id="currentClass" class="text-primary"></span>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 统计卡片 -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-primary me-3">
+                        <i class='bx bx-user'></i>
+                    </div>
+                    <div>
+                        <h6 class="card-subtitle mb-1 text-muted">学生总数</h6>
+                        <h3 class="card-title mb-0" id="studentCount">0</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-success me-3">
+                        <i class='bx bx-comment'></i>
+                    </div>
+                    <div>
+                        <h6 class="card-subtitle mb-1 text-muted">评语总数</h6>
+                        <h3 class="card-title mb-0" id="commentCount">0</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-warning me-3">
+                        <i class='bx bx-task'></i>
+                    </div>
+                    <div>
+                        <h6 class="card-subtitle mb-1 text-muted">待办事项</h6>
+                        <h3 class="card-title mb-0" id="todoCount">0</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 成绩分布图表 -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="card-title mb-0">成绩分布</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-4">
+                <canvas id="yuwenChart"></canvas>
+            </div>
+            <div class="col-md-4">
+                <canvas id="shuxueChart"></canvas>
+            </div>
+            <div class="col-md-4">
+                <canvas id="yingyuChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 活动列表 -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="card-title mb-0">最近活动</h5>
+    </div>
+    <div class="card-body">
+        <div class="activity-list" id="activityList">
+            <!-- 活动列表将通过JavaScript动态填充 -->
+        </div>
+    </div>
+</div>
+
+<!-- 待办事项列表 -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="card-title mb-0">待办事项</h5>
+    </div>
+    <div class="card-body">
+        <div class="todo-list" id="todoList">
+            <!-- 待办事项列表将通过JavaScript动态填充 -->
+        </div>
+    </div>
+</div>
+
+<!-- 最新评语列表 -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title mb-0">最新评语</h5>
+    </div>
+    <div class="card-body">
+        <div class="comment-list" id="commentList">
+            <!-- 评语列表将通过JavaScript动态填充 -->
+        </div>
+    </div>
+</div> 

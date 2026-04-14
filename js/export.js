@@ -1,4 +1,4 @@
-// @charset UTF-8
+  // @charset UTF-8
 // 导出报告模块
 
 // 全局变量，防止重复初始化和重复上传
@@ -6,6 +6,8 @@ let isTemplateUploaderInitialized = false;
 let isTemplateUploading = false;
 let templateContent = null;
 let templateFile = null;
+let currentExportRequestId = null; // 用于跟踪当前导出请求ID
+let abortController = null; // 用于取消请求
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('初始化导出页面开始...');
@@ -51,6 +53,9 @@ document.addEventListener('DOMContentLoaded', function() {
             updatePreview();
         }
     });
+    
+    // 初始化导出功能
+    initExportFunctions();
     
     console.log('导出页面初始化完成');
 });
@@ -768,11 +773,42 @@ async function handleTemplateUpload(event) {
     }
 }
 
-// 导出报告
-async function exportReports() {
+// 在PDF导出完成后，确保清除所有模态框和背景遮罩
+function clearAllModals() {
+    // 清除所有可能的模态框
+    const modalIds = ['pdfConfirmModal', 'progressModal', 'exportCompleteModal'];
+    
+    modalIds.forEach(id => {
+        const modalElement = document.getElementById(id);
+        if (modalElement) {
+            const modal = bootstrap.Modal.getInstance(modalElement);
+            if (modal) {
+                modal.hide();
+            }
+        }
+    });
+    
+    // 手动移除所有可能存在的遮罩层
+    document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+        backdrop.remove();
+    });
+    
+    // 移除body上可能添加的modal-open类
+    document.body.classList.remove('modal-open');
+    document.body.style.overflow = '';
+    document.body.style.paddingRight = '';
+}
+
+// 修改导出完成的处理函数，确保清除模态框
+async function exportReports(exportType = 'word') {
     try {
+        // 生成唯一的请求ID
+        currentExportRequestId = Date.now().toString();
+        // 创建新的AbortController用于取消请求
+        abortController = new AbortController();
+        
         // 显示加载状态
-        const exportBtn = document.getElementById('exportBtn');
+        const exportBtn = document.getElementById(exportType === 'pdf' ? 'exportPdfBtn' : 'exportBtn');
         if (exportBtn) {
             // 如果按钮已经禁用，说明正在导出，防止重复点击
             if (exportBtn.disabled) {
@@ -780,7 +816,7 @@ async function exportReports() {
             }
             
             exportBtn.disabled = true;
-            exportBtn.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i> 导出中...';
+            exportBtn.innerHTML = `<i class="bx bx-loader-alt bx-spin"></i> 导出${exportType === 'pdf' ? 'PDF' : 'Word'}中...`;
         }
         
         // 安全获取DOM元素值的辅助函数
@@ -800,7 +836,7 @@ async function exportReports() {
         console.log('选中的学生IDs:', selectedStudentIds);
         if (selectedStudentIds.length === 0) {
             showNotification('请至少选择一个学生进行导出', 'warning');
-            resetExportButton();
+            resetExportButton(exportType);
             return;
         }
         
@@ -816,18 +852,31 @@ async function exportReports() {
             startDate: getElementValue('startDate', ''),
             schoolName: getElementValue('schoolName', ''),
             className: getElementValue('className', ''),
-            teacherName: getElementValue('teacherName', '')
+            teacherName: getElementValue('teacherName', ''),
+            exportType: exportType // 添加导出类型参数
         };
         console.log('导出设置:', settings);
         
         // 显示进度模态窗口
         const progressModal = new bootstrap.Modal(document.getElementById('progressModal'));
-        progressModal.show();
-        const progressBar = document.getElementById('progressBar');
-        const progressText = document.getElementById('progressText');
+        
+        // 绑定取消按钮事件
+        const cancelBtn = document.getElementById('progressModal').querySelector('.modal-footer .btn-secondary');
+        if (cancelBtn) {
+            // 移除之前的事件监听器
+            const newCancelBtn = cancelBtn.cloneNode(true);
+            cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
             
-            // 更新进度
-        updateProgress(10, '正在准备导出...');
+            // 添加新的事件监听器
+            newCancelBtn.addEventListener('click', function() {
+                cancelExport(currentExportRequestId);
+            });
+        }
+        
+        progressModal.show();
+            
+        // 更新进度
+        updateProgress(10, exportType === 'pdf' ? '正在准备PDF导出...' : '正在准备导出...');
         
         try {
             // 防止重复请求
@@ -839,26 +888,34 @@ async function exportReports() {
             window.isExporting = true;
             
             // 发送请求到服务器
-            updateProgress(30, '正在生成报告...');
+            updateProgress(30, exportType === 'pdf' ? '正在生成报告并准备转换...' : '正在生成报告...');
             console.log('正在向服务器发送请求...');
+            console.log('导出类型:', exportType);
+            console.log('导出设置:', settings);
+
             const response = await fetch('/api/export-reports', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json, application/zip' // 接受JSON或ZIP文件
+                    'Accept': 'application/json, application/zip', // 接受JSON或ZIP文件
+                    'X-Export-Request-ID': currentExportRequestId // 添加请求ID到头部
                 },
                 body: JSON.stringify({
                     studentIds: selectedStudentIds,
                     templateId: templateId,
-                    settings: settings
-                })
+                    settings: {
+                        ...settings,
+                        exportType: exportType // 确保导出类型被包含在settings中
+                    }
+                }),
+                signal: abortController.signal // 使用AbortController信号
             });
             
             // 请求完成，重置标志
             window.isExporting = false;
             
             // 更新进度
-            updateProgress(60, '正在处理响应...');
+            updateProgress(60, exportType === 'pdf' ? '正在将Word转换为PDF...' : '正在处理响应...');
             console.log('服务器响应状态:', response.status);
             console.log('服务器响应类型:', response.headers.get('Content-Type'));
             
@@ -880,15 +937,15 @@ async function exportReports() {
             const contentType = response.headers.get('Content-Type');
             if (contentType && contentType.includes('application/zip')) {
                 console.log('检测到ZIP文件响应，直接下载');
-                updateProgress(80, '准备下载文件...');
+                updateProgress(80, exportType === 'pdf' ? '正在准备下载PDF文件...' : '准备下载文件...');
                 
                 // 下载文件
                 const blob = await response.blob();
-                updateProgress(90, '正在下载文件...');
+                updateProgress(90, exportType === 'pdf' ? '正在下载PDF文件...' : '正在下载文件...');
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = 'student_reports_' + new Date().toISOString().slice(0,10) + '.zip';
+                a.download = `student_reports_${exportType}_` + new Date().toISOString().slice(0,10) + '.zip';
                 document.body.appendChild(a);
                 a.click();
                 
@@ -899,17 +956,24 @@ async function exportReports() {
                     window.isExporting = false; // 确保导出状态被重置
                 }, 100);
                 
-                updateProgress(100, '导出完成!');
+                updateProgress(100, '导出完成!', 'success');
                 
                 // 延迟一秒后关闭进度条，让用户看到100%完成状态
                 setTimeout(() => {
-                    if (progressModal) {
-                        progressModal.hide();
-                    }
-                    showNotification('报告导出成功', 'success');
+                    // 隐藏进度模态框
+                    hideProgressModal();
+                    
+                    // 显示完成模态框
+                    showExportCompleteModal(
+                        `${exportType === 'pdf' ? 'PDF' : 'Word'}导出成功`, 
+                        `已成功导出${selectedStudentIds.length}份学生报告！`, 
+                        'success'
+                    );
+                    
+                    // 重置导出按钮
+                    resetExportButton(exportType);
                 }, 1000);
                 
-                resetExportButton();
                 return;
             }
             
@@ -926,15 +990,27 @@ async function exportReports() {
                     console.log('服务器返回了空响应但状态码为200，可能是文件已经成功下载');
                     updateProgress(100, '导出完成!');
                     
-                    // 延迟关闭进度条
-                    setTimeout(() => {
-                        if (progressModal) {
-                            progressModal.hide();
-                        }
-                        showNotification('报告导出成功', 'success');
-                    }, 1000);
+                    // 检查PDF转换失败的特殊头信息
+                    const pdfConversionFailed = response.headers.get('X-PDF-Conversion-Failed');
+                    if (pdfConversionFailed === 'true' && exportType === 'pdf') {
+                        // 延迟关闭进度条
+                        setTimeout(() => {
+                            if (progressModal) {
+                                progressModal.hide();
+                            }
+                            showNotification('PDF转换失败，但已成功导出Word版本报告', 'warning');
+                        }, 1000);
+                    } else {
+                        // 延迟关闭进度条
+                        setTimeout(() => {
+                            if (progressModal) {
+                                progressModal.hide();
+                            }
+                            showNotification('报告导出成功', 'success');
+                        }, 1000);
+                    }
                     
-                    resetExportButton();
+                    resetExportButton(exportType);
                     return;
                 } else if (!responseText || responseText.trim() === '') {
                     // 真正的空响应错误
@@ -958,7 +1034,7 @@ async function exportReports() {
                             showNotification('报告导出成功', 'success');
                         }, 1000);
                         
-                        resetExportButton();
+                        resetExportButton(exportType);
                         return;
                     }
                     
@@ -972,11 +1048,45 @@ async function exportReports() {
                     throw new Error(result.message || '导出报告失败');
                 }
                 
+                // 处理警告状态 - 当PDF转换失败但提供了Word版本时
+                if (result.status === 'warning') {
+                    // 从服务器下载生成的文件
+                    updateProgress(90, '正在下载文件...');
+                    console.log('正在下载文件:', result.filename);
+                    const downloadUrl = `https://${window.location.host}/download/exports/${result.filename}`;
+                    
+                    // 创建下载链接并触发下载
+                    const a = document.createElement('a');
+                    a.href = downloadUrl;
+                    a.download = result.filename; 
+                    a.target = '_blank';
+                    document.body.appendChild(a);
+                    a.click();
+                    
+                    // 等待一段时间后再移除元素
+                    setTimeout(() => {
+                        a.remove();
+                    }, 1000);
+                    
+                    updateProgress(100, '导出完成!');
+                    
+                    // 延迟一秒后关闭进度条，让用户看到100%完成状态
+                    setTimeout(() => {
+                        if (progressModal) {
+                            progressModal.hide();
+                        }
+                        showNotification(result.message || 'PDF转换失败，但已成功导出Word版本报告', 'warning');
+                    }, 1000);
+                    
+                    resetExportButton(exportType);
+                    return;
+                }
+                
                 if (result.status === 'ok' && result.filename) {
                     // 从服务器下载生成的文件
                     updateProgress(90, '正在下载文件...');
                     console.log('正在下载文件:', result.filename);
-                    const downloadUrl = `/download/exports/${result.filename}`;
+                    const downloadUrl = `https://${window.location.host}/download/exports/${result.filename}`;
                     
                     // 创建下载链接并触发下载
                     const a = document.createElement('a');
@@ -1030,12 +1140,96 @@ async function exportReports() {
             throw new Error('导出报告失败: ' + fetchError.message);
         }
         
-        resetExportButton();
+        resetExportButton(exportType);
     } catch (error) {
-        console.error('导出报告过程中出错:', error);
-        showNotification(`导出报告失败: ${error.message || '未知错误'}`, 'error');
-        resetExportButton();
+        // 检查是否是用户取消导致的错误
+        if (error.name === 'AbortError') {
+            console.log('用户取消了导出请求');
+            updateProgress(100, '导出已取消', 'warning');
+            
+            // 延迟关闭进度窗口
+            setTimeout(() => {
+                hideProgressModal();
+                showExportCompleteModal('导出已取消', '您已取消导出操作', 'warning');
+            }, 1000);
+        } else {
+            console.error('导出过程中发生错误:', error);
+            
+            // 隐藏进度模态框并清理遮罩
+            hideProgressModal();
+            
+            // 使用错误图标显示导出完成模态框
+            showExportCompleteModal(
+                `${exportType === 'pdf' ? 'PDF' : 'Word'}导出失败`, 
+                `导出过程中出错: ${error.message || '未知错误'}`, 
+                'error'
+            );
+        }
+        
+        // 重置导出按钮
+        resetExportButton(exportType);
+        
+        // 重置导出状态
+        window.isExporting = false;
+        currentExportRequestId = null;
+        abortController = null;
     }
+}
+
+// 取消导出函数
+function cancelExport(requestId) {
+    if (!requestId || requestId !== currentExportRequestId) {
+        console.warn('没有进行中的导出或请求ID不匹配');
+        return;
+    }
+    
+    console.log('正在取消导出请求:', requestId);
+    
+    // 更新UI显示状态
+    updateProgress(0, '正在取消导出...', 'warning');
+    
+    // 取消进行中的fetch请求
+    if (abortController) {
+        abortController.abort();
+    }
+    
+    // 向服务器发送取消请求
+    fetch('/api/cancel-export', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            requestId: requestId
+        })
+    }).then(response => response.json())
+    .then(data => {
+        console.log('取消导出响应:', data);
+        if (data.status === 'success' || data.status === 'ok') {
+            console.log('成功取消导出操作');
+        } else {
+            console.warn('取消导出返回未知状态:', data);
+        }
+    })
+    .catch(error => {
+        console.error('发送取消导出请求时出错:', error);
+    })
+    .finally(() => {
+        // 无论成功与否，都重置状态
+        currentExportRequestId = null;
+        abortController = null;
+        window.isExporting = false;
+        
+        // 延迟关闭进度窗口
+        setTimeout(() => {
+            hideProgressModal();
+            showNotification('导出操作已取消', 'warning');
+        }, 1000);
+        
+        // 重置导出按钮
+        const exportType = document.getElementById('exportPdfBtn').disabled ? 'pdf' : 'word';
+        resetExportButton(exportType);
+    });
 }
 
 // 更新进度条和文本
@@ -1060,18 +1254,31 @@ function updateProgress(percent, message, type = 'normal') {
     
     if (progressText) {
         progressText.innerHTML = `${message} <span class="badge bg-secondary">${percent}%</span>`;
+        
+        if (type === 'error') {
+            progressText.classList.add('text-danger');
+        } else {
+            progressText.classList.remove('text-danger');
+        }
     }
 }
 
 // 重置导出按钮
-function resetExportButton() {
-    const exportBtn = document.getElementById('exportBtn');
+function resetExportButton(exportType = 'word') {
+    const exportBtn = document.getElementById(exportType === 'pdf' ? 'exportPdfBtn' : 'exportBtn');
     if (exportBtn) {
         exportBtn.disabled = false;
-        exportBtn.innerHTML = '<i class="bx bx-export"></i> 开始导出';
+        if (exportType === 'pdf') {
+            exportBtn.innerHTML = '<i class="bx bxs-file-pdf"></i> 导出PDF';
+        } else {
+            exportBtn.innerHTML = '<i class="bx bxs-file-doc"></i> 导出Word';
+        }
     }
     
-    // 重置导出状态标志
+    // 确保窗口状态正常
+    setTimeout(clearAllModalBackdrops, 500);
+    
+    // 重置导出状态
     window.isExporting = false;
 }
 
@@ -1922,7 +2129,7 @@ function bindSettingsEvents() {
     if (exportBtn) {
         exportBtn.addEventListener('click', function(event) {
             event.preventDefault();
-            exportReports();
+            exportReports('word');
         });
     }
     
@@ -1945,9 +2152,215 @@ function bindSettingsEvents() {
             }
             
             // 触发导出
-            exportReports();
+            exportReports('word');
         });
     }
     
     console.log('设置事件绑定完成');
+}
+
+// 初始化导出功能
+function initExportFunctions() {
+    // Word导出按钮事件监听
+    const exportBtn = document.getElementById('exportBtn');
+    if (exportBtn) {
+        exportBtn.addEventListener('click', function() {
+            exportReports('word');
+        });
+    }
+    
+    // PDF导出按钮事件监听
+    const exportPdfBtn = document.getElementById('exportPdfBtn');
+    if (exportPdfBtn) {
+        exportPdfBtn.addEventListener('click', function() {
+            // 显示确认对话框
+            const pdfConfirmModal = new bootstrap.Modal(document.getElementById('pdfConfirmModal'));
+            pdfConfirmModal.show();
+        });
+    }
+    
+    // PDF确认导出按钮事件监听
+    const confirmPdfExportBtn = document.getElementById('confirmPdfExportBtn');
+    if (confirmPdfExportBtn) {
+        confirmPdfExportBtn.addEventListener('click', function() {
+            // 隐藏确认对话框
+            const pdfConfirmModal = bootstrap.Modal.getInstance(document.getElementById('pdfConfirmModal'));
+            if (pdfConfirmModal) {
+                pdfConfirmModal.hide();
+            }
+            
+            // 执行PDF导出
+            exportReports('pdf');
+        });
+    }
+}
+
+// 隐藏进度模态框
+function hideProgressModal() {
+    try {
+        const progressModal = bootstrap.Modal.getInstance(document.getElementById('progressModal'));
+        if (progressModal) {
+            progressModal.hide();
+        }
+        
+        // 重置进度条
+        document.getElementById('exportProgressBar').style.width = '0%';
+        document.getElementById('exportProgressBar').setAttribute('aria-valuenow', '0');
+        document.getElementById('progressText').innerText = '';
+        
+        // 延迟清理模态框背景
+        setTimeout(clearAllModalBackdrops, 300);
+    } catch (e) {
+        console.error('隐藏进度模态框失败:', e);
+        clearAllModalBackdrops();
+    }
+}
+
+// 显示导出完成模态框
+function showExportCompleteModal(title, message, type = 'success') {
+    try {
+        // 获取并处理之前的模态实例
+        const oldModal = bootstrap.Modal.getInstance(document.getElementById('exportCompleteModal'));
+        if (oldModal) {
+            oldModal.dispose();
+        }
+        
+        // 设置标题和消息
+        document.getElementById('exportCompleteModalLabel').innerText = title;
+        document.getElementById('exportCompleteModal').querySelector('.alert div').innerText = message;
+        
+        // 设置模态框的颜色主题
+        const modalContent = document.querySelector('.export-complete-modal');
+        const modalHeader = document.getElementById('exportCompleteModal').querySelector('.modal-header');
+        const modalButton = document.getElementById('closeExportCompleteBtn');
+        const modalAlert = document.getElementById('exportCompleteModal').querySelector('.alert');
+        const modalIcon = document.getElementById('exportCompleteModal').querySelector('.modal-body i.bx');
+        
+        // 根据类型设置不同的颜色主题
+        if (type === 'success') {
+            modalContent.style.animation = 'success-glow 2s infinite alternate';
+            modalContent.style.boxShadow = '0 0 20px rgba(40, 167, 69, 0.7)';
+            modalHeader.className = 'modal-header bg-success text-white';
+            modalButton.className = 'btn btn-success';
+            modalAlert.className = 'alert alert-success';
+            modalIcon.className = 'bx bx-check-circle text-success';
+        } else if (type === 'warning') {
+            modalContent.style.animation = 'warning-glow 2s infinite alternate';
+            modalContent.style.boxShadow = '0 0 20px rgba(255, 193, 7, 0.7)';
+            modalHeader.className = 'modal-header bg-warning text-dark';
+            modalButton.className = 'btn btn-warning';
+            modalAlert.className = 'alert alert-warning';
+            modalIcon.className = 'bx bx-error text-warning';
+        } else if (type === 'error') {
+            modalContent.style.animation = 'error-glow 2s infinite alternate';
+            modalContent.style.boxShadow = '0 0 20px rgba(220, 53, 69, 0.7)';
+            modalHeader.className = 'modal-header bg-danger text-white';
+            modalButton.className = 'btn btn-danger';
+            modalAlert.className = 'alert alert-danger';
+            modalIcon.className = 'bx bx-x-circle text-danger';
+        }
+        
+        // 根据类型设置图标
+        const titleElement = document.getElementById('exportCompleteModalLabel');
+        titleElement.innerHTML = '';
+        
+        let icon = document.createElement('i');
+        icon.classList.add('bx', 'me-2');
+        
+        if (type === 'success') {
+            icon.classList.add('bx-check-circle');
+        } else if (type === 'warning') {
+            icon.classList.add('bx-error');
+        } else if (type === 'error') {
+            icon.classList.add('bx-x-circle');
+        }
+        
+        titleElement.appendChild(icon);
+        titleElement.appendChild(document.createTextNode(title));
+        
+        // 创建并显示新模态框
+        const newModal = new bootstrap.Modal(document.getElementById('exportCompleteModal'));
+        newModal.show();
+        
+        // 监听模态框隐藏事件
+        document.getElementById('exportCompleteModal').addEventListener('hidden.bs.modal', function handler() {
+            setTimeout(clearAllModalBackdrops, 300);
+            // 移除事件监听器，避免重复
+            document.getElementById('exportCompleteModal').removeEventListener('hidden.bs.modal', handler);
+        });
+    } catch (e) {
+        console.error('显示导出完成模态框失败:', e);
+        alert(title + ': ' + message);
+    }
+}
+
+// 等待DOM加载完成后执行
+document.addEventListener('DOMContentLoaded', function() {
+    // 处理确认PDF导出按钮点击事件
+    document.getElementById('confirmPdfExportBtn').addEventListener('click', function() {
+        try {
+            // 隐藏确认模态框
+            const pdfConfirmModal = bootstrap.Modal.getInstance(document.getElementById('pdfConfirmModal'));
+            if (pdfConfirmModal) {
+                pdfConfirmModal.hide();
+            }
+            
+            // 延迟一下确保模态框关闭后再清理背景
+            setTimeout(function() {
+                // 清理所有模态框背景
+                clearAllModalBackdrops();
+                // 调用PDF导出函数
+                exportReports('pdf');
+            }, 300);
+        } catch (e) {
+            console.error('关闭PDF确认模态框失败:', e);
+            // 尝试直接清理背景并调用导出
+            clearAllModalBackdrops();
+            exportReports('pdf');
+        }
+    });
+    
+    // 给所有模态框的关闭按钮添加事件处理
+    document.querySelectorAll('.modal .btn-close, .modal .btn[data-bs-dismiss="modal"]').forEach(button => {
+        button.addEventListener('click', function() {
+            setTimeout(clearAllModalBackdrops, 300);
+        });
+    });
+    
+    // 特别处理导出完成模态框的关闭按钮
+    document.getElementById('closeExportCompleteBtn').addEventListener('click', function() {
+        try {
+            const exportCompleteModal = bootstrap.Modal.getInstance(document.getElementById('exportCompleteModal'));
+            if (exportCompleteModal) {
+                exportCompleteModal.hide();
+            }
+            
+            setTimeout(clearAllModalBackdrops, 300);
+        } catch (e) {
+            console.error('关闭导出完成模态框失败:', e);
+            clearAllModalBackdrops();
+        }
+    });
+    
+    // 监听所有模态框的hidden事件
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.addEventListener('hidden.bs.modal', function() {
+            setTimeout(clearAllModalBackdrops, 300);
+        });
+    });
+});
+
+// 清理所有模态框背景
+function clearAllModalBackdrops() {
+    // 移除所有模态框背景
+    document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+        backdrop.remove();
+    });
+    
+    // 重置body样式
+    document.body.classList.remove('modal-open');
+    document.body.style.overflow = '';
+    document.body.style.paddingRight = '';
+    
+    console.log('已清理所有模态框背景');
 }

@@ -464,466 +464,215 @@ def generate_comments_pdf(class_name=None):
         }
 
 # 生成打印预览HTML
-def generate_preview_html(class_name=None):
+def generate_preview_html(class_name=None, current_user=None):
     """
     生成用于打印预览的HTML
     
     参数:
     - class_name: 班级名称（可选，如果提供则只预览该班级的学生评语）
+    - current_user: 当前用户对象，用于权限检查
     
     返回:
-    - HTML内容
+    - 包含状态和HTML内容的字典
     """
     try:
         # 获取所有学生数据
         conn = get_db_connection()
         cursor = conn.cursor()
         
-        if class_name:
+        # 根据用户权限和班级参数构建查询
+        if current_user and not current_user.is_admin and current_user.class_id:
+            # 如果是班主任，只获取其班级的学生
+            cursor.execute('SELECT id, name, gender, class, comments, updated_at FROM students WHERE class_id = ? ORDER BY CAST(id AS INTEGER)', (current_user.class_id,))
+        elif class_name:
+            # 如果指定了班级，获取该班级的学生
             cursor.execute('SELECT id, name, gender, class, comments, updated_at FROM students WHERE class = ? ORDER BY CAST(id AS INTEGER)', (class_name,))
         else:
+            # 否则获取所有学生
             cursor.execute('SELECT id, name, gender, class, comments, updated_at FROM students ORDER BY class, CAST(id AS INTEGER)')
             
         students = cursor.fetchall()
         conn.close()
         
+        if not students:
+            return {
+                'status': 'error',
+                'message': '未找到任何学生数据'
+            }
+        
         # 构建基本HTML结构
         html_content = """
         <!DOCTYPE html>
-        <html lang="zh-CN">
+        <html>
         <head>
             <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>学生评语打印预览</title>
             <style>
-                @page {
-                    size: A4 landscape;
-                    margin: 10mm;
-                }
                 body {
-                    font-family: SimSun, serif;
-                    font-size: 12pt;
-                    line-height: 1.5;
+                    font-family: "Microsoft YaHei", sans-serif;
                     margin: 0;
-                    padding: 0;
-                    background-color: #f0f0f0;
-                    text-indent: 0 !important; /* 防止首行缩进 */
+                    padding: 20px;
+                    background: #f5f5f5;
                 }
-                p, div, span, br {
-                    text-indent: 0 !important; /* 确保所有文本元素无缩进 */
-                }
-                p {
-                    text-indent: 0 !important; /* 确保段落无缩进 */
-                    margin: 0 0 0.5em 0;
-                }
-                .container {
-                    background-color: white;
-                    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-                    width: 297mm; /* A4宽度 */
-                    margin: 10mm auto;
-                    padding: 0;
-                }
-                .page-title {
-                    text-align: center;
-                    font-size: 16pt;
-                    font-weight: bold;
-                    margin: 0;
-                    padding-top: 5mm;
-                    padding-bottom: 3mm;
-                }
-                .class-title {
-                    font-size: 14pt;
-                    font-weight: bold;
-                    margin: 3mm 0;
-                    break-after: avoid;
-                    page-break-after: avoid;
-                    padding-left: 10mm;
-                }
-                .students-container {
-                    display: grid;
-                    grid-template-columns: repeat(3, 1fr);
-                    gap: 5mm;
-                    padding: 0 10mm 5mm 10mm;
-                    break-inside: avoid;
-                    page-break-inside: avoid;
-                    width: 100%;
+                .print-page {
+                    background: white;
+                    padding: 20px;
+                    margin-bottom: 20px;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                    position: relative;
+                    width: 297mm;
+                    height: 210mm;
                     box-sizing: border-box;
+                    page-break-after: always;
+                    overflow: hidden;
+                }
+                .student-grid {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr 1fr;
+                    grid-template-rows: 1fr 1fr;
+                    grid-gap: 10px;
+                    height: calc(100% - 40px); /* 减去页面标题的高度和额外边距 */
                 }
                 .student-card {
-                    border: 1px solid #000;
-                    padding: 5mm;
-                    break-inside: avoid !important;
-                    page-break-inside: avoid !important;
-                    min-height: 65mm;
-                    /* 移除最大高度限制 */
+                    border: 1px solid #ddd;
+                    padding: 8px;
+                    overflow: hidden;
                     display: flex;
                     flex-direction: column;
-                    margin-bottom: 0;
-                    background-color: #fff;
-                    box-sizing: border-box; /* 确保padding不会增加总高度 */
-                    font-size: 0.9em; /* 稍微减小字体大小以适应更多内容 */
+                    position: relative;
+                    max-height: 100%;
+                    background-color: white;
                 }
                 .student-info {
                     font-weight: bold;
-                    margin-bottom: 3mm;
-                    break-after: avoid;
-                    page-break-after: avoid;
+                    margin-bottom: 6px;
+                    background-color: #f9f9f9;
+                    padding: 5px;
+                    border-bottom: 1px solid #eee;
+                    position: sticky;
+                    top: 0;
+                    z-index: 1;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
                 }
                 .student-comment {
-                    flex-grow: 1;
                     white-space: pre-wrap;
-                    overflow: visible;
-                    text-indent: 0 !important;
-                    max-height: none; /* 确保评语完整显示 */
-                    line-height: 1.4; /* 稍微减小行高以适应更多内容 */
-                    font-size: 0.95em; /* 稍微减小字体大小 */
+                    line-height: 1.4;
+                    overflow-y: auto;
+                    flex-grow: 1;
+                    font-size: 0.85em;
+                    max-height: calc(100% - 25px); /* 减去学生信息头部的高度 */
+                    padding-right: 5px;
                 }
-                .student-comment * {
-                    text-indent: 0 !important; /* 确保评语内的所有元素都没有缩进 */
-                }
-                .update-date {
-                    text-align: right;
-                    font-size: 8pt;
-                    color: #666;
-                    margin-top: 3mm;
-                }
-                .alert {
-                    border: 1px solid #f8d7da;
-                    background-color: #f8d7da;
-                    color: #721c24;
-                    padding: 10mm;
-                    margin: 10mm;
-                    border-radius: 5mm;
+                .page-title {
                     text-align: center;
+                    font-size: 18px;
+                    margin-bottom: 10px;
+                    font-weight: bold;
+                    height: 25px;
                 }
-                .print-page {
-                    width: 100%;
-                    height: auto; /* 改为自动高度 */
-                    min-height: 209mm; /* 最小高度为A4高度 */
-                    position: relative;
-                    overflow: visible; /* 改为可见，确保内容不被裁剪 */
-                    break-after: page;
-                    page-break-after: always;
-                    margin-bottom: 20mm;
-                    background-color: white;
-                    display: flex;
-                    flex-direction: column;
+                /* 自定义滚动条样式 */
+                .student-comment::-webkit-scrollbar {
+                    width: 4px;
                 }
-                .page-content {
-                    flex: 1;
-                    overflow: visible; /* 修改为visible以确保内容不被裁剪 */
-                    position: relative;
-                    padding-bottom: 10mm; /* 为页码留出空间 */
-                    min-height: 170mm; /* 确保有足够空间放下6个学生 */
+                .student-comment::-webkit-scrollbar-track {
+                    background: #f1f1f1;
                 }
-                .page-footer {
-                    position: absolute;
-                    bottom: 5mm;
-                    right: 10mm;
-                    font-size: 8pt;
-                    color: #999;
-                }
-                .page-number {
-                    position: absolute;
-                    bottom: 5mm;
-                    width: 100%;
-                    text-align: center;
-                    font-size: 9pt;
-                    color: #666;
-                }
-                .print-instructions {
-                    background-color: #e9f7fe;
-                    border: 1px solid #bee5eb;
-                    color: #0c5460;
-                    padding: 10px;
-                    margin: 20px auto;
-                    border-radius: 5px;
-                    max-width: 297mm;
-                    text-align: center;
+                .student-comment::-webkit-scrollbar-thumb {
+                    background: #ccc;
                 }
                 @media print {
                     body {
-                        background-color: white;
-                    }
-                    .container {
-                        box-shadow: none;
+                        background: white;
+                        padding: 0;
                         margin: 0;
-                        width: 100%;
+                        width: 297mm;
+                        height: 210mm;
                     }
                     .print-page {
-                        margin-bottom: 0;
-                        height: auto !important; /* 打印时自动适应高度 */
-                        overflow: visible !important; /* 确保内容不被截断 */
+                        box-shadow: none;
+                        margin: 0;
+                        padding: 8mm;
+                        width: 100%;
+                        height: 100%;
+                        overflow: hidden;
+                    }
+                    .student-grid {
+                        grid-gap: 8px;
+                        height: calc(100% - 30px);
                     }
                     .student-card {
-                        break-inside: avoid !important;
-                        page-break-inside: avoid !important;
-                        font-size: 0.9em !important; /* 打印时确保字体大小正确 */
+                        border: 1px solid #ddd;
+                        page-break-inside: avoid;
+                        overflow: hidden; /* 打印时隐藏溢出内容而不是显示滚动条 */
+                        max-height: none; /* 允许打印时自动适应高度 */
                     }
                     .student-comment {
-                        overflow: visible !important; /* 确保评语完整显示 */
-                        font-size: 0.95em !important; /* 打印时确保字体大小正确 */
+                        overflow: hidden; /* 打印时隐藏溢出内容 */
+                        text-overflow: ellipsis; /* 使用省略号表示截断文本 */
+                        max-height: none; /* 打印时不限制高度 */
                     }
-                    .print-instructions,
-                    .no-print {
-                        display: none !important;
-                    }
-                    .page-break {
-                        page-break-before: always;
-                    }
-                    .students-container {
-                        display: grid !important;
-                        grid-template-columns: repeat(3, 1fr) !important;
-                        width: 100% !important;
-                        break-inside: avoid !important;
-                        page-break-inside: avoid !important;
-                    }
-                    .page-content {
-                        overflow: visible !important;
-                        min-height: 0 !important; /* 打印时让高度自动适应内容 */
+                    @page {
+                        size: landscape;
+                        margin: 0;
                     }
                 }
             </style>
         </head>
         <body>
-            <div class="print-instructions no-print">
-                <p><strong>打印预览</strong> - 请使用浏览器的打印功能（Ctrl+P / Cmd+P）来打印此页面。每个学生卡片会自动分页，不会跨页断开。</p>
-            </div>
-            <div class="container">
         """
         
-        # 检查是否有学生数据
-        if not students:
-            html_content += '<div class="alert">没有找到学生数据</div>'
-            html_content += """
-            </div>
-            <script>
-                window.onload = function() {
-                    if (window.parent && window.parent !== window) {
-                        window.parent.postMessage({
-                            type: 'previewLoaded',
-                            timestamp: Date.now()
-                        }, '*');
-                    }
-                };
-            </script>
-            </body>
-            </html>
+        # 将学生按照每页6个进行分组
+        students_per_page = 6
+        total_pages = (len(students) + students_per_page - 1) // students_per_page
+        
+        for page in range(total_pages):
+            # 开始新的一页
+            page_title = f"学生评语 - 第{page + 1}页"
+            if class_name:
+                page_title = f"{class_name}班 - 学生评语 - 第{page + 1}页"
+                
+            html_content += f"""
+            <div class="print-page">
+                <div class="page-title">{page_title}</div>
+                <div class="student-grid">
             """
-            return {
-                'status': 'ok',
-                'html': html_content
-            }
-        
-        # 安全转换学生数据为字典
-        students_dict = []
-        for s in students:
-            student_dict = {}
-            for key in s.keys():
-                student_dict[key] = s[key]
-            students_dict.append(student_dict)
-        
-        # 按班级分组学生
-        students_by_class = {}
-        for student in students_dict:
-            class_name = student.get('class') or '未分班'
-            if class_name not in students_by_class:
-                students_by_class[class_name] = []
-            students_by_class[class_name].append(student)
-        
-        # 每页学生卡片的最大数量
-        cards_per_page = 6  # 2行，每行3个
-        current_page = 1
-        
-        # 遍历每个班级
-        for class_index, (class_name, class_students) in enumerate(students_by_class.items()):
-            if not class_students:
-                continue  # 跳过空班级
             
-            # 将学生按每页最多6个进行分组
-            for page_index, page_start in enumerate(range(0, len(class_students), cards_per_page)):
-                page_students = class_students[page_start:page_start + cards_per_page]
+            # 该页的学生索引范围
+            start_idx = page * students_per_page
+            end_idx = min(start_idx + students_per_page, len(students))
+            
+            # 添加该页的学生评语
+            for i in range(start_idx, end_idx):
+                student = students[i]
+                escaped_comments = html_escape(student['comments'] or '暂无评语')
                 
-                # 开始一个新页面
-                html_content += f'<div class="print-page" id="page-{current_page}">'
-                html_content += '<div class="page-content">'
-                
-                # 只在第一页添加总标题
-                if current_page == 1:
-                    html_content += '<div class="page-title">学生评语表</div>'
-                
-                # 班级标题
-                html_content += f'<div class="class-title">{html_escape(class_name)}</div>'
-                
-                # 创建学生卡片容器
-                html_content += '<div class="students-container">'
-                
-                for student in page_students:
-                    # 安全处理数据：确保所有字段都存在
-                    student_id = student.get('id', '未知ID')
-                    student_name = student.get('name', '未知姓名')
-                    student_gender = student.get('gender', '未知')
-                    student_comment = student.get('comments', '') or '暂无评语'
-                    update_date = student.get('updated_at', '') or '未更新'
-                    
-                    # 安全处理HTML特殊字符
-                    student_info = f"{html_escape(student_name)} ({html_escape(student_gender)}) - 学号: {html_escape(student_id)}"
-                    
-                    html_content += f"""
-                    <div class="student-card">
-                        <div class="student-info">{student_info}</div>
-                        <div class="student-comment" style="text-indent: 0 !important;">{html_escape(student_comment)}</div>
-                        <div class="update-date">更新时间: {html_escape(update_date)}</div>
+                html_content += f"""
+                <div class="student-card">
+                    <div class="student-info">
+                        {student['name']} ({student['gender']}) - 学号: {student['id']}
                     </div>
-                    """
-                
-                # 补齐不足的卡片（使行对齐）
-                remaining = cards_per_page - len(page_students)
-                if remaining > 0 and remaining < cards_per_page:  # 只有在需要补齐时才添加
-                    for _ in range(remaining):
-                        html_content += '<div class="student-card" style="visibility: hidden;"></div>'
-                
-                html_content += '</div>'  # 结束students-container
-                html_content += '</div>'  # 结束page-content
-                
-                # 添加页脚和页码
-                html_content += f'<div class="page-number">第 {current_page} 页</div>'
-                html_content += '</div>'  # 结束print-page
-                
-                current_page += 1
+                    <div class="student-comment">
+                        {escaped_comments}
+                    </div>
+                </div>
+                """
+            
+            # 填充空白卡片以保持布局一致
+            for i in range(end_idx - start_idx, students_per_page):
+                html_content += """
+                <div class="student-card" style="visibility: hidden;"></div>
+                """
+            
+            # 结束当前页
+            html_content += """
+                </div>
+            </div>
+            """
         
+        # 结束HTML
         html_content += """
-        </div>
-        <script>
-            // 用于通知父窗口预览已加载完成
-            window.onload = function() {
-                if (window.parent && window.parent !== window) {
-                    window.parent.postMessage({
-                        type: 'previewLoaded',
-                        timestamp: Date.now()
-                    }, '*');
-                }
-                
-                // 确保评语没有首行缩进
-                const fixIndentation = function() {
-                    // 添加全局CSS规则
-                    const styleTag = document.createElement('style');
-                    styleTag.textContent = `
-                        * { text-indent: 0 !important; }
-                        p, div, span, br { text-indent: 0 !important; }
-                        .student-comment, .student-comment * { 
-                            text-indent: 0 !important; 
-                            padding-left: 0 !important;
-                            margin-left: 0 !important;
-                        }
-                    `;
-                    document.head.appendChild(styleTag);
-                    
-                    // 直接设置所有评语元素的样式
-                    document.querySelectorAll('.student-comment').forEach(comment => {
-                        comment.style.textIndent = '0';
-                        comment.style.paddingLeft = '0';
-                        comment.style.marginLeft = '0';
-                        
-                        // 处理内部所有元素
-                        Array.from(comment.children).forEach(child => {
-                            child.style.textIndent = '0';
-                            child.style.paddingLeft = '0';
-                            child.style.marginLeft = '0';
-                        });
-                    });
-                };
-                
-                // 动态调整内容以确保每页显示6个学生
-                const adjustContentSize = function() {
-                    // 查找所有学生卡片
-                    const cards = document.querySelectorAll('.student-card');
-                    if (!cards.length) return;
-                    
-                    // 检查每个卡片内的评语
-                    cards.forEach(card => {
-                        const comment = card.querySelector('.student-comment');
-                        if (!comment) return;
-                        
-                        // 获取评语文本长度
-                        const textLength = comment.innerText.length;
-                        
-                        // 根据文本长度动态调整字体大小
-                        if (textLength > 500) {
-                            comment.style.fontSize = '0.85em';
-                            comment.style.lineHeight = '1.3';
-                        } else if (textLength > 300) {
-                            comment.style.fontSize = '0.9em';
-                            comment.style.lineHeight = '1.35';
-                        } else {
-                            comment.style.fontSize = '0.95em';
-                            comment.style.lineHeight = '1.4';
-                        }
-                    });
-                    
-                    // 确保每页内容正确显示
-                    document.querySelectorAll('.print-page').forEach(page => {
-                        // 检查页面中学生卡片数量
-                        const pageCards = page.querySelectorAll('.student-card');
-                        if (pageCards.length > 0 && pageCards.length <= 6) {
-                            // 设置最小高度以确保页面完整
-                            page.style.minHeight = '209mm';
-                        }
-                    });
-                };
-                
-                // 执行缩进修复和内容调整
-                fixIndentation();
-                adjustContentSize();
-                
-                // 确保打印时自动分页
-                var styleSheet = document.createElement('style');
-                styleSheet.setAttribute('media', 'print');
-                styleSheet.textContent = `
-                    @page {
-                        size: A4 landscape;
-                        margin: 10mm;
-                    }
-                    .print-page {
-                        break-after: page !important;
-                        page-break-after: always !important;
-                        height: auto !important;
-                        overflow: visible !important;
-                    }
-                    .student-card {
-                        break-inside: avoid !important;
-                        page-break-inside: avoid !important;
-                    }
-                    .student-comment {
-                        text-indent: 0 !important;
-                    }
-                    .student-comment * {
-                        text-indent: 0 !important;
-                    }
-                    .class-title {
-                        break-after: avoid !important;
-                        page-break-after: avoid !important;
-                    }
-                    .page-number {
-                        position: absolute;
-                        bottom: 5mm;
-                    }
-                    .students-container {
-                        display: grid !important;
-                        grid-template-columns: repeat(3, 1fr) !important;
-                    }
-                    * { text-indent: 0 !important; }
-                `;
-                document.head.appendChild(styleSheet);
-                
-                // 添加打印事件监听
-                window.addEventListener('beforeprint', function() {
-                    // 打印前再次调整
-                    fixIndentation();
-                    adjustContentSize();
-                });
-            };
-        </script>
         </body>
         </html>
         """
@@ -934,56 +683,11 @@ def generate_preview_html(class_name=None):
         }
         
     except Exception as e:
-        logger.error(f"生成预览HTML时出错: {e}")
+        logger.error(f"生成预览HTML时出错: {str(e)}")
         logger.error(traceback.format_exc())
-        
-        # 构建一个错误信息HTML而不是返回500错误
-        error_html = f"""
-        <!DOCTYPE html>
-        <html lang="zh-CN">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>预览错误</title>
-            <style>
-                body {{ font-family: SimSun, serif; text-align: center; padding: 50px; }}
-                .error-container {{ 
-                    border: 1px solid #f8d7da;
-                    background-color: #f8d7da;
-                    color: #721c24;
-                    padding: 20px;
-                    margin: 20px auto;
-                    border-radius: 5mm;
-                    text-align: center;
-                }}
-                h2 {{ color: #721c24; }}
-            </style>
-        </head>
-        <body>
-            <h2>预览生成失败</h2>
-            <div class="error-container">
-                <p>生成预览时发生错误:</p>
-                <p>{html_escape(str(e))}</p>
-            </div>
-            <p>请联系管理员或稍后再试</p>
-            <script>
-                window.onload = function() {{
-                    if (window.parent && window.parent !== window) {{
-                        window.parent.postMessage({{
-                            type: 'previewError',
-                            timestamp: Date.now(),
-                            error: '{html_escape(str(e))}'
-                        }}, '*');
-                    }}
-                }};
-            </script>
-        </body>
-        </html>
-        """
-        
         return {
-            'status': 'ok',  # 返回ok状态以避免500错误
-            'html': error_html
+            'status': 'error',
+            'message': f'生成预览HTML时出错: {str(e)}'
         }
 
 # 用于HTML转义的辅助函数

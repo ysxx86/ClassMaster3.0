@@ -39,25 +39,38 @@ class GradesManager:
         conn.commit()
         conn.close()
     
-    def get_all_grades(self, semester="上学期"):
+    def get_all_grades(self, semester="上学期", class_id=None):
         """获取所有学生的成绩"""
-        print(f"获取所有学生成绩，学期: {semester}")
+        print(f"获取所有学生成绩，学期: {semester}, 班级ID: {class_id}")
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
         
         try:
-            # 直接从students表获取全部数据，不对学期做过滤
-            cursor.execute('''
+            # 构建SQL查询
+            sql = '''
                 SELECT 
                     id AS student_id, 
+                    class_id,
                     name AS student_name, 
                     class, 
                     daof, yuwen, shuxue, yingyu, laodong, 
                     tiyu, yinyue, meishu, kexue, zonghe, 
                     xinxi, shufa
                 FROM students
-                ORDER BY class, CAST(id AS INTEGER)
-            ''')
+            '''
+            
+            params = []
+            
+            # 添加班级ID筛选
+            if class_id:
+                sql += " WHERE class_id = ?"
+                params.append(class_id)
+            
+            # 添加排序
+            sql += " ORDER BY class, CAST(id AS INTEGER)"
+            
+            # 执行查询
+            cursor.execute(sql, params)
             
             # 获取列名
             column_names = [description[0] for description in cursor.description]
@@ -79,7 +92,7 @@ class GradesManager:
         finally:
             conn.close()
     
-    def get_student_grade(self, student_id, semester="上学期"):
+    def get_student_grade(self, student_id, class_id, semester="上学期"):
         """获取单个学生的成绩记录"""
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
@@ -92,8 +105,8 @@ class GradesManager:
                    xinxi, shufa, 
                    COALESCE(semester, ?) AS semester
             FROM students 
-            WHERE id = ? AND (semester = ? OR semester IS NULL OR semester = '')
-        ''', (semester, student_id, semester))
+            WHERE id = ? AND class_id = ? AND (semester = ? OR semester IS NULL OR semester = '')
+        ''', (semester, student_id, class_id, semester))
         
         row = cursor.fetchone()
         conn.close()
@@ -104,6 +117,7 @@ class GradesManager:
                 'student_id': row[0],
                 'student_name': row[1],
                 'class': row[2],
+                'class_id': class_id,
                 'daof': row[3] or '',
                 'yuwen': row[4] or '',
                 'shuxue': row[5] or '',
@@ -120,7 +134,7 @@ class GradesManager:
             }
         else:
             # 查找学生基本信息
-            cursor.execute('SELECT id, name, class FROM students WHERE id = ?', (student_id,))
+            cursor.execute('SELECT id, name, class FROM students WHERE id = ? AND class_id = ?', (student_id, class_id))
             student = cursor.fetchone()
             
             if student:
@@ -128,6 +142,7 @@ class GradesManager:
                     'student_id': student[0],
                     'student_name': student[1],
                     'class': student[2],
+                    'class_id': class_id,
                     'semester': semester,
                     'daof': '',
                     'yuwen': '',
@@ -144,9 +159,76 @@ class GradesManager:
                 }
             return None  # 学生不存在
     
-    def save_grade(self, student_id, grade_data, semester="上学期"):
+    def get_student_grades(self, student_id, class_id, semester="上学期"):
+        """获取单个学生的成绩记录"""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        
+        # 查询学生信息和成绩
+        cursor.execute('''
+            SELECT id, name, class, 
+                   daof, yuwen, shuxue, yingyu, laodong, 
+                   tiyu, yinyue, meishu, kexue, zonghe, 
+                   xinxi, shufa, 
+                   COALESCE(semester, ?) AS semester
+            FROM students 
+            WHERE id = ? AND class_id = ? AND (semester = ? OR semester IS NULL OR semester = '')
+        ''', (semester, student_id, class_id, semester))
+        
+        row = cursor.fetchone()
+        conn.close()
+        
+        if row:
+            # 构造字典
+            return {
+                'student_id': row[0],
+                'student_name': row[1],
+                'class': row[2],
+                'class_id': class_id,
+                'daof': row[3] or '',
+                'yuwen': row[4] or '',
+                'shuxue': row[5] or '',
+                'yingyu': row[6] or '',
+                'laodong': row[7] or '',
+                'tiyu': row[8] or '',
+                'yinyue': row[9] or '',
+                'meishu': row[10] or '',
+                'kexue': row[11] or '',
+                'zonghe': row[12] or '',
+                'xinxi': row[13] or '',
+                'shufa': row[14] or '',
+                'semester': row[15]
+            }
+        else:
+            # 查找学生基本信息
+            cursor.execute('SELECT id, name, class FROM students WHERE id = ? AND class_id = ?', (student_id, class_id))
+            student = cursor.fetchone()
+            
+            if student:
+                return {
+                    'student_id': student[0],
+                    'student_name': student[1],
+                    'class': student[2],
+                    'class_id': class_id,
+                    'semester': semester,
+                    'daof': '',
+                    'yuwen': '',
+                    'shuxue': '',
+                    'yingyu': '',
+                    'laodong': '',
+                    'tiyu': '',
+                    'yinyue': '',
+                    'meishu': '',
+                    'kexue': '',
+                    'zonghe': '',
+                    'xinxi': '',
+                    'shufa': ''
+                }
+            return None  # 学生不存在
+    
+    def save_grade(self, student_id, class_id, grade_data, semester="上学期"):
         """保存单个学生的成绩记录"""
-        print(f"准备保存学生 {student_id} 的成绩，学期: {semester}")
+        print(f"准备保存学生 {student_id} (班级ID: {class_id}) 的成绩，学期: {semester}")
         print(f"成绩数据: {grade_data}")
         
         conn = sqlite3.connect(self.db_path)
@@ -156,9 +238,9 @@ class GradesManager:
         
         try:
             # 检查学生是否存在
-            cursor.execute("SELECT id FROM students WHERE id = ?", (student_id,))
+            cursor.execute("SELECT id FROM students WHERE id = ? AND class_id = ?", (student_id, class_id))
             if not cursor.fetchone():
-                print(f"学生ID {student_id} 不存在")
+                print(f"学生ID {student_id} 在班级 {class_id} 中不存在")
                 return False
                 
             # 生成更新字句
@@ -185,12 +267,13 @@ class GradesManager:
             
             # 添加条件参数
             values.append(student_id)
+            values.append(class_id)
             
             # 执行更新
             if set_clauses:
                 query = f'''
                 UPDATE students SET {', '.join(set_clauses)}
-                WHERE id = ?
+                WHERE id = ? AND class_id = ?
                 '''
                 print(f"执行SQL: {query}")
                 print(f"参数: {values}")
@@ -212,7 +295,7 @@ class GradesManager:
         finally:
             conn.close()
     
-    def delete_grade(self, student_id, semester="上学期"):
+    def delete_grade(self, student_id, class_id, semester="上学期"):
         """清空学生的成绩记录"""
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
@@ -234,8 +317,8 @@ class GradesManager:
                 xinxi = '',
                 shufa = '',
                 semester = ?
-            WHERE id = ? AND (semester = ? OR semester IS NULL OR semester = '')
-            ''', (semester, student_id, semester))
+            WHERE id = ? AND class_id = ? AND (semester = ? OR semester IS NULL OR semester = '')
+            ''', (semester, student_id, class_id, semester))
             
             conn.commit()
             return True
@@ -246,7 +329,7 @@ class GradesManager:
         finally:
             conn.close()
     
-    def import_grades_from_excel(self, file_path, semester="上学期"):
+    def import_grades_from_excel(self, file_path, semester="上学期", class_id=None):
         """从Excel文件导入成绩"""
         try:
             # 检查文件路径
@@ -254,7 +337,7 @@ class GradesManager:
                 print(f"文件路径无效或文件不存在: {file_path}")
                 return False, f"文件路径无效或文件不存在: {file_path}"
                 
-            print(f"准备导入成绩文件: {file_path}, 文件大小: {os.path.getsize(file_path)} 字节")
+            print(f"准备导入成绩文件: {file_path}, 文件大小: {os.path.getsize(file_path)} 字节, 班级ID: {class_id}")
             
             # 读取Excel文件
             df = pd.read_excel(file_path)
@@ -316,7 +399,11 @@ class GradesManager:
                     student_id = str(row['学号']).strip()
                     
                     # 检查学生是否存在
-                    cursor.execute("SELECT id, name FROM students WHERE id = ?", (student_id,))
+                    if class_id:
+                        cursor.execute("SELECT id, name FROM students WHERE id = ? AND class_id = ?", (student_id, class_id))
+                    else:
+                        cursor.execute("SELECT id, name FROM students WHERE id = ?", (student_id,))
+                    
                     student_record = cursor.fetchone()
                     if not student_record:
                         print(f"学生ID不存在: {student_id}")
@@ -368,22 +455,30 @@ class GradesManager:
                         # 添加条件参数
                         values.append(student_id)
                         
-                        # 执行更新
-                        if len(set_clauses) > 1:  # 确保至少有一个成绩字段要更新
+                        # 班级ID在导入时已确定，不需要从Excel获取
+                        if class_id:
+                            query = f'''
+                            UPDATE students SET {', '.join(set_clauses)}
+                            WHERE id = ? AND class_id = ?
+                            '''
+                            values.append(class_id)  # 添加到WHERE条件
+                        else:
                             query = f'''
                             UPDATE students SET {', '.join(set_clauses)}
                             WHERE id = ?
                             '''
-                            cursor.execute(query, values)
-                            
-                            if cursor.rowcount > 0:
-                                success_count += 1
-                            else:
-                                fail_count += 1
+                        
+                        # 执行更新
+                        cursor.execute(query, values)
+                        
+                        if cursor.rowcount > 0:
+                            success_count += 1
                         else:
-                            # 没有有效成绩，跳过此记录
-                            print(f"学号 {student_id} 没有有效的成绩数据，已跳过")
-                            skipped_count += 1
+                            fail_count += 1
+                    else:
+                        # 此学生没有有效成绩，跳过此记录
+                        print(f"学号 {student_id} 没有有效的成绩数据，已跳过")
+                        skipped_count += 1
                 except Exception as e:
                     print(f"导入学生 {student_id} 的成绩时出错: {e}")
                     fail_count += 1
@@ -416,7 +511,7 @@ class GradesManager:
             print(traceback.format_exc())  # 打印完整的错误堆栈
             return False, f"导入成绩时出错: {str(e)}"
     
-    def preview_grades_from_excel(self, file_path, semester="上学期"):
+    def preview_grades_from_excel(self, file_path, semester="上学期", class_id=None):
         """从Excel文件预览成绩导入，不实际导入数据库"""
         try:
             # 检查文件路径
@@ -427,7 +522,7 @@ class GradesManager:
                     'message': f"文件路径无效或文件不存在: {file_path}"
                 }
                 
-            print(f"准备预览成绩文件: {file_path}, 文件大小: {os.path.getsize(file_path)} 字节")
+            print(f"准备预览成绩文件: {file_path}, 文件大小: {os.path.getsize(file_path)} 字节, 班级ID: {class_id}")
             
             # 读取Excel文件
             df = pd.read_excel(file_path)
@@ -460,7 +555,12 @@ class GradesManager:
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
             
-            cursor.execute('SELECT id, name, class FROM students')
+            # 根据班级ID筛选学生
+            if class_id:
+                cursor.execute('SELECT id, name, class FROM students WHERE class_id = ?', (class_id,))
+            else:
+                cursor.execute('SELECT id, name, class FROM students')
+            
             students_dict = {row[0]: {'name': row[1], 'class': row[2]} for row in cursor.fetchall()}
             conn.close()
             
@@ -529,6 +629,10 @@ class GradesManager:
                         'class': students_dict[student_id]['class'],
                         'semester': semester
                     }
+                    
+                    # 如果提供了班级ID，添加到记录中
+                    if class_id:
+                        student_grade['class_id'] = class_id
                     
                     # 添加各科目成绩
                     has_valid_grade = False  # 是否有至少一个有效成绩
@@ -836,7 +940,7 @@ class GradesManager:
             'shufa': '书法'
         }
         
-    def create_empty_template(self, output_path=None):
+    def create_empty_template(self, output_path=None, class_id=None):
         """创建空白的成绩导入模板"""
         from openpyxl import Workbook
         from openpyxl.styles import Alignment, Font, PatternFill, Border, Side
@@ -846,17 +950,26 @@ class GradesManager:
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
         
-        cursor.execute('''
-        SELECT id, name, class FROM students
-        ORDER BY class, CAST(id AS INTEGER)
-        ''')
+        # 根据班级ID筛选学生
+        if class_id:
+            cursor.execute('''
+            SELECT id, name, class, class_id FROM students
+            WHERE class_id = ?
+            ORDER BY class, CAST(id AS INTEGER)
+            ''', (class_id,))
+        else:
+            cursor.execute('''
+            SELECT id, name, class, class_id FROM students
+            ORDER BY class, CAST(id AS INTEGER)
+            ''')
         
         students = []
         for row in cursor.fetchall():
             students.append({
                 'id': row[0],
                 'name': row[1],
-                'class': row[2]
+                'class': row[2],
+                'class_id': row[3]
             })
         
         conn.close()

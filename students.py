@@ -13,6 +13,13 @@ from werkzeug.utils import secure_filename
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font
 from openpyxl.utils import get_column_letter
+from flask_login import login_required, current_user
+from utils.class_filter import class_filter, user_can_access
+import logging
+import openpyxl
+
+# 配置日志
+logger = logging.getLogger(__name__)
 
 # 学生蓝图
 students_bp = Blueprint('students', __name__)
@@ -26,6 +33,7 @@ DATABASE = 'students.db'
 def get_db_connection():
     conn = sqlite3.connect(DATABASE)
     conn.row_factory = sqlite3.Row
+    conn.execute('PRAGMA foreign_keys = ON')  # 启用外键约束
     return conn
 
 # 创建学生导入模板
@@ -81,42 +89,95 @@ def create_student_template():
 
 # 获取所有学生API
 @students_bp.route('/api/students', methods=['GET'], strict_slashes=False)
+@login_required
 def get_all_students():
+    class_id = None
+    
+    # 班主任只能查看自己班级的学生
+    if not current_user.is_admin:
+        # 如果班主任没有被分配班级，则返回空列表
+        if not current_user.class_id:
+            logger.warning(f"班主任 {current_user.username} 未分配班级，不能查看任何学生")
+            return jsonify({
+                'status': 'ok',
+                'count': 0,
+                'students': [],
+                'message': '您尚未被分配班级，无法查看学生信息'
+            })
+        class_id = current_user.class_id
+    
     conn = get_db_connection()
     cursor = conn.cursor()
     
-    cursor.execute('SELECT * FROM students ORDER BY CAST(id AS INTEGER)')
-    students = [dict(row) for row in cursor.fetchall()]
-    
-    conn.close()
-    
-    return jsonify({
-        'status': 'ok',
-        'count': len(students),
-        'students': students
-    })
-
-# 获取单个学生API
-@students_bp.route('/api/students/<student_id>', methods=['GET'], strict_slashes=False)
-def get_student(student_id):
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    
-    cursor.execute('SELECT * FROM students WHERE id = ?', (student_id,))
-    student = cursor.fetchone()
-    
-    conn.close()
-    
-    if student:
+    try:
+        if class_id:
+            logger.info(f"仅获取班级 {class_id} 的学生")
+            cursor.execute('SELECT * FROM students WHERE class_id = ? ORDER BY CAST(id AS INTEGER)', (class_id,))
+        else:
+            logger.info(f"获取所有学生")
+            cursor.execute('SELECT * FROM students ORDER BY CAST(id AS INTEGER)')
+            
+        students = [dict(row) for row in cursor.fetchall()]
+        
         return jsonify({
             'status': 'ok',
-            'student': dict(student)
+            'count': len(students),
+            'students': students
         })
-    else:
-        return jsonify({'error': '未找到学生'}), 404
+    except Exception as e:
+        logger.error(f"获取学生列表时出错: {str(e)}")
+        return jsonify({'status': 'error', 'message': f'获取学生列表失败: {str(e)}'}), 500
+    finally:
+        conn.close()
+
+# 获取单个学生API
+@students_bp.route('/api/student/<student_id>', methods=['GET'])
+@login_required
+def get_student(student_id):
+    """获取学生详情"""
+    try:
+        # 获取班级ID
+        class_id = request.args.get('class_id')
+        if not class_id:
+            return jsonify({'error': '缺少班级ID'}), 400
+            
+        # 获取数据库连接
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # 使用复合主键查询
+        cursor.execute('''
+            SELECT s.*, c.class_name 
+            FROM students s
+            LEFT JOIN classes c ON s.class_id = c.id
+            WHERE s.id = ? AND s.class_id = ?
+        ''', (student_id, class_id))
+        
+        student = cursor.fetchone()
+        if not student:
+            return jsonify({'error': '未找到该学生'}), 404
+            
+        # 转换为字典
+        student_dict = dict(student)
+        
+        # 处理数值字段
+        numeric_fields = ['height', 'weight', 'chest_circumference', 'vital_capacity', 
+                         'vision_left', 'vision_right']
+        for field in numeric_fields:
+            if field in student_dict and student_dict[field] is not None:
+                student_dict[field] = float(student_dict[field])
+        
+        return jsonify(student_dict)
+        
+    except Exception as e:
+        logger.error(f"获取学生详情时出错: {str(e)}")
+        return jsonify({'error': f'获取学生详情失败: {str(e)}'}), 500
+    finally:
+        conn.close()
 
 # 添加新学生API
 @students_bp.route('/api/students', methods=['POST'], strict_slashes=False)
+@login_required
 def add_student():
     data = request.json
     
@@ -127,6 +188,19 @@ def add_student():
     for field in required_fields:
         if field not in data:
             return jsonify({'error': f'缺少必要的字段: {field}'}), 400
+    
+    # 如果是班主任且没有分配班级，不允许添加学生
+    if not current_user.is_admin and not current_user.class_id:
+        return jsonify({'error': '您尚未被分配班级，无法添加学生'}), 403
+    
+    # 如果是班主任，自动设置班级ID
+    if not current_user.is_admin and current_user.class_id:
+        # 检查是否已提供了class_id，如果是，确保与班主任的class_id一致
+        if 'class_id' in data and data['class_id'] != current_user.class_id:
+            return jsonify({'error': '班主任只能添加本班学生'}), 403
+        
+        # 设置班级ID
+        data['class_id'] = current_user.class_id
     
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -150,13 +224,13 @@ def add_student():
     try:
         cursor.execute('''
         INSERT INTO students (
-            id, name, gender, class, height, weight,
+            id, name, gender, class, class_id, height, weight,
             chest_circumference, vital_capacity, dental_caries,
             vision_left, vision_right, physical_test_status, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (
             data['id'], data['name'], data['gender'], data.get('class', ''),
-            height, weight, 
+            data.get('class_id'), height, weight, 
             chest_circumference, vital_capacity, data.get('dental_caries', ''),
             vision_left, vision_right, data.get('physical_test_status', ''),
             now, now
@@ -171,265 +245,233 @@ def add_student():
         })
     except Exception as e:
         conn.rollback()
-        print(f"添加学生时出错: {str(e)}")
-        import traceback
-        traceback.print_exc()
+        logger.error(f"添加学生时出错: {str(e)}")
         return jsonify({'error': f'添加学生时出错: {str(e)}'}), 500
     finally:
         conn.close()
 
 # 更新学生API
-@students_bp.route('/api/students/<student_id>', methods=['PUT'], strict_slashes=False)
+@students_bp.route('/api/student/<student_id>', methods=['PUT'])
+@login_required
 def update_student(student_id):
-    import logging
-    logger = logging.getLogger(__name__)
-    logger.info(f"收到更新学生信息请求，学生ID: {student_id}")
-    
+    """更新学生信息"""
     try:
         data = request.json
-        logger.info(f"请求数据: {data}")
-        
         if not data:
-            logger.error("无效的请求数据")
-            return jsonify({'error': '无效的请求数据'}), 400
+            return jsonify({'error': '没有提供更新数据'}), 400
         
-        # 确保请求的ID与URL中的ID一致
-        if 'id' in data and data['id'] != student_id:
-            logger.error(f"URL中的ID({student_id})与请求体中的ID({data['id']})不一致")
-            return jsonify({'error': '学生ID不一致'}), 400
+        # 如果是班主任且没有分配班级，不允许更新学生
+        if not current_user.is_admin and not current_user.class_id:
+            return jsonify({'error': '您尚未被分配班级，无法更新学生信息'}), 403
+            
+        # 获取班级ID
+        class_id = data.get('class_id')
+        if not class_id:
+            return jsonify({'error': '缺少班级ID'}), 400
+            
+        # 班主任只能更新自己班级的学生
+        if not current_user.is_admin and str(current_user.class_id) != str(class_id):
+            return jsonify({'error': '您只能更新自己班级的学生信息'}), 403
         
+        # 获取数据库连接
         conn = get_db_connection()
         cursor = conn.cursor()
         
         # 检查学生是否存在
-        cursor.execute('SELECT id FROM students WHERE id = ?', (student_id,))
+        cursor.execute('SELECT id FROM students WHERE id = ? AND class_id = ?', 
+                      (student_id, class_id))
         if not cursor.fetchone():
-            conn.close()
-            return jsonify({'error': f'未找到学号为 {student_id} 的学生'}), 404
+            return jsonify({'error': '未找到该学生'}), 404
         
-        now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        
-        # 更详细的数值处理和日志
-        numeric_fields = {
-            'height': 'height',
-            'weight': 'weight',
-            'chest_circumference': 'chest_circumference',
-            'vital_capacity': 'vital_capacity',
-            'vision_left': 'vision_left',
-            'vision_right': 'vision_right',
-        }
-        
-        processed_values = {}
+        # 准备更新数据
+        update_fields = []
+        update_values = []
         
         # 处理数值字段
-        for field, db_field in numeric_fields.items():
-            raw_value = data.get(field, None)
-            logger.info(f"字段 {field} 原始值: {raw_value}, 类型: {type(raw_value).__name__}")
-            
-            try:
-                if raw_value is None or raw_value == '' or raw_value == 'null' or raw_value == 'undefined' or raw_value == '-':
-                    processed_values[db_field] = None
-                    logger.info(f"字段 {field} 设为None")
-                else:
-                    # 如果是字符串，处理逗号等
-                    if isinstance(raw_value, str):
-                        # 替换逗号为点
-                        raw_value = raw_value.replace(',', '.')
-                        logger.info(f"字段 {field} 预处理后: {raw_value}")
-                    
-                    # 转换为浮点数
-                    value = float(raw_value)
-                    # 处理0值
-                    processed_values[db_field] = 0.0 if value == 0 else value
-                    logger.info(f"字段 {field} 成功转换为: {processed_values[db_field]}")
-            except (ValueError, TypeError) as e:
-                logger.warning(f"字段 {field} 值 '{raw_value}' 转换错误: {str(e)}")
-                processed_values[db_field] = None
-        
-        # 检查表结构
-        cursor.execute("PRAGMA table_info(students)")
-        existing_columns = [row[1] for row in cursor.fetchall()]
-        logger.info(f"数据库表列: {existing_columns}")
-        
-        # 检查所需列是否存在，如不存在则添加
-        required_columns = list(numeric_fields.values()) + ['dental_caries', 'physical_test_status']
-        missing_columns = [col for col in required_columns if col not in existing_columns]
-        
-        if missing_columns:
-            logger.warning(f"数据库表缺少列: {missing_columns}")
-            for column in missing_columns:
-                column_type = "TEXT" if column in ['dental_caries', 'physical_test_status'] else "REAL"
-                logger.info(f"添加缺失的列: {column} ({column_type})")
+        numeric_fields = ['height', 'weight', 'chest_circumference', 'vital_capacity', 
+                         'vision_left', 'vision_right']
+        for field in numeric_fields:
+            if field in data:
                 try:
-                    cursor.execute(f"ALTER TABLE students ADD COLUMN {column} {column_type}")
-                except sqlite3.Error as e:
-                    logger.error(f"添加列 {column} 时出错: {str(e)}")
-            
-            conn.commit()
-            logger.info("已添加缺失的列")
+                    value = float(data[field]) if data[field] is not None else None
+                    update_fields.append(f"{field} = ?")
+                    update_values.append(value)
+                except (ValueError, TypeError):
+                    return jsonify({'error': f'字段 {field} 的值无效'}), 400
         
-        # 构建更新SQL
-        update_fields = []
-        params = []
+        # 处理其他字段
+        for field, value in data.items():
+            if field not in numeric_fields and field != 'class_id':
+                update_fields.append(f"{field} = ?")
+                update_values.append(value)
         
-        # 基本字段
-        update_fields.append("name = ?")
-        params.append(data.get('name', ''))
-        
-        update_fields.append("gender = ?")
-        params.append(data.get('gender', ''))
-        
-        update_fields.append("class = ?")
-        params.append(data.get('class', ''))
-        
-        # 数值字段
-        for db_field in numeric_fields.values():
-            if db_field in existing_columns:
-                update_fields.append(f"{db_field} = ?")
-                params.append(processed_values.get(db_field))
-        
-        # 文本字段
-        if 'dental_caries' in existing_columns:
-            update_fields.append("dental_caries = ?")
-            params.append(data.get('dental_caries', ''))
-        
-        if 'physical_test_status' in existing_columns:
-            update_fields.append("physical_test_status = ?")
-            params.append(data.get('physical_test_status', ''))
-        
-        # 更新时间
+        # 添加更新时间
         update_fields.append("updated_at = ?")
-        params.append(now)
+        update_values.append(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
         
         # 添加WHERE条件
-        params.append(student_id)
+        update_values.extend([student_id, class_id])
         
-        # 构建完整的SQL语句
-        update_sql = f"UPDATE students SET {', '.join(update_fields)} WHERE id = ?"
-        logger.info(f"更新SQL: {update_sql}")
-        logger.info(f"参数: {params}")
+        # 构建并执行更新SQL
+        update_sql = f"""
+            UPDATE students 
+            SET {', '.join(update_fields)}
+            WHERE id = ? AND class_id = ?
+        """
         
-        # 执行更新
-        cursor.execute(update_sql, params)
+        cursor.execute(update_sql, update_values)
         conn.commit()
         
-        logger.info(f"成功更新学生信息: ID={student_id}, 名称={data.get('name', 'unknown')}")
+        return jsonify({'message': '学生信息更新成功'})
         
-        return jsonify({
-            'status': 'ok',
-            'message': f'成功更新学生信息: {data.get("name", student_id)}',
-            'student_id': student_id
-        })
-    except sqlite3.Error as e:
-        if conn:
-            conn.rollback()
-        error_msg = f"数据库错误: {str(e)}"
-        logger.error(error_msg)
-        logger.error(traceback.format_exc())
-        return jsonify({'error': error_msg}), 500
     except Exception as e:
-        if conn:
-            conn.rollback()
-        error_msg = f"更新学生信息时出错: {str(e)}"
-        logger.error(error_msg)
-        logger.error(traceback.format_exc())
-        return jsonify({'error': error_msg}), 500
+        logger.error(f"更新学生信息时出错: {str(e)}")
+        return jsonify({'error': f'更新学生信息失败: {str(e)}'}), 500
     finally:
-        if conn:
-            conn.close()
-
-# 删除学生API
-@students_bp.route('/api/students/<student_id>', methods=['DELETE'], strict_slashes=False)
-def delete_student(student_id):
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    
-    # 检查学生是否存在
-    cursor.execute('SELECT id, name FROM students WHERE id = ?', (student_id,))
-    student = cursor.fetchone()
-    
-    if not student:
         conn.close()
-        return jsonify({'error': f'未找到学号为 {student_id} 的学生'}), 404
-    
-    student_name = student['name']
-    
+
+@students_bp.route('/api/student/<student_id>/comments', methods=['PUT'])
+@login_required
+def update_student_comments(student_id):
+    """更新学生评语"""
     try:
-        cursor.execute('DELETE FROM students WHERE id = ?', (student_id,))
-        conn.commit()
+        data = request.json
+        if not data or 'comments' not in data:
+            return jsonify({'error': '没有提供评语内容'}), 400
+            
+        # 获取班级ID
+        class_id = data.get('class_id')
+        if not class_id:
+            return jsonify({'error': '缺少班级ID'}), 400
+            
+        # 获取数据库连接
+        conn = get_db_connection()
+        cursor = conn.cursor()
         
-        return jsonify({
-            'status': 'ok',
-            'message': f'成功删除学生: {student_name}',
-            'student_id': student_id
-        })
+        # 检查学生是否存在
+        cursor.execute('SELECT id FROM students WHERE id = ? AND class_id = ?', 
+                      (student_id, class_id))
+        if not cursor.fetchone():
+            return jsonify({'error': '未找到该学生'}), 404
+        
+        # 更新评语
+        cursor.execute('''
+            UPDATE students 
+            SET comments = ?, updated_at = ?
+            WHERE id = ? AND class_id = ?
+        ''', (data['comments'], 
+              datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+              student_id, class_id))
+        
+        conn.commit()
+        return jsonify({'message': '评语更新成功'})
+        
     except Exception as e:
-        conn.rollback()
-        return jsonify({'error': f'删除学生时出错: {str(e)}'}), 500
+        logger.error(f"更新学生评语时出错: {str(e)}")
+        return jsonify({'error': f'更新评语失败: {str(e)}'}), 500
+    finally:
+        conn.close()
+
+@students_bp.route('/api/student/<student_id>', methods=['DELETE'])
+@login_required
+def delete_student(student_id):
+    """删除学生"""
+    try:
+        # 获取班级ID
+        class_id = request.args.get('class_id')
+        if not class_id:
+            return jsonify({'error': '缺少班级ID'}), 400
+            
+        # 如果是班主任且没有分配班级，不允许删除学生
+        if not current_user.is_admin and not current_user.class_id:
+            logger.warning(f"班主任 {current_user.username} 未分配班级，不能删除学生")
+            return jsonify({'error': '您尚未被分配班级，无法删除学生'}), 403
+            
+        # 班主任只能删除自己班级的学生
+        if not current_user.is_admin and str(current_user.class_id) != str(class_id):
+            return jsonify({'error': '您只能删除自己班级的学生'}), 403
+            
+        # 获取数据库连接
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # 检查学生是否存在
+        cursor.execute('SELECT id FROM students WHERE id = ? AND class_id = ?', 
+                      (student_id, class_id))
+        if not cursor.fetchone():
+            return jsonify({'error': '未找到该学生'}), 404
+        
+        # 删除学生
+        cursor.execute('DELETE FROM students WHERE id = ? AND class_id = ?', 
+                      (student_id, class_id))
+        
+        conn.commit()
+        return jsonify({'message': '学生删除成功'})
+        
+    except Exception as e:
+        logger.error(f"删除学生时出错: {str(e)}")
+        return jsonify({'error': f'删除学生失败: {str(e)}'}), 500
     finally:
         conn.close()
 
 # 导入学生预览API
 @students_bp.route('/api/import-students', methods=['POST'])
+@login_required
 def import_students_preview():
-    import logging
-    logger = logging.getLogger(__name__)
-    
-    if 'file' not in request.files:
-        return jsonify({'error': '没有上传文件'}), 400
-    
-    file = request.files['file']
-    if file.filename == '':
-        return jsonify({'error': '没有选择文件'}), 400
-    
-    if not (file.filename.endswith('.xlsx') or file.filename.endswith('.xls')):
-        return jsonify({'error': '只支持.xlsx或.xls格式的Excel文件'}), 400
-    
-    # 保存上传的文件
-    filename = secure_filename(file.filename)
-    timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-    saved_filename = f"{timestamp}_{filename}"
-    file_path = os.path.join(UPLOAD_FOLDER, saved_filename)
-    
-    # 确保上传目录存在
-    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-    
-    file.save(file_path)
-    
+    """预览导入学生数据"""
     try:
-        # 导入openpyxl处理Excel
-        try:
-            import openpyxl
-        except ImportError:
-            return jsonify({'error': '服务器缺少openpyxl库，无法处理Excel文件'}), 500
+        # 如果是班主任且没有分配班级，不允许导入学生
+        if not current_user.is_admin and not current_user.class_id:
+            logger.warning(f"班主任 {current_user.username} 未分配班级，不能导入学生")
+            return jsonify({'error': '您尚未被分配班级，无法导入学生'}), 403
             
-        # 打开Excel工作簿
+        # 获取上传的文件
+        if 'file' not in request.files:
+            return jsonify({'error': '没有上传文件'}), 400
+            
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({'error': '没有选择文件'}), 400
+            
+        if not file.filename.endswith(('.xlsx', '.xls')):
+            return jsonify({'error': '请上传Excel文件'}), 400
+            
+        # 保存文件
+        filename = secure_filename(file.filename)
+        file_path = os.path.join(UPLOAD_FOLDER, filename)
+        
+        # 确保上传目录存在
+        os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+        
+        # 尝试保存文件
+        try:
+            file.save(file_path)
+            logger.info(f"文件已保存到: {file_path}")
+        except Exception as e:
+            logger.error(f"保存文件时出错: {str(e)}")
+            return jsonify({'error': f'保存文件失败: {str(e)}'}), 500
+        
+        # 读取Excel文件
         try:
             wb = openpyxl.load_workbook(file_path)
-            sheet = wb.active
+            ws = wb.active
         except Exception as e:
-            logger.error(f"打开Excel文件时出错: {str(e)}")
-            return jsonify({'error': f'无法打开Excel文件: {str(e)}'}), 500
-            
+            logger.error(f"读取Excel文件时出错: {str(e)}")
+            return jsonify({'error': f'读取Excel文件失败: {str(e)}'}), 500
+        
         # 获取表头
-        headers = [cell.value for cell in sheet[1] if cell.value]
+        headers = [cell.value for cell in ws[1]]
         
-        if not headers or len(headers) < 3:  # 至少应该有学号、姓名和性别
-            return jsonify({'error': 'Excel格式不正确，第一行应包含列名（如学号、姓名、性别等）'}), 400
-            
-        # 验证必要的列是否存在
-        required_columns = ['学号', '姓名', '性别']
-        missing_columns = [col for col in required_columns if col not in headers]
+        # 获取数据库连接
+        conn = get_db_connection()
+        cursor = conn.cursor()
         
-        if missing_columns:
-            return jsonify({'error': f"Excel缺少必要的列: {', '.join(missing_columns)}"}), 400
-            
-        # 初始化数据和统计变量
+        # 准备数据
         students_data = []
-        added_count = 0
-        updated_count = 0
-        skipped_count = 0
         error_records = []
+        skipped_count = 0
+        updated_count = 0
+        added_count = 0
         
         # 字段映射表，Excel列名 -> 数据库字段名
         field_mapping = {
@@ -448,49 +490,26 @@ def import_students_preview():
             '龋齿(个)': 'dental_caries',
             '龋齿': 'dental_caries',
             '视力左': 'vision_left',
-            #'视力(左)': 'vision_left',
-            #'右眼视力': 'vision_right',
             '视力右': 'vision_right',
             '体测情况': 'physical_test_status',
-            #'体测状态': 'physical_test_status'
         }
         
-        # 获取数据库连接
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        
-        # 从第二行开始读取数据（跳过表头）
-        for row_idx, row in enumerate(sheet.iter_rows(min_row=2), 2):
-            # 检查是否为空行
-            if all(cell.value is None for cell in row):
-                continue
-                
-            # 准备学生数据
+        # 处理每一行数据
+        for row_idx, row in enumerate(ws.iter_rows(min_row=2), start=2):
             student = {}
             
-            # 遍历表头和字段映射
-            for col_idx, header in enumerate(headers):
-                if header in field_mapping:
-                    field_name = field_mapping[header]
-                    cell_value = row[col_idx].value
-                    
-                    # 特殊处理数值字段
-                    if field_name in ['height', 'weight', 'chest_circumference', 'vital_capacity', 'vision_left', 'vision_right']:
+            # 处理每个单元格
+            for header, cell in zip(headers, row):
+                cell_value = cell.value
+                field_name = field_mapping.get(header)
+                
+                if field_name:
+                    # 数值字段处理
+                    if field_name in ['height', 'weight', 'chest_circumference', 'vital_capacity', 
+                                    'vision_left', 'vision_right']:
                         try:
                             if cell_value is not None and cell_value != '' and cell_value != '-':
-                                # 统一处理为浮点数
-                                if isinstance(cell_value, str):
-                                    # 移除单位和无用字符
-                                    cell_value = cell_value.replace('cm', '').replace('kg', '')
-                                    cell_value = cell_value.replace('ml', '').replace('(', '').replace(')', '')
-                                    cell_value = cell_value.replace(',', '.').strip()
-                                    # 如果只有'-'，设为None
-                                    if cell_value == '-' or cell_value == '':
-                                        student[field_name] = None
-                                    else:
-                                        student[field_name] = float(cell_value)
-                                else:
-                                    student[field_name] = float(cell_value)
+                                student[field_name] = float(cell_value)
                             else:
                                 student[field_name] = None
                         except (ValueError, TypeError):
@@ -511,9 +530,35 @@ def import_students_preview():
                 })
                 skipped_count += 1
                 continue
-                
-            # 检查学生是否已存在
-            cursor.execute('SELECT id FROM students WHERE id = ?', (student['id'],))
+            
+            # 如果是班主任，设置班级ID
+            if not current_user.is_admin and current_user.class_id:
+                student['class_id'] = current_user.class_id
+            else:
+                # 管理员模式：根据班级名称查找班级ID
+                if student.get('class'):
+                    cursor.execute('SELECT id FROM classes WHERE class_name = ?', (student['class'],))
+                    class_result = cursor.fetchone()
+                    if class_result:
+                        student['class_id'] = class_result['id']
+                    else:
+                        error_records.append({
+                            'row': row_idx,
+                            'reason': f'班级 "{student["class"]}" 不存在'
+                        })
+                        skipped_count += 1
+                        continue
+                else:
+                    error_records.append({
+                        'row': row_idx,
+                        'reason': '班级信息缺失'
+                    })
+                    skipped_count += 1
+                    continue
+            
+            # 检查学生是否已存在（使用复合主键检查）
+            cursor.execute('SELECT id FROM students WHERE id = ? AND class_id = ?', 
+                          (student['id'], student['class_id']))
             if cursor.fetchone():
                 updated_count += 1
             else:
@@ -521,296 +566,147 @@ def import_students_preview():
                 
             students_data.append(student)
         
-        conn.close()
+        # 成功读取数据后，不删除文件，确保导入过程中文件可用
+        # 注意: 稍后需要在确认导入后或一段时间后清理这些文件
         
-        # 如果找到有效数据，返回预览信息
-        if students_data:
-            return jsonify({
-                'status': 'ok',
-                'message': f'发现 {len(students_data)} 名学生数据，其中 {added_count} 名新增，{updated_count} 名更新，{skipped_count} 名有错误',
-                'details': {
-                    'added': added_count,
-                    'updated': updated_count,
-                    'skipped': skipped_count,
-                    'errors': error_records
-                },
-                'students': students_data,
-                'file_path': file_path
-            })
-        else:
-            return jsonify({'error': '未在Excel文件中找到有效的学生数据'}), 400
+        logger.info(f"成功解析Excel文件，发现 {len(students_data)} 条有效学生记录")
+        
+        return jsonify({
+            'status': 'ok',
+            'message': f'成功读取 {len(students_data)} 条学生记录',
+            'preview': {
+                'total': len(students_data),
+                'added': added_count,
+                'updated': updated_count,
+                'skipped': skipped_count,
+                'errors': error_records
+            },
+            'students': students_data,
+            'file_path': file_path  # 返回文件路径以供后续使用
+        })
         
     except Exception as e:
-        logger.error(f"解析Excel文件时出错: {str(e)}")
-        logger.error(traceback.format_exc())
-        return jsonify({'error': f'解析Excel文件时出错: {str(e)}'}), 500
+        logger.error(f"导入学生预览时出错: {str(e)}")
+        return jsonify({'error': f'导入预览失败: {str(e)}'}), 500
 
-# 确认导入学生API
 @students_bp.route('/api/confirm-import', methods=['POST'])
+@login_required
 def confirm_import():
-    import logging
-    logger = logging.getLogger(__name__)
-    
-    data = request.json
-    
-    # 增加详细日志记录，帮助诊断问题
-    logger.info("接收到的导入确认请求数据: %s", data)
-    
-    if not data or 'students' not in data:
-        return jsonify({'error': '无效的请求数据'}), 400
-    
-    students = data['students']
-    
-    if not students or len(students) == 0:
-        return jsonify({'error': '没有学生数据可导入'}), 400
-    
-    # 记录第一条学生数据的结构，帮助诊断
-    if students and len(students) > 0:
-        logger.info("第一条学生数据样例: %s", students[0])
-        logger.info("学生数据字段: %s", list(students[0].keys()))
+    """确认导入学生数据"""
+    try:
+        # 如果是班主任且没有分配班级，不允许导入学生
+        if not current_user.is_admin and not current_user.class_id:
+            logger.warning(f"班主任 {current_user.username} 未分配班级，不能确认导入学生")
+            return jsonify({'error': '您尚未被分配班级，无法导入学生'}), 403
+            
+        # 获取JSON数据
+        data = request.get_json()
+        if not data or 'students' not in data:
+            return jsonify({'error': '无效的数据格式'}), 400
+            
+        students = data['students']
+        if not students:
+            return jsonify({'error': '没有要导入的学生数据'}), 400
+            
+        # 获取数据库连接
+        conn = get_db_connection()
+        cursor = conn.cursor()
         
-        # 详细记录第一条学生的数值字段
-        first_student = students[0]
-        for field in ['height', 'weight', 'chest_circumference', 'vital_capacity', 'vision_left', 'vision_right']:
-            if field in first_student:
-                value = first_student[field]
-                logger.info(f"数值字段 {field}: {value}, 类型: {type(value).__name__}")
-    
-    # 检查数据库表结构
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    
-    # 获取表结构
-    cursor.execute("PRAGMA table_info(students)")
-    db_columns = [row[1] for row in cursor.fetchall()]
-    logger.info("数据库表字段: %s", db_columns)
-    
-    # 字段名映射表，用于处理代码和数据库字段名不一致的情况
-    field_mappings = {
-        'chest_circumference': 'chest_circumference',  # 可能的映射
-        'chestCircumference': 'chest_circumference',   # 前端JS中可能使用的驼峰命名
-        'vital_capacity': 'vital_capacity',
-        'vitalCapacity': 'vital_capacity',
-        'dental_caries': 'dental_caries',
-        'dentalCaries': 'dental_caries',
-        'vision_left': 'vision_left',
-        'visionLeft': 'vision_left',
-        'vision_right': 'vision_right',
-        'visionRight': 'vision_right',
-        'physical_test_status': 'physical_test_status',
-        'physicalTestStatus': 'physical_test_status'
-    }
-    
-    now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    
-    # 清空学生表中的所有记录 - 根据用户需求，导入时只保留当前班级的学生
-    try:
-        logger.info("导入前清空学生表中的所有记录")
-        cursor.execute('DELETE FROM students')
-        logger.info(f"已清空学生表，准备导入 {len(students)} 名新学生")
-    except Exception as clear_error:
-        logger.error(f"清空学生表时出错: {str(clear_error)}")
-        return jsonify({
-            'status': 'error',
-            'message': f'清空数据库时出错: {str(clear_error)}'
-        }), 500
-    
-    success_count = 0
-    error_count = 0
-    updated_count = 0
-    inserted_count = 0
-    error_details = []
-    
-    try:
-        for i, student in enumerate(students):
+        # 获取当前时间
+        now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
+        # 获取数据库列名
+        cursor.execute("PRAGMA table_info(students)")
+        db_columns = [row[1] for row in cursor.fetchall()]
+        
+        # 准备统计
+        inserted_count = 0
+        updated_count = 0
+        error_count = 0
+        error_details = []
+        
+        # 遍历学生数据，执行插入或更新
+        for student in students:
             try:
-                # 打印学生数据以便调试
-                logger.info(f"准备导入的学生数据({i+1}/{len(students)}): {student}")
+                # 提取班级ID和学生ID
+                class_id = student.get('class_id')
+                student_id = student.get('id')
                 
-                # 添加数据验证
-                if 'id' not in student or not student['id']:
-                    raise ValueError(f"学生ID缺失或无效: {student}")
-                if 'name' not in student or not student['name']:
-                    raise ValueError(f"学生姓名缺失或无效: {student}")
-                if 'gender' not in student:
-                    raise ValueError(f"学生性别缺失: {student}")
+                if not class_id or not student_id:
+                    error_count += 1
+                    error_details.append(f"学生 {student.get('name', '未知')} (ID: {student_id or '未知'}) 缺少班级ID或学生ID")
+                    continue
                 
-                # 准备SQL参数，确保使用正确的字段名
-                params = {
-                    'id': student['id'],
-                    'name': student['name'],
-                    'gender': student['gender'],
-                    'class': student.get('class', ''),
-                    'created_at': now,
-                    'updated_at': now
-                }
-                
-                # 数值字段的特殊处理
-                numeric_fields = [
-                    'height', 'weight', 'chest_circumference', 
-                    'vital_capacity', 'vision_left', 'vision_right'
-                ]
-                
-                for field in numeric_fields:
-                    # 获取字段值，对null、空字符串、null字符串等进行处理
-                    raw_value = student.get(field)
-                    if raw_value is None or raw_value == '' or raw_value == 'null' or raw_value == 'undefined' or raw_value == '-':
-                        params[field] = None
-                    else:
-                        # 尝试转换为浮点数
-                        try:
-                            # 如果是字符串，处理可能的特殊格式
-                            if isinstance(raw_value, str):
-                                # 移除单位和无用字符
-                                raw_value = raw_value.replace('cm', '').replace('kg', '')
-                                raw_value = raw_value.replace('ml', '').replace('(', '').replace(')', '')
-                                # 替换逗号为点号(小数点)
-                                raw_value = raw_value.replace(',', '.').strip()
-                                # 如果是'-'，设为None
-                                if raw_value == '-' or raw_value == '':
-                                    params[field] = None
-                                    continue
-                            
-                            # 转换为浮点数
-                            value = float(raw_value)
-                            # 特别处理0值
-                            params[field] = 0.0 if value == 0 else value
-                            
-                            logger.info(f"字段 {field} 原始值: {raw_value} ({type(raw_value).__name__}) -> 转换值: {params[field]} ({type(params[field]).__name__})")
-                        except (ValueError, TypeError) as e:
-                            params[field] = None
-                            logger.warning(f"无法转换字段 {field} 的值 {raw_value}: {str(e)}")
-                
-                # 处理文本字段
-                if 'dental_caries' in student:
-                    params['dental_caries'] = student['dental_caries']
-                if 'physical_test_status' in student:
-                    params['physical_test_status'] = student['physical_test_status']
-                
-                # 处理特殊字段，确保使用正确的数据库字段名 (处理可能的命名不一致)
-                for field in student:
-                    if field in field_mappings and field_mappings[field] in db_columns:
-                        db_field = field_mappings[field]
-                        params[db_field] = student[field]
-                
-                # 打印最终的SQL参数
-                logger.info(f"最终SQL参数: {params}")
-                
-                # 检查学生是否已存在
-                cursor.execute('SELECT id FROM students WHERE id = ?', (student['id'],))
+                # 检查该学生是否已存在
+                cursor.execute('SELECT id FROM students WHERE id = ? AND class_id = ?', 
+                            (student_id, class_id))
                 existing_student = cursor.fetchone()
                 
+                # 准备数据，只包含数据库存在的列
+                db_fields = []
+                db_values = []
+                update_pairs = []
+                
+                for key, value in student.items():
+                    if key in db_columns:
+                        db_fields.append(key)
+                        db_values.append(value)
+                        update_pairs.append(f"{key} = ?")
+                
+                # 添加创建和更新时间
+                if 'created_at' in db_columns and not existing_student:
+                    db_fields.append('created_at')
+                    db_values.append(now)
+                
+                if 'updated_at' in db_columns:
+                    db_fields.append('updated_at')
+                    db_values.append(now)
+                
+                # 执行SQL
                 if existing_student:
-                    # 构建更新SQL - 修改为覆盖更新所有字段
-                    update_fields = []
-                    update_values = []
-                    
-                    # 遍历所有数据库列，不仅仅是导入数据中的列
-                    for field in db_columns:
-                        if field != 'id':  # ID不更新
-                            # 如果字段在导入数据参数中，使用新值
-                            # 否则设置为NULL或空字符串（根据字段类型）
-                            if field in params:
-                                value = params[field]
-                            else:
-                                # 为文本字段设空字符串，数值字段设NULL
-                                is_text_field = field in ['name', 'gender', 'class', 'dental_caries', 
-                                                         'physical_test_status', 'comments', 'created_at', 'updated_at']
-                                value = '' if is_text_field else None
-                                
-                                # 特殊处理评语字段，确保清空
-                                if field == 'comments':
-                                    value = ''
-                                    
-                            update_fields.append(f"{field} = ?")
-                            update_values.append(value)
-                    
-                    # 添加WHERE条件的参数
-                    update_values.append(student['id'])
-                    
-                    # 执行更新
-                    update_sql = f"UPDATE students SET {', '.join(update_fields)} WHERE id = ?"
-                    logger.info(f"更新SQL: {update_sql}")
-                    logger.info(f"更新参数: {update_values}")
-                    cursor.execute(update_sql, update_values)
+                    # 更新现有学生
+                    query = f"UPDATE students SET {', '.join(update_pairs)} WHERE id = ? AND class_id = ?"
+                    cursor.execute(query, db_values + [student_id, class_id])
                     updated_count += 1
                 else:
-                    # 构建插入SQL - 修改为包含所有字段
-                    insert_fields = []
-                    insert_values = []
-                    insert_placeholders = []
-                    
-                    # 遍历所有数据库列，不仅仅是导入数据中的列
-                    for field in db_columns:
-                        insert_fields.append(field)
-                        
-                        # 如果字段在导入数据参数中，使用新值
-                        # 否则设置为NULL或空字符串（根据字段类型）
-                        if field in params:
-                            value = params[field]
-                        else:
-                            # 为文本字段设空字符串，数值字段设NULL
-                            is_text_field = field in ['name', 'gender', 'class', 'dental_caries', 
-                                                     'physical_test_status', 'comments', 'created_at', 'updated_at']
-                            value = '' if is_text_field else None
-                            
-                            # 特殊处理评语字段，确保为空
-                            if field == 'comments':
-                                value = ''
-                        
-                        insert_values.append(value)
-                        insert_placeholders.append('?')
-                    
-                    # 执行插入
-                    insert_sql = f"INSERT INTO students ({', '.join(insert_fields)}) VALUES ({', '.join(insert_placeholders)})"
-                    logger.info(f"插入SQL: {insert_sql}")
-                    logger.info(f"插入参数: {insert_values}")
-                    cursor.execute(insert_sql, insert_values)
+                    # 插入新学生
+                    placeholders = ', '.join(['?'] * len(db_fields))
+                    query = f"INSERT INTO students ({', '.join(db_fields)}) VALUES ({placeholders})"
+                    cursor.execute(query, db_values)
                     inserted_count += 1
                 
-                success_count += 1
-            except Exception as student_error:
-                # 单个学生导入错误不应该影响整体事务
+            except Exception as e:
+                logger.error(f"导入学生 {student.get('id', '未知')} 时出错: {str(e)}")
                 error_count += 1
-                error_msg = f"导入学生 {student.get('id', '未知ID')} 时出错: {str(student_error)}"
-                logger.error(error_msg)
-                error_details.append(error_msg)
-                # 继续处理下一个学生，而不是中断整个批次
+                error_details.append(f"学生 {student.get('name', '未知')} (ID: {student.get('id', '未知')}) 导入失败: {str(e)}")
         
-        # 如果至少有一个学生成功导入，提交事务
-        if success_count > 0:
-            conn.commit()
-            logger.info(f"成功导入 {success_count} 名学生，更新 {updated_count} 名，新增 {inserted_count} 名")
-        else:
-            conn.rollback()
-            logger.warning("没有学生成功导入，回滚事务")
-    except Exception as e:
-        conn.rollback()
-        error_count += 1
-        error_msg = f"导入学生数据时出错: {str(e)}"
-        logger.error(error_msg)
-        logger.error(traceback.format_exc())
-        error_details.append(error_msg)
-        return jsonify({
-            'status': 'error',
-            'message': error_msg,
-            'error_details': error_details
-        }), 500
-    finally:
+        # 提交事务
+        conn.commit()
         conn.close()
-    
-    # 如果有错误但也有成功，返回部分成功的响应
-    status = 'ok' if error_count == 0 else 'partial'
-    return jsonify({
-        'status': status,
-        'message': f'成功导入{success_count}名学生（新增{inserted_count}名，更新{updated_count}名）' +
-                  (f'，{error_count}名学生导入失败' if error_count > 0 else ''),
-        'success_count': success_count,
-        'error_count': error_count,
-        'updated_count': updated_count,
-        'inserted_count': inserted_count,
-        'error_details': error_details if error_count > 0 else []
-    })
+        
+        # 清理临时文件（可选）
+        # 注意：这里不再尝试删除可能不存在的文件
+        
+        # 生成响应
+        success_count = inserted_count + updated_count
+        status = 'ok' if error_count == 0 else 'partial' if success_count > 0 else 'error'
+        
+        logger.info(f"导入完成: 成功 {success_count} 条 (新增 {inserted_count}, 更新 {updated_count}), 失败 {error_count} 条")
+        
+        return jsonify({
+            'status': status,
+            'message': f'完成导入 {success_count} 条记录',
+            'success_count': success_count,
+            'inserted_count': inserted_count,
+            'updated_count': updated_count,
+            'error_count': error_count,
+            'error_details': error_details
+        })
+        
+    except Exception as e:
+        logger.error(f"确认导入学生时出错: {str(e)}")
+        logger.error(traceback.format_exc())
+        return jsonify({'error': f'确认导入失败: {str(e)}'}), 500
 
 # 下载模板API
 @students_bp.route('/api/template', methods=['GET'])
@@ -829,20 +725,189 @@ def download_template():
 def serve_template(filename):
     return send_from_directory(TEMPLATE_FOLDER, filename)
 
-# 获取所有班级API
-@students_bp.route('/api/classes', methods=['GET'])
-def get_all_classes():
-    conn = get_db_connection()
-    cursor = conn.cursor()
+@students_bp.route('/api/students/<student_id>/update-subject', methods=['POST'])
+@login_required
+def update_student_subject(student_id):
+    """更新学生的单个或多个学科成绩"""
+    try:
+        # 获取JSON数据
+        data = request.get_json()
+        if not data:
+            return jsonify({'status': 'error', 'message': '无效的数据格式'})
+        
+        logger.info(f"正在更新学生ID={student_id}的学科成绩: {data}")
+        
+        # 获取当前用户班级ID
+        user_class_id = current_user.class_id if not current_user.is_admin else None
+        
+        # 如果是班主任且没有分配班级，不允许更新学生成绩
+        if not current_user.is_admin and not user_class_id:
+            logger.warning(f"班主任 {current_user.username} 未分配班级，不能更新学生成绩")
+            return jsonify({'status': 'error', 'message': '您尚未被分配班级，无法更新学生成绩'})
+        
+        # 检查学生是否存在，并验证班级ID
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # 查询学生时需要同时检查学生ID和班级ID
+        if user_class_id:
+            # 班主任只能修改自己班级的学生
+            cursor.execute('SELECT * FROM students WHERE id = ? AND class_id = ?', (student_id, user_class_id))
+        else:
+            # 管理员可以修改任意学生，但仍需要查询该学生
+            cursor.execute('SELECT * FROM students WHERE id = ?', (student_id,))
+            
+        student = cursor.fetchone()
+        
+        if not student:
+            conn.close()
+            if user_class_id:
+                # 如果是班主任，提示可能是权限问题
+                return jsonify({
+                    'status': 'error', 
+                    'message': f'找不到ID为{student_id}的学生，或该学生不在您负责的班级中'
+                })
+            else:
+                return jsonify({'status': 'error', 'message': f'找不到ID为{student_id}的学生'})
+        
+        # 支持的学科列表
+        subjects = ['daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 'tiyu', 
+                   'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa']
+        
+        # 学科到显示名称的映射，用于日志
+        subject_display_names = {
+            'daof': '道法', 'yuwen': '语文', 'shuxue': '数学', 'yingyu': '英语',
+            'laodong': '劳动', 'tiyu': '体育', 'yinyue': '音乐', 'meishu': '美术',
+            'kexue': '科学', 'zonghe': '综合', 'xinxi': '信息技术', 'shufa': '书法'
+        }
+        
+        # 验证有效的成绩等级
+        valid_grades = ['优', '良', '及格', '待及格', '']
+        
+        # 记录更新了多少个学科
+        updated_count = 0
+        
+        # 遍历提交的数据，更新各个学科的成绩
+        for subject, value in data.items():
+            if subject in subjects:
+                # 验证成绩值是否有效
+                if value not in valid_grades:
+                    logger.warning(f"尝试设置无效的成绩值: subject={subject}, value={value}")
+                    continue
+                
+                # 更新数据库中的成绩，同时确保只更新特定班级的学生
+                try:
+                    if user_class_id:
+                        # 班主任：使用ID和班级ID的组合查询条件
+                        cursor.execute(f"UPDATE students SET {subject} = ? WHERE id = ? AND class_id = ?", 
+                                      (value, student_id, user_class_id))
+                    else:
+                        # 管理员：仅使用ID查询条件
+                        cursor.execute(f"UPDATE students SET {subject} = ? WHERE id = ?", 
+                                      (value, student_id))
+                                      
+                    updated_count += 1
+                    logger.info(f"已更新学生{student_id}的{subject_display_names.get(subject, subject)}成绩为: {value}")
+                except Exception as e:
+                    logger.error(f"更新科目成绩出错: {str(e)}")
+        
+        # 保存更改
+        if updated_count > 0:
+            # 更新修改时间，同样需要确保只更新特定班级的学生
+            now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            if user_class_id:
+                cursor.execute('UPDATE students SET updated_at = ? WHERE id = ? AND class_id = ?', 
+                              (now, student_id, user_class_id))
+            else:
+                cursor.execute('UPDATE students SET updated_at = ? WHERE id = ?', 
+                              (now, student_id))
+                              
+            conn.commit()
+            logger.info(f"成功保存学生{student_id}的{updated_count}个学科成绩")
+            return jsonify({'status': 'ok', 'message': f'成功更新{updated_count}个学科成绩'})
+        else:
+            conn.close()
+            return jsonify({'status': 'warning', 'message': '没有发现要更新的学科成绩'})
     
-    # 查询所有不同的班级
-    cursor.execute('SELECT DISTINCT class FROM students WHERE class IS NOT NULL AND class != "" ORDER BY class')
-    classes = [row['class'] for row in cursor.fetchall()]
-    
-    conn.close()
-    
-    return jsonify({
-        'status': 'ok',
-        'count': len(classes),
-        'classes': classes
-    }) 
+    except Exception as e:
+        if 'conn' in locals() and conn:
+            conn.rollback()
+        error_msg = f"更新学生学科成绩时出错: {str(e)}"
+        logger.error(error_msg, exc_info=True)
+        return jsonify({'status': 'error', 'message': error_msg})
+
+@students_bp.route('/api/students', methods=['GET'])
+@login_required
+def get_students():
+    """获取学生列表，支持按班级筛选"""
+    try:
+        # 获取请求参数
+        class_id = request.args.get('class_id')
+        with_grades = request.args.get('with_grades', 'false').lower() == 'true'
+        
+        # 获取当前用户信息
+        current_user_id = current_user.id
+        current_user_class_id = current_user.class_id
+        is_admin = current_user.is_admin
+        
+        # 记录日志
+        logger.info(f"获取学生列表请求: user={current_user.username}, class_id参数={class_id}, 用户班级={current_user_class_id}")
+        
+        # 非管理员且未分配班级的班主任不能看到任何学生
+        if not is_admin and not current_user_class_id:
+            logger.warning(f"班主任 {current_user.username} 未分配班级，不能查看任何学生")
+            return jsonify({
+                'status': 'ok',
+                'students': [],
+                'total': 0,
+                'message': '您尚未被分配班级，无法查看学生信息'
+            })
+        
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # 非管理员只能查看自己负责班级的学生
+        if not is_admin and current_user_class_id:
+            logger.info(f"班主任查询自己班级 {current_user_class_id} 的学生")
+            cursor.execute('SELECT * FROM students WHERE class_id = ? ORDER BY CAST(id AS INTEGER)', (current_user_class_id,))
+        # 如果指定了班级ID，则按班级筛选
+        elif class_id:
+            # 尝试处理整数或字符串的班级ID
+            try:
+                # 尝试转为整数
+                int_class_id = int(class_id)
+                logger.info(f"以数字形式查询班级ID: {int_class_id}")
+                cursor.execute('SELECT * FROM students WHERE class_id = ? ORDER BY CAST(id AS INTEGER)', (int_class_id,))
+            except (ValueError, TypeError):
+                # 如果无法转为整数，尝试按班级名称查询
+                logger.info(f"尝试以班级名称查询: {class_id}")
+                cursor.execute('SELECT * FROM students WHERE class = ? ORDER BY CAST(id AS INTEGER)', (class_id,))
+            
+            # 检查结果数量
+            students = cursor.fetchall()
+            if not students:
+                # 尝试模糊匹配
+                logger.info(f"未找到精确匹配班级，尝试模糊匹配: {class_id}")
+                cursor.execute('SELECT * FROM students WHERE class LIKE ? ORDER BY CAST(id AS INTEGER)', (f'%{class_id}%',))
+                students = cursor.fetchall()
+            else:
+                # 重置游标位置
+                cursor.execute('SELECT * FROM students WHERE class_id = ? ORDER BY CAST(id AS INTEGER)', (int_class_id,))
+        else:
+            logger.info("管理员查询所有学生")
+            cursor.execute('SELECT * FROM students ORDER BY CAST(id AS INTEGER)')
+        
+        students = [dict(row) for row in cursor.fetchall()]
+        logger.info(f"查询结果: 找到 {len(students)} 名学生")
+        
+        conn.close()
+        
+        return jsonify({
+            'status': 'ok',
+            'students': students,
+            'total': len(students)
+        })
+        
+    except Exception as e:
+        logger.error(f"获取学生列表时出错: {str(e)}", exc_info=True)
+        return jsonify({'status': 'error', 'message': f'获取学生列表失败: {str(e)}'}) 

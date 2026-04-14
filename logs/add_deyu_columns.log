@@ -1,0 +1,17 @@
+2025-04-04 23:25:04,438 - __main__ - INFO - 开始添加德育维度字段
+2025-04-04 23:25:04,441 - __main__ - INFO - 现有数据库列: ['id', 'name', 'gender', 'class', 'class_id', 'height', 'weight', 'chest_circumference', 'vital_capacity', 'dental_caries', 'vision_left', 'vision_right', 'physical_test_status', 'comments', 'created_at', 'updated_at', 'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'semester']
+2025-04-04 23:25:04,441 - __main__ - WARNING - 添加德育维度列: pinzhi (INTEGER)
+2025-04-04 23:25:04,531 - __main__ - INFO - 成功添加德育维度列: pinzhi
+2025-04-04 23:25:04,531 - __main__ - WARNING - 添加德育维度列: xuexi (INTEGER)
+2025-04-04 23:25:04,597 - __main__ - INFO - 成功添加德育维度列: xuexi
+2025-04-04 23:25:04,597 - __main__ - WARNING - 添加德育维度列: jiankang (INTEGER)
+2025-04-04 23:25:04,664 - __main__ - INFO - 成功添加德育维度列: jiankang
+2025-04-04 23:25:04,664 - __main__ - WARNING - 添加德育维度列: shenmei (INTEGER)
+2025-04-04 23:25:04,729 - __main__ - INFO - 成功添加德育维度列: shenmei
+2025-04-04 23:25:04,730 - __main__ - WARNING - 添加德育维度列: shijian (INTEGER)
+2025-04-04 23:25:04,796 - __main__ - INFO - 成功添加德育维度列: shijian
+2025-04-04 23:25:04,797 - __main__ - WARNING - 添加德育维度列: shenghuo (INTEGER)
+2025-04-04 23:25:04,863 - __main__ - INFO - 成功添加德育维度列: shenghuo
+2025-04-04 23:25:04,863 - __main__ - INFO - 更新后的数据库列: ['id', 'name', 'gender', 'class', 'class_id', 'height', 'weight', 'chest_circumference', 'vital_capacity', 'dental_caries', 'vision_left', 'vision_right', 'physical_test_status', 'comments', 'created_at', 'updated_at', 'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'semester', 'pinzhi', 'xuexi', 'jiankang', 'shenmei', 'shijian', 'shenghuo']
+2025-04-04 23:25:04,865 - __main__ - INFO - 所有德育维度字段已成功添加
+2025-04-04 23:25:04,865 - __main__ - INFO - 字段添加操作完成

@@ -279,7 +279,7 @@
                     </div>
                     
                         <div class="form-group row mb-3">
-                            <label for="startDate" class="col-sm-3 col-form-label">开学时间 <span class="text-danger">*</span></label>
+                            <label for="startDate" class="col-sm-3 col-form-label"><strong style="color: red;">开学时间</strong> <span class="text-danger">*</span></label>
                             <div class="col-sm-9">
                                 <input type="date" class="form-control" id="startDate" name="startDate" required>
                                 <small class="form-text text-muted">上学期默认为9月1日，下学期默认为3月1日。在报告中将只显示"月日"格式(如"3月1日")，不显示年份。</small>
@@ -287,7 +287,7 @@
                         </div>
                         
                         <div class="form-group row mb-3">
-                            <label for="teacherName" class="col-sm-3 col-form-label">班主任姓名 <span class="text-danger">*</span></label>
+                            <label for="teacherName" class="col-sm-3 col-form-label"><strong style="color: red;">班主任签名</strong> <span class="text-danger">*</span></label>
                             <div class="col-sm-9">
                                 <input type="text" class="form-control" id="teacherName" name="teacherName" value="肖老师" required>
                             </div>
@@ -303,13 +303,17 @@
                                 <div class="form-check mb-2">
                                     <input class="form-check-input" type="checkbox" id="includeGrades" name="includeGrades" checked required>
                                     <label class="form-check-label" for="includeGrades">成绩数据</label>
-                        </div>
-                        <div class="form-check">
+                                </div>
+                                <div class="form-check">
                                     <input class="form-check-input" type="checkbox" id="includeComments" name="includeComments" checked required>
                                     <label class="form-check-label" for="includeComments">评语内容</label>
                                 </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="includeDeyu" name="includeDeyu" checked required>
+                                    <label class="form-check-label" for="includeDeyu">德育维度</label>
+                                </div>
+                            </div>
                         </div>
-                    </div>
                     
                         <div class="form-group row mb-3">
                             <label for="fileNameFormat" class="col-sm-3 col-form-label">命名格式 <span class="text-danger">*</span></label>
@@ -324,9 +328,14 @@
                         </div>
                     </div>
                     
-                    <button class="btn btn-primary w-100 mt-3" id="exportBtn">
-                        <i class='bx bx-export'></i> 开始导出
-                    </button>
+                    <div class="btn-group w-100 mt-3" role="group">
+                        <button class="btn btn-primary" id="exportBtn" style="flex: 1;">
+                            <i class='bx bx-file-doc'></i> 导出Word版本
+                        </button>
+                        <button class="btn btn-danger" id="exportPdfBtn" style="flex: 1;">
+                            <i class='bx bx-file-pdf'></i> 导出PDF版本
+                        </button>
+                    </div>
                     
                     <div class="progress-area d-none">
                         <div class="progress mb-2">
@@ -340,7 +349,7 @@
     </div>
     
     <!-- 预览模态框 -->
-    <div class="modal fade" id="previewModal" tabindex="-1" aria-labelledby="previewModalLabel" aria-hidden="true">
+    <div class="modal fade" id="previewModal" tabindex="-1" aria-labelledby="previewModalLabel">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
@@ -366,17 +375,24 @@
     </div>
     
     <!-- 导出进度模态窗口 -->
-    <div class="modal fade" id="progressModal" tabindex="-1" aria-labelledby="progressModalLabel" aria-hidden="true">
+    <div class="modal fade" id="progressModal" tabindex="-1" aria-labelledby="progressModalLabel">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="progressModalLabel">导出进度</h5>
+                    <h5 class="modal-title" id="progressModalLabel"><i class='bx bx-loader-alt bx-spin me-2'></i>导出进度</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
                 </div>
                 <div class="modal-body">
-                    <p id="progressText">正在导出报告，请稍候...</p>
-                    <div class="progress">
-                        <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                    <div class="export-progress-container">
+                        <p id="progressText" class="text-center mb-3">正在导出报告，请稍候...</p>
+                        <div class="progress progress-lg">
+                            <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                        <div class="text-center mt-3">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -387,21 +403,66 @@
     </div>
     
     <!-- 导出完成模态窗口 -->
-    <div class="modal fade" id="exportCompleteModal" tabindex="-1" aria-labelledby="exportCompleteModalLabel" aria-hidden="true">
+    <div class="modal fade" id="exportCompleteModal" tabindex="-1" aria-labelledby="exportCompleteModalLabel">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exportCompleteModalLabel">导出完成</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
+            <div class="modal-content export-complete-modal">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="exportCompleteModalLabel"><i class='bx bx-check-circle me-2'></i>导出完成</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="关闭"></button>
                 </div>
-                <div class="modal-body">
-                    <div class="text-center">
-                        <i class="bx bx-check-circle text-success" style="font-size: 3rem;"></i>
-                        <p class="mt-3">成功导出 <span id="exportedCount">0</span> 份学生报告！</p>
+                <div class="modal-body bg-light">
+                    <div class="text-center mb-3">
+                        <i class='bx bx-check-circle text-success' style="font-size: 3rem;"></i>
+                    </div>
+                    <div class="alert alert-success">
+                        <div class="text-center fw-bold">成功导出报告</div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">确定</button>
+                    <button type="button" class="btn btn-success" data-bs-dismiss="modal" id="closeExportCompleteBtn">确定</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- PDF导出确认模态窗口 -->
+    <div class="modal fade" id="pdfConfirmModal" tabindex="-1" aria-labelledby="pdfConfirmModalLabel">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="pdfConfirmModalLabel">确认导出PDF</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="关闭"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <i class='bx bx-info-circle me-2'></i>
+                        <strong>请确认已完成所有必要审核</strong>
+                    </div>
+                    <p>请确认所有学生的以下信息均已审核完毕：</p>
+                    <ul class="mb-3">
+                        <li>基本信息</li>
+                        <li>评语内容</li>
+                        <li>成绩数据</li>
+                        <li>德育维度</li>
+                        <li><span class="text-danger fw-bold">开学日期</span></li>
+                        <li><span class="text-danger fw-bold">班主任签名</span></li>
+                    </ul>
+                    
+                    <div class="alert alert-info">
+                        <h6><i class='bx bx-time me-2'></i>处理时间说明</h6>
+                        <p class="mb-1">PDF导出需要将Word文档转换为PDF格式，此过程可能需要更长的处理时间。请耐心等待。</p>
+                    </div>
+                    
+                    <div class="alert alert-secondary">
+                        <h6><i class='bx bx-cog me-2'></i>系统要求</h6>
+                        <p class="mb-1">PDF转换功能需要服务器安装Microsoft Word应用程序。如果PDF转换失败，系统将自动提供Word格式的报告作为替代。</p>
+                    </div>
+                    
+                    <p class="text-muted small">导出PDF后将无法对内容进行修改，请确保所有内容准确无误。</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-danger" id="confirmPdfExportBtn">确认导出PDF</button>
                 </div>
             </div>
         </div>
@@ -419,7 +480,7 @@
         </div>
     </div>
     
-    <script src="../js/libs/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../js/data.js"></script>
     <script src="../js/export.js"></script>
     <script>
@@ -558,35 +619,16 @@
             // 初始化学生列表
             initStudentList();
             
-            // 页面加载时检查可用模板并获取模板列表
-            try {
-                // 检查默认模板是否存在
-                const response = await fetch('/api/templates');
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.status === 'ok' && data.templates && data.templates.length > 0) {
-                        // 更新模板卡片
-                        const templateContainer = document.getElementById('templateContainer');
-                        if (templateContainer) {
-                            templateContainer.classList.remove('d-none');
-                            templateContainer.innerHTML = ''; // 清空容器
-                            data.templates.forEach(template => {
-                                addTemplateCard(template);
-                            });
-                        }
-                    } else {
-                        console.log('未找到模板或API返回格式不正确，使用本地缓存');
-                        loadLocalTemplates();
-                    }
-                } else {
-                    // API可能不可用 - 使用本地备份数据
-                    console.log('模板API不可用，使用本地缓存模板');
-                    loadLocalTemplates();
-                }
-            } catch (error) {
-                console.warn('获取模板列表出错，使用本地缓存:', error);
-                loadLocalTemplates();
-            }
+            // 页面加载完成后执行
+            document.addEventListener('DOMContentLoaded', () => {
+                // 初始化各种功能
+                initUI();
+                loadStudents();
+                loadGlobalSettings();
+                // 改为使用API获取模板
+                loadTemplatesFromAPI();
+                setupEventListeners();
+            });
             
             // 初始化模板上传
             initTemplateUpload();
@@ -594,7 +636,9 @@
             // 绑定导出按钮事件
             const exportBtn = document.getElementById('exportBtn');
             if (exportBtn) {
-                exportBtn.addEventListener('click', exportReports);
+                exportBtn.addEventListener('click', function() {
+                    exportReports('word');
+                });
             }
             
             // 绑定上传模板按钮事件
@@ -607,7 +651,93 @@
                     }
                 });
             }
+
+            // 绑定PDF导出按钮事件
+            const exportPdfBtn = document.getElementById('exportPdfBtn');
+            if (exportPdfBtn) {
+                exportPdfBtn.addEventListener('click', function() {
+                    // 显示确认对话框
+                    const pdfConfirmModal = new bootstrap.Modal(document.getElementById('pdfConfirmModal'));
+                    pdfConfirmModal.show();
+                });
+            }
+
+            // 绑定PDF确认导出按钮事件
+            const confirmPdfExportBtn = document.getElementById('confirmPdfExportBtn');
+            if (confirmPdfExportBtn) {
+                confirmPdfExportBtn.addEventListener('click', function() {
+                    // 隐藏确认对话框
+                    try {
+                        const pdfConfirmModal = bootstrap.Modal.getInstance(document.getElementById('pdfConfirmModal'));
+                        if (pdfConfirmModal) {
+                            pdfConfirmModal.hide();
+                            
+                            // 清除任何可能存在的模态框背景
+                            setTimeout(() => {
+                                document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+                                    backdrop.remove();
+                                });
+                                document.body.classList.remove('modal-open');
+                                document.body.style.overflow = '';
+                                document.body.style.paddingRight = '';
+                            }, 300);
+                        }
+                    } catch (e) {
+                        console.error('关闭模态框时出错:', e);
+                    }
+                    
+                    // 执行PDF导出
+                    exportReports('pdf');
+                });
+            }
         });
+        
+        // 从API加载模板
+        function loadTemplatesFromAPI() {
+            // 获取模板列表
+            fetch('/api/templates')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'ok' && data.templates) {
+                        console.log('获取到模板列表:', data.templates);
+                        const templates = data.templates;
+                        
+                        // 更新模板信息
+                        if (templates.length > 0) {
+                            // 默认使用第一个模板
+                            let defaultTemplate = templates.find(t => t.id === 'default') || templates[0];
+                            
+                            // 设置默认模板信息
+                            const defaultTemplateElement = document.getElementById('defaultTemplate');
+                            if (defaultTemplateElement) {
+                                defaultTemplateElement.innerHTML = `<i class='bx bx-check-circle me-2'></i>默认使用 <strong>${defaultTemplate.name}</strong> 模板`;
+                            }
+                            
+                            // 设置模板ID
+                            const selectedTemplateIdEl = document.getElementById('selectedTemplateId');
+                            if (selectedTemplateIdEl) {
+                                selectedTemplateIdEl.value = defaultTemplate.id;
+                            }
+                        } else {
+                            // 没有找到模板，使用默认值
+                            console.log('未找到任何模板，使用默认值');
+                            const selectedTemplateIdEl = document.getElementById('selectedTemplateId');
+                            if (selectedTemplateIdEl) {
+                                selectedTemplateIdEl.value = 'default';
+                            }
+                        }
+                    } else {
+                        console.warn('获取模板列表失败:', data.message || '未知错误');
+                        // 使用备用加载方式
+                        loadLocalTemplates();
+                    }
+                })
+                .catch(error => {
+                    console.error('获取模板列表时出错:', error);
+                    // 出错时使用备用加载方式
+                    loadLocalTemplates();
+                });
+        }
         
         // 加载本地模板作为备份
         function loadLocalTemplates() {
@@ -660,6 +790,12 @@
             try {
                 if (!template || !template.id) {
                     console.warn('模板数据无效，无法添加模板卡片');
+                    // 使用默认模板ID
+                    const selectedTemplateIdEl = document.getElementById('selectedTemplateId');
+                    if (selectedTemplateIdEl) {
+                        selectedTemplateIdEl.value = 'default';
+                        console.log('已设置为默认模板ID: default');
+                    }
                     return;
                 }
                 
@@ -668,35 +804,39 @@
                     console.warn('找不到模板容器，无法添加模板卡片');
                     // 直接更新隐藏字段
                     const selectedTemplateIdEl = document.getElementById('selectedTemplateId');
-                    if (selectedTemplateIdEl && template.isDefault) {
+                    if (selectedTemplateIdEl) {
                         selectedTemplateIdEl.value = template.id;
                         console.log('已设置模板ID:', template.id);
                     }
                     return;
                 }
                 
+                // 确保模板名称有效
+                const templateName = template.name || '未命名模板';
+                const templateDesc = template.description || (template.type === 'system' ? '系统模板' : '自定义模板');
+
                 // 确保模板容器可见
                 templateContainer.classList.remove('d-none');
                 
                 // 创建模板卡片
-                                const card = document.createElement('div');
-                                card.className = 'col-md-4 mb-3';
-                                card.innerHTML = `
+                const card = document.createElement('div');
+                card.className = 'col-md-4 mb-3';
+                card.innerHTML = `
                     <div class="card template-card ${template.isDefault ? 'border-primary' : ''}" data-template-id="${template.id}">
-                                        <div class="card-body">
-                            <h5 class="card-title">${template.name || '未命名模板'}</h5>
-                            <p class="card-text text-muted">${template.description || (template.type === 'system' ? '系统模板' : '自定义模板')}</p>
+                        <div class="card-body">
+                            <h5 class="card-title">${templateName}</h5>
+                            <p class="card-text text-muted">${templateDesc}</p>
                             ${template.isDefault ? '<span class="badge bg-primary position-absolute top-0 end-0 mt-2 me-2">默认</span>' : ''}
-                                        </div>
-                                    </div>
-                                `;
-                                templateContainer.appendChild(card);
+                        </div>
+                    </div>
+                `;
+                templateContainer.appendChild(card);
                                 
                 // 添加点击事件
-                                const templateCard = card.querySelector('.template-card');
+                const templateCard = card.querySelector('.template-card');
                 if (templateCard) {
-                                templateCard.addEventListener('click', function() {
-                                    selectTemplate(this);
+                    templateCard.addEventListener('click', function() {
+                        selectTemplate(this);
                     });
                     
                     // 如果是第一个模板或默认模板，自动选中
@@ -707,11 +847,11 @@
             } catch (error) {
                 console.error('添加模板卡片时出错:', error);
                 // 确保至少设置默认模板ID
-                if (template && template.id) {
-                    const selectedTemplateIdEl = document.getElementById('selectedTemplateId');
-                    if (selectedTemplateIdEl) {
-                        selectedTemplateIdEl.value = template.id;
-                    }
+                const selectedTemplateIdEl = document.getElementById('selectedTemplateId');
+                if (selectedTemplateIdEl) {
+                    const templateId = template && template.id ? template.id : 'default';
+                    selectedTemplateIdEl.value = templateId;
+                    console.log('出错后设置默认模板ID:', templateId);
                 }
             }
         }

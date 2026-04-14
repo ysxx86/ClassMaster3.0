@@ -12,6 +12,7 @@ import sqlite3
 import traceback
 import time
 from datetime import datetime
+from flask_login import current_user
 
 # 配置日志
 logger = logging.getLogger(__name__)
@@ -175,15 +176,27 @@ def export_comments_to_pdf(class_name=None, output_file=None, school_name=None, 
         conn = get_db_connection()
         cursor = conn.cursor()
         
-        # 查询语句
-        if class_name:
-            query = 'SELECT id, name, gender, class, comments, updated_at FROM students WHERE class = ? ORDER BY CAST(id AS INTEGER)'
-            logger.info(f"执行查询: {query} 参数: {class_name}")
-            cursor.execute(query, (class_name,))
+        # 查询语句，增加班级ID筛选
+        if hasattr(current_user, 'is_admin') and not current_user.is_admin and hasattr(current_user, 'class_id') and current_user.class_id:
+            # 班主任只能导出本班级学生
+            if class_name:
+                query = 'SELECT id, name, gender, class, comments, updated_at FROM students WHERE class = ? AND class_id = ? ORDER BY CAST(id AS INTEGER)'
+                logger.info(f"班主任模式: 执行查询: {query} 参数: {class_name}, {current_user.class_id}")
+                cursor.execute(query, (class_name, current_user.class_id))
+            else:
+                query = 'SELECT id, name, gender, class, comments, updated_at FROM students WHERE class_id = ? ORDER BY CAST(id AS INTEGER)'
+                logger.info(f"班主任模式: 执行查询: {query} 参数: {current_user.class_id}")
+                cursor.execute(query, (current_user.class_id,))
         else:
-            query = 'SELECT id, name, gender, class, comments, updated_at FROM students ORDER BY class, CAST(id AS INTEGER)'
-            logger.info(f"执行查询: {query}")
-            cursor.execute(query)
+            # 管理员可以导出所有班级
+            if class_name:
+                query = 'SELECT id, name, gender, class, comments, updated_at FROM students WHERE class = ? ORDER BY CAST(id AS INTEGER)'
+                logger.info(f"管理员模式: 执行查询: {query} 参数: {class_name}")
+                cursor.execute(query, (class_name,))
+            else:
+                query = 'SELECT id, name, gender, class, comments, updated_at FROM students ORDER BY class, CAST(id AS INTEGER)'
+                logger.info(f"管理员模式: 执行查询: {query}")
+                cursor.execute(query)
         
         # 获取数据
         students = cursor.fetchall()

@@ -1,9 +1,9 @@
-/* Boxicons 本地版本 */
+/* Boxicons CDN版本 */
 @font-face {
   font-family: 'boxicons';
   font-weight: normal;
   font-style: normal;
-  src: url('../fonts/boxicons.woff2') format('woff2');
+  src: url('https://unpkg.com/boxicons@2.1.4/fonts/boxicons.woff2') format('woff2');
 }
 
 .bx {
@@ -114,4 +114,12 @@
 
 .bx-bar-chart-alt-2:before {
   content: "\ea3a";
+}
+
+.bx-home:before {
+  content: "\eaa8";
+}
+
+.bx-heart:before {
+  content: "\ea9c";
 }

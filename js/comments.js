@@ -218,8 +218,8 @@ function createCommentCard(student, commentData) {
     // 评语字数
     const commentLength = commentContent.length;
     
-    // 设置字数的颜色 - 从绿色(接近0字)渐变到红色(接近200字)
-    const maxLength = 200;
+    // 设置字数的颜色 - 从绿色(接近0字)渐变到红色(接近260字)
+    const maxLength = 260;
     const percentage = commentLength / maxLength; // 使用百分比来确定颜色
     let textColor = '';
     
@@ -262,10 +262,10 @@ function createCommentCard(student, commentData) {
                     </div>
                 </div>
                 <div>
-                    <button class="btn btn-sm btn-outline-info ai-comment-btn me-1 breathing-button" data-student-id="${student.id}" data-student-name="${student.name}" style="background: linear-gradient(135deg, #e0f7ff, #ffffff); border-color: #00c3ff; color: #0072ff; font-weight: bold;">
+                    <button class="btn btn-sm btn-outline-info ai-comment-btn me-1 breathing-button" data-student-id="${student.id}" data-student-name="${student.name}" data-class-id="${student.class_id}" style="background: linear-gradient(135deg, #e0f7ff, #ffffff); border-color: #00c3ff; color: #0072ff; font-weight: bold;">
                         <i class='bx bx-bot'></i> AI海海
                     </button>
-                    <button class="btn btn-sm btn-primary edit-comment-btn" data-student-id="${student.id}" data-student-name="${student.name}">
+                    <button class="btn btn-sm btn-primary edit-comment-btn" data-student-id="${student.id}" data-student-name="${student.name}" data-class-id="${student.class_id}">
                         <i class='bx bx-edit'></i> 编辑评语
                     </button>
                 </div>
@@ -277,7 +277,7 @@ function createCommentCard(student, commentData) {
     const editBtn = col.querySelector('.edit-comment-btn');
     if (editBtn) {
         editBtn.addEventListener('click', function() {
-            fillCommentForm(this.dataset.studentId, this.dataset.studentName);
+            fillCommentForm(this.dataset.studentId, this.dataset.studentName, this.dataset.classId);
         });
     }
     
@@ -285,7 +285,7 @@ function createCommentCard(student, commentData) {
     const aiBtn = col.querySelector('.ai-comment-btn');
     if (aiBtn) {
         aiBtn.addEventListener('click', function() {
-            showAICommentAssistant(this.dataset.studentId, this.dataset.studentName);
+            showAICommentAssistant(this.dataset.studentId, this.dataset.studentName, this.dataset.classId);
         });
     }
     
@@ -293,8 +293,8 @@ function createCommentCard(student, commentData) {
 }
 
 // 填充评语表单
-function fillCommentForm(studentId, studentName) {
-    console.log('填充评语表单:', studentId, studentName);
+function fillCommentForm(studentId, studentName, classId) {
+    console.log('填充评语表单:', studentId, studentName, '班级ID:', classId);
     
     // 设置学生信息
     const modalStudentName = document.getElementById('modalStudentName');
@@ -314,13 +314,22 @@ function fillCommentForm(studentId, studentName) {
     commentText.dataset.studentId = studentId;
     currentStudentId = studentId;
     
+    // 存储班级ID
+    if (!document.getElementById('currentClassId')) {
+        const classIdField = document.createElement('input');
+        classIdField.type = 'hidden';
+        classIdField.id = 'currentClassId';
+        document.body.appendChild(classIdField);
+    }
+    document.getElementById('currentClassId').value = classId;
+    
     // 显示加载状态
     commentText.value = '加载中...';
     commentText.disabled = true;
     
     if (USE_SERVER_API) {
         // 从服务器获取评语数据
-        fetch(`/api/comments/${studentId}`)
+        fetch(`/api/comments/${studentId}?class_id=${classId}`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
@@ -418,11 +427,18 @@ function saveComment() {
     const appendMode = document.getElementById('appendModeSwitch')?.checked || false;
     console.log(`保存模式: ${appendMode ? '添加' : '替换'}`);
     
+    // 获取班级ID - 优先使用存储的班级ID，如果没有则使用当前用户的班级ID
+    const storedClassId = document.getElementById('currentClassId')?.value;
+    const currentUserClassId = window.currentUserClassId;
+    console.log('保存评语使用班级ID:', storedClassId || currentUserClassId, '(存储的班级ID:', storedClassId, ', 当前用户班级ID:', currentUserClassId, ')');
+    
     // 创建评语对象
     const commentData = {
         studentId,
         content: commentText.value.trim(), // 使用可能被截断后的内容
-        appendMode
+        appendMode,
+        classId: storedClassId || currentUserClassId, // 优先使用存储的班级ID
+        isAIComment: true // 添加标志允许跨班级操作
     };
     
     // 显示处理状态
@@ -434,18 +450,27 @@ function saveComment() {
     
     console.log('发送保存请求:', commentData);
     
-        // 发送到服务器
-        fetch('/api/comments', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(commentData)
-        })
+    // 发送到服务器
+    fetch('/api/comments', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(commentData)
+    })
     .then(response => {
         console.log('服务器响应状态:', response.status);
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            return response.text().then(text => {
+                try {
+                    // 尝试解析为JSON
+                    const errorData = JSON.parse(text);
+                    throw new Error(errorData.message || `HTTP错误! 状态: ${response.status}`);
+                } catch (e) {
+                    // 如果不是有效JSON，返回原始错误
+                    throw new Error(`HTTP错误! 状态: ${response.status}, 响应: ${text}`);
+                }
+            });
         }
         return response.json();
     })
@@ -532,367 +557,6 @@ function updateCommentCard(studentId, comment) {
     } else {
         console.error('找不到评语统计元素');
     }
-}
-
-// 批量编辑功能实现
-function showBatchEditModal() {
-    console.log('显示批量编辑模态框');
-    
-    // 获取模态框元素
-    const batchEditModal = document.getElementById('batchEditModal');
-    const batchEditTable = document.getElementById('batchEditTable');
-    
-    if (!batchEditModal || !batchEditTable) {
-        console.error('找不到批量编辑模态框或表格元素');
-        showNotification('加载批量编辑界面失败', 'error');
-        return;
-    }
-    
-    // 显示加载状态
-    batchEditTable.innerHTML = `
-        <tr>
-            <td colspan="4" class="text-center py-4">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">加载中...</span>
-                </div>
-                <p class="mt-2">正在加载学生数据...</p>
-            </td>
-        </tr>
-    `;
-    
-    // 显示模态框
-    const modal = new bootstrap.Modal(batchEditModal);
-    modal.show();
-    
-    // 获取学生数据
-    fetch('/api/students')
-        .then(response => response.json())
-        .then(data => {
-            if (data.status !== 'ok' || !data.students || !data.students.length) {
-                batchEditTable.innerHTML = `
-                    <tr>
-                        <td colspan="4" class="text-center py-4">
-                            <div class="alert alert-warning mb-0">
-                                <i class='bx bx-info-circle'></i> 没有可编辑的学生数据
-                            </div>
-                        </td>
-                    </tr>
-                `;
-                return;
-            }
-            
-            // 创建批量编辑表单
-    batchEditTable.innerHTML = '';
-    
-            // 添加批量评语编辑行
-            const contentRow = document.createElement('tr');
-            contentRow.innerHTML = `
-                <td colspan="4">
-                    <div class="form-group mb-3">
-                        <label class="form-label">批量评语内容</label>
-                        <div class="input-group">
-                            <textarea id="batchCommentText" class="form-control" rows="4" placeholder="请输入要添加到所选学生评语中的内容"></textarea>
-                        </div>
-                        <div class="form-text d-flex justify-content-between">
-                            <span>字数限制: <span id="batchCommentCharCount">0/200</span></span>
-                            <span class="text-muted">最多200字</span>
-                        </div>
-                    </div>
-                    <div class="form-check form-switch mb-3">
-                        <input class="form-check-input" type="checkbox" id="batchAppendModeSwitch" checked>
-                        <label class="form-check-label" for="batchAppendModeSwitch">添加到已有评语（关闭则替换原有评语）</label>
-                    </div>
-                    
-                    <!-- 添加评语模板选择 -->
-                    <div class="mb-3">
-                        <label class="form-label">选择评语模板</label>
-                        <div class="btn-group mb-2">
-                            <button type="button" class="btn btn-sm btn-outline-secondary batch-template-filter active" data-filter="all">
-                                全部
-                            </button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary batch-template-filter" data-filter="study">
-                                学习
-                            </button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary batch-template-filter" data-filter="physical">
-                                体育
-                            </button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary batch-template-filter" data-filter="behavior">
-                                行为
-                            </button>
-                        </div>
-                        <div id="batchTemplateContainer" class="d-flex flex-wrap">
-                            <!-- 模板按钮将通过JavaScript动态加载 -->
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <label class="form-label m-0">选择学生</label>
-                            <div>
-                                <button type="button" class="btn btn-sm btn-outline-primary" id="selectAllStudentsBtn">全选</button>
-                                <button type="button" class="btn btn-sm btn-outline-secondary" id="deselectAllStudentsBtn">取消全选</button>
-                            </div>
-                        </div>
-                    </div>
-                </td>
-            `;
-            batchEditTable.appendChild(contentRow);
-            
-            // 添加表头
-            const headerRow = document.createElement('tr');
-            headerRow.innerHTML = `
-                <th width="5%"><input type="checkbox" id="selectAllCheckbox"></th>
-                <th width="15%">学号</th>
-                <th width="15%">姓名</th>
-                <th width="65%">评语状态</th>
-            `;
-            batchEditTable.appendChild(headerRow);
-            
-            // 显示学生信息
-            data.students.forEach(student => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-                    <td>
-                        <input type="checkbox" class="student-checkbox" data-student-id="${student.id}">
-                    </td>
-            <td>${student.id}</td>
-            <td>${student.name}</td>
-            <td>
-                        <small class="text-muted">${student.comments ? '已有评语' : '无评语'}</small>
-            </td>
-        `;
-        batchEditTable.appendChild(row);
-    });
-    
-            // 初始化模板筛选器
-            const templateFilters = document.querySelectorAll('.batch-template-filter');
-            templateFilters.forEach(filter => {
-                filter.addEventListener('click', function() {
-                    const filterType = this.dataset.filter;
-                    templateFilters.forEach(f => f.classList.remove('active'));
-                    this.classList.add('active');
-                    renderBatchTemplateButtons(filterType);
-                });
-            });
-            
-            // 初始化模板按钮
-            renderBatchTemplateButtons('all');
-            
-            // 绑定全选/取消全选按钮
-            const selectAllCheckbox = document.getElementById('selectAllCheckbox');
-            if (selectAllCheckbox) {
-                selectAllCheckbox.addEventListener('change', function() {
-                    const checkboxes = document.querySelectorAll('.student-checkbox');
-                    checkboxes.forEach(cb => {
-                        cb.checked = this.checked;
-                    });
-                });
-            }
-            
-            // 绑定全选/取消全选按钮
-            const selectAllBtn = document.getElementById('selectAllStudentsBtn');
-            const deselectAllBtn = document.getElementById('deselectAllStudentsBtn');
-            
-            if (selectAllBtn) {
-                selectAllBtn.addEventListener('click', function() {
-                    const checkboxes = document.querySelectorAll('.student-checkbox');
-                    checkboxes.forEach(cb => {
-                        cb.checked = true;
-                    });
-                    if (selectAllCheckbox) selectAllCheckbox.checked = true;
-                });
-            }
-            
-            if (deselectAllBtn) {
-                deselectAllBtn.addEventListener('click', function() {
-                    const checkboxes = document.querySelectorAll('.student-checkbox');
-                    checkboxes.forEach(cb => {
-                        cb.checked = false;
-                    });
-                    if (selectAllCheckbox) selectAllCheckbox.checked = false;
-                });
-            }
-        })
-        .catch(error => {
-            console.error('获取学生数据时出错:', error);
-            batchEditTable.innerHTML = `
-                <tr>
-                    <td colspan="4" class="text-center py-4">
-                        <div class="alert alert-danger mb-0">
-                            <i class='bx bx-error-circle'></i> 加载数据时出错: ${error.message}
-                        </div>
-                    </td>
-                </tr>
-            `;
-        });
-}
-
-// 渲染批量编辑页面的模板按钮
-function renderBatchTemplateButtons(filter) {
-    const templateContainer = document.getElementById('batchTemplateContainer');
-    if (!templateContainer) return;
-    
-    // 清空容器
-    templateContainer.innerHTML = '';
-    
-    // 根据过滤条件添加按钮
-    const addTemplates = (templates, category) => {
-        if (!templates || !Array.isArray(templates)) {
-            console.warn(`模板类别 ${category} 不存在或不是数组`);
-            return;
-        }
-        
-        if (filter === 'all' || filter === category) {
-            templates.forEach(template => {
-                // 安全检查：确保模板对象有效
-                if (!template) {
-                    console.warn(`在类别 ${category} 中发现无效的模板`);
-                    return;
-                }
-                
-                const content = template.content || '';
-                const title = template.title || '';
-                
-                const btn = document.createElement('button');
-                btn.type = 'button';
-                btn.className = 'btn btn-sm btn-outline-primary m-1';
-                
-                // 安全获取按钮文本
-                if (title) {
-                    btn.textContent = title;
-                } else if (content) {
-                    // 如果内容太长，截取前15个字符并添加省略号
-                    btn.textContent = content.substring(0, 15) + (content.length > 15 ? '...' : '');
-                } else {
-                    btn.textContent = '空模板';
-                }
-                
-                btn.dataset.content = content;
-                btn.addEventListener('click', () => {
-                    // 将模板内容插入到批量评语文本框
-                    const batchCommentText = document.getElementById('batchCommentText');
-                    if (batchCommentText) {
-                        // 在光标位置插入模板内容
-                        const startPos = batchCommentText.selectionStart;
-                        const endPos = batchCommentText.selectionEnd;
-                        const currentContent = batchCommentText.value;
-                        
-                        // 直接在光标位置插入，不添加额外空格或换行
-                        const newContent = currentContent.substring(0, startPos) + content + currentContent.substring(endPos);
-                        batchCommentText.value = newContent;
-                        
-                        // 更新光标位置
-                        const newCursorPos = startPos + content.length;
-                        batchCommentText.setSelectionRange(newCursorPos, newCursorPos);
-                        
-                        // 聚焦输入框
-                        batchCommentText.focus();
-                    }
-                });
-                templateContainer.appendChild(btn);
-            });
-        }
-    };
-    
-    // 添加各类模板
-    addTemplates(commentTemplates.study, 'study');
-    addTemplates(commentTemplates.physical, 'physical');
-    addTemplates(commentTemplates.behavior, 'behavior');
-}
-
-// 批量保存评语
-function saveBatchComments() {
-    console.log('执行批量保存评语操作');
-    
-    // 防止重复提交
-    const saveBtn = document.getElementById('saveBatchBtn');
-    if (saveBtn && saveBtn.disabled) {
-        console.log('保存按钮已禁用，防止重复提交');
-        return;
-    }
-
-    const batchCommentText = document.getElementById('batchCommentText');
-    const batchAppendModeSwitch = document.getElementById('batchAppendModeSwitch');
-    
-    if (!batchCommentText) {
-        showNotification('找不到批量评语输入框', 'error');
-        return;
-    }
-    
-    const content = batchCommentText.value.trim();
-    
-    if (!content) {
-        showNotification('请输入评语内容', 'error');
-        return;
-    }
-    
-    // 检查批量评语字数是否超过限制
-    const maxLength = 200;
-    if (content.length > maxLength) {
-        showNotification(`批量评语内容超过${maxLength}字限制，请编辑后重试`, 'error');
-        return;
-    }
-    
-    // 获取选中的学生
-    const selectedStudents = [];
-    const checkboxes = document.querySelectorAll('.student-checkbox:checked');
-    checkboxes.forEach(cb => {
-        selectedStudents.push(cb.dataset.studentId);
-    });
-    
-    if (selectedStudents.length === 0) {
-        showNotification('请至少选择一名学生', 'error');
-        return;
-    }
-    
-    // 获取追加模式状态
-    const appendMode = batchAppendModeSwitch ? batchAppendModeSwitch.checked : true;
-    
-    // 显示处理状态
-    if (saveBtn) {
-        saveBtn.disabled = true;
-        saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 保存中...';
-    }
-    
-    // 调用批量更新API
-    fetch('/api/batch-update-comments', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            content: content,
-            appendMode: appendMode,
-            studentIds: selectedStudents  // 添加选中的学生ID列表
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.status === 'ok') {
-    // 关闭模态框
-    const modal = bootstrap.Modal.getInstance(document.getElementById('batchEditModal'));
-    modal.hide();
-            
-            // 显示成功通知
-            showNotification(`${data.message}`);
-    
-    // 刷新评语列表
-    initCommentList();
-    } else {
-            showNotification('批量更新失败: ' + data.message, 'error');
-        }
-    })
-    .catch(error => {
-        console.error('批量更新评语时出错:', error);
-        showNotification('批量更新评语时出错，请查看控制台获取详细信息', 'error');
-    })
-    .finally(() => {
-        // 恢复按钮状态
-        if (saveBtn) {
-            saveBtn.disabled = false;
-            saveBtn.innerHTML = '批量保存';
-        }
-    });
 }
 
 // 筛选评语
@@ -989,8 +653,20 @@ function showPrintPreview() {
     previewContent.innerHTML = '';
     previewContent.appendChild(previewFrame);
     
-    // 直接设置iframe的src为预览API
-    previewFrame.src = '/api/preview-comments';
+    // 获取过滤参数
+    const params = new URLSearchParams();
+    
+    // 获取班级选择器
+    const classFilter = document.getElementById('commentClassFilter');
+    if (classFilter && classFilter.value) {
+        params.append('class', classFilter.value);
+    }
+    
+    // 生成查询字符串
+    const queryString = params.toString() ? `?${params.toString()}` : '';
+    
+    // 直接设置iframe的src为预览API，加上查询参数
+    previewFrame.src = `/api/preview-comments${queryString}`;
     
     // 错误处理
     previewFrame.onerror = function() {
@@ -1195,7 +871,7 @@ function updateCharCount() {
     const batchCharCount = document.getElementById('batchCommentCharCount');
     
     if (commentText && charCount) {
-        const maxLength = 200; // 最大字数限制
+        const maxLength = 260; // 最大字数限制
         const count = commentText.value.length;
         charCount.textContent = `${count}/${maxLength}`;
         console.log(`当前字数: ${count}/${maxLength}`);
@@ -1207,7 +883,7 @@ function updateCharCount() {
             console.log(`已截断至最大字数: ${maxLength}`);
         }
         
-        // 根据字数改变颜色提示 - 从绿色(接近0字)渐变到红色(接近200字)
+        // 根据字数改变颜色提示 - 从绿色(接近0字)渐变到红色(接近260字)
         const percentage = Math.min(count / maxLength, 1.0); // 确保不超过1.0
         
         if (percentage < 0.5) {
@@ -1231,7 +907,7 @@ function updateCharCount() {
     }
     
     if (batchCommentText && batchCharCount) {
-        const maxLength = 200; // 最大字数限制
+        const maxLength = 260; // 最大字数限制
         const count = batchCommentText.value.length;
         batchCharCount.textContent = `${count}/${maxLength}`;
         
@@ -1241,7 +917,7 @@ function updateCharCount() {
             batchCharCount.textContent = `${maxLength}/${maxLength}`;
         }
         
-        // 根据字数改变颜色提示 - 从绿色(接近0字)渐变到红色(接近200字)
+        // 根据字数改变颜色提示 - 从绿色(接近0字)渐变到红色(接近260字)
         const percentage = Math.min(count / maxLength, 1.0); // 确保不超过1.0
         
         if (percentage < 0.5) {
@@ -1264,205 +940,6 @@ function updateCharCount() {
         }
     }
 }
-
-// 过滤模板显示
-function filterTemplates(filter) {
-    const templateButtons = document.querySelectorAll('.template-button');
-    
-    templateButtons.forEach(btn => {
-        const category = btn.dataset.category;
-        
-        if (filter === 'all' || filter === category) {
-            btn.style.display = '';
-        } else {
-            btn.style.display = 'none';
-        }
-    });
-}
-
-// 显示模板管理模态框
-function showTemplateModal() {
-    // 加载模板数据
-    loadTemplates();
-    
-    // 显示模态框
-    const templateModal = new bootstrap.Modal(document.getElementById('templateModal'));
-    templateModal.show();
-}
-
-// 加载模板数据
-function loadTemplates() {
-    // 获取模板列表容器
-    const studyList = document.getElementById('studyTemplateList');
-    const physicalList = document.getElementById('physicalTemplateList');
-    const behaviorList = document.getElementById('behaviorTemplateList');
-    
-    // 清空容器
-    if (studyList) studyList.innerHTML = '';
-    if (physicalList) physicalList.innerHTML = '';
-    if (behaviorList) behaviorList.innerHTML = '';
-    
-    // 填充学习类模板
-    if (studyList) {
-        commentTemplates.study.forEach(template => {
-            const item = createTemplateItem(template, 'study');
-            studyList.appendChild(item);
-        });
-    }
-    
-    // 填充体育类模板
-    if (physicalList) {
-        commentTemplates.physical.forEach(template => {
-            const item = createTemplateItem(template, 'physical');
-            physicalList.appendChild(item);
-        });
-    }
-    
-    // 填充行为类模板
-    if (behaviorList) {
-        commentTemplates.behavior.forEach(template => {
-            const item = createTemplateItem(template, 'behavior');
-            behaviorList.appendChild(item);
-        });
-    }
-}
-
-// 创建模板项
-function createTemplateItem(template, category) {
-    const item = document.createElement('div');
-    item.className = 'list-group-item d-flex justify-content-between align-items-center';
-    item.innerHTML = `
-        <span>${template}</span>
-        <div>
-            <button class="btn btn-sm btn-outline-danger delete-template" data-template="${template}" data-category="${category}">
-                <i class='bx bx-trash'></i>
-            </button>
-        </div>
-    `;
-    
-    // 绑定删除按钮事件
-    const deleteBtn = item.querySelector('.delete-template');
-    if (deleteBtn) {
-        deleteBtn.addEventListener('click', function() {
-            deleteTemplate(this.dataset.template, this.dataset.category);
-        });
-    }
-    
-    return item;
-}
-
-// 添加模板
-function addTemplate() {
-    const templateText = document.getElementById('newTemplateText');
-    const categorySelect = document.getElementById('newTemplateCategory');
-    
-    if (!templateText || !categorySelect) return;
-    
-    const text = templateText.value.trim();
-    const category = categorySelect.value;
-    
-    if (!text) {
-        showNotification('请输入模板内容', 'error');
-        return;
-    }
-    
-    // 检查是否已存在相同模板
-    if (commentTemplates[category].includes(text)) {
-        showNotification('该模板已存在', 'error');
-        return;
-    }
-    
-    // 添加模板
-    commentTemplates[category].push(text);
-    
-    // 重新加载模板列表
-    loadTemplates();
-    
-    // 更新编辑模态框中的模板按钮
-    updateTemplateButtons();
-    
-    // 清空输入框
-    templateText.value = '';
-    
-    showNotification('模板添加成功');
-}
-
-// 删除模板
-function deleteTemplate(template, category) {
-    // 确认删除
-    if (!confirm('确定要删除此模板吗？')) return;
-    
-    // 从数组中移除模板
-    const index = commentTemplates[category].indexOf(template);
-    if (index !== -1) {
-        commentTemplates[category].splice(index, 1);
-    }
-    
-    // 重新加载模板列表
-    loadTemplates();
-    
-    // 更新编辑模态框中的模板按钮
-    updateTemplateButtons();
-    
-    showNotification('模板删除成功');
-}
-
-// 更新编辑模态框中的模板按钮
-function updateTemplateButtons() {
-    // 获取模板容器
-    const templateContainer = document.querySelector('.template-container');
-    if (!templateContainer) return;
-    
-    // 清空容器
-    templateContainer.innerHTML = '';
-    
-    // 根据过滤条件添加按钮
-    const addTemplates = (templates, category) => {
-        if (!templates || !Array.isArray(templates)) {
-            console.warn(`模板类别 ${category} 不存在或不是数组`);
-            return;
-        }
-        
-        if (filter === 'all' || filter === category) {
-            templates.forEach(template => {
-                // 安全检查：确保模板对象有效
-                if (!template) {
-                    console.warn(`在类别 ${category} 中发现无效的模板`);
-                    return;
-                }
-                
-                const content = template.content || '';
-                const title = template.title || '';
-                
-        const btn = document.createElement('button');
-                btn.type = 'button';
-                btn.className = 'btn btn-sm btn-outline-primary m-1';
-                
-                // 安全获取按钮文本
-                if (title) {
-                    btn.textContent = title;
-                } else if (content) {
-                    // 如果内容太长，截取前15个字符并添加省略号
-                    btn.textContent = content.substring(0, 15) + (content.length > 15 ? '...' : '');
-                } else {
-                    btn.textContent = '空模板';
-                }
-                
-                btn.dataset.content = content;
-                btn.addEventListener('click', () => {
-                    insertTemplate(content);
-        });
-        templateContainer.appendChild(btn);
-    });
-        }
-    };
-    
-    // 添加各类模板
-    addTemplates(commentTemplates.study, 'study');
-    addTemplates(commentTemplates.physical, 'physical');
-    addTemplates(commentTemplates.behavior, 'behavior');
-}
-
 // 显示通知
 function showNotification(message, type = 'success', duration = 3000) {
     // 创建一个toast元素
@@ -1561,202 +1038,64 @@ function notifyStudentDataChanged() {
     }
 }
 
-// 加载评语模板
-function loadCommentTemplates() {
-    console.log('加载评语模板...');
-    
-    fetch('/api/comment-templates')
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'ok' && data.templates) {
-                // 分类存储模板
-                commentTemplates = {
-                    study: [],
-                    physical: [],
-                    behavior: []
-                };
-                
-                // 将模板按类型分类
-                data.templates.forEach(template => {
-                    if (!template || !template.content) return;
-                    
-                    const content = template.content;
-                    const title = template.title || '';
-                    
-                    // 根据模板类型添加到对应分类
-                    if (template.type === 'study') {
-                        commentTemplates.study.push({ title, content });
-                    } else if (template.type === 'physical') {
-                        commentTemplates.physical.push({ title, content });
-                    } else if (template.type === 'behavior') {
-                        commentTemplates.behavior.push({ title, content });
-                    }
-                });
-                
-                console.log('评语模板加载完成:', commentTemplates);
-            } else {
-                console.error('获取评语模板失败:', data.message || '未知错误');
-            }
-        })
-        .catch(error => {
-            console.error('加载评语模板出错:', error);
-        });
-}
-
-// 渲染模板按钮
-function renderTemplateButtons(filter) {
-    const templateContainer = document.getElementById('templateContainer');
-    if (!templateContainer) return;
-    
-    // 清空容器
-    templateContainer.innerHTML = '';
-    
-    // 根据过滤条件添加按钮
-    const addTemplates = (templates, category) => {
-        if (!templates || !Array.isArray(templates)) {
-            console.warn(`模板类别 ${category} 不存在或不是数组`);
-            return;
-        }
-        
-        if (filter === 'all' || filter === category) {
-            templates.forEach(template => {
-                // 安全检查：确保模板对象有效
-                if (!template) {
-                    console.warn(`在类别 ${category} 中发现无效的模板`);
-                    return;
-                }
-                
-                const content = template.content || '';
-                const title = template.title || '';
-                
-                const btn = document.createElement('button');
-                btn.type = 'button';
-                btn.className = 'btn btn-sm btn-outline-primary m-1';
-                
-                // 安全获取按钮文本
-                if (title) {
-                    btn.textContent = title;
-                } else if (content) {
-                    // 如果内容太长，截取前15个字符并添加省略号
-                    btn.textContent = content.substring(0, 15) + (content.length > 15 ? '...' : '');
-                } else {
-                    btn.textContent = '空模板';
-                }
-                
-                btn.dataset.content = content;
-                btn.addEventListener('click', () => {
-                    insertTemplate(content);
-                });
-                templateContainer.appendChild(btn);
-            });
-        }
-    };
-    
-    // 添加各类模板
-    addTemplates(commentTemplates.study, 'study');
-    addTemplates(commentTemplates.physical, 'physical');
-    addTemplates(commentTemplates.behavior, 'behavior');
-}
-
-// 插入模板内容到评语编辑框
-function insertTemplate(content) {
-    const commentText = document.getElementById('commentText');
-    if (!commentText) return;
-    
-    // 在光标位置插入模板内容
-    const startPos = commentText.selectionStart;
-    const endPos = commentText.selectionEnd;
-    const currentContent = commentText.value;
-    
-    // 直接在光标位置插入，不添加额外空格或换行
-    const newContent = currentContent.substring(0, startPos) + content + currentContent.substring(endPos);
-    commentText.value = newContent;
-    
-    // 更新光标位置
-    const newCursorPos = startPos + content.length;
-    commentText.setSelectionRange(newCursorPos, newCursorPos);
-    
-    // 聚焦到文本框
-    commentText.focus();
-    
-    // 更新字数统计
-    updateCharCount();
-}
-
-// 显示模板选择器模态框
-function showTemplateSelectorModal() {
-    const modal = new bootstrap.Modal(document.getElementById('templateSelectorModal'));
-    modal.show();
-}
-
 // 初始化评语数据
 function initialize() {
-    console.log('开始初始化评语管理功能...');
+    console.log('初始化评语模块...');
     
-    // 添加呼吸灯效果的样式
-    if (!document.getElementById('breathing-effect-style')) {
-        const style = document.createElement('style');
-        style.id = 'breathing-effect-style';
-        style.textContent = `
-            @keyframes breathing {
-                0% { box-shadow: 0 0 10px 2px rgba(0, 183, 255, 0.4); }
-                25% { box-shadow: 0 0 15px 4px rgba(0, 217, 255, 0.6); }
-                50% { box-shadow: 0 0 20px 6px rgba(0, 247, 255, 0.8); }
-                75% { box-shadow: 0 0 15px 4px rgba(0, 217, 255, 0.6); }
-                100% { box-shadow: 0 0 10px 2px rgba(0, 183, 255, 0.4); }
-            }
-            .breathing-border {
-                animation: breathing 2s infinite ease-in-out;
-                border: 3px solid #00c3ff !important;
-                border-radius: 8px !important;
-                overflow: hidden;
-            }
-            .breathing-button {
-                animation: breathing 2s infinite ease-in-out;
-                position: relative;
-                z-index: 1;
-            }
-        `;
-        document.head.appendChild(style);
-    }
+    // 获取当前用户班级ID
+    fetchCurrentUserClassId();
     
-    // 加载评语模板
-    loadCommentTemplates();
-    
-    // 初始化评语列表
+    // 加载评语数据
     initCommentList();
     
     // 绑定事件监听器
     bindEventListeners();
     
-    console.log('评语管理功能初始化完成');
+    // 设置DOM变更监听
+    monitorDOMChanges();
+}
+
+// 获取当前用户的班级ID
+function fetchCurrentUserClassId() {
+    // 首先检查是否已经有存储的班级ID
+    if (document.getElementById('currentUserClassId')) {
+        window.currentUserClassId = document.getElementById('currentUserClassId').value;
+        console.log('从DOM元素获取当前用户班级ID:', window.currentUserClassId);
+        return;
+    }
+    
+    // 从meta标签获取班级ID
+    const classIdMeta = document.querySelector('meta[name="user-class-id"]');
+    if (classIdMeta) {
+        window.currentUserClassId = classIdMeta.content;
+        console.log('从meta标签获取当前用户班级ID:', window.currentUserClassId);
+        
+        // 创建隐藏字段存储班级ID
+        const hiddenField = document.createElement('input');
+        hiddenField.type = 'hidden';
+        hiddenField.id = 'currentUserClassId';
+        hiddenField.value = window.currentUserClassId;
+        document.body.appendChild(hiddenField);
+        return;
+    }
+    
+    // 设置默认班级ID
+    window.currentUserClassId = "1";
+    console.log('无法获取班级ID，使用默认班级ID:', window.currentUserClassId);
+    
+    // 创建隐藏字段存储默认班级ID
+    const hiddenField = document.createElement('input');
+    hiddenField.type = 'hidden';
+    hiddenField.id = 'currentUserClassId';
+    hiddenField.value = window.currentUserClassId;
+    document.body.appendChild(hiddenField);
 }
 
 // 绑定事件监听器
 function bindEventListeners() {
     console.log('绑定事件监听器...');
     
-    // 批量编辑按钮事件
-    const batchEditBtn = document.getElementById('batchEditBtn');
-    if (batchEditBtn) {
-        batchEditBtn.addEventListener('click', function() {
-            console.log('批量编辑按钮被点击');
-            showBatchEditModal();
-        });
-    } else {
-        console.error('找不到批量编辑按钮');
-    }
     
-    // 批量保存按钮事件
-    const saveBatchBtn = document.getElementById('saveBatchBtn');
-    if (saveBatchBtn) {
-        saveBatchBtn.addEventListener('click', function() {
-            console.log('批量保存按钮被点击');
-            saveBatchComments();
-        });
-    } else {
-        console.error('找不到批量保存按钮');
-    }
     
     // 导出评语按钮事件
     const exportCommentsBtn = document.getElementById('exportCommentsBtn');
@@ -1780,43 +1119,11 @@ function bindEventListeners() {
         console.error('找不到打印预览按钮');
     }
     
-    // 管理模板按钮事件
-    const manageTemplatesBtn = document.getElementById('manageTemplatesBtn');
-    if (manageTemplatesBtn) {
-        manageTemplatesBtn.addEventListener('click', function() {
-            console.log('管理模板按钮被点击');
-            showTemplateModal();
-        });
-    } else {
-        console.error('找不到管理模板按钮');
-    }
     
-    // 添加模板按钮事件
-    const addTemplateBtn = document.getElementById('addTemplateBtn');
-    if (addTemplateBtn) {
-        addTemplateBtn.addEventListener('click', function() {
-            console.log('添加模板按钮被点击');
-            addTemplate();
-        });
-    } else {
-        console.error('找不到添加模板按钮');
-    }
     
-    // 模板分类筛选按钮事件
-    const templateFilters = document.querySelectorAll('.template-filter');
-    templateFilters.forEach(filter => {
-        filter.addEventListener('click', function() {
-            console.log('模板过滤按钮被点击:', this.dataset.filter);
-            const filterType = this.dataset.filter;
-            
-            // 更新活动状态
-            templateFilters.forEach(f => f.classList.remove('active'));
-            this.classList.add('active');
-            
-            // 根据选择的过滤器渲染模板按钮
-            renderTemplateButtons(filterType);
-        });
-    });
+    
+    
+    
     
     // 监听评语文本框输入事件，更新字数统计
     const commentText = document.getElementById('commentText');
@@ -1839,32 +1146,15 @@ function bindEventListeners() {
         console.error('找不到搜索输入框');
     }
     
-    // 为批量编辑中的全选/取消全选按钮绑定事件
-    document.getElementById('selectAllStudentsBtn')?.addEventListener('click', function() {
-        console.log('全选按钮被点击');
-        const checkboxes = document.querySelectorAll('.student-checkbox');
-        checkboxes.forEach(cb => cb.checked = true);
-        document.getElementById('selectAllCheckbox').checked = true;
-    });
     
-    document.getElementById('deselectAllStudentsBtn')?.addEventListener('click', function() {
-        console.log('取消全选按钮被点击');
-        const checkboxes = document.querySelectorAll('.student-checkbox');
-        checkboxes.forEach(cb => cb.checked = false);
-        document.getElementById('selectAllCheckbox').checked = false;
-    });
-    
-    // 批量评语文本框输入事件
-    document.getElementById('batchCommentText')?.addEventListener('input', function() {
-        updateCharCount();
-    });
+   
     
     console.log('事件监听器绑定完成');
 }
 
 // 显示AI评语助手模态框
-function showAICommentAssistant(studentId, studentName) {
-    console.log('打开AI海海:', studentId, studentName);
+function showAICommentAssistant(studentId, studentName, classId) {
+    console.log('打开AI海海:', studentId, studentName, classId);
     
     // 创建模态框HTML
     const modalId = 'aiCommentAssistantModal';
@@ -1883,7 +1173,7 @@ function showAICommentAssistant(studentId, studentName) {
                 <div class="modal-content breathing-border">
                     <div class="modal-header" style="background: linear-gradient(135deg, #00c6ff, #0072ff); color: white;">
                         <h5 class="modal-title" id="${modalId}Label">
-                            <i class='bx bx-bot'></i> AI海海 - <span id="aiModalStudentName"></span>
+                            <i class='bx bx-bot'></i> AI海海 <small class="badge bg-light text-dark">DeepSeek</small> - <span id="aiModalStudentName"></span>
                         </h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
@@ -1893,6 +1183,7 @@ function showAICommentAssistant(studentId, studentName) {
                             <div>
                                 <i class='bx bx-info-circle me-2'></i> 
                                 欢迎使用青柠半夏为您提供的Deepseek API，您也可以使用自己的API
+                                <span class="badge bg-secondary ms-2" style="font-size: 0.8rem;">使用 DeepSeek Chat 模型</span>
                             </div>
                             <a href="#" class="btn btn-sm btn-outline-primary" id="openApiSettingsBtn">
                                 <i class='bx bx-cog'></i> 修改
@@ -1945,7 +1236,7 @@ function showAICommentAssistant(studentId, studentName) {
                                     </div>
                                     <div class="col-md-4">
                                         <label class="form-label">最大字数</label>
-                                        <input type="number" class="form-control" id="aiMaxLengthInput" value="200" min="50" max="500">
+                                        <input type="number" class="form-control" id="aiMaxLengthInput" value="260" min="50" max="260">
                                     </div>
                                 </div>
                                 <div class="text-end">
@@ -1960,14 +1251,14 @@ function showAICommentAssistant(studentId, studentName) {
                         <div id="aiCommentPreview" class="card" style="display: none; border: 2px solid #00c3ff; box-shadow: 0 0 10px rgba(0, 195, 255, 0.3);">
                             <div class="card-header bg-info text-white" style="background: linear-gradient(135deg, #00c6ff, #0072ff) !important;">
                                 <h6 class="mb-0">
-                                    <i class='bx bx-bot'></i> AI海海生成的评语
+                                    <i class='bx bx-bot'></i> AI海海生成的评语 <small class="badge bg-light text-dark">DeepSeek</small>
                                 </h6>
                             </div>
                             <div class="card-body">
                                 <div id="aiCommentContent" class="mb-3 p-3 border rounded" style="min-height: 100px;"></div>
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
-                                        <span class="badge bg-light text-dark" id="aiCommentLength">0/200</span> 字
+                                        <span class="badge bg-light text-dark" id="aiCommentLength">0/260</span> 字
                                     </div>
                                     <div>
                                         <button class="btn btn-outline-secondary" id="generateAnotherBtn">
@@ -2012,16 +1303,24 @@ function showAICommentAssistant(studentId, studentName) {
         });
     }
     
-    // 保存当前学生ID到模态框中的隐藏字段
+    // 保存当前学生ID和班级ID到模态框中的隐藏字段
     if (!modalElement.querySelector('#currentStudentId')) {
-        const hiddenField = document.createElement('input');
-        hiddenField.type = 'hidden';
-        hiddenField.id = 'currentStudentId';
-        modalElement.appendChild(hiddenField);
+        const studentIdField = document.createElement('input');
+        studentIdField.type = 'hidden';
+        studentIdField.id = 'currentStudentId';
+        modalElement.appendChild(studentIdField);
     }
     
-    // 更新当前学生ID
+    if (!modalElement.querySelector('#currentClassId')) {
+        const classIdField = document.createElement('input');
+        classIdField.type = 'hidden';
+        classIdField.id = 'currentClassId';
+        modalElement.appendChild(classIdField);
+    }
+    
+    // 更新当前学生ID和班级ID
     document.getElementById('currentStudentId').value = studentId;
+    document.getElementById('currentClassId').value = classId;
     
     // 设置学生姓名
     document.getElementById('aiModalStudentName').textContent = studentName;
@@ -2030,7 +1329,7 @@ function showAICommentAssistant(studentId, studentName) {
     document.getElementById('aiCommentPreview').style.display = 'none';
     document.getElementById('aiCommentContent').textContent = '';
     
-    // 每次打开模态框时重新绑定事件，使用当前的学生ID
+    // 每次打开模态框时重新绑定事件，使用当前的学生ID和班级ID
     const generateBtn = document.getElementById('generateAICommentBtn');
     const generateAnotherBtn = document.getElementById('generateAnotherBtn');
     const useAICommentBtn = document.getElementById('useAICommentBtn');
@@ -2051,25 +1350,28 @@ function showAICommentAssistant(studentId, studentName) {
     
     // 添加新的事件监听器
     document.getElementById('generateAICommentBtn').addEventListener('click', function() {
-        // 使用getCurrentStudentId()函数获取当前正在操作的学生ID
+        // 使用getCurrentStudentId()函数获取当前正在操作的学生ID和班级ID
         const currentId = document.getElementById('currentStudentId').value;
-        console.log('生成评语按钮点击，当前学生ID:', currentId);
-        generateAIComment(currentId);
+        const currentClassId = document.getElementById('currentClassId').value;
+        console.log('生成评语按钮点击，当前学生ID:', currentId, '班级ID:', currentClassId);
+        generateAIComment(currentId, currentClassId);
     });
     
     if (newGenerateAnotherBtn) {
         document.getElementById('generateAnotherBtn').addEventListener('click', function() {
             const currentId = document.getElementById('currentStudentId').value;
-            console.log('重新生成按钮点击，当前学生ID:', currentId);
-            generateAIComment(currentId);
+            const currentClassId = document.getElementById('currentClassId').value;
+            console.log('重新生成按钮点击，当前学生ID:', currentId, '班级ID:', currentClassId);
+            generateAIComment(currentId, currentClassId);
         });
     }
     
     if (newUseAICommentBtn) {
         document.getElementById('useAICommentBtn').addEventListener('click', function() {
             const currentId = document.getElementById('currentStudentId').value;
-            console.log('使用评语按钮点击，当前学生ID:', currentId);
-            useAIComment(currentId);
+            const currentClassId = document.getElementById('currentClassId').value;
+            console.log('使用评语按钮点击，当前学生ID:', currentId, '班级ID:', currentClassId);
+            useAIComment(currentId, currentClassId);
         });
     }
     
@@ -2079,125 +1381,127 @@ function showAICommentAssistant(studentId, studentName) {
 }
 
 // 生成AI评语
-function generateAIComment(studentId) {
-    console.log('生成AI评语:', studentId);
-    
-    // 获取输入参数
-    const personality = document.getElementById('aiPersonalityInput').value.trim();
-    const studyPerformance = document.getElementById('aiStudyInput').value.trim();
-    const hobbies = document.getElementById('aiHobbiesInput').value.trim();
-    const improvement = document.getElementById('aiImprovementInput').value.trim();
-    const style = document.getElementById('aiStyleSelect').value;
-    const tone = document.getElementById('aiToneSelect').value;
-    const maxLength = parseInt(document.getElementById('aiMaxLengthInput').value);
-    
-    // 显示加载状态
-    document.getElementById('aiGeneratingIndicator').style.display = 'block';
-    document.getElementById('aiCommentPreview').style.display = 'none';
-    document.getElementById('generateAICommentBtn').disabled = true;
-    
-    // 处理特殊风格
-    let styleDescription = style;
-    let additionalInstructions = "";
-    
-    if (style === "诗意的") {
-        additionalInstructions = "请在评语中加入一句与学生特点相关的诗句，使评语更加富有诗意。";
-    } else if (style === "自然的") {
-        additionalInstructions = "请使用花卉、植物等自然元素来形象比喻描述学生的特点，使评语更加生动形象。";
-    }
-    
-    // 请求参数
-    const requestData = {
-        student_id: studentId,  // 兼容后端API
-        studentId: studentId,   // 兼容后端API可能的另一种参数名
-        personality,
-        study_performance: studyPerformance,
-        hobbies,
-        improvement,
-        style,
-        tone,
-        max_length: maxLength,
-        additional_instructions: additionalInstructions  // 添加特殊风格说明
-    };
-    
-    console.log('发送评语生成请求:', requestData);
-    
-    // 发送请求
-    fetch('/api/generate-comment', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(requestData)
-    })
-    .then(response => {
+async function generateAIComment(studentId, classId) {
+    try {
+        // 获取当前模态框
+        const modal = document.getElementById('aiCommentAssistantModal');
+        if (!modal) {
+            throw new Error('找不到AI评语模态框');
+        }
+
+        // 获取所有输入值
+        const style = modal.querySelector('#aiStyleSelect').value;
+        const tone = modal.querySelector('#aiToneSelect').value;
+        const maxLength = parseInt(modal.querySelector('#aiMaxLengthInput').value);
+        const personality = modal.querySelector('#aiPersonalityInput').value;
+        const studyPerformance = modal.querySelector('#aiStudyInput').value;
+        const hobbies = modal.querySelector('#aiHobbiesInput').value;
+        const improvement = modal.querySelector('#aiImprovementInput').value;
+        const additionalInstructions = '';
+
+        // 显示加载状态
+        const generateBtn = modal.querySelector('#generateAICommentBtn');
+        const aiGeneratingIndicator = modal.querySelector('#aiGeneratingIndicator');
+        const aiCommentPreview = modal.querySelector('#aiCommentPreview');
+        
+        // 保存原始按钮文本
+        const originalText = generateBtn.textContent;
+        
+        // 更新UI状态 - 显示加载中
+        generateBtn.disabled = true;
+        generateBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 生成中...';
+        
+        if (aiGeneratingIndicator) {
+            aiGeneratingIndicator.style.display = 'block';
+        }
+        
+        if (aiCommentPreview) {
+            aiCommentPreview.style.display = 'none';
+        }
+
+        // 使用传入的classId参数，而不是当前用户的班级ID
+        console.log('使用传入的班级ID进行AI生成:', classId);
+
+        // 发送请求
+        const response = await fetch('/api/generate-comment', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                student_id: studentId,
+                class_id: classId, // 使用传入的班级ID，而不是当前用户的班级ID
+                style: style,
+                tone: tone,
+                max_length: maxLength,
+                personality: personality,
+                study_performance: studyPerformance,
+                hobbies: hobbies,
+                improvement: improvement,
+                additional_instructions: additionalInstructions
+            })
+        });
+
         if (!response.ok) {
             throw new Error(`HTTP错误! 状态: ${response.status}`);
         }
-        // 获取响应文本以便于调试
-        return response.text().then(text => {
-            // 尝试解析JSON
-            try {
-                return JSON.parse(text);
-            } catch (e) {
-                console.error('解析响应数据失败:', e);
-                console.log('原始响应内容:', text);
-                throw new Error('服务器返回的数据格式不正确');
-            }
-        });
-    })
-    .then(data => {
+
+        const data = await response.json();
         console.log('评语生成结果:', data);
-        
-        // 隐藏加载状态
-        document.getElementById('aiGeneratingIndicator').style.display = 'none';
-        
-        // 检查响应状态
+
         if (data.status === 'ok') {
-            // 验证返回的学生ID与请求的学生ID是否一致
-            if (data.student_id && data.student_id !== studentId) {
-                console.error(`学生ID不匹配: 请求ID=${studentId}, 返回ID=${data.student_id}`);
-                showNotification('服务器返回了错误的学生评语数据，请重试', 'error');
-                return;
-            }
-            
-            // 获取评语内容（兼容可能的不同字段名）
-            const commentContent = data.comment || data.content;
-            
-            if (!commentContent) {
-                showNotification('评语生成成功，但内容为空', 'warning');
-                return;
-            }
-            
             // 显示生成的评语
-            const aiCommentPreview = document.getElementById('aiCommentPreview');
-            const aiCommentContent = document.getElementById('aiCommentContent');
-            const aiCommentLength = document.getElementById('aiCommentLength');
+            const aiCommentContent = modal.querySelector('#aiCommentContent');
+            const aiCommentLength = modal.querySelector('#aiCommentLength');
             
-            aiCommentContent.textContent = commentContent;
-            aiCommentLength.textContent = `${commentContent.length}/${maxLength}`;
-            aiCommentPreview.style.display = 'block';
+            if (aiCommentContent) {
+                aiCommentContent.textContent = data.comment;
+            }
             
+            if (aiCommentLength) {
+                aiCommentLength.textContent = `${data.comment.length}/${maxLength}`;
+            }
+            
+            if (aiCommentPreview) {
+                aiCommentPreview.style.display = 'block';
+            }
+            
+            if (aiGeneratingIndicator) {
+                aiGeneratingIndicator.style.display = 'none';
+            }
+
             showNotification('评语生成成功', 'success');
         } else {
-            // 显示错误消息
-            showNotification(`评语生成失败: ${data.message || '未知错误'}`, 'error');
+            throw new Error(data.message || '生成评语失败');
         }
-    })
-    .catch(error => {
-        console.error('评语生成请求出错:', error);
-        document.getElementById('aiGeneratingIndicator').style.display = 'none';
-        showNotification(`评语生成出错: ${error.message}`, 'error');
-    })
-    .finally(() => {
-        // 恢复按钮状态
-        document.getElementById('generateAICommentBtn').disabled = false;
-    });
+    } catch (error) {
+        console.error('生成AI评语时出错:', error);
+        
+        // 获取模态框和元素
+        const modal = document.getElementById('aiCommentAssistantModal');
+        const aiGeneratingIndicator = modal?.querySelector('#aiGeneratingIndicator');
+        
+        // 隐藏加载指示器
+        if (aiGeneratingIndicator) {
+            aiGeneratingIndicator.style.display = 'none';
+        }
+        
+        showNotification('生成AI评语失败: ' + error.message, 'error');
+    } finally {
+        // 恢复生成按钮状态
+        const modal = document.getElementById('aiCommentAssistantModal');
+        const generateBtn = modal?.querySelector('#generateAICommentBtn');
+        
+        if (generateBtn) {
+            generateBtn.disabled = false;
+            generateBtn.innerHTML = '<i class="bx bx-magic"></i> 生成AI评语';
+        }
+    }
 }
 
 // 使用AI生成的评语
-function useAIComment(studentId) {
-    console.log('使用AI评语:', studentId);
+function useAIComment(studentId, classId) {
+    console.log('使用AI评语:', studentId, classId);
     
     // 获取生成的评语内容
     const aiCommentContent = document.getElementById('aiCommentContent').textContent;
@@ -2206,14 +1510,30 @@ function useAIComment(studentId) {
         return;
     }
     
+    // 使用传入的班级ID，而不是当前用户的班级ID
+    console.log('保存评语使用的班级ID:', classId, '类型:', typeof classId);
+    
     // 确认使用评语
     if (confirm('确定要使用此评语吗？这将替换现有评语。')) {
+        // 记录班级ID类型和值
+        console.log('保存评语使用的班级ID:', classId, '类型:', typeof classId);
+        
         // 创建评语数据
         const commentData = {
             studentId,
+            // 使用传入的班级ID，而不是当前用户的班级ID
+            classId: classId,
             content: aiCommentContent,
-            updatedContent: aiCommentContent  // 兼容API可能需要的参数
+            // 添加标志表明这是AI评语
+            isAIComment: true
         };
+        
+        // 显示保存中状态
+        const useBtn = document.getElementById('useAICommentBtn');
+        if (useBtn) {
+            useBtn.disabled = true;
+            useBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 保存中...';
+        }
         
         // 发送到服务器
         fetch('/api/comments', {
@@ -2224,12 +1544,23 @@ function useAIComment(studentId) {
             body: JSON.stringify(commentData)
         })
         .then(response => {
+            console.log('服务器响应状态:', response.status);
             if (!response.ok) {
-                throw new Error(`HTTP错误! 状态: ${response.status}`);
+                return response.text().then(text => {
+                    try {
+                        // 尝试解析JSON
+                        const errorData = JSON.parse(text);
+                        throw new Error(errorData.message || `HTTP错误! 状态: ${response.status}`);
+                    } catch (e) {
+                        // 如果不是有效的JSON，返回原始错误
+                        throw new Error(`HTTP错误! 状态: ${response.status}, 响应: ${text}`);
+                    }
+                });
             }
             return response.json();
         })
         .then(data => {
+            console.log('保存评语响应:', data);
             if (data.status === 'ok') {
                 // 移除模态框中所有按钮的焦点，避免ARIA警告
                 const modalElement = document.getElementById('aiCommentAssistantModal');
@@ -2245,7 +1576,7 @@ function useAIComment(studentId) {
                 // 实时更新评语卡片
                 updateCommentCard(studentId, {
                     content: aiCommentContent,
-                    updateDate: new Date().toLocaleDateString()
+                    updateDate: data.updateDate || new Date().toLocaleDateString()
                 });
                 
                 showNotification('评语已保存', 'success');
@@ -2259,6 +1590,13 @@ function useAIComment(studentId) {
         .catch(error => {
             console.error('保存评语失败:', error);
             showNotification(`保存评语失败: ${error.message}`, 'error');
+        })
+        .finally(() => {
+            // 恢复按钮状态
+            if (useBtn) {
+                useBtn.disabled = false;
+                useBtn.innerHTML = '<i class="bx bx-check"></i> 使用此评语';
+            }
         });
     }
 }

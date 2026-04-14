@@ -14,27 +14,32 @@ class DashboardManager:
         """获取数据库连接"""
         conn = sqlite3.connect(self.db_path)
         conn.row_factory = sqlite3.Row
+        conn.execute('PRAGMA foreign_keys = ON')  # 启用外键约束
         return conn
     
-    def get_current_class(self):
-        """获取当前班级，从学生表中获取最常见的班级"""
+    def get_current_class(self, user=None):
+        """获取当前班级"""
+        # 安全地获取class_id，如果用户不存在或没有class_id属性则返回None
+        user_class_id = getattr(user, 'class_id', None) if user else None
+        
+        if not user_class_id:
+            return "暂无班级"
+        
         conn = self.get_db_connection()
         cursor = conn.cursor()
         
         cursor.execute("""
-            SELECT class, COUNT(class) as count 
+            SELECT DISTINCT class 
             FROM students 
-            GROUP BY class 
-            ORDER BY count DESC
-            LIMIT 1
-        """)
+            WHERE class_id = ?
+        """, (user_class_id,))
         
         result = cursor.fetchone()
         conn.close()
         
-        if result:
+        if result and result['class']:
             return result['class']
-        return "未设置班级"
+        return "暂无班级"
     
     def get_current_semester(self):
         """获取当前学期，从学生表中获取最新的学期"""

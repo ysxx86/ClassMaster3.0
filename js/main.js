@@ -1,6 +1,44 @@
 // @charset UTF-8
 // DOM元素加载完成后执行
 document.addEventListener('DOMContentLoaded', function() {
+    // 完全禁用Bootstrap模态框的无障碍属性
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'aria-hidden') {
+                mutation.target.removeAttribute('aria-hidden');
+            }
+        });
+    });
+
+    document.querySelectorAll('.modal').forEach(modal => {
+        // 开始观察模态框的属性变化
+        observer.observe(modal, {
+            attributes: true,
+            attributeFilter: ['aria-hidden']
+        });
+
+        // 初始移除aria-hidden
+        modal.removeAttribute('aria-hidden');
+        
+        // 使用inert属性控制模态框状态
+        modal.addEventListener('show.bs.modal', function() {
+            this.removeAttribute('inert');
+        });
+        
+        modal.addEventListener('hidden.bs.modal', function() {
+            this.setAttribute('inert', '');
+            const trigger = document.querySelector('[data-bs-target="#' + this.id + '"]');
+            if (trigger) {
+                trigger.focus();
+            }
+        });
+        
+        // 初始设置
+        if (!modal.classList.contains('show')) {
+            modal.setAttribute('inert', '');
+        }
+    });
+
     // 初始化Bootstrap工具提示
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
     var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
@@ -68,6 +106,109 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 设置活动菜单项
     setActiveMenuItem();
+
+    // 会话超时设置
+    const SESSION_TIMEOUT = 30 * 60 * 1000; // 30分钟
+    let sessionTimer = null;
+    let lastActivity = Date.now();
+
+    // 重置会话计时器
+    function resetSessionTimer() {
+        if (sessionTimer) {
+            clearTimeout(sessionTimer);
+        }
+        lastActivity = Date.now();
+        sessionTimer = setTimeout(checkSessionTimeout, SESSION_TIMEOUT);
+    }
+
+    // 检查会话是否超时
+    function checkSessionTimeout() {
+        const currentTime = Date.now();
+        const timeDiff = currentTime - lastActivity;
+        
+        if (timeDiff >= SESSION_TIMEOUT) {
+            // 显示超时提示
+            Swal.fire({
+                title: '会话已超时',
+                text: '由于长时间未操作，您的会话已过期。请重新登录。',
+                icon: 'warning',
+                confirmButtonText: '确定',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                allowEnterKey: false
+            }).then(() => {
+                // 执行登出操作
+                logout();
+            });
+        }
+    }
+
+    // 监听用户活动
+    function setupActivityListeners() {
+        const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+        events.forEach(event => {
+            document.addEventListener(event, resetSessionTimer);
+        });
+    }
+
+    // 移除活动监听器
+    function removeActivityListeners() {
+        const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+        events.forEach(event => {
+            document.removeEventListener(event, resetSessionTimer);
+        });
+    }
+
+    // 修改登录函数
+    async function login() {
+        // ... existing login code ...
+        
+        if (response.ok) {
+            const data = await response.json();
+            if (data.status === 'ok') {
+                // 登录成功后设置会话计时器
+                resetSessionTimer();
+                setupActivityListeners();
+                // ... rest of the login success code ...
+            }
+        }
+    }
+
+    // 修改登出函数
+    async function logout() {
+        try {
+            // 清除会话计时器和监听器
+            if (sessionTimer) {
+                clearTimeout(sessionTimer);
+                sessionTimer = null;
+            }
+            removeActivityListeners();
+            
+            const response = await fetch('/api/logout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (response.ok) {
+                window.location.href = '/login';
+            } else {
+                throw new Error('登出失败');
+            }
+        } catch (error) {
+            console.error('登出时出错:', error);
+            // 即使请求失败也重定向到登录页面
+            window.location.href = '/login';
+        }
+    }
+
+    // 页面加载时初始化
+    const logoutLink = document.querySelector('.navbar-nav .nav-item:last-child .nav-link');
+    if (logoutLink && logoutLink.textContent === '退出登录') {
+    resetSessionTimer();
+    setupActivityListeners();
+    }
 });
 
 // 调整iframe高度

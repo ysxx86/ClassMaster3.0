@@ -2,6 +2,7 @@
 import json
 from flask import jsonify, request
 from dashboard.db_manager import DashboardManager
+from flask_login import current_user
 
 class DashboardAPI:
     """处理仪表盘相关的API请求"""
@@ -38,7 +39,7 @@ class DashboardAPI:
     def get_dashboard_info(self):
         """获取仪表盘基本信息"""
         try:
-            current_class = self.db_manager.get_current_class()
+            current_class = self.db_manager.get_current_class(current_user)
             current_semester = self.db_manager.get_current_semester()
             total_students = self.db_manager.get_total_students()
             

@@ -26,7 +26,8 @@ class ReportExporter:
         """
         self.templates_dir = templates_dir
         # 确保模板目录存在
-        os.makedirs(os.path.join(templates_dir, "custom"), exist_ok=True)
+        os.makedirs(self.templates_dir, exist_ok=True)
+        os.makedirs(os.path.join(self.templates_dir, "custom"), exist_ok=True)
         
         # 内置默认模板数据（作为最后备选）
         self.has_default_backup = False
@@ -36,6 +37,13 @@ class ReportExporter:
             self.default_template = self._create_default_template()
             self.has_default_backup = True
             logger.info("成功创建内置默认模板")
+            
+            # 确保默认模板文件存在
+            default_path = os.path.join(self.templates_dir, "default_template.docx")
+            if not os.path.exists(default_path):
+                with open(default_path, 'wb') as f:
+                    f.write(self.default_template)
+                logger.info(f"已创建默认模板文件: {default_path}")
         except Exception as e:
             logger.warning(f"无法创建内置默认模板: {str(e)}")
     
@@ -89,6 +97,25 @@ class ReportExporter:
             comment_para.add_run("学生评语").bold = True
             doc.add_paragraph('{{ 评语 }}')
             
+            # 添加德育维度评价部分
+            doc.add_paragraph()
+            deyu_para = doc.add_paragraph()
+            deyu_para.add_run("德育维度评价").bold = True
+            
+            deyu_dimensions = [
+                ('品质(30分)', '{{ 品质 }}', '学习(20分)', '{{ 学习 }}'),
+                ('健康(20分)', '{{ 健康 }}', '审美(10分)', '{{ 审美 }}'),
+                ('实践(10分)', '{{ 实践 }}', '生活(10分)', '{{ 生活 }}')
+            ]
+            
+            deyu_table = doc.add_table(rows=len(deyu_dimensions), cols=4)
+            deyu_table.style = 'Table Grid'
+            
+            for i, row in enumerate(deyu_dimensions):
+                for j in range(0, 4, 2):
+                    deyu_table.cell(i, j).text = row[j]
+                    deyu_table.cell(i, j+1).text = row[j+1]
+            
             # 添加学生成绩部分
             doc.add_paragraph()
             grade_para = doc.add_paragraph()
@@ -134,6 +161,8 @@ class ReportExporter:
             doc.add_paragraph("学生评价报告")
             doc.add_paragraph("学生姓名: {{ 姓名 }}")
             doc.add_paragraph("评语: {{ 评语 }}")
+            doc.add_paragraph("品质: {{ 品质 }} 学习: {{ 学习 }} 健康: {{ 健康 }}")
+            doc.add_paragraph("审美: {{ 审美 }} 实践: {{ 实践 }} 生活: {{ 生活 }}")
             
             buffer = io.BytesIO()
             doc.save(buffer)
@@ -231,9 +260,18 @@ class ReportExporter:
             "学期": semester_text,
             "开学时间": start_date_text,
             "学校名称": settings.get('schoolName', '学校名称未设置'),
-            "班主任": settings.get('teacherName', '班主任姓名未设置'),
+            "班主任签名": settings.get('teacherName', '班主任签名未设置'),
+            "班主任": settings.get('teacherName', '班主任签名未设置'),
             "教师姓名": settings.get('teacherName', '教师姓名未设置'),
-            "日期": datetime.now().strftime('%Y-%m-%d')
+            "日期": datetime.now().strftime('%Y-%m-%d'),
+            
+            # 德育维度数据
+            "品质": safe_get(student, 'pinzhi', '0'),
+            "学习": safe_get(student, 'xuexi', '0'),
+            "健康": safe_get(student, 'jiankang', '0'),
+            "审美": safe_get(student, 'shenmei', '0'),
+            "实践": safe_get(student, 'shijian', '0'),
+            "生活": safe_get(student, 'shenghuo', '0')
         }
         
         # 如果有成绩数据，添加成绩

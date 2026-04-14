@@ -239,23 +239,29 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="import-area">
-                        <i class='bx bx-cloud-upload'></i>
-                        <h3>拖拽文件到此处或点击上传</h3>
-                        <p>支持Excel文件格式 (.xlsx, .xls)</p>
-                        <input type="file" id="importFile" class="d-none" accept=".xlsx, .xls">
-                        <div class="d-flex justify-content-center">
-                            <button class="btn btn-primary me-2" onclick="document.getElementById('importFile').click()">
-                                <i class='bx bx-upload'></i> 选择文件
-                            </button>
-                            <button class="btn btn-outline-secondary" id="downloadTemplateBtn">
-                                <i class='bx bx-download'></i> 下载模板
+                    <p class="text-muted mb-3">请上传Excel(.xlsx或.xls)格式的学生名单文件。建议先下载模板填写后再导入。</p>
+                    
+                    <!-- 导入区域（支持拖放） -->
+                    <div id="dropZone" class="border border-dashed border-primary rounded-3 p-4 mb-4 text-center bg-light">
+                        <i class="bx bx-cloud-upload text-primary" style="font-size: 48px;"></i>
+                        <h5 class="mt-2">点击选择文件或拖放至此区域</h5>
+                        <p class="text-muted small">支持Excel文件（.xlsx, .xls）</p>
+                        
+                        <div class="input-group mt-3 justify-content-center">
+                            <input type="file" id="importFile" class="d-none" accept=".xlsx, .xls">
+                            <label for="importFile" class="btn btn-outline-primary">
+                                <i class="bx bx-file me-1"></i> 选择文件
+                            </label>
+                            <button type="button" class="btn btn-outline-secondary ms-2" id="downloadTemplateBtn" onclick="downloadTemplate()">
+                                <i class="bx bx-download me-1"></i> 下载模板
                             </button>
                         </div>
+                        
+                        <div id="selectedFileName" class="mt-2 text-primary"></div>
                     </div>
                     
                     <!-- 预览区域 -->
-                    <div id="previewContainer" class="mt-4"></div>
+                    <div id="previewContainer" class="mb-3"></div>
                     
                     <!-- 存储导入数据的隐藏字段 -->
                     <input type="hidden" id="importData" value="">
@@ -268,8 +274,29 @@
         </div>
     </div>
     
+    <!-- 错误详情模态框 -->
+    <div class="modal fade" id="errorDetailsModal" tabindex="-1" aria-labelledby="errorDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="errorDetailsModalLabel">导入警告和错误</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <i class="bx bx-info-circle"></i> 以下是导入过程中发生的错误，部分学生数据可能未成功导入：
+                    </div>
+                    <ul id="errorDetailsList" class="list-group"></ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <!-- 添加学生模态框 -->
-    <div class="modal fade" id="addStudentModal" tabindex="-1" aria-labelledby="addStudentModalLabel" aria-hidden="true">
+    <div class="modal fade" id="addStudentModal" tabindex="-1" aria-labelledby="addStudentModalLabel">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -427,32 +454,32 @@
                                 <input type="text" class="form-control" id="editStudentVisionRight">
                             </div>
                             <div class="col-md-4">
-                                <label for="editStudentVital" class="form-label">肺活量 (ml)</label>
-                                <input type="number" class="form-control" id="editStudentVital">
+                                <label for="editStudentVitalCapacity" class="form-label">肺活量 (ml)</label>
+                                <input type="number" class="form-control" id="editStudentVitalCapacity">
                             </div>
                         </div>
                         <div class="row mb-3">
                             <div class="col-md-6">
-                                <label for="editStudentDental" class="form-label">龋齿情况</label>
-                                <input type="text" class="form-control" id="editStudentDental">
+                                <label for="editStudentDentalCaries" class="form-label">龋齿情况</label>
+                                <input type="text" class="form-control" id="editStudentDentalCaries">
                             </div>
                             <div class="col-md-6">
-                                <label for="editStudentPhysical" class="form-label">体测情况</label>
-                                <input type="text" class="form-control" id="editStudentPhysical">
+                                <label for="editStudentPhysicalStatus" class="form-label">体测情况</label>
+                                <input type="text" class="form-control" id="editStudentPhysicalStatus">
                             </div>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                    <button type="button" class="btn btn-primary" onclick="saveEditedStudent()">保存</button>
+                    <button type="button" class="btn btn-primary" id="saveEditStudentBtn" onclick="saveEditedStudent()">保存</button>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- 评语模态框 -->
-    <div class="modal fade" id="commentModal" tabindex="-1" aria-labelledby="commentModalLabel" aria-hidden="true">
+    <div class="modal fade" id="commentModal" tabindex="-1" aria-labelledby="commentModalLabel">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header bg-success text-white">
@@ -474,14 +501,14 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                    <button type="button" class="btn btn-success" onclick="saveComment()">保存</button>
+                    <button type="button" class="btn btn-primary" id="saveCommentBtn" onclick="saveComment()">保存评语</button>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- 删除学生确认模态框 -->
-    <div class="modal fade" id="deleteStudentModal" tabindex="-1" aria-labelledby="deleteStudentModalLabel" aria-hidden="true">
+    <div class="modal fade" id="deleteStudentModal" tabindex="-1" aria-labelledby="deleteStudentModalLabel">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header bg-danger text-white">
@@ -490,11 +517,12 @@
                 </div>
                 <div class="modal-body">
                     <input type="hidden" id="deleteStudentId">
+                    <input type="hidden" id="deleteClassId">
                     <p>确定要删除学生 <span id="deleteStudentName" class="fw-bold"></span> 吗？此操作不可恢复。</p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn" onclick="deleteStudent(document.getElementById('deleteStudentId').value)">确认删除</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn" onclick="deleteStudent(document.getElementById('deleteStudentId').value, document.getElementById('deleteClassId').value)">确认删除</button>
                 </div>
             </div>
         </div>

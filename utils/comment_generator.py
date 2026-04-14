@@ -24,7 +24,7 @@ class CommentGenerator:
                         student_info: Dict[str, Any],
                         style: str = "鼓励性的",
                         tone: str = "正式的",
-                        max_length: int = 200) -> Dict[str, Any]:
+                        max_length: int = 260) -> Dict[str, Any]:
         """生成学生评语
         
         Args:
@@ -121,8 +121,8 @@ class CommentGenerator:
         if "max_length" in request_data:
             try:
                 max_length = int(request_data["max_length"])
-                if not (50 <= max_length <= 500):
-                    return False, "最大字数必须在50-500之间"
+                if not (50 <= max_length <= 260):
+                    return False, "最大字数必须在50-260之间"
             except ValueError:
                 return False, "最大字数必须是有效的数字"
         
