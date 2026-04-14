@@ -7,7 +7,9 @@ import sqlite3
 import requests
 
 # DeepSeek API密钥
-API_KEY = "sk-04f7d75638d044ed8a707d7aadf46782"
+API_KEY = os.environ.get('DEEPSEEK_API_KEY')
+if not API_KEY:
+    raise ValueError("DEEPSEEK_API_KEY环境变量未设置")
 
 # 数据库路径
 DATABASE = 'students.db'

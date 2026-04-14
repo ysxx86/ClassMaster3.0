@@ -22,6 +22,13 @@ logs/
 "*.db-shm" 
 "*.db-shm" 
 "*.db-wal" 
+.env
+.env.example
+*.db  
+*.db-shm  
+*.db-wal  
+*.db.backup  
+*.db.bak
 
 # 导出文件夹 - 忽略所有导出的PDF和Word文件
 exports/
