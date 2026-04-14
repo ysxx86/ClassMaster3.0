@@ -1,3 +1,19 @@
+from flask import Blueprint, jsonify
+from flask_login import login_required, current_user
+from database import get_db_connection
+import logging
+
+# 创建日志记录器
+logger = logging.getLogger(__name__)
+
+# 创建蓝图
+dashboard_bp = Blueprint('dashboard', __name__)
+
+def check_table_exists(cursor, table_name):
+    """检查表是否存在"""
+    cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name=?", (table_name,))
+    return cursor.fetchone() is not None
+
 @dashboard_bp.route('/api/dashboard/info', methods=['GET'])
 @login_required
 def get_dashboard_info():
@@ -16,7 +32,7 @@ def get_dashboard_info():
         # 获取当前班级名称
         current_class = "暂无班级"
         if current_user_class_id:
-            cursor.execute('SELECT DISTINCT class FROM students WHERE class_id = ?', (current_user_class_id,))
+            cursor.execute('SELECT DISTINCT c.class_name as class FROM students s LEFT JOIN classes c ON s.class_id = c.id WHERE class_id = ?', (current_user_class_id,))
             result = cursor.fetchone()
             if result and result['class']:
                 current_class = result['class']
@@ -28,39 +44,45 @@ def get_dashboard_info():
             cursor.execute('SELECT COUNT(*) as count FROM students WHERE class_id = ?', (current_user_class_id,))
         student_count = cursor.fetchone()['count']
         
-        # 获取评语总数
-        if is_admin:
-            cursor.execute('SELECT COUNT(*) as count FROM comments')
-        else:
-            cursor.execute('SELECT COUNT(*) as count FROM comments WHERE student_id IN (SELECT id FROM students WHERE class_id = ?)', (current_user_class_id,))
-        comment_count = cursor.fetchone()['count']
+        # 获取评语总数（如果评语表存在）
+        comment_count = 0
+        if check_table_exists(cursor, 'comments'):
+            if is_admin:
+                cursor.execute('SELECT COUNT(*) as count FROM comments')
+            else:
+                cursor.execute('SELECT COUNT(*) as count FROM comments WHERE student_id IN (SELECT id FROM students WHERE class_id = ?)', (current_user_class_id,))
+            comment_count = cursor.fetchone()['count']
         
-        # 获取待办事项总数
-        if is_admin:
-            cursor.execute('SELECT COUNT(*) as count FROM todos WHERE status = "pending"')
-        else:
-            cursor.execute('SELECT COUNT(*) as count FROM todos WHERE status = "pending" AND class_id = ?', (current_user_class_id,))
-        todo_count = cursor.fetchone()['count']
+        # 获取待办事项总数（如果待办表存在）
+        todo_count = 0
+        if check_table_exists(cursor, 'todos'):
+            if is_admin:
+                cursor.execute('SELECT COUNT(*) as count FROM todos WHERE status = "pending"')
+            else:
+                cursor.execute('SELECT COUNT(*) as count FROM todos WHERE status = "pending" AND class_id = ?', (current_user_class_id,))
+            todo_count = cursor.fetchone()['count']
         
-        # 获取最近的活动
-        if is_admin:
-            cursor.execute('''
-                SELECT a.*, u.username 
-                FROM activities a 
-                LEFT JOIN users u ON a.user_id = u.id 
-                ORDER BY a.created_at DESC 
-                LIMIT 5
-            ''')
-        else:
-            cursor.execute('''
-                SELECT a.*, u.username 
-                FROM activities a 
-                LEFT JOIN users u ON a.user_id = u.id 
-                WHERE a.class_id = ? 
-                ORDER BY a.created_at DESC 
-                LIMIT 5
-            ''', (current_user_class_id,))
-        activities = [dict(row) for row in cursor.fetchall()]
+        # 获取最近的活动（如果活动表存在）
+        activities = []
+        if check_table_exists(cursor, 'activities'):
+            if is_admin:
+                cursor.execute('''
+                    SELECT a.*, u.username 
+                    FROM activities a 
+                    LEFT JOIN users u ON a.user_id = u.id 
+                    ORDER BY a.created_at DESC 
+                    LIMIT 5
+                ''')
+            else:
+                cursor.execute('''
+                    SELECT a.*, u.username 
+                    FROM activities a 
+                    LEFT JOIN users u ON a.user_id = u.id 
+                    WHERE a.class_id = ? 
+                    ORDER BY a.created_at DESC 
+                    LIMIT 5
+                ''', (current_user_class_id,))
+            activities = [dict(row) for row in cursor.fetchall()]
         
         # 获取成绩分布
         if is_admin:
@@ -123,27 +145,29 @@ def get_dashboard_info():
             ''', (current_user_class_id,))
         todos = [dict(row) for row in cursor.fetchall()]
         
-        # 获取最新评语
-        if is_admin:
-            cursor.execute('''
-                SELECT c.*, s.name as student_name, u.username 
-                FROM comments c 
-                LEFT JOIN students s ON c.student_id = s.id 
-                LEFT JOIN users u ON c.user_id = u.id 
-                ORDER BY c.created_at DESC 
-                LIMIT 5
-            ''')
-        else:
-            cursor.execute('''
-                SELECT c.*, s.name as student_name, u.username 
-                FROM comments c 
-                LEFT JOIN students s ON c.student_id = s.id 
-                LEFT JOIN users u ON c.user_id = u.id 
-                WHERE s.class_id = ? 
-                ORDER BY c.created_at DESC 
-                LIMIT 5
-            ''', (current_user_class_id,))
-        comments = [dict(row) for row in cursor.fetchall()]
+        # 获取最新评语（如果评语表存在）
+        comments = []
+        if check_table_exists(cursor, 'comments'):
+            if is_admin:
+                cursor.execute('''
+                    SELECT c.*, s.name as student_name, u.username 
+                    FROM comments c 
+                    LEFT JOIN students s ON c.student_id = s.id 
+                    LEFT JOIN users u ON c.user_id = u.id 
+                    ORDER BY c.created_at DESC 
+                    LIMIT 5
+                ''')
+            else:
+                cursor.execute('''
+                    SELECT c.*, s.name as student_name, u.username 
+                    FROM comments c 
+                    LEFT JOIN students s ON c.student_id = s.id 
+                    LEFT JOIN users u ON c.user_id = u.id 
+                    WHERE s.class_id = ? 
+                    ORDER BY c.created_at DESC 
+                    LIMIT 5
+                ''', (current_user_class_id,))
+            comments = [dict(row) for row in cursor.fetchall()]
         
         conn.close()
         

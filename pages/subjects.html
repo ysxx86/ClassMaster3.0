@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学科管理</title>
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../css/boxicons-local.css">
+    <style>
+        body {
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .page-header {
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #dee2e6;
+        }
+        .nav-tabs {
+            margin-bottom: 20px;
+        }
+        .table-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .btn-group-sm .btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+        .badge {
+            font-size: 0.85em;
+        }
+        
+        /* 拖拽样式 */
+        .teacher-card {
+            display: inline-block;
+            padding: 8px 16px;
+            background: white;
+            border: 2px solid #0d6efd;
+            border-radius: 20px;
+            cursor: move;
+            user-select: none;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+        
+        .teacher-card:hover {
+            background: #0d6efd;
+            color: white;
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .teacher-card.dragging {
+            opacity: 0.5;
+            transform: rotate(5deg);
+        }
+        
+        .subject-box {
+            background: white;
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            min-height: 150px;
+            transition: all 0.3s;
+        }
+        
+        .subject-box.drag-over {
+            background: #e7f3ff;
+            border-color: #0d6efd;
+            border-style: solid;
+            transform: scale(1.02);
+        }
+        
+        .subject-box-header {
+            font-weight: 600;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #dee2e6;
+            color: #0d6efd;
+        }
+        
+        .subject-box-teachers {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            min-height: 80px;
+        }
+        
+        .teacher-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            background: #0d6efd;
+            color: white;
+            border-radius: 15px;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+        
+        .teacher-tag .remove-btn {
+            margin-left: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+        
+        .teacher-tag .remove-btn:hover {
+            opacity: 1;
+        }
+        
+        .empty-hint {
+            color: #6c757d;
+            font-style: italic;
+            text-align: center;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- 页面标题 -->
+        <div class="page-header">
+            <h2><i class='bx bx-book'></i> 学科管理</h2>
+        </div>
+
+        <!-- 标签页导航 -->
+        <ul class="nav nav-tabs" id="subjectTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="subjects-tab" data-bs-toggle="tab" data-bs-target="#subjects-panel" type="button">
+                    <i class='bx bx-list-ul'></i> 学科列表
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="assignments-tab" data-bs-toggle="tab" data-bs-target="#assignments-panel" type="button">
+                    <i class='bx bx-user-check'></i> 任教分配
+                </button>
+            </li>
+        </ul>
+
+        <!-- 标签页内容 -->
+        <div class="tab-content" id="subjectTabContent">
+            <!-- 学科列表面板 -->
+            <div class="tab-pane fade show active" id="subjects-panel">
+                <div class="table-container">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">学科列表</h5>
+                        <button class="btn btn-primary" id="add-subject-btn">
+                            <i class='bx bx-plus'></i> 添加学科
+                        </button>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th width="80">ID</th>
+                                    <th>学科名称</th>
+                                    <th>描述</th>
+                                    <th width="120">任教教师数</th>
+                                    <th width="180">创建时间</th>
+                                    <th width="150">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="subjects-table-body">
+                                <tr>
+                                    <td colspan="6" class="text-center">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">加载中...</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 任教分配面板 -->
+            <div class="tab-pane fade" id="assignments-panel">
+                <div class="table-container">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">拖拽分配任教学科</h5>
+                        <div class="text-muted">
+                            <small><i class='bx bx-info-circle'></i> 将教师拖拽到学科框中即可分配</small>
+                        </div>
+                    </div>
+                    
+                    <!-- 教师列表区域 -->
+                    <div class="mb-4">
+                        <h6 class="mb-2">教师列表</h6>
+                        <div class="border rounded p-3 bg-light" style="min-height: 100px;">
+                            <div id="teachers-drag-list" class="d-flex flex-wrap gap-2">
+                                <div class="text-center text-muted w-100">
+                                    <div class="spinner-border spinner-border-sm" role="status"></div>
+                                    加载中...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 学科分配区域 -->
+                    <div>
+                        <h6 class="mb-2">学科分配区域</h6>
+                        <div id="subjects-drop-area" class="row g-3">
+                            <div class="col-12 text-center text-muted">
+                                <div class="spinner-border spinner-border-sm" role="status"></div>
+                                加载中...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加/编辑学科模态框 -->
+    <div class="modal fade" id="subjectModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="subjectModalLabel">添加学科</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="subject-form">
+                        <input type="hidden" id="subject-id">
+                        <div class="mb-3">
+                            <label for="subject-name" class="form-label">学科名称 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="subject-name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="subject-description" class="form-label">描述</label>
+                            <textarea class="form-control" id="subject-description" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" id="save-subject-btn">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/libs/bootstrap.bundle.min.js"></script>
+    <script src="../js/libs/jquery.min.js"></script>
+    <script src="../js/subjects.js"></script>
+</body>
+</html>

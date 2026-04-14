@@ -29,16 +29,16 @@ class DashboardManager:
         cursor = conn.cursor()
         
         cursor.execute("""
-            SELECT DISTINCT class 
-            FROM students 
-            WHERE class_id = ?
+            SELECT class_name 
+            FROM classes 
+            WHERE id = ?
         """, (user_class_id,))
         
         result = cursor.fetchone()
         conn.close()
         
-        if result and result['class']:
-            return result['class']
+        if result and result['class_name']:
+            return result['class_name']
         return "暂无班级"
     
     def get_current_semester(self):
@@ -70,41 +70,70 @@ class DashboardManager:
         else:  # 第一学期
             return f"{year}-{year+1}学年第一学期"
     
-    def get_total_students(self):
+    def get_total_students(self, user=None):
         """获取学生总数"""
         conn = self.get_db_connection()
         cursor = conn.cursor()
         
-        cursor.execute("SELECT COUNT(*) as count FROM students")
+        # 获取用户的班级ID
+        user_class_id = getattr(user, 'class_id', None) if user else None
+        
+        # 如果是班主任，只计算其班级的学生
+        if user_class_id:
+            cursor.execute("SELECT COUNT(*) as count FROM students WHERE class_id = ?", (user_class_id,))
+        else:
+            cursor.execute("SELECT COUNT(*) as count FROM students")
+            
         result = cursor.fetchone()
         conn.close()
         
         return result['count'] if result else 0
     
-    def get_comments_completion(self):
+    def get_comments_completion(self, user=None):
         """获取评语完成情况"""
         conn = self.get_db_connection()
         cursor = conn.cursor()
         
+        # 获取用户的班级ID
+        user_class_id = getattr(user, 'class_id', None) if user else None
+        
         # 获取总学生数
-        cursor.execute("SELECT COUNT(*) as total FROM students")
+        if user_class_id:
+            cursor.execute("SELECT COUNT(*) as total FROM students WHERE class_id = ?", (user_class_id,))
+        else:
+            cursor.execute("SELECT COUNT(*) as total FROM students")
         total = cursor.fetchone()['total']
         
         # 获取已完成评语的学生数
-        cursor.execute("""
-            SELECT COUNT(*) as completed 
-            FROM students 
-            WHERE comments IS NOT NULL AND comments != ''
-        """)
+        if user_class_id:
+            cursor.execute("""
+                SELECT COUNT(*) as completed 
+                FROM students 
+                WHERE comments IS NOT NULL AND comments != '' AND class_id = ?
+            """, (user_class_id,))
+        else:
+            cursor.execute("""
+                SELECT COUNT(*) as completed 
+                FROM students 
+                WHERE comments IS NOT NULL AND comments != ''
+            """)
         completed = cursor.fetchone()['completed']
         
         # 获取未完成评语的学生
-        cursor.execute("""
-            SELECT id, name 
-            FROM students 
-            WHERE comments IS NULL OR comments = ''
-            ORDER BY name
-        """)
+        if user_class_id:
+            cursor.execute("""
+                SELECT id, name 
+                FROM students 
+                WHERE (comments IS NULL OR comments = '') AND class_id = ?
+                ORDER BY name
+            """, (user_class_id,))
+        else:
+            cursor.execute("""
+                SELECT id, name 
+                FROM students 
+                WHERE comments IS NULL OR comments = ''
+                ORDER BY name
+            """)
         incomplete_students = [dict(row) for row in cursor.fetchall()]
         
         conn.close()
@@ -117,38 +146,65 @@ class DashboardManager:
             'incomplete_students': incomplete_students
         }
     
-    def get_grades_completion(self):
+    def get_grades_completion(self, user=None):
         """获取成绩录入完成情况"""
         conn = self.get_db_connection()
         cursor = conn.cursor()
         
+        # 获取用户的班级ID
+        user_class_id = getattr(user, 'class_id', None) if user else None
+        
         # 获取总学生数
-        cursor.execute("SELECT COUNT(*) as total FROM students")
+        if user_class_id:
+            cursor.execute("SELECT COUNT(*) as total FROM students WHERE class_id = ?", (user_class_id,))
+        else:
+            cursor.execute("SELECT COUNT(*) as total FROM students")
         total = cursor.fetchone()['total']
         
         # 列出所有主要学科
-        subjects = ['yuwen', 'shuxue', 'yingyu', 'daof', 'kexue', 'tiyu', 'yinyue', 'meishu']
+        subjects = ['yuwen', 'shuxue', 'yingyu', 'daof', 'kexue', 'tiyu', 'yinyue', 'meishu', 'xinli']
         
-        # 构建查询语句，检查至少有一个学科成绩不为空
-        query_conditions = [f"{subject} IS NOT NULL AND {subject} != ''" for subject in subjects]
-        query = f"""
-            SELECT COUNT(*) as completed 
-            FROM students 
-            WHERE {" OR ".join(query_conditions)}
-        """
+        # 查询所有学生记录
+        if user_class_id:
+            cursor.execute("SELECT id FROM students WHERE class_id = ?", (user_class_id,))
+        else:
+            cursor.execute("SELECT id FROM students")
         
-        cursor.execute(query)
-        has_some_grades = cursor.fetchone()['completed']
+        student_ids = [row['id'] for row in cursor.fetchall()]
         
-        # 统计每个学生的成绩完成情况
-        query_all_completed = f"""
-            SELECT COUNT(*) as all_completed
-            FROM students
-            WHERE {" AND ".join(query_conditions)}
-        """
+        # 统计每个学生的成绩录入情况
+        has_some_grades = 0  # 至少有一个科目成绩的学生数
+        all_completed = 0    # 所有科目都有成绩的学生数
         
-        cursor.execute(query_all_completed)
-        all_completed = cursor.fetchone()['all_completed']
+        for student_id in student_ids:
+            # 获取学生的所有科目成绩
+            cursor.execute(f"""
+                SELECT {', '.join(subjects)}
+                FROM students
+                WHERE id = ?
+            """, (student_id,))
+            
+            row = cursor.fetchone()
+            if not row:
+                continue
+                
+            # 检查是否至少有一个科目有成绩（包括"/"值，但不包括空值）
+            has_grade = False
+            all_grades_completed = True
+            
+            for subject in subjects:
+                grade = row[subject]
+                # 有效成绩：非空且不为空字符串，或者等于"/"
+                if grade is not None and (grade != '' or grade == '/'):
+                    has_grade = True
+                else:
+                    all_grades_completed = False
+            
+            if has_grade:
+                has_some_grades += 1
+                
+            if all_grades_completed:
+                all_completed += 1
         
         conn.close()
         
@@ -156,29 +212,36 @@ class DashboardManager:
             'total': total,
             'has_some_grades': has_some_grades,
             'all_completed': all_completed,
-            'percentage': round((has_some_grades / total * 100) if total > 0 else 0, 1)
+            'percentage': round((all_completed / total * 100) if total > 0 else 0, 1)
         }
     
-    def get_reports_generation(self):
+    def get_reports_generation(self, user=None):
         """获取报告生成情况，只有当学生信息、评语和所有成绩都填写后才能生成报告"""
         conn = self.get_db_connection()
         cursor = conn.cursor()
         
+        # 获取用户的班级ID
+        user_class_id = getattr(user, 'class_id', None) if user else None
+        
         # 获取总学生数
-        cursor.execute("SELECT COUNT(*) as total FROM students")
+        if user_class_id:
+            cursor.execute("SELECT COUNT(*) as total FROM students WHERE class_id = ?", (user_class_id,))
+        else:
+            cursor.execute("SELECT COUNT(*) as total FROM students")
         total = cursor.fetchone()['total']
         
         # 主要学科列表
-        subjects = ['yuwen', 'shuxue', 'yingyu', 'daof', 'kexue', 'tiyu', 'yinyue', 'meishu']
+        subjects = ['yuwen', 'shuxue', 'yingyu', 'daof', 'kexue', 'tiyu', 'yinyue', 'meishu', 'xinli']
         
         # 构建查询，检查学生个人信息、评语和所有主要学科成绩是否都已填写
         personal_info_conditions = [
             "name IS NOT NULL AND name != ''",
             "gender IS NOT NULL AND gender != ''",
-            "class IS NOT NULL AND class != ''"
+            "class_id IS NOT NULL"
         ]
         
-        grade_conditions = [f"{subject} IS NOT NULL AND {subject} != ''" for subject in subjects]
+        # 将"/"也视为有效的成绩录入值
+        grade_conditions = [f"({subject} IS NOT NULL AND ({subject} != '' OR {subject} = '/'))" for subject in subjects]
         
         query = f"""
             SELECT COUNT(*) as ready
@@ -189,7 +252,12 @@ class DashboardManager:
                 {" AND ".join(grade_conditions)}
         """
         
-        cursor.execute(query)
+        if user_class_id:
+            query += f" AND class_id = ?"
+            cursor.execute(query, (user_class_id,))
+        else:
+            cursor.execute(query)
+        
         ready_for_report = cursor.fetchone()['ready']
         
         conn.close()
@@ -217,7 +285,8 @@ class DashboardManager:
             'kexue': '科学',
             'tiyu': '体育',
             'yinyue': '音乐',
-            'meishu': '美术'
+            'meishu': '美术',
+            'xinli': '心理'
         }
         
         result = {}

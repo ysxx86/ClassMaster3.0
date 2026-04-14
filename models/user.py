@@ -6,22 +6,21 @@ DATABASE = 'students.db'
 class User(UserMixin):
     """用户模型，实现了Flask-Login需要的接口"""
     
-    def __init__(self, id, username, password_hash, is_admin=False, class_id=None):
+    def __init__(self, id, username, password_hash, is_admin=False, class_id=None, primary_role=None):
         self.id = id
         self.username = username
         self.password_hash = password_hash
         self.is_admin = is_admin
+        self.primary_role = primary_role or '科任老师'
         
         # 确保class_id处理正确
         if class_id is not None:
             try:
                 # 尝试转换为整数，因为数据库中class_id是INTEGER
                 self.class_id = int(class_id)
-                print(f"用户{username}的class_id已转换为整数: {self.class_id}")
             except (ValueError, TypeError):
                 # 如果转换失败，保留原始值
                 self.class_id = class_id
-                print(f"用户{username}的class_id无法转换为整数，保留原值: {self.class_id}，类型: {type(self.class_id).__name__}")
         else:
             self.class_id = None
     
@@ -44,16 +43,16 @@ class User(UserMixin):
             user_data = cursor.fetchone()
             
             if user_data:
-                # 记录从数据库获取的原始class_id值和类型
-                class_id = user_data['class_id']
-                print(f"从数据库获取到用户ID={user_id}的class_id={class_id}, 类型={type(class_id).__name__}")
+                # 检查primary_role字段是否存在
+                primary_role = user_data['primary_role'] if 'primary_role' in user_data.keys() else '科任老师'
                 
                 return cls(
                     id=user_data['id'],
                     username=user_data['username'],
                     password_hash=user_data['password_hash'],
                     is_admin=bool(user_data['is_admin']),
-                    class_id=class_id
+                    class_id=user_data['class_id'],
+                    primary_role=primary_role
                 )
             return None
         finally:
@@ -70,12 +69,16 @@ class User(UserMixin):
             user_data = cursor.fetchone()
             
             if user_data:
+                # 检查primary_role字段是否存在
+                primary_role = user_data['primary_role'] if 'primary_role' in user_data.keys() else '科任老师'
+                
                 return cls(
                     id=user_data['id'],
                     username=user_data['username'],
                     password_hash=user_data['password_hash'],
                     is_admin=bool(user_data['is_admin']),
-                    class_id=user_data['class_id']
+                    class_id=user_data['class_id'],
+                    primary_role=primary_role
                 )
             return None
         finally:

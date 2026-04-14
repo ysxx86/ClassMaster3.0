@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>教师分配 - 角色与班级</title>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../css/boxicons-local.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f5f5f5;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        
+        .page-container {
+            max-width: 1400px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+        
+        .page-header {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .assignment-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        /* 教师卡片区域 */
+        .teachers-area {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            min-height: 150px;
+        }
+        
+        .teacher-card {
+            display: inline-block;
+            background: white;
+            border: 2px solid #dee2e6;
+            border-radius: 6px;
+            padding: 10px 15px;
+            margin: 5px;
+            cursor: move;
+            transition: all 0.2s;
+            user-select: none;
+        }
+        
+        .teacher-card:hover {
+            border-color: #007bff;
+            box-shadow: 0 2px 8px rgba(0,123,255,0.2);
+            transform: translateY(-2px);
+        }
+        
+        .teacher-card.dragging {
+            opacity: 0.5;
+            transform: rotate(5deg);
+        }
+        
+        .teacher-name {
+            font-weight: 600;
+            color: #333;
+            margin-right: 8px;
+        }
+        
+        .teacher-info {
+            font-size: 12px;
+            color: #6c757d;
+        }
+        
+        /* 分配区域 */
+        .assignment-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .assignment-box {
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            min-height: 120px;
+            transition: all 0.2s;
+        }
+        
+        .assignment-box.drag-over {
+            background: #e7f3ff;
+            border-color: #007bff;
+            border-style: solid;
+        }
+        
+        .assignment-box-header {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .assignment-box-title {
+            font-size: 16px;
+        }
+        
+        .assignment-count {
+            background: #007bff;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+        
+        .assigned-teacher {
+            display: inline-flex;
+            align-items: center;
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 6px 10px;
+            margin: 4px;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .assigned-teacher:hover {
+            background: #f8f9fa;
+        }
+        
+        .assigned-teacher-name {
+            margin-right: 8px;
+        }
+        
+        .remove-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 12px;
+            line-height: 1;
+            transition: all 0.2s;
+        }
+        
+        .remove-btn:hover {
+            background: #c82333;
+            transform: scale(1.1);
+        }
+        
+        /* 角色颜色 */
+        .role-box[data-role="正班主任"] .assignment-box-header {
+            color: #0d6efd;
+            border-color: #0d6efd;
+        }
+        
+        .role-box[data-role="副班主任"] .assignment-box-header {
+            color: #0dcaf0;
+            border-color: #0dcaf0;
+        }
+        
+        .role-box[data-role="科任老师"] .assignment-box-header {
+            color: #6c757d;
+            border-color: #6c757d;
+        }
+        
+        .role-box[data-role="行政"] .assignment-box-header {
+            color: #ffc107;
+            border-color: #ffc107;
+        }
+        
+        .role-box[data-role="校级领导"] .assignment-box-header {
+            color: #198754;
+            border-color: #198754;
+        }
+        
+        /* 班级盒子 */
+        .class-box {
+            background: #fff;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            padding: 12px;
+            min-height: 100px;
+        }
+        
+        .class-box.drag-over {
+            background: #e7f3ff;
+            border-color: #007bff;
+        }
+        
+        .class-box-header {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 8px;
+            padding-bottom: 6px;
+            border-bottom: 2px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        /* 加载动画 */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+        
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #007bff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* 提示信息 */
+        .info-box {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 20px;
+            color: #0c5460;
+        }
+        
+        .info-box i {
+            margin-right: 8px;
+        }
+        
+        /* 选项卡 */
+        .nav-tabs {
+            border-bottom: 2px solid #dee2e6;
+            margin-bottom: 20px;
+        }
+        
+        .nav-tabs .nav-link {
+            color: #6c757d;
+            border: none;
+            border-bottom: 3px solid transparent;
+            padding: 12px 24px;
+            font-weight: 500;
+        }
+        
+        .nav-tabs .nav-link:hover {
+            color: #007bff;
+            border-color: transparent;
+        }
+        
+        .nav-tabs .nav-link.active {
+            color: #007bff;
+            border-color: #007bff;
+            background: transparent;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <div class="page-header">
+            <h1 class="h3 mb-0">
+                <i class='bx bx-user-check'></i> 教师分配管理
+            </h1>
+            <p class="text-muted mb-0 mt-2">通过拖拽方式快速分配教师角色和班级</p>
+        </div>
+
+        <!-- 选项卡 -->
+        <ul class="nav nav-tabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="role-tab" data-bs-toggle="tab" data-bs-target="#roleAssignment" type="button" role="tab">
+                    <i class='bx bx-id-card'></i> 角色分配
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="class-tab" data-bs-toggle="tab" data-bs-target="#classAssignment" type="button" role="tab">
+                    <i class='bx bx-book'></i> 班级分配
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="subject-class-tab" data-bs-toggle="tab" data-bs-target="#subjectClassAssignment" type="button" role="tab">
+                    <i class='bx bx-chalkboard'></i> 学科班级分配
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="all-assignments-tab" data-bs-toggle="tab" data-bs-target="#allAssignments" type="button" role="tab">
+                    <i class='bx bx-list-ul'></i> 全部分配
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content">
+            <!-- 角色分配选项卡 -->
+            <div class="tab-pane fade show active" id="roleAssignment" role="tabpanel">
+                <div class="assignment-container">
+                    <div class="info-box">
+                        <i class='bx bx-info-circle'></i>
+                        <strong>操作说明：</strong>将教师卡片拖拽到对应的角色框中即可分配角色。每位教师只能有一个角色。
+                    </div>
+
+                    <!-- 教师列表 -->
+                    <h5 class="mb-3">
+                        <i class='bx bx-user'></i> 所有教师
+                        <span class="badge bg-secondary" id="totalTeachersCount">0</span>
+                    </h5>
+                    <div class="teachers-area" id="teachersArea">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <p>加载教师列表中...</p>
+                        </div>
+                    </div>
+
+                    <!-- 角色分配区域 -->
+                    <h5 class="mb-3 mt-4">
+                        <i class='bx bx-id-card'></i> 角色分配
+                    </h5>
+                    <div class="assignment-grid" id="roleAssignmentGrid">
+                        <!-- 角色框将通过JS动态生成 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 班级分配选项卡 -->
+            <div class="tab-pane fade" id="classAssignment" role="tabpanel">
+                <div class="assignment-container">
+                    <div class="info-box">
+                        <i class='bx bx-info-circle'></i>
+                        <strong>操作说明：</strong>将教师卡片拖拽到对应的班级框中即可分配班级。主要用于正班主任和副班主任的班级分配。
+                    </div>
+
+                    <!-- 教师列表 -->
+                    <h5 class="mb-3">
+                        <i class='bx bx-user'></i> 所有教师
+                        <span class="badge bg-secondary" id="totalTeachersCount2">0</span>
+                    </h5>
+                    <div class="teachers-area" id="teachersArea2">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <p>加载教师列表中...</p>
+                        </div>
+                    </div>
+
+                    <!-- 班级分配区域 -->
+                    <h5 class="mb-3 mt-4">
+                        <i class='bx bx-book'></i> 班级分配
+                    </h5>
+                    <div class="assignment-grid" id="classAssignmentGrid">
+                        <!-- 班级框将通过JS动态生成 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 学科班级分配选项卡 -->
+            <div class="tab-pane fade" id="subjectClassAssignment" role="tabpanel">
+                <div class="assignment-container">
+                    <div class="info-box">
+                        <i class='bx bx-info-circle'></i>
+                        <strong>操作说明：</strong>选择教师和学科后，勾选班级进行批量分配。正班主任会自动分配到自己班级的所有学科，无需手动分配。
+                    </div>
+
+                    <!-- 分配表单 -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <label class="form-label">选择教师</label>
+                            <select class="form-select" id="selectTeacher">
+                                <option value="">请选择教师</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">选择学科</label>
+                            <select class="form-select" id="selectSubject">
+                                <option value="">请选择学科</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button class="btn btn-primary w-100" id="btnAssignSubjectClass">
+                                <i class='bx bx-check'></i> 分配选中的班级
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 班级复选框列表 -->
+                    <div class="mb-4" id="classCheckboxContainer" style="display: none;">
+                        <label class="form-label">选择班级（可多选）</label>
+                        <div class="border rounded p-3" style="max-height: 300px; overflow-y: auto;">
+                            <div id="classCheckboxList" class="row g-2">
+                                <!-- 复选框将通过JS动态生成 -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 当前分配列表 -->
+                    <h5 class="mb-3">
+                        <i class='bx bx-list-ul'></i> 当前分配
+                    </h5>
+                    <div id="currentAssignments">
+                        <p class="text-muted text-center py-4">请先选择教师查看分配情况</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 全部分配选项卡 -->
+            <div class="tab-pane fade" id="allAssignments" role="tabpanel">
+                <div class="assignment-container">
+                    <div class="info-box">
+                        <i class='bx bx-info-circle'></i>
+                        <strong>说明：</strong>显示所有教师的角色、班级和学科分配情况。
+                    </div>
+
+                    <!-- 筛选和搜索 -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <label class="form-label">按角色筛选</label>
+                            <select class="form-select" id="filterRole">
+                                <option value="">全部角色</option>
+                                <option value="正班主任">正班主任</option>
+                                <option value="副班主任">副班主任</option>
+                                <option value="科任老师">科任老师</option>
+                                <option value="行政">行政</option>
+                                <option value="校级领导">校级领导</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">搜索教师</label>
+                            <input type="text" class="form-control" id="searchTeacher" placeholder="输入教师姓名">
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button class="btn btn-primary w-100" id="btnRefreshAll">
+                                <i class='bx bx-refresh'></i> 刷新数据
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 全部分配列表 -->
+                    <div id="allAssignmentsList">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <p>加载分配数据中...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast通知 -->
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+        <div id="toastNotification" class="toast" role="alert">
+            <div class="toast-header">
+                <i class='bx bx-bell me-2'></i>
+                <strong class="me-auto">系统通知</strong>
+                <small>刚刚</small>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body" id="toastMessage">
+                操作已完成
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/libs/bootstrap.bundle.min.js"></script>
+    <script src="../js/teacher_assignment.js"></script>
+</body>
+</html>

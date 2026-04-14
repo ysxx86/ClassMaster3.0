@@ -47,7 +47,7 @@ def create_classes_table(conn):
     cursor = conn.cursor()
     
     # 获取现有的不同班级列表
-    cursor.execute("SELECT DISTINCT class FROM students WHERE class IS NOT NULL AND class != ''")
+    cursor.execute("SELECT DISTINCT c.class_name as class FROM students s LEFT JOIN classes c ON s.class_id = c.id WHERE class IS NOT NULL AND class != ''")
     existing_classes = [row['class'] for row in cursor.fetchall()]
     
     # 创建班级表
@@ -101,7 +101,7 @@ def update_students_table(conn, class_map):
     
     # 如果已经有class_id列，先获取现有数据
     students_data = []
-    cursor.execute("SELECT id, class FROM students")
+    cursor.execute("SELECT id, c.class_name as class FROM students s LEFT JOIN classes c ON s.class_id = c.id")
     students_data = [(row['id'], row['class']) for row in cursor.fetchall()]
     
     # 创建新的students表

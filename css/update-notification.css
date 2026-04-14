@@ -1,0 +1,301 @@
+/**
+ * 系统更新通知样式
+ */
+
+/* 右上角更新图标 */
+.update-icon-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+.update-icon-btn {
+    position: relative;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.update-icon-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(102, 126, 234, 0.5);
+}
+
+.update-icon-btn:active {
+    transform: translateY(0);
+}
+
+.update-badge-dot {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 10px;
+    height: 10px;
+    background: #ff4757;
+    border-radius: 50%;
+    border: 2px solid white;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.2);
+        opacity: 0.8;
+    }
+}
+
+/* 模态框样式 */
+#updateNotificationModal .modal-content {
+    border: none;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+#updateNotificationModal .modal-body {
+    padding: 0;
+    max-height: 70vh;
+}
+
+#updateLogContent {
+    padding: 30px;
+}
+
+/* 更新头部 */
+.update-header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.update-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 16px;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.update-badge i {
+    font-size: 20px;
+}
+
+.update-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #2c3e50;
+    margin: 15px 0 10px;
+}
+
+.update-date {
+    color: #7f8c8d;
+    font-size: 14px;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+/* 更新分类 */
+.update-category {
+    margin-bottom: 25px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 20px;
+    transition: all 0.3s ease;
+}
+
+.update-category:hover {
+    background: #f0f2f5;
+    transform: translateX(5px);
+}
+
+.category-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 15px;
+    padding-left: 15px;
+    border-left: 4px solid #667eea;
+}
+
+.category-header i {
+    font-size: 24px;
+}
+
+.category-header h4 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.category-items {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.category-items li {
+    padding: 10px 15px;
+    margin-bottom: 8px;
+    background: white;
+    border-radius: 8px;
+    border-left: 3px solid #e0e0e0;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #34495e;
+    transition: all 0.2s ease;
+    position: relative;
+    padding-left: 35px;
+}
+
+.category-items li:hover {
+    border-left-color: #667eea;
+    background: #f8f9ff;
+    transform: translateX(3px);
+}
+
+.category-items li::before {
+    content: '✓';
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #27ae60;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+/* 更新总结 */
+.update-summary {
+    background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 30px;
+    display: flex;
+    gap: 15px;
+    align-items: flex-start;
+}
+
+.update-summary i {
+    font-size: 24px;
+    color: #667eea;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.update-summary p {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.7;
+    color: #2c3e50;
+    font-weight: 500;
+}
+
+/* 模态框底部 */
+#updateNotificationModal .modal-footer {
+    padding: 20px 30px;
+    background: #f8f9fa;
+}
+
+#updateNotificationModal .modal-footer .btn {
+    padding: 10px 30px;
+    font-weight: 600;
+    border-radius: 8px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .update-icon-container {
+        top: 15px;
+        right: 15px;
+    }
+    
+    .update-icon-btn {
+        width: 44px;
+        height: 44px;
+        font-size: 20px;
+    }
+    
+    #updateLogContent {
+        padding: 20px;
+    }
+    
+    .update-title {
+        font-size: 20px;
+    }
+    
+    .category-header h4 {
+        font-size: 16px;
+    }
+    
+    .category-items li {
+        font-size: 13px;
+        padding-left: 30px;
+    }
+}
+
+/* 滚动条美化 */
+#updateNotificationModal .modal-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+#updateNotificationModal .modal-body::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+#updateNotificationModal .modal-body::-webkit-scrollbar-thumb {
+    background: #667eea;
+    border-radius: 10px;
+}
+
+#updateNotificationModal .modal-body::-webkit-scrollbar-thumb:hover {
+    background: #764ba2;
+}
+
+/* 动画效果 */
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.update-category {
+    animation: slideInUp 0.5s ease-out;
+}
+
+.update-category:nth-child(1) { animation-delay: 0.1s; }
+.update-category:nth-child(2) { animation-delay: 0.2s; }
+.update-category:nth-child(3) { animation-delay: 0.3s; }
+.update-category:nth-child(4) { animation-delay: 0.4s; }
+.update-category:nth-child(5) { animation-delay: 0.5s; }
+.update-category:nth-child(6) { animation-delay: 0.6s; }

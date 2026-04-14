@@ -3,7 +3,32 @@ body {
     background-color: #f5f7fa;
     color: #333;
     padding: 20px;
+    /* 添加主体滚动设置 */
+    height: 100%;
+    overflow-y: auto !important;
+    min-height: 100vh;
 }
+
+/* 设置html滚动样式 */
+html {
+    height: 100%;
+    overflow-y: scroll !important;
+}
+
+/* 调整容器最小高度确保有足够的滚动空间 */
+.container, .container-fluid, .row {
+    min-height: fit-content;
+}
+
+/* 添加页面滚动占位符 */
+.scroll-placeholder {
+    height: 100px !important;
+    width: 100% !important;
+    margin-bottom: 40px !important;
+    display: block !important;
+    clear: both;
+}
+
 .dashboard-card {
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);

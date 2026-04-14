@@ -15,6 +15,7 @@ from werkzeug.utils import secure_filename
 from flask_login import login_required, current_user
 from utils.class_filter import class_filter, user_can_access
 from utils.grades_manager import GradesManager
+from utils.permission_checker import can_edit_grade, get_editable_subjects, can_access_students
 import logging
 import pandas as pd
 import numpy as np
@@ -74,44 +75,169 @@ def get_all_grades():
         
         if not semester:
             return jsonify({'status': 'error', 'message': '请提供学期'})
-            
-        # 班主任只能查看自己班级的学生成绩
+        
+        # 权限控制：
+        # - 超级管理员：可以查看所有班级
+        # - 正班主任：只能查看自己的班级
+        # - 科任老师/副班主任/行政/校级领导：只能查看自己任教的班级
+        from utils.permission_checker import get_accessible_classes, get_user_permissions
+        
+        # 获取用户权限信息（包含任教学科）
+        user_permissions = get_user_permissions(current_user)
+        
         if not current_user.is_admin:
-            if not current_user.class_id:
+            # 获取用户有权限访问的班级列表
+            accessible_classes = get_accessible_classes(current_user)
+            
+            if not accessible_classes:
                 return jsonify({
-            'status': 'ok',
+                    'status': 'ok',
                     'grades': [],
-                    'message': '您尚未被分配班级，无法查看学生成绩'
+                    'allowed_subjects': [],
+                    'message': '您尚未被分配任教班级，无法查看学生成绩'
                 })
-            class_id = current_user.class_id
+            
+            # 如果只有一个班级，直接使用
+            if len(accessible_classes) == 1:
+                class_id = accessible_classes[0]
+            else:
+                # 多个班级，需要查询所有班级的成绩
+                logger.info(f"用户 {current_user.username} 有权访问的班级: {accessible_classes}")
+                all_grades = []
+                empty_classes = []  # 记录没有学生的班级
+                
+                for cid in accessible_classes:
+                    logger.info(f"正在获取班级 {cid} 的成绩")
+                    grades = grades_manager.get_all_grades(semester, cid)
+                    logger.info(f"班级 {cid} 返回 {len(grades)} 条成绩记录")
+                    
+                    # 打印前几条记录的班级信息
+                    if len(grades) > 0:
+                        logger.info(f"班级 {cid} 的前3条记录: {[{'id': g['student_id'], 'name': g['student_name'], 'class': g['class'], 'class_id': g['class_id']} for g in grades[:3]]}")
+                    
+                    if len(grades) == 0:
+                        # 班级没有学生，添加一个占位记录
+                        try:
+                            conn = get_db_connection()
+                            cursor = conn.cursor()
+                            cursor.execute('SELECT class_name FROM classes WHERE id = ?', (cid,))
+                            class_info = cursor.fetchone()
+                            conn.close()
+                            
+                            if class_info:
+                                empty_classes.append({
+                                    'class_id': cid,
+                                    'class_name': class_info['class_name'],
+                                    'student_count': 0
+                                })
+                        except Exception as e:
+                            logger.error(f"获取班级信息失败: {str(e)}")
+                    else:
+                        all_grades.extend(grades)
+                
+                logger.info(f"总共合并了 {len(all_grades)} 条成绩记录")
+                logger.info(f"空班级: {empty_classes}")
+                
+                # 获取用户可以查看的学科列表（所有任教班级的学科合集）
+                allowed_subjects = set()
+                for cid in accessible_classes:
+                    class_subjects = user_permissions['teaching_map'].get(str(cid), [])
+                    allowed_subjects.update(class_subjects)
+                
+                return jsonify({
+                    'status': 'ok', 
+                    'grades': all_grades,
+                    'empty_classes': empty_classes,
+                    'allowed_subjects': list(allowed_subjects),  # 返回允许查看的学科列表
+                    'user_permissions': user_permissions  # 返回完整权限信息
+                })
             
         grades = grades_manager.get_all_grades(semester, class_id)
-        return jsonify({'status': 'ok', 'grades': grades})
+        
+        # 返回数据时包含用户权限信息
+        return jsonify({
+            'status': 'ok', 
+            'grades': grades,
+            'user_permissions': user_permissions  # 返回完整权限信息
+        })
     except Exception as e:
         logger.error(f'获取学生成绩时出错: {str(e)}')
         return jsonify({'status': 'error', 'message': f'获取学生成绩失败: {str(e)}'})
 
 # 获取单个学生成绩
-@grades_bp.route('/api/grades/<student_id>', methods=['GET'])
-@login_required
-def get_student_grades(student_id):
+@grades_bp.route('/api/student-grade/<student_id>', methods=['GET'])
+def get_student_grade(student_id):
     try:
-        semester = request.args.get('semester', None)
-        class_id = request.args.get('class_id', None)
-        
-        # 班主任自动使用自己的班级ID
-        if not current_user.is_admin:
-            if not current_user.class_id:
-                return jsonify({'status': 'error', 'message': '您尚未被分配班级，无法查看学生成绩'}), 403
+        # 获取班级ID，优先使用请求参数中的class_id
+        class_id = request.args.get('class_id')
+        if not class_id and hasattr(current_user, 'class_id'):
             class_id = current_user.class_id
-        elif not class_id:
-            return jsonify({'status': 'error', 'message': '管理员需提供班级ID参数'}), 400
             
-        grades = grades_manager.get_student_grades(student_id, class_id, semester)
-        return jsonify({'status': 'ok', 'grades': grades})
+        # 获取学期参数
+        semester = request.args.get('semester', '')
+        
+        # 查询学生信息和成绩
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # 查询学生基本信息
+        cursor.execute('SELECT s.id, s.name, s.gender, c.c.class_name as class_name as c.class_name as class FROM students s LEFT JOIN classes c ON s.class_id = c.id s LEFT JOIN classes c ON s.class_id = c.id WHERE s.id = ? AND s.class_id = ?', 
+                      (student_id, class_id))
+        
+        student = cursor.fetchone()
+        
+        if not student:
+            return jsonify({
+                'status': 'error',
+                'message': '未找到学生'
+            }), 404
+        
+        # 查询成绩，尝试从students表直接读取成绩字段
+        cursor.execute('''
+            SELECT 
+                yuwen, shuxue, yingyu, daof, kexue, zonghe, 
+                tiyu, yinyue, meishu, laodong, xinxi, shufa, xinli
+            FROM students 
+            WHERE id = ? AND class_id = ?
+        ''', (student_id, class_id))
+        
+        grades_row = cursor.fetchone()
+        
+        # 如果没有成绩数据，使用空字典
+        grades = {}
+        
+        if grades_row:
+            # 构建成绩数据字典
+            for key in ['yuwen', 'shuxue', 'yingyu', 'daof', 'kexue', 'zonghe', 
+                        'tiyu', 'yinyue', 'meishu', 'laodong', 'xinxi', 'shufa', 'xinli']:
+                if key in grades_row.keys():
+                    grades[key] = grades_row[key] or ''
+                else:
+                    grades[key] = ''
+        
+        # 构建返回的数据结构
+        student_data = {
+            'id': student['id'],
+            'name': student['name'],
+            'gender': student['gender'],
+            'class': student['class'],
+            'grades': grades,
+            'semester': semester
+        }
+        
+        conn.close()
+        
+        return jsonify({
+            'status': 'ok',
+            'student': student_data
+        })
     except Exception as e:
-        logger.error(f'获取学生成绩时出错: {str(e)}')
-        return jsonify({'status': 'error', 'message': f'获取学生成绩失败: {str(e)}'})
+        print(f"获取学生成绩时出错: {str(e)}")
+        traceback.print_exc()
+        return jsonify({
+            'status': 'error',
+            'message': f'获取学生成绩时出错: {str(e)}'
+        }), 500
 
 # 保存学生成绩
 @grades_bp.route('/api/grades/<student_id>', methods=['POST'])
@@ -125,23 +251,57 @@ def save_student_grade(student_id):
         semester = data.get('semester', '上学期')
         class_id = data.get('class_id')
         
-        # 班主任自动使用自己的班级ID
+        # 权限控制：
+        # - 超级管理员：需要提供班级ID
+        # - 正班主任：自动使用自己的班级ID
+        # - 其他角色：需要提供班级ID（前端会传递）
+        from utils.permission_checker import is_head_teacher
+        
         if not current_user.is_admin:
-            if not current_user.class_id:
-                return jsonify({'status': 'error', 'message': '您尚未被分配班级，无法保存学生成绩'}), 403
-            class_id = current_user.class_id
+            if is_head_teacher(current_user):
+                # 正班主任自动使用自己的班级ID
+                if not current_user.class_id:
+                    return jsonify({'status': 'error', 'message': '您尚未被分配班级，无法保存学生成绩'}), 403
+                class_id = current_user.class_id
+            elif not class_id:
+                # 其他角色需要提供班级ID
+                return jsonify({'status': 'error', 'message': '缺少班级ID参数'}), 400
         elif not class_id:
             return jsonify({'status': 'error', 'message': '管理员需提供班级ID参数'}), 400
         
         if not semester:
             logger.error("缺少必要参数: semester")
             return jsonify({'status': 'error', 'message': '缺少必要参数: semester'})
-            
-        # 移除semester和class_id，因为在save_grade函数中已经单独处理了
+        
+        # 学科名称映射（数据库字段名 -> 显示名称）
+        subject_display_names = {
+            'yuwen': '语文',
+            'shuxue': '数学',
+            'yingyu': '英语',
+            'daof': '道法',
+            'kexue': '科学',
+            'zonghe': '综合',
+            'tiyu': '体育',
+            'yinyue': '音乐',
+            'meishu': '美术',
+            'laodong': '劳动',
+            'xinxi': '信息',
+            'shufa': '书法',
+            'xinli': '心理'
+        }
+        
+        # 检查每个学科的编辑权限
         grade_data = {}
         for field in data:
-            if field not in ['semester', 'class_id'] and field in ['daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 
-                     'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa']:
+            if field not in ['semester', 'class_id'] and field in subject_display_names:
+                subject_name = subject_display_names[field]
+                # 检查是否有权限编辑该学科
+                if not can_edit_grade(current_user, class_id, subject_name):
+                    logger.warning(f"用户 {current_user.username} 尝试编辑无权限的学科: {subject_name}")
+                    return jsonify({
+                        'status': 'error', 
+                        'message': f'您没有权限编辑{subject_name}成绩'
+                    }), 403
                 grade_data[field] = data.get(field, '')
         
         logger.info(f"提取的成绩数据: {grade_data}")
@@ -156,6 +316,7 @@ def save_student_grade(student_id):
     except Exception as e:
         logger.error(f"出错: {str(e)}")
         return jsonify({"status": "error", "message": f"操作失败: {str(e)}"}), 500
+
 @grades_bp.route('/api/grades/<student_id>', methods=['DELETE'])
 @login_required
 def delete_student_grade(student_id):
@@ -163,11 +324,21 @@ def delete_student_grade(student_id):
         semester = request.args.get('semester', '上学期')
         class_id = request.args.get('class_id')
         
-        # 班主任自动使用自己的班级ID
+        # 权限控制：
+        # - 超级管理员：需要提供班级ID
+        # - 正班主任：自动使用自己的班级ID
+        # - 其他角色：需要提供班级ID
+        from utils.permission_checker import is_head_teacher
+        
         if not current_user.is_admin:
-            if not current_user.class_id:
-                return jsonify({'status': 'error', 'message': '您尚未被分配班级，无法删除学生成绩'}), 403
-            class_id = current_user.class_id
+            if is_head_teacher(current_user):
+                # 正班主任自动使用自己的班级ID
+                if not current_user.class_id:
+                    return jsonify({'status': 'error', 'message': '您尚未被分配班级，无法删除学生成绩'}), 403
+                class_id = current_user.class_id
+            elif not class_id:
+                # 其他角色需要提供班级ID
+                return jsonify({'status': 'error', 'message': '缺少班级ID参数'}), 400
         elif not class_id:
             return jsonify({'status': 'error', 'message': '管理员需提供班级ID参数'}), 400
             
@@ -185,23 +356,16 @@ def delete_student_grade(student_id):
         logger.error(f'删除学生成绩时出错: {str(e)}')
         return jsonify({'status': 'error', 'message': f'删除学生成绩失败: {str(e)}'})
 
-# 预览成绩导入
+# 预览成绩导入 - 使用智能导入器
 @grades_bp.route('/api/grades/preview-import', methods=['POST'])
 @login_required
 def preview_grades_import():
     try:
-        semester = request.form.get('semester', '上学期')
-        class_id = request.form.get('class_id')
+        from utils.smart_grade_importer import SmartGradeImporter
         
-        # 班主任自动使用自己的班级ID
-        if not current_user.is_admin:
-            if not current_user.class_id:
-                return jsonify({'status': 'error', 'message': '您尚未被分配班级，无法导入成绩'}), 403
-            class_id = current_user.class_id
-        elif not class_id:
-            return jsonify({'status': 'error', 'message': '管理员需提供班级ID参数'}), 400
-            
-        logger.info(f"收到预览成绩导入请求，学期: {semester}, 班级: {class_id}")
+        semester = request.form.get('semester', '上学期')
+        
+        logger.info(f"收到预览成绩导入请求，学期: {semester}, 用户: {current_user.username}")
         
         if 'file' not in request.files:
             logger.error("未提供文件")
@@ -237,9 +401,10 @@ def preview_grades_import():
         
         logger.info(f"文件大小: {os.path.getsize(file_path)} 字节")
         
-        # 调用预览功能
-        logger.info("开始预览成绩导入")
-        result = grades_manager.preview_grades_from_excel(file_path, semester, class_id)
+        # 使用智能导入器预览
+        logger.info("开始智能预览成绩导入")
+        importer = SmartGradeImporter()
+        result = importer.preview_import(file_path, current_user, semester)
         
         if result['status'] == 'ok':
             logger.info(f"成功预览成绩: {result['message']}")
@@ -247,50 +412,67 @@ def preview_grades_import():
         else:
             logger.error(f"预览成绩失败: {result['message']}")
             return jsonify(result), 400
-    except Exception as e:
-        logger.error(f"出错: {str(e)}")
-        return jsonify({"status": "error", "message": f"操作失败: {str(e)}"}), 500
+            
     except Exception as e:
         logger.error(f'预览成绩导入时出错: {str(e)}')
         logger.error(traceback.format_exc())
-    return jsonify({
-                    'status': 'error', 
+        return jsonify({
+            'status': 'error', 
             'message': f'预览成绩导入失败: {str(e)}'
         }), 500
 
-# 确认导入成绩
+# 确认导入成绩 - 使用智能导入器
 @grades_bp.route('/api/grades/confirm-import', methods=['POST'])
 @login_required
 def confirm_grades_import():
     try:
+        from utils.smart_grade_importer import SmartGradeImporter
+        
         data = request.json
         logger.info(f"收到确认导入成绩请求")
+        logger.info(f"请求数据类型: {type(data)}")
         
-        if not data or 'file_path' not in data:
-            logger.error("请求缺少文件路径")
-            return jsonify({'status': 'error', 'message': '缺少文件路径参数'}), 400
+        if not data:
+            logger.error("请求数据为空")
+            return jsonify({'status': 'error', 'message': '请求数据为空'}), 400
         
-        file_path = data.get('file_path')
-        semester = data.get('semester', '上学期')
-        class_id = data.get('class_id')
+        logger.info(f"请求数据键: {list(data.keys())}")
         
-        # 班主任自动使用自己的班级ID
-        if not current_user.is_admin:
-            if not current_user.class_id:
-                return jsonify({'status': 'error', 'message': '您尚未被分配班级，无法导入成绩'}), 403
-            class_id = current_user.class_id
-        elif not class_id:
-            return jsonify({'status': 'error', 'message': '管理员需提供班级ID参数'}), 400
+        # 从预览结果中获取数据
+        if 'preview_result' in data:
+            preview_result = data['preview_result']
+            logger.info(f"从preview_result获取数据")
+            logger.info(f"preview_result类型: {type(preview_result)}")
+            logger.info(f"preview_result键: {list(preview_result.keys()) if isinstance(preview_result, dict) else 'not a dict'}")
+        else:
+            logger.error("未找到preview_result键")
+            logger.info(f"可用的键: {list(data.keys())}")
+            return jsonify({'status': 'error', 'message': '缺少预览结果数据'}), 400
         
-        if not file_path:
-            return jsonify({'status': 'error', 'message': '文件路径不能为空'}), 400
-            
-        if not os.path.exists(file_path):
-            return jsonify({'status': 'error', 'message': '文件不存在，可能已被删除'}), 400
+        # 检查必要字段
+        if 'status' not in preview_result:
+            logger.error("preview_result中缺少status字段")
+            return jsonify({'status': 'error', 'message': '预览结果格式错误：缺少status字段'}), 400
         
-        # 导入成绩
-        logger.info(f"开始导入成绩，文件路径: {file_path}, 学期: {semester}, 班级: {class_id}")
-        success, message = grades_manager.import_grades_from_excel(file_path, semester, class_id)
+        if preview_result['status'] != 'ok':
+            logger.error(f"预览状态不是ok: {preview_result['status']}")
+            return jsonify({'status': 'error', 'message': '预览数据无效'}), 400
+        
+        # 检查数据字段（兼容两种格式）
+        has_preview_data = 'preview_data' in preview_result
+        has_grades = 'grades' in preview_result
+        
+        logger.info(f"has_preview_data: {has_preview_data}")
+        logger.info(f"has_grades: {has_grades}")
+        
+        if not has_preview_data and not has_grades:
+            logger.error("preview_result中既没有preview_data也没有grades字段")
+            return jsonify({'status': 'error', 'message': '预览结果格式错误：缺少数据字段'}), 400
+        
+        # 执行导入
+        logger.info("开始确认导入成绩")
+        importer = SmartGradeImporter()
+        success, message = importer.confirm_import(preview_result)
         
         if success:
             logger.info(f"成功导入成绩: {message}")
@@ -298,9 +480,7 @@ def confirm_grades_import():
         else:
             logger.error(f"导入成绩失败: {message}")
             return jsonify({'status': 'error', 'message': message}), 400
-    except Exception as e:
-        logger.error(f"出错: {str(e)}")
-        return jsonify({"status": "error", "message": f"操作失败: {str(e)}"}), 500
+            
     except Exception as e:
         logger.error(f'确认导入成绩时出错: {str(e)}')
         logger.error(traceback.format_exc())
@@ -308,6 +488,117 @@ def confirm_grades_import():
             'status': 'error', 
             'message': f'确认导入成绩失败: {str(e)}'
         }), 500
+
+@grades_bp.route('/api/grades/export-pdf', methods=['GET'])
+@login_required
+def export_grades_pdf():
+    """导出班级成绩为PDF"""
+    try:
+        from utils.grade_exporter import GradeExporter
+        from utils.permission_checker import is_head_teacher
+        
+        class_id = request.args.get('class_id')
+        semester = request.args.get('semester', '上学期')
+        
+        # 权限控制
+        if not current_user.is_admin:
+            if is_head_teacher(current_user):
+                if not current_user.class_id:
+                    return jsonify({'status': 'error', 'message': '您尚未被分配班级'}), 403
+                class_id = current_user.class_id
+            elif not class_id:
+                return jsonify({'status': 'error', 'message': '缺少班级ID参数'}), 400
+        elif not class_id:
+            return jsonify({'status': 'error', 'message': '请指定班级ID'}), 400
+        
+        logger.info(f"导出成绩PDF - 班级: {class_id}, 学期: {semester}, 用户: {current_user.username}")
+        
+        # 确保导出目录存在
+        export_dir = 'exports'
+        if not os.path.exists(export_dir):
+            os.makedirs(export_dir)
+            logger.info(f"创建导出目录: {export_dir}")
+        
+        # 导出PDF
+        exporter = GradeExporter()
+        pdf_path = exporter.export_class_grades(class_id, semester)
+        
+        if not os.path.exists(pdf_path):
+            raise FileNotFoundError(f"PDF文件生成失败: {pdf_path}")
+        
+        logger.info(f"PDF文件已生成: {pdf_path}, 大小: {os.path.getsize(pdf_path)} 字节")
+        
+        # 返回文件
+        return send_file(
+            pdf_path,
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name=os.path.basename(pdf_path)
+        )
+        
+    except ValueError as e:
+        logger.error(f"导出失败: {str(e)}")
+        return jsonify({'status': 'error', 'message': str(e)}), 400
+    except Exception as e:
+        logger.error(f"导出成绩PDF时出错: {str(e)}")
+        logger.error(traceback.format_exc())
+        return jsonify({'status': 'error', 'message': f'导出失败: {str(e)}'}), 500
+
+
+@grades_bp.route('/api/grades/export-excel', methods=['GET'])
+@login_required
+def export_grades_excel():
+    """导出班级成绩为Excel"""
+    try:
+        from utils.grade_exporter import GradeExporter
+        from utils.permission_checker import is_head_teacher
+        
+        class_id = request.args.get('class_id')
+        semester = request.args.get('semester', '上学期')
+        
+        # 权限控制
+        if not current_user.is_admin:
+            if is_head_teacher(current_user):
+                if not current_user.class_id:
+                    return jsonify({'status': 'error', 'message': '您尚未被分配班级'}), 403
+                class_id = current_user.class_id
+            elif not class_id:
+                return jsonify({'status': 'error', 'message': '缺少班级ID参数'}), 400
+        elif not class_id:
+            return jsonify({'status': 'error', 'message': '请指定班级ID'}), 400
+        
+        logger.info(f"导出成绩Excel - 班级: {class_id}, 学期: {semester}, 用户: {current_user.username}")
+        
+        # 确保导出目录存在
+        export_dir = 'exports'
+        if not os.path.exists(export_dir):
+            os.makedirs(export_dir)
+        
+        # 导出Excel
+        exporter = GradeExporter()
+        excel_path = exporter.export_class_grades_excel(class_id, semester)
+        
+        if not os.path.exists(excel_path):
+            raise FileNotFoundError(f"Excel文件生成失败: {excel_path}")
+        
+        logger.info(f"Excel文件已生成: {excel_path}, 大小: {os.path.getsize(excel_path)} 字节")
+        
+        # 返回文件
+        return send_file(
+            excel_path,
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            as_attachment=True,
+            download_name=os.path.basename(excel_path)
+        )
+        
+    except ValueError as e:
+        logger.error(f"导出失败: {str(e)}")
+        return jsonify({'status': 'error', 'message': str(e)}), 400
+    except Exception as e:
+        logger.error(f"导出成绩Excel时出错: {str(e)}")
+        logger.error(traceback.format_exc())
+        return jsonify({'status': 'error', 'message': f'导出失败: {str(e)}'}), 500
+
 
 # 导入学生成绩
 @grades_bp.route('/api/grades/import', methods=['POST'])
@@ -317,11 +608,21 @@ def import_grades():
         semester = request.form.get('semester', '上学期')
         class_id = request.form.get('class_id')
         
-        # 班主任自动使用自己的班级ID
+        # 权限控制：
+        # - 超级管理员：需要提供班级ID
+        # - 正班主任：自动使用自己的班级ID
+        # - 其他角色：需要提供班级ID
+        from utils.permission_checker import is_head_teacher
+        
         if not current_user.is_admin:
-            if not current_user.class_id:
-                return jsonify({'status': 'error', 'message': '您尚未被分配班级，无法导入成绩'}), 403
-            class_id = current_user.class_id
+            if is_head_teacher(current_user):
+                # 正班主任自动使用自己的班级ID
+                if not current_user.class_id:
+                    return jsonify({'status': 'error', 'message': '您尚未被分配班级，无法导入成绩'}), 403
+                class_id = current_user.class_id
+            elif not class_id:
+                # 其他角色需要提供班级ID
+                return jsonify({'status': 'error', 'message': '缺少班级ID参数'}), 400
         elif not class_id:
             return jsonify({'status': 'error', 'message': '管理员需提供班级ID参数'}), 400
             
@@ -394,11 +695,18 @@ def download_grades_template():
         logger.info("收到下载成绩导入模板请求")
         class_id = request.args.get('class_id')
         
-        # 班主任自动使用自己的班级ID
+        # 权限控制：
+        # - 超级管理员：可以指定班级ID或不指定
+        # - 正班主任：自动使用自己的班级ID
+        # - 其他角色：可以指定班级ID或不指定
+        from utils.permission_checker import is_head_teacher
+        
         if not current_user.is_admin:
-            if not current_user.class_id:
-                return jsonify({'status': 'error', 'message': '您尚未被分配班级，无法下载成绩模板'}), 403
-            class_id = current_user.class_id
+            if is_head_teacher(current_user):
+                # 正班主任自动使用自己的班级ID
+                if not current_user.class_id:
+                    return jsonify({'status': 'error', 'message': '您尚未被分配班级，无法下载成绩模板'}), 403
+                class_id = current_user.class_id
         elif not class_id and current_user.is_admin:
             logger.warning("管理员未指定班级ID")
             

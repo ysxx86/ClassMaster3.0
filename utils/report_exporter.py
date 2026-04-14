@@ -12,11 +12,54 @@ from typing import Dict, List, Any, Optional, Tuple, Union
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+import sqlite3
+
 class ReportExporter:
     """
     报告导出工具类，负责处理Word文档模板和生成学生报告
     """
     
+    # 字段映射配置
+    DEYU_FIELD_MAPPING = {
+        'pinzhi': '品质',
+        'xuexi': '学习',
+        'jiankang': '健康',
+        'shenmei': '审美',
+        'shijian': '实践',
+        'shenghuo': '生活'
+    }
+
+    def get_class_name(self, class_id: Union[int, str, None]) -> str:
+        """
+        根据班级ID获取班级名称
+        
+        Args:
+            class_id: 班级ID
+            
+        Returns:
+            str: 班级名称，如果未找到则返回空字符串
+        """
+        if not class_id:
+            return ""
+            
+        try:
+            conn = sqlite3.connect('students.db')
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
+            
+            cursor.execute('SELECT class_name FROM classes WHERE id = ?', (class_id,))
+            result = cursor.fetchone()
+            
+            if result:
+                return result['class_name']
+            return ""
+        except Exception as e:
+            logger.error(f"获取班级名称出错: {str(e)}")
+            return ""
+        finally:
+            if 'conn' in locals():
+                conn.close()
+
     def __init__(self, templates_dir: str = "templates/docx"):
         """
         初始化报告导出器
@@ -125,7 +168,8 @@ class ReportExporter:
                 ('语文', '{{ 语文 }}', '数学', '{{ 数学 }}', '英语', '{{ 英语 }}'),
                 ('道法', '{{ 道法 }}', '科学', '{{ 科学 }}', '体育', '{{ 体育 }}'),
                 ('音乐', '{{ 音乐 }}', '美术', '{{ 美术 }}', '劳动', '{{ 劳动 }}'),
-                ('信息', '{{ 信息 }}', '综合', '{{ 综合 }}', '书法', '{{ 书法 }}')
+                ('信息', '{{ 信息 }}', '综合', '{{ 综合 }}', '书法', '{{ 书法 }}'),
+                ('心理', '{{ 心理 }}', '', '', '', '')
             ]
             
             grade_table = doc.add_table(rows=len(subjects), cols=6)
@@ -207,8 +251,23 @@ class ReportExporter:
         Returns:
             Dict[str, Any]: 用于模板替换的数据
         """
-        # 获取学期文本
-        semester_text = "第一学期" if settings.get('semester') == '1' else "第二学期"
+        # 从数据库获取学期设置
+        def get_system_setting(key, default=None):
+            try:
+                conn = sqlite3.connect('students.db')
+                conn.row_factory = sqlite3.Row
+                cursor = conn.cursor()
+                cursor.execute('SELECT value FROM system_settings WHERE key = ?', (key,))
+                result = cursor.fetchone()
+                conn.close()
+                return result['value'] if result else default
+            except Exception as e:
+                logger.error(f"获取系统设置 {key} 时出错: {str(e)}")
+                return default
+
+        # 获取并格式化学期文本
+        semester_value = get_system_setting('semester', '1')
+        semester_text = "第一学期" if str(semester_value).strip() == '1' else "第二学期"
         
         # 处理开学时间，转换为"月日"格式
         start_date = settings.get('startDate', '')
@@ -240,7 +299,8 @@ class ReportExporter:
             "姓名": safe_get(student, 'name'),
             "学号": safe_get(student, 'id'),
             "性别": safe_get(student, 'gender'),
-            "班级": safe_get(student, 'class') or settings.get('className', ''),
+            # 优先使用数据库中的班级名称
+            "班级": self.get_class_name(safe_get(student, 'class_id')) or settings.get('className', ''),
             
             # 体测数据
             "身高": safe_get(student, 'height'),
@@ -266,12 +326,8 @@ class ReportExporter:
             "日期": datetime.now().strftime('%Y-%m-%d'),
             
             # 德育维度数据
-            "品质": safe_get(student, 'pinzhi', '0'),
-            "学习": safe_get(student, 'xuexi', '0'),
-            "健康": safe_get(student, 'jiankang', '0'),
-            "审美": safe_get(student, 'shenmei', '0'),
-            "实践": safe_get(student, 'shijian', '0'),
-            "生活": safe_get(student, 'shenghuo', '0')
+            **{template_field: safe_get(student, db_field, '0') 
+               for db_field, template_field in self.DEYU_FIELD_MAPPING.items()}
         }
         
         # 如果有成绩数据，添加成绩
@@ -288,7 +344,8 @@ class ReportExporter:
                 'laodong': '劳动',
                 'xinxi': '信息',
                 'zonghe': '综合',
-                'shufa': '书法'
+                'shufa': '书法',
+                'xinli': '心理'
             }
             
             grades_data = grades.get('grades', {})
@@ -297,7 +354,7 @@ class ReportExporter:
         
         # 直接从学生数据中获取成绩字段（如果存在于学生数据中）
         grade_fields = ['yuwen', 'shuxue', 'yingyu', 'daof', 'kexue', 'tiyu', 
-                      'yinyue', 'meishu', 'laodong', 'xinxi', 'zonghe', 'shufa']
+                      'yinyue', 'meishu', 'laodong', 'xinxi', 'zonghe', 'shufa', 'xinli']
         grade_map = {
             'yuwen': '语文',
             'shuxue': '数学',
@@ -310,7 +367,8 @@ class ReportExporter:
             'laodong': '劳动',
             'xinxi': '信息',
             'zonghe': '综合',
-            'shufa': '书法'
+            'shufa': '书法',
+            'xinli': '心理'
         }
         
         for field in grade_fields:

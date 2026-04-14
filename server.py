@@ -1,67 +1,33 @@
 # -*- coding: utf-8 -*-
-# 自动安装所需依赖
-import sys
-import subprocess
+"""
+ClassMaster 2.2 - 智能班级管理系统主服务器
+重构后的版本，使用统一的配置和依赖管理
+"""
+
+# 使用新的依赖管理器
+from dependency_manager import install_required_packages
+
+# 检查并安装依赖
+install_required_packages()
+
+# 导入统一配置管理器
+from config_manager import config, DATABASE, UPLOAD_FOLDER, TEMPLATE_FOLDER, EXPORTS_FOLDER
+
 import os
 import json
 import argparse
 import re
+import random
+from functools import wraps
+import threading
+from utils.excel_processor import ExcelProcessor
 
-def check_and_install(package, version=None):
-    """检查并安装Python包"""
-    package_with_version = f"{package}=={version}" if version else package
-    
-    try:
-        # 尝试导入模块
-        __import__(package)
-        print(f"✓ {package} 已安装")
-    except ImportError:
-        print(f"! 未找到 {package} 模块，正在安装...")
-        try:
-            # 使用系统Python运行pip安装
-            subprocess.check_call([sys.executable, "-m", "pip", "install", 
-                                  package_with_version, "--no-cache-dir"])
-            print(f"✓ {package} 安装成功")
-        except Exception as e:
-            print(f"! {package} 安装失败: {str(e)}")
-            print(f"  请手动运行: pip install {package_with_version}")
+# 依赖检查已通过dependency_manager处理
 
-# 检查关键依赖
-print("检查并安装关键依赖...")
-REQUIRED_PACKAGES = [
-    ("flask", "3.0.2"),
-    ("flask_cors", "3.0.10"),
-    ("flask_login", "0.6.3"),  # 添加Flask-Login依赖
-    ("pandas", "2.2.1"),
-    ("openpyxl", "3.1.2"),
-    ("werkzeug", "2.3.0")
-]
-
-# 单独处理requests和reportlab
-try:
-    import requests
-    print("✓ requests 已安装")
-except ImportError:
-    print("! 未找到 requests 模块，评语AI生成功能将不可用")
-    print("  如需使用AI生成评语，请运行: pip install requests==2.31.0")
-
-try:
-    import reportlab
-    print("✓ reportlab 已安装")
-except ImportError:
-    print("! 未找到 reportlab 模块，PDF导出功能将不可用")
-    print("  如需使用PDF导出功能，请运行: pip install reportlab==4.1.0")
-
-# 安装基础依赖
-for package, version in REQUIRED_PACKAGES:
-    check_and_install(package, version)
-
-print("依赖检查完成，开始导入模块...\n")
-
-# 原始的导入语句
-from flask import Flask, request, jsonify, send_from_directory, render_template, url_for, send_file, make_response, redirect, flash
+# 导入应用工厂
+from app_factory import create_app
+from flask import Flask, request, jsonify, send_from_directory, render_template, url_for, send_file, make_response, redirect, flash, session
 from flask_cors import CORS
-# 导入Flask-Login相关模块
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user, UserMixin
 import os
 import sqlite3
@@ -76,18 +42,7 @@ import shutil
 import time
 import logging
 import traceback
-from utils.excel_processor import ExcelProcessor
-try:
-    from utils.pdf_exporter_fixed import export_comments_to_pdf  # 导入修复后的PDF导出函数
-except ImportError:
-    # 创建一个简化版的PDF导出函数，返回格式与正常函数一致
-    def export_comments_to_pdf(*args, **kwargs):
-        return {
-            'status': 'error',
-            'message': 'PDF导出功能不可用，请安装reportlab模块'
-        }
-    print("! PDF导出功能不可用，请安装reportlab模块")
-    
+from utils.pdf_exporter_fixed import export_comments_to_pdf  # 导入修复后的PDF导出函数
 from utils.comment_generator import CommentGenerator
 from utils.report_exporter import ReportExporter
 # 导入学生模块
@@ -102,11 +57,23 @@ from grades import grades_bp, init_grades
 # 导入德育模块
 from deyu import deyu_bp, init_deyu
 
+# 导入成绩分析模块
+from grade_analysis import grade_analysis_bp, init_grade_analysis
+
 # 导入用户模块
 from users import users_bp, init_users
 
 # 导入班级模块
 from classes import classes_bp, init_classes
+
+# 导入数据库备份模块
+from database_backup import backup_bp, init_backup
+
+# 导入绩效考核模块
+from performance import performance_bp, init_performance
+
+# 导入学科管理模块
+from subjects import subjects_bp, init_subjects
 
 # 导入仪表盘模块
 try:
@@ -134,21 +101,9 @@ except ImportError:
     print("! 无法导入DeepSeekAPI，AI评语生成功能不可用")
     deepseek_api = None
 
-# 系统设置存储
-SYSTEM_SETTINGS = {
-    "deepseek_api_key": DEEPSEEK_API_KEY,
-    "deepseek_api_enabled": bool(DEEPSEEK_API_KEY)
-}
-
-# 配置日志
-logging.basicConfig(
-    level=logging.DEBUG,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler("logs/root_server.log"),
-        logging.StreamHandler()
-    ]
-)
+# 使用统一配置管理器的系统设置
+SYSTEM_SETTINGS = config.system_settings
+DEEPSEEK_API_KEY = config.DEEPSEEK_API_KEY
 
 logger = logging.getLogger(__name__)
 logger.info("服务器启动")
@@ -161,15 +116,90 @@ app = Flask(__name__,
 CORS(app)  # 启用跨域资源共享
 
 # 设置密钥（用于会话安全）
-app.secret_key = os.environ.get("SECRET_KEY", "dev_secret_key")
-app.config['JSON_AS_ASCII'] = False  # 确保JSON响应支持中文
-app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False  # 关闭JSON格式化
-app.config['TRAP_HTTP_EXCEPTIONS'] = True  # 捕获HTTP异常
+app.secret_key = config.SECRET_KEY
+app.config['JSON_AS_ASCII'] = config.JSON_AS_ASCII
+app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False  # 禁用JSON美化，减少响应大小
+app.config['UPLOAD_FOLDER'] = config.UPLOAD_FOLDER
+app.config['MAX_CONTENT_LENGTH'] = config.MAX_CONTENT_LENGTH
 
-# 初始化Flask-Login
+# 初始化登录管理
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = 'users.login'  # 设置登录视图
+login_manager.login_view = 'users.login'  # 设置登录视图的端点
+
+# 系统设置已通过config_manager加载
+
+# 设置DeepSeek API实例
+if SYSTEM_SETTINGS.get('deepseek_api_enabled'):
+    from utils.deepseek_api import DeepSeekAPI
+    deepseek_api = DeepSeekAPI(SYSTEM_SETTINGS.get('deepseek_api_key', ''))
+    app.config['deepseek_api'] = deepseek_api
+else:
+    deepseek_api = None
+    app.config['deepseek_api'] = None
+
+# 额外的静态文件路由
+@app.route('/css/<path:filename>')
+def serve_css(filename):
+    return send_from_directory('css', filename)
+
+@app.route('/js/<path:filename>')
+def serve_js(filename):
+    return send_from_directory('js', filename)
+
+@app.route('/fonts/<path:filename>')
+def serve_fonts(filename):
+    return send_from_directory('fonts', filename)
+
+# 添加错误处理器处理404错误
+@app.errorhandler(404)
+def page_not_found(e):
+    # 检查是否是静态资源请求
+    path = request.path
+    if path.startswith('/css/') or path.startswith('/js/') or path.startswith('/fonts/') or path.startswith('/img/'):
+        # 对于静态资源请求的404，重定向到登录页面
+        return redirect(url_for('users.login'))
+    
+    # 返回JSON响应，方便前端处理
+    if request.path.startswith('/api/'):
+        return jsonify({'status': 'error', 'message': '请求的资源不存在', 'code': 404}), 404
+    
+    # 对于普通页面请求，重定向到登录页面
+    return redirect(url_for('users.login'))
+
+# 添加405错误处理器
+@app.errorhandler(405)
+def method_not_allowed(e):
+    # 对于API请求，返回JSON响应
+    if request.path.startswith('/api/'):
+        return jsonify({
+            'status': 'error', 
+            'message': '不支持的请求方法', 
+            'code': 405
+        }), 405
+    
+    # 对于普通请求，重定向到首页
+    return redirect(url_for('index'))
+
+# 添加500错误处理器
+@app.errorhandler(500)
+def internal_server_error(e):
+    """处理服务器内部错误"""
+    # 记录错误
+    app.logger.error(f"500 错误: {str(e)}")
+    
+    # 对于API请求，返回JSON响应
+    if request.path.startswith('/api/'):
+        return jsonify({
+            'status': 'error', 
+            'message': '服务器内部错误', 
+            'code': 500
+        }), 500
+    
+    # 对于普通请求，重定向到登录页面
+    return redirect(url_for('users.login'))
+
+# API登出已移动到system_api蓝图
 
 # 用户加载函数
 @login_manager.user_loader
@@ -177,8 +207,18 @@ def load_user(user_id):
     from models.user import User
     return User.get_by_id(user_id)
 
-# 将deepseek_api添加到应用配置中
-app.config['deepseek_api'] = deepseek_api
+# 添加管理员权限验证装饰器
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_admin:
+            # 对API请求返回JSON响应，对页面请求重定向
+            if request.path.startswith('/api/'):
+                return jsonify({'status': 'error', 'message': '需要管理员权限'}), 403
+            flash('该操作需要管理员权限。', 'danger')
+            return redirect(url_for('index'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 # 注册学生蓝图
 app.register_blueprint(students_bp)
@@ -192,11 +232,61 @@ app.register_blueprint(grades_bp)
 # 注册德育蓝图
 app.register_blueprint(deyu_bp)
 
+# 注册成绩分析蓝图
+app.register_blueprint(grade_analysis_bp)
+
 # 注册用户蓝图
 app.register_blueprint(users_bp)
 
 # 注册班级蓝图
 app.register_blueprint(classes_bp)
+
+# 注册数据库备份模块蓝图
+app.register_blueprint(backup_bp)
+
+# 注册系统API蓝图
+from system_api import system_api_bp
+app.register_blueprint(system_api_bp)
+
+# 注册班级导出蓝图
+from class_export import class_export_bp
+app.register_blueprint(class_export_bp)
+
+# 注册绩效考核蓝图
+app.register_blueprint(performance_bp)
+
+# 注册学科管理蓝图
+app.register_blueprint(subjects_bp)
+
+# 注册教师信息API蓝图
+from teacher_info_api import teacher_info_bp
+app.register_blueprint(teacher_info_bp)
+
+# 注册实时更新蓝图
+from realtime_api import realtime_bp, init_realtime
+# app.register_blueprint(realtime_bp)  # 已在 init_realtime() 中注册，避免重复
+init_realtime(app)
+
+# 全局错误处理中间件
+@app.before_request
+def before_request():
+    """全局请求前处理"""
+    # 记录请求信息，便于调试
+    if app.debug:
+        app.logger.debug(f"收到请求: {request.method} {request.path}")
+
+@app.after_request
+def after_request(response):
+    """全局请求后处理"""
+    # 记录响应状态，便于调试
+    if app.debug and response.status_code >= 400:
+        app.logger.debug(f"响应状态: {response.status_code}")
+    
+    # 确保会话状态被保存
+    if hasattr(request, 'session'):
+        session.modified = True
+    
+    return response
 
 # 初始化评语模块
 init_comments(app)
@@ -206,6 +296,24 @@ init_grades(app)
 
 # 初始化德育模块
 init_deyu(app)
+
+# 初始化成绩分析模块
+init_grade_analysis(app)
+
+# 初始化用户模块
+init_users()
+
+# 初始化班级模块
+init_classes()
+
+# 初始化数据库备份模块
+init_backup()
+
+# 初始化绩效考核模块
+init_performance()
+
+# 初始化学科管理模块
+init_subjects()
 
 # 初始化仪表盘模块
 if dashboard_enabled:
@@ -657,27 +765,68 @@ def unified_reset_password(user_id):
         logger.error(f"重置用户密码时出错: {str(e)}")
         return jsonify({'status': 'error', 'message': f'重置密码失败: {str(e)}'}), 500
 
-# 配置
-UPLOAD_FOLDER = 'uploads'
-TEMPLATE_FOLDER = 'templates'
-EXPORTS_FOLDER = 'exports'
-DATABASE = 'students.db'
-
-# 将UPLOAD_FOLDER添加到app.config中
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
-# 确保所有必要的文件夹存在
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-os.makedirs(TEMPLATE_FOLDER, exist_ok=True)
-os.makedirs(EXPORTS_FOLDER, exist_ok=True)
-
 # 创建数据库连接
 def get_db_connection():
     """获取数据库连接"""
-    conn = sqlite3.connect('students.db')
-    conn.row_factory = sqlite3.Row
-    conn.execute('PRAGMA foreign_keys = ON')  # 启用外键约束
-    return conn
+    return config.get_db_connection()
+
+def save_setting_to_db(key, value, description=None):
+    """将设置保存到数据库的 system_settings 表"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # 确保 system_settings 表存在
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS system_settings (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            key TEXT UNIQUE NOT NULL,
+            value TEXT,
+            description TEXT,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        ''')
+        
+        # 插入或更新设置
+        cursor.execute('''
+        INSERT OR REPLACE INTO system_settings (key, value, description, updated_at)
+        VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+        ''', (key, value, description))
+        
+        conn.commit()
+        conn.close()
+        logger.info(f"成功保存设置到数据库: {key} = {value}")
+    except Exception as e:
+        logger.error(f"保存设置到数据库时出错: {key} = {value}, 错误: {str(e)}")
+        if 'conn' in locals():
+            conn.close()
+        raise
+
+def update_config_file():
+    """从数据库读取设置并更新配置文件"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # 从数据库读取所有设置
+        cursor.execute('SELECT key, value FROM system_settings')
+        db_settings = {row['key']: row['value'] for row in cursor.fetchall()}
+        conn.close()
+        
+        # 更新全局配置
+        if db_settings:
+            config.system_settings.update(db_settings)
+            # 保存到 config.json 文件
+            config.save_json_config()
+            logger.info("成功从数据库更新配置文件")
+        else:
+            logger.warning("数据库中没有找到系统设置")
+            
+    except Exception as e:
+        logger.error(f"更新配置文件时出错: {str(e)}")
+        if 'conn' in locals():
+            conn.close()
+        # 不抛出异常，避免阻断程序运行
 
 # 初始化数据库
 def init_db():
@@ -813,94 +962,9 @@ def serve_pages(path):
     return send_from_directory('pages', path)
 
 # 健康检查API
-@app.route('/api/health', methods=['GET'])
-def health_check():
-    return jsonify({'status': 'ok', 'message': '服务器正常运行中'})
+# 健康检查API已移动到system_api蓝图
 
-# API获取当前登录用户信息
-@app.route('/api/current-user', methods=['GET'])
-@login_required
-def get_current_user():
-    """获取当前用户信息"""
-    try:
-        # 使用直接的SQL查询获取用户及其班级信息
-        conn = get_db_connection()
-        conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
-        
-        # 记录当前用户基本信息，便于调试
-        logger.info(f"当前用户ID: {current_user.id}, 用户名: {current_user.username}, 班级ID: {current_user.class_id}")
-        
-        # 先获取用户信息
-        cursor.execute('SELECT id, username, is_admin, class_id FROM users WHERE id = ?', (current_user.id,))
-        user_data = cursor.fetchone()
-        
-        if not user_data:
-            logger.warning(f"未找到用户ID: {current_user.id}")
-            conn.close()
-            return jsonify({'status': 'error', 'message': '找不到用户信息'}), 404
-        
-        # 初始化班级名称为"暂无班级"
-        class_name = "暂无班级"
-        class_id = user_data['class_id']
-        
-        # 如果用户有班级ID，直接查询班级名称
-        if class_id:
-            # 将class_id转换为整数进行查询
-            try:
-                numeric_class_id = int(class_id)
-                logger.info(f"用户有班级ID: {class_id} (已转换为整数: {numeric_class_id}), 查询班级名称")
-                
-                # 使用参数化查询防止SQL注入
-                cursor.execute('SELECT class_name FROM classes WHERE id = ?', (numeric_class_id,))
-                class_data = cursor.fetchone()
-                
-                if class_data and class_data['class_name']:
-                    class_name = class_data['class_name']
-                    logger.info(f"找到班级名称: {class_name}")
-                else:
-                    logger.warning(f"未找到班级ID {class_id} 对应的班级名称")
-                    
-                    # 额外查询所有班级，用于调试
-                    cursor.execute('SELECT id, class_name FROM classes')
-                    all_classes = [dict(c) for c in cursor.fetchall()]
-                    logger.info(f"所有班级: {all_classes}")
-                    
-                    # 尝试使用字符串比较查找
-                    for cls in all_classes:
-                        if str(cls['id']) == str(class_id):
-                            class_name = cls['class_name']
-                            logger.info(f"通过字符串比较找到班级: ID={cls['id']}, 名称={class_name}")
-                            break
-            except (ValueError, TypeError):
-                logger.error(f"无法将班级ID转换为整数: {class_id}")
-        else:
-            logger.info("用户没有班级ID，显示'暂无班级'")
-        
-        conn.close()
-        
-        # 构建用户信息
-        user_info = {
-            'id': user_data['id'],
-            'username': user_data['username'],
-            'is_admin': bool(user_data['is_admin']),
-            'class_id': class_id,
-            'class_name': class_name,
-            'role': "admin" if bool(user_data['is_admin']) else "teacher"
-        }
-        
-        logger.info(f"返回用户信息: user={user_info['username']}, class_id={user_info['class_id']}, class_name={user_info['class_name']}")
-        logger.info(f"用户信息JSON: {json.dumps(user_info, ensure_ascii=False)}")
-        
-        return jsonify({
-            'status': 'ok',
-            'user': user_info
-        })
-        
-    except Exception as e:
-        logger.error(f"获取当前用户信息时出错: {str(e)}")
-        logger.error(traceback.format_exc())
-        return jsonify({'status': 'error', 'message': f'获取当前用户信息失败: {str(e)}'}), 500
+# 当前用户信息API已移动到system_api蓝图
 
 @login_required
 def download_template():
@@ -1298,40 +1362,7 @@ def reset_database_api():
             'message': message
         }), 500
 
-# 获取数据库信息API
-@app.route('/api/database-info', methods=['GET'])
-def database_info():
-    try:
-        # 获取数据库文件路径
-        db_path = os.path.abspath(DATABASE)
-        
-        # 获取文件修改时间
-        if os.path.exists(db_path):
-            last_modified = datetime.datetime.fromtimestamp(os.path.getmtime(db_path)).strftime('%Y-%m-%d %H:%M:%S')
-        else:
-            last_modified = '数据库文件不存在'
-        
-        # 获取学生数量
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute('SELECT COUNT(*) FROM students')
-        student_count = cursor.fetchone()[0]
-        conn.close()
-        
-        return jsonify({
-            'status': 'ok',
-            'path': db_path,
-            'last_modified': last_modified,
-            'student_count': student_count
-        })
-    except Exception as e:
-        print(f"获取数据库信息时出错: {e}")
-        import traceback
-        traceback.print_exc()
-        return jsonify({
-            'status': 'error',
-            'message': f'获取数据库信息时出错: {str(e)}'
-        }), 500
+# 数据库信息API已移动到system_api蓝图
 
 # 获取学生评语API - 已移至comments.py
 # @app.route('/api/comments/<student_id>', methods=['GET'], strict_slashes=False)
@@ -1358,7 +1389,7 @@ def database_info():
 # def api_export_comments_pdf():
 #     # ... 移除此函数的内容 ...
 
-# 提供导出文件下载 - 已移至comments.py init_comments函数中
+# 提供导出文件下载 - 已移至comments.py
 # @app.route('/download/exports/<path:filename>', methods=['GET'])
 # def download_export(filename):
 #     # ... 移除此函数的内容 ...
@@ -1381,80 +1412,169 @@ def database_info():
 @app.route('/api/test-deepseek', methods=['POST'])
 @login_required
 def test_deepseek_api():
+    # 获取提交的API密钥
+    data = request.get_json()
+    api_key = data.get('api_key', '')
+    
     try:
-        data = request.get_json()
-        api_key = data.get('apiKey', '')
-        
-        if not api_key:
-            return jsonify({'status': 'error', 'message': 'API密钥不能为空'})
-            
-        # 创建临时API对象
+        # 测试API连接
         from utils.deepseek_api import DeepSeekAPI
         api = DeepSeekAPI(api_key)
         result = api.test_connection()
         
+        # 返回测试结果
         return jsonify(result)
     except Exception as e:
         logger.error(f"测试DeepSeek API时出错: {str(e)}")
-        return jsonify({'status': 'error', 'message': f'测试API出错: {str(e)}'})
+        return jsonify({"status": "error", "message": f"测试API连接时出错: {str(e)}"})
 
 # 保存DeepSeek API设置
 @app.route('/api/settings/deepseek', methods=['POST'])
 @login_required
+@admin_required
 def save_deepseek_api_settings():
     global deepseek_api
+    # 获取提交的API密钥
+    data = request.get_json()
+    api_key = data.get('api_key', '')
     
     try:
-        data = request.get_json()
-        api_key = data.get('apiKey', '')
-        
-        # 可以添加验证API密钥格式的代码
-        # 此处省略验证逻辑
-        
-        # 更新全局变量
+        # 保存API密钥到设置
         SYSTEM_SETTINGS['deepseek_api_key'] = api_key
         SYSTEM_SETTINGS['deepseek_api_enabled'] = bool(api_key)
         
-        # 更新API对象
+        # 更新配置文件
+        update_config_file()
+        
+        # 更新API客户端实例
         if deepseek_api:
             deepseek_api.update_api_key(api_key)
         else:
             from utils.deepseek_api import DeepSeekAPI
             deepseek_api = DeepSeekAPI(api_key)
-            
+        
         # 更新应用配置
         app.config['deepseek_api'] = deepseek_api
-            
+        
         return jsonify({
-            'status': 'ok', 
-            'message': 'API设置已更新',
-            'api_enabled': bool(api_key)
+            "status": "ok",
+            "message": "DeepSeek API设置已保存",
+            "deepseek_api_enabled": bool(api_key)
         })
     except Exception as e:
         logger.error(f"保存DeepSeek API设置时出错: {str(e)}")
-        return jsonify({'status': 'error', 'message': f'保存设置出错: {str(e)}'})
+        return jsonify({"status": "error", "message": f"保存API设置时出错: {str(e)}"})
 
 # 获取系统设置
 @app.route('/api/settings', methods=['GET'])
 @login_required
 def get_system_settings():
-    # 添加用户权限检查，只有管理员可以获取完整的系统设置
-    if not current_user.is_admin:
-        # 非管理员用户，只返回有限的设置信息
-        filtered_settings = {
-            'system_name': SYSTEM_SETTINGS.get('system_name', '班主任管理系统'),
-            'school_name': SYSTEM_SETTINGS.get('school_name', '泉州东海湾实验学校')
-        }
+    try:
+        # 从数据库重新加载设置，确保获取最新数据
+        update_config_file()
+        
+        # 添加用户权限检查，只有管理员可以获取完整的系统设置
+        if not current_user.is_admin:
+            # 非管理员用户，只返回有限的设置信息
+            filtered_settings = {
+                'system_name': SYSTEM_SETTINGS.get('system_name', '班主任管理系统'),
+                'school_name': SYSTEM_SETTINGS.get('school_name', '泉州东海湾实验学校'),
+                'school_year': SYSTEM_SETTINGS.get('school_year', '2024-2025'),
+                'semester': SYSTEM_SETTINGS.get('semester', '2'),
+                'start_date': SYSTEM_SETTINGS.get('start_date', '2025-03-01')
+            }
+            return jsonify({
+                'status': 'ok',
+                'settings': filtered_settings
+            })
+        
+        # 管理员用户，返回完整设置
         return jsonify({
             'status': 'ok',
-            'settings': filtered_settings
+            'settings': SYSTEM_SETTINGS
         })
-    
-    # 管理员用户，返回完整设置
-    return jsonify({
-        'status': 'ok',
-        'settings': SYSTEM_SETTINGS
-    })
+    except Exception as e:
+        logger.error(f"获取系统设置时出错: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': f"获取系统设置时出错: {str(e)}"
+        }), 500
+
+# 更新系统设置
+@app.route('/api/settings/update', methods=['POST'])
+@login_required
+@admin_required
+def update_system_settings():
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({
+                'status': 'error',
+                'message': '没有提供设置数据'
+            }), 400
+        
+        # 更新设置
+        for key, value in data.items():
+            # 保存到数据库
+            save_setting_to_db(key, value)
+        
+        # 更新配置文件
+        update_config_file()
+        
+        return jsonify({
+            'status': 'ok',
+            'message': '系统设置已更新'
+        })
+    except Exception as e:
+        logger.error(f"更新系统设置时出错: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': f"更新系统设置时出错: {str(e)}"
+        }), 500
+
+# 更新学期设置
+@app.route('/api/settings/semester', methods=['POST'])
+@login_required
+@admin_required
+def update_semester_settings():
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({
+                'status': 'error',
+                'message': '没有提供设置数据'
+            }), 400
+        
+        # 获取学年、学期和开学时间
+        school_year = data.get('school_year')
+        semester = data.get('semester')
+        start_date = data.get('start_date')
+        
+        # 验证数据
+        if not school_year or not semester or not start_date:
+            return jsonify({
+                'status': 'error',
+                'message': '学年、学期和开学时间都是必填项'
+            }), 400
+        
+        # 保存到数据库
+        save_setting_to_db('school_year', school_year, '学年设置')
+        save_setting_to_db('semester', semester, '学期设置 (1: 第一学期, 2: 第二学期)')
+        save_setting_to_db('start_date', start_date, '开学时间')
+        
+        # 更新配置文件
+        update_config_file()
+        
+        return jsonify({
+            'status': 'ok',
+            'message': '学期设置已更新'
+        })
+    except Exception as e:
+        logger.error(f"更新学期设置时出错: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': f"更新学期设置时出错: {str(e)}"
+        }), 500
 
 # 模板管理API
 @app.route('/api/templates', methods=['GET'])
@@ -1524,6 +1644,413 @@ def upload_template():
 def serve_img(path):
     return send_from_directory('img', path)
 
+# 获取考试并检查访问权限
+def get_exam_access(exam_id):
+    """
+    检查当前用户是否有权限访问指定的考试，并返回考试信息
+    
+    Args:
+        exam_id: 考试ID
+        
+    Returns:
+        考试信息字典，如果没有权限或考试不存在则返回None
+    """
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # 获取考试信息
+        cursor.execute("SELECT * FROM exams WHERE id = ?", (exam_id,))
+        exam = cursor.fetchone()
+        
+        if not exam:
+            return None
+            
+        exam_dict = dict(exam)
+        
+        # 检查权限：管理员或班主任只能访问自己班级的考试
+        if not current_user.is_admin and current_user.class_id != exam_dict['class_id']:
+            return None
+            
+        return exam_dict
+    except Exception as e:
+        logger.error(f"检查考试访问权限时出错: {str(e)}")
+        return None
+    finally:
+        if 'conn' in locals():
+            conn.close()
+
+# 上传试卷PDF
+@app.route('/api/exams/<exam_id>/paper', methods=['POST'])
+@login_required
+def upload_exam_paper(exam_id):
+    # 检查是否有权限访问该考试
+    exam = get_exam_access(exam_id)
+    if not exam:
+        return jsonify({"status": "error", "message": "无权访问该考试或考试不存在"})
+    
+    try:
+        # 检查是否有文件上传
+        if 'file' not in request.files:
+            return jsonify({"status": "error", "message": "未找到上传的文件"})
+        
+        file = request.files['file']
+        
+        # 检查文件类型
+        if file.filename == '':
+            return jsonify({"status": "error", "message": "未选择文件"})
+        
+        if not file.filename.lower().endswith('.pdf'):
+            return jsonify({"status": "error", "message": "请上传PDF格式的文件"})
+        
+        # 确保存储目录存在
+        papers_dir = os.path.join(app.root_path, 'static', 'papers')
+        if not os.path.exists(papers_dir):
+            os.makedirs(papers_dir)
+        
+        # 保存文件
+        filename = f"exam_{exam_id}_paper.pdf"
+        file_path = os.path.join(papers_dir, filename)
+        file.save(file_path)
+        
+        # 更新数据库，记录试卷已上传
+        db_conn = get_db_connection()
+        db_conn.execute(
+            "UPDATE exams SET has_paper = 1, paper_path = ? WHERE id = ?",
+            (filename, exam_id)
+        )
+        db_conn.commit()
+        db_conn.close()
+        
+        # 开始后台分析任务
+        # 在实际应用中，应该使用异步任务队列（如Celery）来处理
+        # 这里简化处理，创建一个标记文件表示分析正在进行
+        analysis_dir = os.path.join(app.root_path, 'static', 'analysis')
+        if not os.path.exists(analysis_dir):
+            os.makedirs(analysis_dir)
+            
+        processing_flag_path = os.path.join(analysis_dir, f"exam_{exam_id}_processing.flag")
+        with open(processing_flag_path, 'w') as f:
+            f.write('processing')
+        
+        # 这里模拟异步任务启动
+        # 实际应用中应该将分析任务提交到任务队列
+        # 为简化示例，这里假设有一个后台线程会定期检查并处理这些文件
+        
+        return jsonify({
+            "status": "ok",
+            "message": "试卷上传成功，开始分析",
+            "exam_id": exam_id
+        })
+    except Exception as e:
+        logger.error(f"上传试卷时出错: {str(e)}")
+        return jsonify({"status": "error", "message": f"上传试卷时出错: {str(e)}"})
+
+# 获取试卷分析结果
+@app.route('/api/exams/<exam_id>/paper-analysis', methods=['GET'])
+@login_required
+def get_exam_paper_analysis(exam_id):
+    # 检查是否有权限访问该考试
+    exam = get_exam_access(exam_id)
+    if not exam:
+        return jsonify({"status": "error", "message": "无权访问该考试或考试不存在"})
+    
+    try:
+        # 检查是否已上传试卷
+        db_conn = get_db_connection()
+        exam_data = db_conn.execute(
+            "SELECT has_paper, paper_path FROM exams WHERE id = ?",
+            (exam_id,)
+        ).fetchone()
+        
+        if not exam_data or not exam_data['has_paper']:
+            return jsonify({"status": "error", "message": "未上传试卷"})
+        
+        # 检查分析结果是否存在
+        analysis_dir = os.path.join(app.root_path, 'static', 'analysis')
+        analysis_file_path = os.path.join(analysis_dir, f"exam_{exam_id}_analysis.json")
+        processing_flag_path = os.path.join(analysis_dir, f"exam_{exam_id}_processing.flag")
+        
+        # 如果分析结果已存在
+        if os.path.exists(analysis_file_path):
+            with open(analysis_file_path, 'r', encoding='utf-8') as f:
+                analysis_data = json.load(f)
+                
+            return jsonify({
+                "status": "ok",
+                "analysis": analysis_data,
+                "exam_id": exam_id
+            })
+        # 如果分析正在进行中
+        elif os.path.exists(processing_flag_path):
+            return jsonify({
+                "status": "processing",
+                "message": "试卷分析正在进行中",
+                "exam_id": exam_id
+            })
+        # 如果分析结果不存在，需要启动分析
+        else:
+            # 创建处理标记
+            with open(processing_flag_path, 'w') as f:
+                f.write('processing')
+                
+            # 在实际应用中，应该提交到任务队列异步处理
+            # 为简化示例，创建一个模拟的分析结果
+            
+            # 获取考试相关数据
+            class_id = exam['class_id']
+            subjects = json.loads(exam['subjects'])
+            
+            # 获取学生成绩数据，用于题目错误率分析
+            scores = db_conn.execute(
+                "SELECT s.student_id, s.student_name, s.subject, s.score FROM scores s "
+                "WHERE s.exam_id = ?",
+                (exam_id,)
+            ).fetchall()
+            db_conn.close()
+            
+            # 准备测试数据
+            # 实际应用中，需要从PDF解析题目数据
+            subject = subjects[0]  # 假设只有一个学科
+            student_scores = [s['score'] for s in scores if s['subject'] == subject]
+            students_count = len(set([s['student_id'] for s in scores if s['subject'] == subject]))
+            
+            # 模拟题目数据
+            questions_data = []
+            for i in range(1, 21):  # 20道题
+                # 随机生成错误率和分值
+                error_rate = random.uniform(0.1, 0.9)
+                score = random.choice([1, 2, 3, 5, 10])
+                
+                question = {
+                    "number": i,
+                    "type": random.choice(["选择题", "填空题", "解答题", "判断题", "应用题"]),
+                    "score": score,
+                    "error_rate": error_rate,
+                    "student_count": students_count
+                }
+                questions_data.append(question)
+            
+            # 获取班级名称
+            class_data = db_conn.execute(
+                "SELECT class_name FROM classes WHERE id = ?",
+                (class_id,)
+            ).fetchone()
+            class_name = class_data['class_name'] if class_data else "未知班级"
+            
+            # 使用DeepSeek API分析试卷
+            if deepseek_api:
+                analysis_result = deepseek_api.analyze_exam_paper(
+                    questions_data,
+                    student_scores,
+                    subject,
+                    exam['exam_name'],
+                    class_name
+                )
+                
+                # 保存分析结果
+                analysis_data = {
+                    "subject": subject,
+                    "total_score": sum(q['score'] for q in questions_data),
+                    "questions": questions_data,
+                    "ai_analysis": analysis_result.get("analysis", {})
+                }
+                
+                with open(analysis_file_path, 'w', encoding='utf-8') as f:
+                    json.dump(analysis_data, f, ensure_ascii=False, indent=2)
+                
+                # 删除处理标记
+                if os.path.exists(processing_flag_path):
+                    os.remove(processing_flag_path)
+                
+                return jsonify({
+                    "status": "ok",
+                    "analysis": analysis_data,
+                    "exam_id": exam_id
+                })
+            else:
+                # DeepSeek API不可用时返回错误
+                return jsonify({
+                    "status": "error",
+                    "message": "DeepSeek API不可用，无法进行分析",
+                    "exam_id": exam_id
+                })
+    except Exception as e:
+        logger.error(f"获取试卷分析结果时出错: {str(e)}")
+        traceback.print_exc()
+        return jsonify({"status": "error", "message": f"获取试卷分析结果时出错: {str(e)}"})
+
+# 下载试卷分析报告
+@app.route('/api/exams/<exam_id>/paper-analysis-report', methods=['GET'])
+@login_required
+def download_exam_paper_analysis_report(exam_id):
+    # 检查是否有权限访问该考试
+    exam = get_exam_access(exam_id)
+    if not exam:
+        return jsonify({"status": "error", "message": "无权访问该考试或考试不存在"})
+    
+    try:
+        # 检查分析结果是否存在
+        analysis_dir = os.path.join(app.root_path, 'static', 'analysis')
+        analysis_file_path = os.path.join(analysis_dir, f"exam_{exam_id}_analysis.json")
+        
+        if not os.path.exists(analysis_file_path):
+            return jsonify({"status": "error", "message": "分析结果不存在，请先进行分析"})
+        
+        # 读取分析结果
+        with open(analysis_file_path, 'r', encoding='utf-8') as f:
+            analysis_data = json.load(f)
+        
+        # 创建报告文件
+        reports_dir = os.path.join(app.root_path, 'static', 'reports')
+        if not os.path.exists(reports_dir):
+            os.makedirs(reports_dir)
+            
+        report_file_path = os.path.join(reports_dir, f"exam_{exam_id}_analysis_report.html")
+        
+        # 创建HTML报告内容
+        # 这里简化处理，实际应用中可以使用Jinja2等模板引擎生成更复杂的报告
+        subject = analysis_data.get('subject', '未知学科')
+        questions = analysis_data.get('questions', [])
+        ai_analysis = analysis_data.get('ai_analysis', {})
+        
+        html_content = f"""
+        <!DOCTYPE html>
+        <html lang="zh-CN">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>试卷分析报告 - {exam['exam_name']}</title>
+            <style>
+                body {{ font-family: 'PingFang SC', 'Helvetica Neue', Arial, sans-serif; padding: 20px; }}
+                .header {{ text-align: center; margin-bottom: 30px; }}
+                .section {{ margin-bottom: 30px; }}
+                .section-title {{ font-size: 18px; font-weight: bold; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 5px; }}
+                table {{ width: 100%; border-collapse: collapse; margin-bottom: 20px; }}
+                th, td {{ border: 1px solid #ddd; padding: 8px; text-align: left; }}
+                th {{ background-color: #f2f2f2; }}
+                .alert {{ padding: 15px; border-radius: 4px; margin-bottom: 15px; }}
+                .alert-info {{ background-color: #d9edf7; border: 1px solid #bce8f1; color: #31708f; }}
+                .alert-warning {{ background-color: #fcf8e3; border: 1px solid #faebcc; color: #8a6d3b; }}
+                .card {{ border: 1px solid #ddd; border-radius: 4px; margin-bottom: 15px; }}
+                .card-header {{ background-color: #f5f5f5; padding: 10px 15px; border-bottom: 1px solid #ddd; font-weight: bold; }}
+                .card-body {{ padding: 15px; }}
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <h1>试卷分析报告</h1>
+                <h2>{exam['exam_name']} - {subject}</h2>
+                <p>报告生成时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">题目分析</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>题号</th>
+                            <th>题型</th>
+                            <th>分值</th>
+                            <th>正确率</th>
+                            <th>错误人数</th>
+                            <th>难度等级</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        """
+        
+        # 添加题目分析表格
+        for q in questions:
+            error_rate = q.get('error_rate', 0)
+            correct_rate = (1 - error_rate) * 100
+            error_count = round(error_rate * q.get('student_count', 0))
+            
+            # 根据错误率确定难度
+            difficulty = "简单"
+            if error_rate > 0.7:
+                difficulty = "困难"
+            elif error_rate > 0.4:
+                difficulty = "中等"
+                
+            html_content += f"""
+                        <tr>
+                            <td>{q.get('number', '')}</td>
+                            <td>{q.get('type', '未知')}</td>
+                            <td>{q.get('score', '')}</td>
+                            <td>{correct_rate:.1f}%</td>
+                            <td>{error_count} / {q.get('student_count', '')}</td>
+                            <td>{difficulty}</td>
+                        </tr>
+            """
+            
+        html_content += """
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">AI教学分析</div>
+        """
+        
+        # 添加总体评价
+        overall = ai_analysis.get('overall', '暂无总体评价')
+        html_content += f"""
+                <div class="alert alert-info">
+                    <strong>总体评价：</strong>
+                    <p>{overall}</p>
+                </div>
+        """
+        
+        # 添加薄弱知识点
+        weak_points = ai_analysis.get('weak_points', [])
+        if weak_points:
+            html_content += """
+                <div class="section-title">薄弱知识点分析</div>
+            """
+            
+            for point in weak_points:
+                html_content += f"""
+                <div class="alert alert-warning">
+                    <strong>{point.get('title', '薄弱点')}</strong>
+                    <p>{point.get('description', '')}</p>
+                </div>
+                """
+        
+        # 添加教学建议
+        suggestions = ai_analysis.get('suggestions', [])
+        if suggestions:
+            html_content += """
+                <div class="section-title">教学建议</div>
+            """
+            
+            for suggestion in suggestions:
+                html_content += f"""
+                <div class="card">
+                    <div class="card-header">{suggestion.get('title', '建议')}</div>
+                    <div class="card-body">
+                        <p>{suggestion.get('description', '')}</p>
+                    </div>
+                </div>
+                """
+        
+        # 完成HTML
+        html_content += """
+            </div>
+        </body>
+        </html>
+        """
+        
+        # 保存HTML报告
+        with open(report_file_path, 'w', encoding='utf-8') as f:
+            f.write(html_content)
+        
+        # 返回报告文件
+        return send_file(report_file_path, as_attachment=True, attachment_filename=f"{exam['exam_name']}_{subject}_分析报告.html")
+    except Exception as e:
+        logger.error(f"下载分析报告时出错: {str(e)}")
+        return jsonify({"status": "error", "message": f"下载分析报告时出错: {str(e)}"})
+
 # 初始化数据应用
 if __name__ == '__main__':
     # 设置命令行参数
@@ -1553,4 +2080,4 @@ if __name__ == '__main__':
         # 开发环境设置
         app.debug = True if args.debug else False
         app.config['PROPAGATE_EXCEPTIONS'] = True
-        app.run(host=args.host, port=args.port)
+        app.run(host=args.host, port=args.port, threaded=True)

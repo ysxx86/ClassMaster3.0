@@ -1,14 +1,30 @@
 // @charset UTF-8
+// 页面加载完成后初始化（合并所有初始化逻辑到一个地方）
 document.addEventListener('DOMContentLoaded', function() {
     console.log("页面加载完成，初始化学生管理功能...");
+    
+    // 加载当前用户信息
+    fetch('/api/current-user')
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'ok' && data.user) {
+                // 保存当前用户的班级ID
+                currentUserClassId = data.user.class_id;
+                console.log('当前用户班级ID:', currentUserClassId);
+            }
+            // 加载学生列表
+            loadStudentsFromServer();
+        })
+        .catch(error => {
+            console.error('获取当前用户信息出错:', error);
+            // 仍然尝试加载学生列表
+            loadStudentsFromServer();
+        });
     
     // 检查当前页面是否包含学生管理相关元素
     if (document.getElementById('studentCards') || 
         document.getElementById('importModal') || 
         document.getElementById('addStudentForm')) {
-        
-        // 初始化学生列表 - 从服务器加载数据而不是从本地存储
-        loadStudentsFromServer();
         
         // 初始化导入功能
         initImportStudents();
@@ -59,11 +75,19 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
         
-    // 绑定下载模板按钮事件
-    const downloadTemplateBtn = document.getElementById('downloadTemplateBtn');
-    if (downloadTemplateBtn) {
-        downloadTemplateBtn.addEventListener('click', function() {
-            downloadTemplate();
+    // 绑定下载模板按钮事件（已在其他地方绑定，这里移除重复）
+    // const downloadTemplateBtn = document.getElementById('downloadTemplateBtn');
+    // if (downloadTemplateBtn) {
+    //     downloadTemplateBtn.addEventListener('click', function() {
+    //         downloadTemplate();
+    //     });
+    // }
+        
+    // 绑定清除学生名单确认按钮事件
+    const confirmClearStudents = document.getElementById('confirmClearStudents');
+    if (confirmClearStudents) {
+        confirmClearStudents.addEventListener('click', function() {
+            clearAllStudents();
         });
     }
         
@@ -192,13 +216,13 @@ function initEventListeners() {
         });
     }
     
-    // 绑定下载模板按钮事件
-    const templateBtn = document.getElementById('downloadTemplateBtn');
-    if (templateBtn) {
-        templateBtn.addEventListener('click', function() {
-            downloadTemplate();
-        });
-    }
+    // 绑定下载模板按钮事件（已在其他地方绑定，这里移除重复）
+    // const templateBtn = document.getElementById('downloadTemplateBtn');
+    // if (templateBtn) {
+    //     templateBtn.addEventListener('click', function() {
+    //         downloadTemplate();
+    //     });
+    // }
     
     // 绑定导入学生按钮事件
     const importFileInput = document.getElementById('importFile');
@@ -230,32 +254,76 @@ function initEventListeners() {
     console.log('事件监听器初始化完成');
 }
 
-// 页面加载完成后初始化
-document.addEventListener('DOMContentLoaded', function() {
-    // 加载当前用户信息
-    fetch('/api/current-user')
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'ok' && data.user) {
-                // 保存当前用户的班级ID
-                currentUserClassId = data.user.class_id;
-                console.log('当前用户班级ID:', currentUserClassId);
-            }
-            // 加载学生列表
-            loadStudentsFromServer();
-        })
-        .catch(error => {
-            console.error('获取当前用户信息出错:', error);
-            // 仍然尝试加载学生列表
-            loadStudentsFromServer();
-        });
-
-    // 设置事件监听器和初始化
-    initEventListeners();
-});
+// 注释掉重复的DOMContentLoaded（已合并到文件开头）
+// document.addEventListener('DOMContentLoaded', function() {
+//     // 加载当前用户信息
+//     fetch('/api/current-user')
+//         .then(response => response.json())
+//         .then(data => {
+//             if (data.status === 'ok' && data.user) {
+//                 // 保存当前用户的班级ID
+//                 currentUserClassId = data.user.class_id;
+//                 console.log('当前用户班级ID:', currentUserClassId);
+//             }
+//             // 加载学生列表
+//             loadStudentsFromServer();
+//         })
+//         .catch(error => {
+//             console.error('获取当前用户信息出错:', error);
+//             // 仍然尝试加载学生列表
+//             loadStudentsFromServer();
+//         });
+//     // 设置事件监听器和初始化
+//     initEventListeners();
+// });
 
 // 添加模态框关闭事件监听和保存按钮重置函数
 function setupStudentModalEvents() {
+    // 添加学生模态框事件监听
+    const addStudentModal = document.getElementById('addStudentModal');
+    if (addStudentModal) {
+        addStudentModal.addEventListener('show.bs.modal', function() {
+            // 获取当前班级信息并设置默认值
+            if (currentUserClassId) {
+                // 使用当前用户信息设置班级字段
+                fetch('/api/current-user')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'ok' && data.user && data.user.class_name) {
+                            // 设置班级字段默认值
+                            const classField = document.getElementById('studentClass');
+                            if (classField) {
+                                classField.value = data.user.class_name || '';
+                                classField.readOnly = true; // 设置为只读
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('获取当前用户信息失败:', error);
+                        // 如果API失败，使用备用方案
+                        const classField = document.getElementById('studentClass');
+                        if (classField) {
+                            classField.value = '当前班级';
+                            classField.readOnly = true;
+                        }
+                    });
+            }
+        });
+        
+        addStudentModal.addEventListener('hidden.bs.modal', function() {
+            // 重置表单
+            const form = document.getElementById('addStudentForm');
+            if (form) {
+                form.reset();
+            }
+            // 移除班级字段的只读状态（为下次打开做准备）
+            const classField = document.getElementById('studentClass');
+            if (classField) {
+                classField.readOnly = false;
+            }
+        });
+    }
+
     // 添加编辑模态框关闭事件监听
     const editStudentModal = document.getElementById('editStudentModal');
     if (editStudentModal) {
@@ -286,6 +354,9 @@ function resetEditStudentSaveButton() {
 
 // 创建学生卡片
 function createStudentCard(student) {
+    // 调试：打印学生数据
+    console.log('创建学生卡片，数据:', student);
+    
     // 创建卡片容器
     const card = document.createElement('div');
     card.className = 'col-md-4 col-sm-6 col-lg-2 mb-3';
@@ -295,7 +366,7 @@ function createStudentCard(student) {
         if (value === 0 || value === 0.0) {
             return '0';
         }
-        return value !== null && value !== undefined ? value : '-';
+        return value !== null && value !== undefined && value !== '' ? value : '-';
     };
     
     // 定义一个辅助函数来处理文本字段显示
@@ -308,13 +379,13 @@ function createStudentCard(student) {
         <div class="card student-card h-100">
             <div class="card-header p-2">
                 <div class="d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">${student.name}</h5>
-                    <span class="badge ${student.gender === '男' ? 'bg-primary' : 'bg-danger'}">${student.gender}</span>
+                    <h5 class="mb-0">${student.name || '未知'}</h5>
+                    <span class="badge ${student.gender === '男' ? 'bg-primary' : 'bg-danger'}">${student.gender || '未知'}</span>
                 </div>
             </div>
             <div class="card-body p-2">
-                <p class="mb-1"><strong>学号:</strong> ${student.id}</p>
-                <p class="mb-1"><strong>班级:</strong> ${student.class || '-'}</p>
+                <p class="mb-1"><strong>学号:</strong> ${student.id || student.student_id || '-'}</p>
+                <p class="mb-1"><strong>班级:</strong> ${student.class_name || '未分配班级'}</p>
                 <p class="mb-1"><strong>身高:</strong> ${displayNumericValue(student.height)} cm</p>
                 <p class="mb-1"><strong>体重:</strong> ${displayNumericValue(student.weight)} kg</p>
                 <p class="mb-1"><strong>胸围:</strong> ${displayNumericValue(student.chest_circumference)} cm</p>
@@ -326,16 +397,16 @@ function createStudentCard(student) {
             </div>
             <div class="card-footer p-2">
                 <div class="d-flex justify-content-between flex-wrap">
-                    <button type="button" class="btn btn-outline-info btn-sm mb-1" onclick="viewStudentDetails('${student.id}', '${student.class_id}')">
+                    <button type="button" class="btn btn-outline-info btn-sm mb-1" onclick="viewStudentDetails('${student.id || ''}', '${student.class_id || ''}', '${student.rowid || ''}')">
                         <i class="bi bi-info-circle"></i> 详情
                     </button>
-                    <button type="button" class="btn btn-outline-success btn-sm mb-1" onclick="openCommentModal('${student.id}', '${student.class_id}')">
+                    <button type="button" class="btn btn-outline-success btn-sm mb-1" onclick="openCommentModal('${student.id || ''}', '${student.class_id || ''}', '${student.rowid || ''}')">
                         <i class="bi bi-chat-text"></i> 评语
                     </button>
-                    <button type="button" class="btn btn-outline-primary btn-sm mb-1" onclick="openEditStudentModal('${student.id}', '${student.class_id}')">
+                    <button type="button" class="btn btn-outline-primary btn-sm mb-1" onclick="openEditStudentModal('${student.id || ''}', '${student.class_id || ''}', '${student.rowid || ''}')">
                         <i class="bi bi-pencil"></i> 编辑
                     </button>
-                    <button type="button" class="btn btn-outline-danger btn-sm mb-1" onclick="deleteStudent('${student.id}', '${student.class_id}')">
+                    <button type="button" class="btn btn-outline-danger btn-sm mb-1" onclick="deleteStudent('${student.id || ''}', '${student.class_id || ''}', '${student.rowid || ''}')">
                         <i class="bi bi-trash"></i> 删除
                     </button>
                 </div>
@@ -347,7 +418,7 @@ function createStudentCard(student) {
 }
 
 // 查看学生详情
-function viewStudentDetails(studentId, classId) {
+function viewStudentDetails(studentId, classId, rowid) {
     // 如果没有提供classId，使用当前用户的班级ID
     if (!classId && currentUserClassId) {
         classId = currentUserClassId;
@@ -368,8 +439,18 @@ function viewStudentDetails(studentId, classId) {
     // 显示加载状态
     const loadingToast = showNotification('正在加载学生详细数据...', 'info', false);
     
-    // 从服务器获取学生数据，使用新的API路径和参数
-    fetch(`/api/student/${studentId}?class_id=${classId}`)
+    // 从服务器获取学生数据，使用 id 或 rowid
+    let url = '';
+    if (studentId) {
+        url = `/api/student/${encodeURIComponent(studentId)}?class_id=${encodeURIComponent(classId)}`;
+    } else if (rowid) {
+        url = `/api/student-by-rowid/${encodeURIComponent(rowid)}?class_id=${encodeURIComponent(classId)}`;
+    } else {
+        showNotification('无法加载学生详情：缺少标识', 'error');
+        return;
+    }
+
+    fetch(url)
         .then(response => {
             if (!response.ok) {
                 throw new Error(`服务器响应错误: ${response.status}`);
@@ -454,7 +535,7 @@ function viewStudentDetails(studentId, classId) {
                                     </tr>
                                     <tr>
                                         <th class="bg-light">班级</th>
-                                        <td>${student.class || '未设置'}</td>
+                                        <td>${student.class_name || '未设置'}</td>
                                     </tr>
                                     <tr>
                                         <th class="bg-light">身高</th>
@@ -534,7 +615,7 @@ function generateHealthAnalysis(student) {
     // 基本状态
     analysis += `<li class="list-group-item">
         <strong>基本状况:</strong> 
-        <span class="text-info">学生 ${student.name}, ${student.gender}, ${student.class || '未知班级'}</span>
+        <span class="text-info">学生 ${student.name}, ${student.gender}, ${student.class_name || '未知班级'}</span>
     </li>`;
     
     // BMI分析
@@ -683,9 +764,10 @@ function generateHealthAnalysis(student) {
 
 // 添加学生
 function addStudent() {
-    const id = document.getElementById('studentId').value;
-    const name = document.getElementById('studentName').value;
-    const gender = document.querySelector('input[name="gender"]:checked').value;
+    const id = (document.getElementById('studentId').value || '').trim();
+    const name = (document.getElementById('studentName').value || '').trim();
+    const genderNode = document.querySelector('input[name="gender"]:checked');
+    const gender = genderNode ? genderNode.value : '';
     const studentClass = document.getElementById('studentClass').value;
     const height = document.getElementById('studentHeight').value;
     const weight = document.getElementById('studentWeight').value;
@@ -696,12 +778,24 @@ function addStudent() {
     const dentalCaries = document.getElementById('studentDental').value;
     const physicalTest = document.getElementById('studentPhysical').value;
     
+    // 简单前端验证：学号、姓名、性别为必填
+    if (!id || !name || !gender) {
+        showNotification('请填写学号、姓名并选择性别', 'error');
+        // 恢复按钮状态（如果由按钮触发）并返回
+        const saveBtnFail = document.querySelector('#addStudentModal .btn-primary');
+        if (saveBtnFail) {
+            saveBtnFail.disabled = false;
+            saveBtnFail.innerHTML = '保存';
+        }
+        return;
+    }
+
     // 创建学生对象 - 使用下划线命名风格以与服务器保持一致
     const student = {
         id,
         name,
         gender,
-        class: studentClass,
+        class_id: currentUserClassId, // 使用当前用户的班级ID
         height,
         weight,
         chest_circumference: chest,
@@ -771,7 +865,7 @@ function addStudent() {
 }
 
 // 打开编辑学生模态框
-function openEditStudentModal(studentId, classId) {
+function openEditStudentModal(studentId, classId, rowid) {
     // 如果没有提供classId，使用当前用户的班级ID
     if (!classId && currentUserClassId) {
         classId = currentUserClassId;
@@ -798,8 +892,18 @@ function openEditStudentModal(studentId, classId) {
     // 显示加载状态
     const loadingToast = showNotification('正在加载学生数据...', 'info', false);
     
-    // 从服务器获取学生数据，使用新的API路径和参数
-    fetch(`/api/student/${studentId}?class_id=${classId}`)
+    // 从服务器获取学生数据，使用 id 或 rowid
+    let url = '';
+    if (studentId) {
+        url = `/api/student/${encodeURIComponent(studentId)}?class_id=${encodeURIComponent(classId)}`;
+    } else if (rowid) {
+        url = `/api/student-by-rowid/${encodeURIComponent(rowid)}?class_id=${encodeURIComponent(classId)}`;
+    } else {
+        showNotification('无法加载学生信息：缺少标识', 'error');
+        return;
+    }
+
+    fetch(url)
         .then(response => {
             if (!response.ok) {
                 throw new Error(`服务器响应错误: ${response.status}`);
@@ -984,8 +1088,15 @@ function saveEditedStudent() {
     }
 }
 
+// 删除成功后，通知其他页面数据已变更
+function notifyDataChanged() {
+    console.log('发送学生数据变更通知...');
+    // 使用localStorage存储时间戳，触发storage事件
+    localStorage.setItem('studentDataChangeTimestamp', Date.now().toString());
+}
+
 // 删除学生
-function deleteStudent(studentId, classId) {
+function deleteStudent(studentId, classId, rowid) {
     // 如果没有提供studentId参数，尝试从隐藏输入框获取
     if (!studentId) {
         studentId = document.getElementById('deleteStudentId').value;
@@ -1028,7 +1139,7 @@ function deleteStudent(studentId, classId) {
         studentName = student ? student.name : '未知学生';
     }
     
-    if (!studentId) {
+    if (!studentId && !rowid) {
         console.error('删除学生失败: 未找到学生ID');
         showNotification('删除学生失败: 未找到学生ID', 'error');
         return;
@@ -1050,6 +1161,14 @@ function deleteStudent(studentId, classId) {
             modalElement.querySelector('.modal-body').appendChild(classIdInput);
         }
         document.getElementById('deleteClassId').value = classId;
+        // 保存 rowid 到隐藏字段以便确认时使用
+        if (!document.getElementById('deleteRowId')) {
+            const rowInput = document.createElement('input');
+            rowInput.type = 'hidden';
+            rowInput.id = 'deleteRowId';
+            modalElement.querySelector('.modal-body').appendChild(rowInput);
+        }
+        document.getElementById('deleteRowId').value = rowid || '';
         
         // 显示确认删除模态框
         const deleteModal = new bootstrap.Modal(modalElement);
@@ -1064,8 +1183,17 @@ function deleteStudent(studentId, classId) {
         deleteBtn.disabled = true;
     }
     
-    // 首先尝试从服务器删除，使用新的API路径和参数
-    fetch(`/api/student/${studentId}?class_id=${classId}`, {
+    // 首先尝试从服务器删除，优先使用 studentId；如果没有 studentId，则使用 rowid 专用删除接口
+    let deleteUrl = '';
+    if (studentId) {
+        deleteUrl = `/api/student/${encodeURIComponent(studentId)}?class_id=${encodeURIComponent(classId)}`;
+    } else {
+        // 使用 rowid 删除
+        const idForRow = rowid || (document.getElementById('deleteRowId') ? document.getElementById('deleteRowId').value : '');
+        deleteUrl = `/api/student-by-rowid/${encodeURIComponent(idForRow)}?class_id=${encodeURIComponent(classId)}`;
+    }
+
+    fetch(deleteUrl, {
         method: 'DELETE'
     })
     .then(response => {
@@ -1084,6 +1212,9 @@ function deleteStudent(studentId, classId) {
             if (modal) {
                 modal.hide();
             }
+            
+            // 通知其他页面数据已变更
+            notifyDataChanged();
             
             // 刷新学生列表
             loadStudentsFromServer();
@@ -1184,10 +1315,19 @@ function uploadFileForPreview(file) {
         body: formData
     })
     .then(response => {
-        if (!response.ok) {
-            throw new Error(`服务器响应错误: ${response.status}`);
+        // 首先检查是否有内容
+        if (response.status === 204) {
+            throw new Error('服务器没有返回内容');
         }
-        return response.json();
+        
+        // 不管HTTP状态如何，都尝试解析JSON
+        return response.json().then(data => {
+        if (!response.ok) {
+                // 有些错误（如班级不匹配）服务器会以400+状态码返回，但会包含详细错误信息
+                throw new Error(data.error || `服务器响应错误: ${response.status}`);
+        }
+            return data;
+        });
     })
     .then(data => {
         if (data.error) {
@@ -1207,19 +1347,66 @@ function uploadFileForPreview(file) {
             importDataField.value = JSON.stringify(data.students);
         }
         
+        // 控制确认导入按钮的启用状态
+        const confirmImportBtn = document.getElementById('confirmImportBtn');
+        const allClassesMatch = data.preview && data.preview.all_classes_match === true;
+        
+        // 如果存在任何班级不匹配的记录，禁用确认导入按钮
+        if (confirmImportBtn) {
+            confirmImportBtn.disabled = !allClassesMatch;
+            
+            // 如果按钮被禁用，添加提示信息
+            if (!allClassesMatch) {
+                confirmImportBtn.setAttribute('title', '存在班级不匹配的学生记录，无法导入');
+                confirmImportBtn.classList.add('disabled');  // 添加disabled类以增强视觉反馈
+            } else {
+                confirmImportBtn.setAttribute('title', '点击确认导入学生数据');
+                confirmImportBtn.classList.remove('disabled');
+            }
+        }
+        
         // 如果服务器返回了HTML预览，直接使用它
         if (data.html_preview) {
             previewContainer.innerHTML = data.html_preview;
             
-            // 启用确认导入按钮
-            const confirmImportBtn = document.getElementById('confirmImportBtn');
-            if (confirmImportBtn) {
-                confirmImportBtn.disabled = false;
+            // 添加验证规则提示
+            if (data.preview && data.preview.validation_rule) {
+                const ruleElement = document.createElement('div');
+                ruleElement.className = 'alert alert-info mt-3';
+                ruleElement.innerHTML = `
+                    <strong><i class='bx bx-info-circle'></i> 导入规则：</strong>
+                    ${data.preview.validation_rule}
+                `;
+                previewContainer.appendChild(ruleElement);
+            }
+            
+            // 添加班级不匹配的警告信息
+            if (!allClassesMatch && data.preview && data.preview.class_mismatch_count > 0) {
+                const warningElement = document.createElement('div');
+                warningElement.className = 'alert alert-danger mt-3';
+                warningElement.innerHTML = `
+                    <strong><i class='bx bx-error-circle'></i> 无法导入!</strong> 
+                    检测到 ${data.preview.class_mismatch_count} 条班级不匹配的记录。
+                    根据系统规定，当Excel中存在任何班级不匹配的记录时，整个Excel都无法导入。
+                    请使用正确的班级模板重新导入。
+                `;
+                previewContainer.appendChild(warningElement);
             }
         } 
         // 否则使用旧的预览方式
         else if (data.students && data.students.length > 0) {
             showLegacyPreview(previewContainer, data);
+            
+            // 添加验证规则提示
+            if (data.preview && data.preview.validation_rule) {
+                const ruleElement = document.createElement('div');
+                ruleElement.className = 'alert alert-info mt-3';
+                ruleElement.innerHTML = `
+                    <strong><i class='bx bx-info-circle'></i> 导入规则：</strong>
+                    ${data.preview.validation_rule}
+                `;
+                previewContainer.appendChild(ruleElement);
+            }
         } 
         else {
             previewContainer.innerHTML = `
@@ -1227,21 +1414,56 @@ function uploadFileForPreview(file) {
                     <i class='bx bx-info-circle'></i> 文件中没有找到有效的学生数据。
                 </div>
             `;
+            
+            // 禁用确认导入按钮
+            if (confirmImportBtn) {
+                confirmImportBtn.disabled = true;
+                confirmImportBtn.setAttribute('title', '没有可导入的数据');
+                confirmImportBtn.classList.add('disabled');
+            }
         }
     })
     .catch(error => {
         console.error('上传文件出错:', error);
+        
+        
+        // 更友好的错误显示，突出显示班级不匹配错误
+        let errorMessage = error.message || '上传文件时出错';
+        let alertClass = 'alert-danger';
+        let icon = 'bx-error-circle';
+        
+        // 特殊处理班级不匹配错误
+        if (errorMessage.includes('班级不匹配') || errorMessage.includes('班级为') || errorMessage.includes('严格校验失败')) {
+            alertClass = 'alert-warning';
+            icon = 'bx-error-alt';
+            errorMessage = `<strong>班级验证失败</strong><br>${errorMessage}`;
+        }
+        
         previewContainer.innerHTML = `
-            <div class="alert alert-danger">
-                <i class='bx bx-error-circle'></i> 上传文件时出错: ${error.message}
+            <div class="alert ${alertClass}">
+                <i class='bx ${icon} me-2'></i>
+                ${errorMessage}
+            </div>
+            <div class="alert alert-info mt-3">
+                <i class='bx bx-info-circle me-2'></i>
+                <strong>提示:</strong> 请确保Excel中的所有学生都属于您当前管理的班级。
+                您可以点击"下载模板"获取一个为您班级预填的模板。
             </div>
         `;
+        
+        // 禁用确认导入按钮
+        const confirmImportBtn = document.getElementById('confirmImportBtn');
+        if (confirmImportBtn) {
+            confirmImportBtn.disabled = true;
+            confirmImportBtn.setAttribute('title', '无法导入，请修正错误后重试');
+        }
     });
 }
 
 // 显示遗留的预览方式（备用）
 function showLegacyPreview(previewContainer, data) {
     const students = data.students;
+    const preview = data.preview || {};
     
     // 定义一个辅助函数来处理数值显示
     const displayNumericValue = (value) => {
@@ -1249,6 +1471,38 @@ function showLegacyPreview(previewContainer, data) {
             return '0';
         }
         return value !== null && value !== undefined ? value : '-';
+    };
+    
+    // 检查字段是否会被更新的辅助函数
+    const isFieldUpdated = (student, fieldName) => {
+        if (!student.fields_to_update) return false;
+        return student.fields_to_update.some(field => field.field === fieldName);
+    };
+    
+    // 获取字段更新信息的辅助函数
+    const getFieldUpdateInfo = (student, fieldName) => {
+        if (!student.fields_to_update) return null;
+        return student.fields_to_update.find(field => field.field === fieldName);
+    };
+    
+    // 格式化显示值，如果字段有更新则添加样式和提示
+    const formatCellValue = (student, fieldName, value) => {
+        const updateInfo = getFieldUpdateInfo(student, fieldName);
+        if (updateInfo) {
+            const displayValue = displayNumericValue(value);
+            return `<span class="text-warning fw-bold" title="将从 '${updateInfo.old_value || '空'}' 更新为 '${updateInfo.new_value}'" style="background-color: #fff3cd; padding: 2px 4px; border-radius: 3px;">${displayValue}</span>`;
+        }
+        return displayNumericValue(value);
+    };
+    
+    // 格式化文本字段显示值
+    const formatTextCellValue = (student, fieldName, value) => {
+        const updateInfo = getFieldUpdateInfo(student, fieldName);
+        if (updateInfo) {
+            const displayValue = value || '-';
+            return `<span class="text-warning fw-bold" title="将从 '${updateInfo.old_value || '空'}' 更新为 '${updateInfo.new_value}'" style="background-color: #fff3cd; padding: 2px 4px; border-radius: 3px;">${displayValue}</span>`;
+        }
+        return value || '-';
     };
     
     // 创建表格预览
@@ -1268,48 +1522,136 @@ function showLegacyPreview(previewContainer, data) {
                         <th>龋齿</th>
                         <th>视力左</th>
                         <th>视力右</th>
+                        <th>语文</th>
+                        <th>数学</th>
+                        <th>英语</th>
+                        <th>劳动</th>
+                        <th>体育</th>
+                        <th>音乐</th>
+                        <th>美术</th>
+                        <th>科学</th>
+                        <th>综合</th>
+                        <th>信息</th>
+                        <th>书法</th>
+                        <th>心理</th>
+                        <th>品质</th>
+                        <th>学习</th>
+                        <th>健康</th>
+                        <th>审美</th>
+                        <th>实践</th>
+                        <th>生活</th>
+                        <th>评语</th>
                         <th>体测情况</th>
+                        <th>状态</th>
                     </tr>
                 </thead>
                 <tbody>
     `;
     
+    // 计数器
+    let validCount = 0;
+    let invalidCount = 0;
+    
     // 生成表格行
     students.forEach(student => {
+        // 检查是否有班级不匹配标记
+        const hasClassMismatch = student.class_mismatch === true;
+        const rowClass = hasClassMismatch ? 'table-danger' : '';
+        const statusHtml = hasClassMismatch ? 
+            `<span class="badge bg-danger">班级不匹配</span>` : 
+            `<span class="badge bg-success">有效</span>`;
+        
         tableHtml += `
-            <tr>
+            <tr class="${rowClass}">
                 <td>${student.id || '-'}</td>
-                <td>${student.name || '-'}</td>
-                <td>${student.gender || '-'}</td>
-                <td>${student.class || '-'}</td>
-                <td>${displayNumericValue(student.height)}</td>
-                <td>${displayNumericValue(student.weight)}</td>
-                <td>${displayNumericValue(student.chest_circumference)}</td>
-                <td>${displayNumericValue(student.vital_capacity)}</td>
-                <td>${student.dental_caries || '-'}</td>
-                <td>${displayNumericValue(student.vision_left)}</td>
-                <td>${displayNumericValue(student.vision_right)}</td>
-                <td>${student.physical_test_status || '-'}</td>
+                <td>${formatTextCellValue(student, 'name', student.name)}</td>
+                <td>${formatTextCellValue(student, 'gender', student.gender)}</td>
+                <td>${student.class || '-'} ${hasClassMismatch ? `<i class="bx bx-error-circle text-danger" title="${student.error_reason}"></i>` : ''}</td>
+                <td>${formatCellValue(student, 'height', student.height)}</td>
+                <td>${formatCellValue(student, 'weight', student.weight)}</td>
+                <td>${formatCellValue(student, 'chest_circumference', student.chest_circumference)}</td>
+                <td>${formatCellValue(student, 'vital_capacity', student.vital_capacity)}</td>
+                <td>${formatCellValue(student, 'dental_caries', student.dental_caries)}</td>
+                <td>${formatCellValue(student, 'vision_left', student.vision_left)}</td>
+                <td>${formatCellValue(student, 'vision_right', student.vision_right)}</td>
+                <td>${formatTextCellValue(student, 'yuwen', student.yuwen)}</td>
+                <td>${formatTextCellValue(student, 'shuxue', student.shuxue)}</td>
+                <td>${formatTextCellValue(student, 'yingyu', student.yingyu)}</td>
+                <td>${formatTextCellValue(student, 'laodong', student.laodong)}</td>
+                <td>${formatTextCellValue(student, 'tiyu', student.tiyu)}</td>
+                <td>${formatTextCellValue(student, 'yinyue', student.yinyue)}</td>
+                <td>${formatTextCellValue(student, 'meishu', student.meishu)}</td>
+                <td>${formatTextCellValue(student, 'kexue', student.kexue)}</td>
+                <td>${formatTextCellValue(student, 'zonghe', student.zonghe)}</td>
+                <td>${formatTextCellValue(student, 'xinxi', student.xinxi)}</td>
+                <td>${formatTextCellValue(student, 'shufa', student.shufa)}</td>
+                <td>${formatTextCellValue(student, 'xinli', student.xinli)}</td>
+                <td>${formatCellValue(student, 'pinzhi', student.pinzhi)}</td>
+                <td>${formatCellValue(student, 'xuexi', student.xuexi)}</td>
+                <td>${formatCellValue(student, 'jiankang', student.jiankang)}</td>
+                <td>${formatCellValue(student, 'shenmei', student.shenmei)}</td>
+                <td>${formatCellValue(student, 'shijian', student.shijian)}</td>
+                <td>${formatCellValue(student, 'shenghuo', student.shenghuo)}</td>
+                <td style="max-width: 200px; word-wrap: break-word;">${formatTextCellValue(student, 'comments', student.comments)}</td>
+                <td>${formatTextCellValue(student, 'physical_test_status', student.physical_test_status)}</td>
+                <td>${statusHtml}</td>
             </tr>
         `;
+        
+        if (hasClassMismatch) {
+            invalidCount++;
+        } else {
+            validCount++;
+        }
     });
     
     tableHtml += `
                 </tbody>
             </table>
         </div>
+    `;
+    
+    // 添加字段变更说明
+    tableHtml += `
+        <div class="alert alert-info mb-3">
+            <i class='bx bx-info-circle'></i> 
+            <strong>字段变更说明：</strong>
+            <span class="text-warning fw-bold" style="background-color: #fff3cd; padding: 2px 4px; border-radius: 3px;">高亮显示</span>
+            的字段表示将要更新的数据，鼠标悬停可查看原值和新值的对比。
+        </div>
+    `;
+    
+    // 添加提示信息
+    if (invalidCount > 0) {
+        let warningText = `共发现 ${students.length} 名学生数据，其中 <strong>${validCount}</strong> 名有效，<strong class="text-danger">${invalidCount}</strong> 名班级不匹配`;
+        
+        // 更明确地表达班级不匹配导致整个Excel无法导入的规则
+        warningText += `。<br><strong class="text-danger">系统规定：当Excel中存在任何班级不匹配的记录时，整个Excel都无法导入！</strong><br>请使用正确班级的Excel模板重新导入，或联系管理员处理。`;
+        
+        tableHtml += `
+        <div class="alert alert-danger">
+            <i class='bx bx-error-circle'></i> ${warningText}
+        </div>
+        `;
+        
+        // 添加获取正确模板的建议
+        tableHtml += `
+        <div class="alert alert-info">
+            <i class='bx bx-info-circle'></i> <strong>解决方法：</strong>点击"下载模板"按钮获取适用于您班级的Excel模板，确保所有学生记录的班级字段与您的班级匹配。
+        </div>
+        `;
+    } else {
+        tableHtml += `
         <div class="alert alert-info">
             <i class='bx bx-info-circle'></i> 共发现 ${students.length} 名学生数据，点击"确认导入"按钮完成导入。
         </div>
     `;
+    }
     
     previewContainer.innerHTML = tableHtml;
     
-    // 启用确认导入按钮
-    const confirmImportBtn = document.getElementById('confirmImportBtn');
-    if (confirmImportBtn) {
-        confirmImportBtn.disabled = false;
-    }
+    // 注意：不再在这里设置确认导入按钮的状态
+    // 按钮状态由上层调用函数统一管理
 }
 
 // 格式化文件大小
@@ -1324,6 +1666,13 @@ function importStudents() {
     const students = JSON.parse(document.getElementById('importData').value || '[]');
     if (!students || students.length === 0) {
         showNotification('没有可导入的学生数据', 'error');
+        return;
+    }
+    
+    // 检查是否存在班级不匹配的记录
+    const hasClassMismatch = students.some(student => student.class_mismatch === true);
+    if (hasClassMismatch) {
+        showNotification('存在班级不匹配的记录，整个Excel无法导入', 'error');
         return;
     }
     
@@ -1367,6 +1716,11 @@ function importStudents() {
             let message = `成功导入 ${data.success_count} 名学生`;
             if (data.updated_count > 0) {
                 message += `（更新 ${data.updated_count} 名，新增 ${data.inserted_count} 名）`;
+            }
+            
+            // 显示班级不匹配的跳过信息
+            if (data.class_mismatch_count > 0) {
+                message += `，跳过 ${data.class_mismatch_count} 名班级不匹配的学生`;
             }
             
             // 显示通知
@@ -1420,47 +1774,11 @@ function importStudents() {
 function downloadTemplate() {
     console.log("开始下载Excel模板...");
     
-    // 先检查服务器连接
-    checkServerConnection().then(connected => {
-        if (!connected) {
-            return;
-        }
-        
-        // 发送请求到服务器获取模板
-        fetch('http://localhost:8080/api/template', {
-            method: 'GET',
-            mode: 'cors'
-        })
-        .then(response => {
-            console.log("模板请求响应状态码:", response.status);
-            if (!response.ok) {
-                throw new Error(`服务器响应错误: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log("模板请求返回数据:", data);
-            
-            if (data.error) {
-                showNotification(data.error, 'error');
-                return;
-            }
-            
-            // 创建下载链接
-            const a = document.createElement('a');
-            a.href = 'http://localhost:8080' + data.template_url;
-            a.download = 'student_template.xlsx';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            
-            showNotification('模板下载成功', 'success');
-        })
-        .catch(error => {
-            console.error('下载模板时出错:', error);
-            showNotification('下载模板时出错，请确保后端服务器已启动并且可以访问', 'error');
-        });
-    });
+    // 直接使用window.location.href下载，避免两次弹窗
+    window.location.href = '/api/template/download';
+    
+    // 显示提示
+    showNotification('正在下载模板...', 'success');
 }
 
 // 筛选学生
@@ -1706,7 +2024,7 @@ function showNotification(message, type = 'success') {
 }
 
 // 打开评语模态框
-function openCommentModal(studentId, classId) {
+function openCommentModal(studentId, classId, rowid) {
     // 如果没有提供classId，使用当前用户的班级ID
     if (!classId && currentUserClassId) {
         classId = currentUserClassId;
@@ -1727,8 +2045,18 @@ function openCommentModal(studentId, classId) {
     // 显示加载状态
     const loadingToast = showNotification('正在加载学生评语数据...', 'info', false);
     
-    // 从服务器获取学生数据，使用新的API路径和参数
-    fetch(`/api/student/${studentId}?class_id=${classId}`)
+    // 从服务器获取学生数据，使用 id 或 rowid
+    let url = '';
+    if (studentId) {
+        url = `/api/student/${encodeURIComponent(studentId)}?class_id=${encodeURIComponent(classId)}`;
+    } else if (rowid) {
+        url = `/api/student-by-rowid/${encodeURIComponent(rowid)}?class_id=${encodeURIComponent(classId)}`;
+    } else {
+        showNotification('无法加载评语：缺少学生标识', 'error');
+        return;
+    }
+
+    fetch(url)
         .then(response => {
             if (!response.ok) {
                 throw new Error(`服务器响应错误: ${response.status}`);
@@ -2087,4 +2415,157 @@ function formatDate(date) {
     const day = String(date.getDate()).padStart(2, '0');
     
     return `${year}-${month}-${day}`;
+}
+
+// 清除所有学生名单
+function clearAllStudents() {
+    // 获取班级ID（如果存在）
+    let classId = currentUserClassId;
+    
+    // 显示加载中状态
+    const confirmButton = document.getElementById('confirmClearStudents');
+    const originalButtonContent = confirmButton.innerHTML;
+    confirmButton.disabled = true;
+    confirmButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 处理中...';
+    
+    // 关闭模态框
+    const clearStudentsModal = bootstrap.Modal.getInstance(document.getElementById('clearStudentsModal'));
+    
+    // 调用清除学生的API（使用 query 参数以避免部分服务器/代理丢弃 DELETE body）
+    let url = '/api/clear-students';
+    if (classId) {
+        url += `?class_id=${encodeURIComponent(classId)}`;
+    }
+
+    fetch(url, {
+        method: 'DELETE',
+        credentials: 'same-origin'
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.text().then(text => {
+                throw new Error(`服务器响应错误: ${response.status} ${text}`);
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (clearStudentsModal) {
+            clearStudentsModal.hide();
+        }
+
+        if (data && data.status === 'ok') {
+            showNotification('所有学生数据已成功清除', 'success');
+            notifyDataChanged();
+            loadStudentsFromServer();
+        } else {
+            showNotification(`清除失败: ${data && data.message ? data.message : '未知错误'}`, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('清除学生名单时出错:', error);
+        showNotification('操作失败，请稍后再试', 'error');
+    })
+    .finally(() => {
+        // 恢复按钮状态
+        confirmButton.disabled = false;
+        confirmButton.innerHTML = originalButtonContent;
+    });
+}
+
+// 导出学生数据到Excel
+async function exportStudentData() {
+    try {
+        // 显示加载提示
+        showNotification('正在导出学生数据...', 'info');
+        
+        // 获取当前的class_id（使用全局变量）
+        const class_id = currentUserClassId;
+
+        // 构建导出URL
+        const url = `/api/students/export-excel${class_id ? `?class_id=${class_id}` : ''}`;
+        
+        // 发起下载请求
+        const exportResponse = await fetch(url);
+        
+        if (!exportResponse.ok) {
+            throw new Error('导出失败');
+        }
+
+        // 获取文件名
+        const contentDisposition = exportResponse.headers.get('content-disposition');
+        let filename = '学生数据.xlsx';
+        if (contentDisposition) {
+            const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+            if (filenameMatch && filenameMatch[1]) {
+                filename = decodeURIComponent(filenameMatch[1].replace(/['"]/g, ''));
+            }
+        }
+
+        // 下载文件
+        const blob = await exportResponse.blob();
+        const url_object = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url_object;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url_object);
+
+        // 显示成功提示
+        showNotification('学生数据导出成功', 'success');
+    } catch (error) {
+        console.error('导出失败:', error);
+        showNotification('导出失败: ' + error.message, 'error');
+    }
+}
+
+// 导出学生基本信息
+async function exportBasicInfo() {
+    try {
+        // 显示加载提示
+        showNotification('正在导出学生基本信息...', 'info');
+        
+        // 获取当前的class_id（使用全局变量）
+        const class_id = currentUserClassId;
+
+        // 构建导出URL
+        const url = `/api/students/export-basic-info${class_id ? `?class_id=${class_id}` : ''}`;
+        
+        // 发起下载请求
+        const exportResponse = await fetch(url);
+        
+        if (!exportResponse.ok) {
+            const errorData = await exportResponse.json();
+            throw new Error(errorData.message || '导出失败');
+        }
+
+        // 获取文件名
+        const contentDisposition = exportResponse.headers.get('content-disposition');
+        let filename = '学生基本信息.xlsx';
+        if (contentDisposition) {
+            const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+            if (filenameMatch && filenameMatch[1]) {
+                filename = decodeURIComponent(filenameMatch[1].replace(/['"]/g, ''));
+            }
+        }
+
+        // 下载文件
+        const blob = await exportResponse.blob();
+        const url_object = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url_object;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url_object);
+
+        // 显示成功提示
+        showNotification('学生基本信息导出成功', 'success');
+    } catch (error) {
+        console.error('导出基本信息失败:', error);
+        showNotification('导出失败: ' + error.message, 'error');
+    }
 }

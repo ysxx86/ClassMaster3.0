@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试学期显示</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border-color: #bee5eb;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 3px;
+            overflow-x: auto;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            border: none;
+            border-radius: 3px;
+            background-color: #007bff;
+            color: white;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>学期显示测试</h1>
+    
+    <div class="test-section info">
+        <h2>测试说明</h2>
+        <p>此页面用于测试学期显示功能是否正确从数据库读取</p>
+        <p>预期结果：显示格式为 "YYYY-YYYY学年第X学期"</p>
+    </div>
+    
+    <div class="test-section">
+        <h2>测试1: API 测试</h2>
+        <button onclick="testAPI()">测试 /api/system-settings</button>
+        <div id="apiResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>测试2: 学期格式化测试</h2>
+        <button onclick="testFormatting()">测试学期格式化</button>
+        <div id="formatResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>测试3: grades.js 语法检查</h2>
+        <button onclick="testGradesJS()">检查 grades.js 语法</button>
+        <div id="gradesJSResult"></div>
+    </div>
+
+    <script>
+        async function testAPI() {
+            const resultDiv = document.getElementById('apiResult');
+            resultDiv.innerHTML = '<p>正在测试...</p>';
+            
+            try {
+                const response = await fetch('/api/system-settings');
+                const data = await response.json();
+                
+                if (data.status === 'ok') {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h3>✅ API 测试成功</h3>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h3>❌ API 返回错误</h3>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ API 请求失败</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        async function testFormatting() {
+            const resultDiv = document.getElementById('formatResult');
+            resultDiv.innerHTML = '<p>正在测试...</p>';
+            
+            try {
+                const response = await fetch('/api/system-settings');
+                const data = await response.json();
+                
+                if (data.status === 'ok' && data.settings) {
+                    const academicYear = data.settings.school_year || '2025-2026';
+                    const semesterNum = data.settings.semester || '1';
+                    const semesterText = semesterNum === '1' ? '第一学期' : '第二学期';
+                    const currentSemester = `${academicYear}学年${semesterText}`;
+                    
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h3>✅ 格式化测试成功</h3>
+                            <p><strong>学年:</strong> ${academicYear}</p>
+                            <p><strong>学期编号:</strong> ${semesterNum}</p>
+                            <p><strong>学期文字:</strong> ${semesterText}</p>
+                            <p><strong>最终显示:</strong> ${currentSemester}</p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h3>❌ 格式化测试失败</h3>
+                            <p>无法获取系统设置</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ 格式化测试失败</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function testGradesJS() {
+            const resultDiv = document.getElementById('gradesJSResult');
+            resultDiv.innerHTML = '<p>正在检查...</p>';
+            
+            // 尝试加载 grades.js 并检查是否有语法错误
+            const script = document.createElement('script');
+            script.src = '/js/grades.js';
+            
+            script.onload = function() {
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <h3>✅ grades.js 加载成功</h3>
+                        <p>没有发现语法错误</p>
+                    </div>
+                `;
+            };
+            
+            script.onerror = function() {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ grades.js 加载失败</h3>
+                        <p>可能存在语法错误，请检查浏览器控制台</p>
+                    </div>
+                `;
+            };
+            
+            document.head.appendChild(script);
+        }
+        
+        // 页面加载时自动运行所有测试
+        window.addEventListener('DOMContentLoaded', function() {
+            console.log('页面加载完成，准备运行测试...');
+        });
+    </script>
+</body>
+</html>

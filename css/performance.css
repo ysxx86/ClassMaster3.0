@@ -1,0 +1,189 @@
+/* 班主任绩效考核系统样式 */
+
+.performance-container {
+    padding: 20px;
+    background-color: #f8f9fa;
+    min-height: 100vh;
+}
+
+.performance-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 30px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.performance-card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+.performance-card-header {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #e9ecef;
+    padding: 20px;
+    font-weight: 600;
+    font-size: 18px;
+}
+
+.performance-table {
+    width: 100%;
+    margin-bottom: 0;
+}
+
+.performance-table thead th {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+    color: #495057;
+    padding: 12px;
+}
+
+.performance-table tbody td {
+    padding: 12px;
+    vertical-align: middle;
+}
+
+.performance-table .category-header {
+    background-color: #e7f1ff;
+    font-weight: 600;
+    color: #0066cc;
+}
+
+.score-input {
+    width: 80px;
+    text-align: center;
+    padding: 6px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+}
+
+.score-input:focus {
+    border-color: #667eea;
+    outline: none;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+/* 矩阵表格样式 */
+.score-cell {
+    position: relative;
+    padding: 8px !important;
+    min-width: 120px;
+}
+
+.score-display {
+    min-height: 30px;
+    margin-bottom: 5px;
+}
+
+.score-item {
+    display: inline-block;
+    background: #e7f1ff;
+    color: #0066cc;
+    padding: 2px 8px;
+    margin: 2px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.score-cell .score-input {
+    width: 100%;
+    margin-bottom: 5px;
+}
+
+.btn-score-edit {
+    padding: 2px 8px;
+    font-size: 12px;
+}
+
+.rank-badge {
+    font-size: 18px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+.rank-1 {
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    color: white;
+}
+
+.rank-2 {
+    background: linear-gradient(135deg, #C0C0C0 0%, #808080 100%);
+    color: white;
+}
+
+.rank-3 {
+    background: linear-gradient(135deg, #CD7F32 0%, #8B4513 100%);
+    color: white;
+}
+
+.btn-save-score {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: white;
+    padding: 6px 16px;
+    border-radius: 6px;
+    transition: all 0.3s;
+}
+
+.btn-save-score:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #999;
+}
+
+.empty-state i {
+    font-size: 64px;
+    margin-bottom: 20px;
+    opacity: 0.3;
+}
+
+.loading {
+    text-align: center;
+    padding: 40px;
+    color: #999;
+}
+
+.loading i {
+    font-size: 48px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* 表格响应式 */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* 固定第一列 */
+.table-responsive table thead th:first-child,
+.table-responsive table tbody td:first-child {
+    position: sticky;
+    left: 0;
+    background: white;
+    z-index: 10;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+}
+
+.table-responsive table thead th:first-child {
+    z-index: 11;
+    background: #f8f9fa;
+}
+

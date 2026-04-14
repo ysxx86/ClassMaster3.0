@@ -27,7 +27,7 @@ def merge_tables():
         grade_fields = [
             'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 
             'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 
-            'xinxi', 'shufa'
+            'xinxi', 'shufa', 'xinli'
         ]
         
         # 检查是否有学期字段
@@ -45,48 +45,68 @@ def merge_tables():
         cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='grades'")
         grades_exists = cursor.fetchone() is not None
         
+        # 如果grades表存在，合并数据
         if grades_exists:
-            print("存在grades表，正在迁移数据...")
-            
-            # 获取成绩数据
+            print("发现grades表，开始合并数据...")
+            # 获取所有年级记录
             cursor.execute('''
-            SELECT student_id, semester, daof, yuwen, shuxue, yingyu, laodong, 
-                   tiyu, yinyue, meishu, kexue, zonghe, xinxi, shufa 
-            FROM grades
+                SELECT student_id, class_id, 
+                       daof, yuwen, shuxue, yingyu, laodong, 
+                       tiyu, yinyue, meishu, kexue, zonghe, 
+                       xinxi, shufa 
+                FROM grades
             ''')
-            grades_data = cursor.fetchall()
+            grades = cursor.fetchall()
             
-            # 将成绩数据更新到students表
-            for grade in grades_data:
-                student_id = grade[0]
-                semester = grade[1]
+            # 更新学生表
+            update_count = 0
+            for grade in grades:
+                student_id, class_id = grade[0], grade[1]
+                grade_values = grade[2:]  # 从第三列开始是成绩
                 
                 # 检查学生是否存在
-                cursor.execute("SELECT id FROM students WHERE id = ?", (student_id,))
+                cursor.execute("SELECT id FROM students WHERE id = ? AND class_id = ?", (student_id, class_id))
                 if cursor.fetchone():
-                    # 构建UPDATE语句
-                    set_clause = ", ".join([f"{field} = ?" for field in grade_fields])
-                    cursor.execute(f'''
-                    UPDATE students SET
-                        {set_clause},
-                        semester = ?
-                    WHERE id = ?
-                    ''', grade[2:] + (semester, student_id))
-                    print(f"更新学生 {student_id} 的成绩数据")
+                    # 更新学生的成绩
+                    set_clauses = []
+                    values = []
+                    
+                    # 处理每个成绩字段
+                    for i, field in enumerate(grade_fields[:-1]):  # 排除新增的xinli字段
+                        if i < len(grade_values) and grade_values[i]:  # 确保有成绩值
+                            set_clauses.append(f"{field} = ?")
+                            values.append(grade_values[i])
+                    
+                    if set_clauses:
+                        # 添加学生ID和班级ID
+                        values.extend([student_id, class_id])
+                        
+                        # 执行更新
+                        cursor.execute(f'''
+                            UPDATE students 
+                            SET {', '.join(set_clauses)} 
+                            WHERE id = ? AND class_id = ?
+                        ''', values)
+                        update_count += 1
             
-            # 删除grades表
-            cursor.execute("DROP TABLE grades")
-            print("已删除grades表")
-        
-        print("数据库结构更新完成")
-        
+            print(f"已更新 {update_count} 条学生成绩记录")
+            
+            # 备份grades表
+            print("备份grades表...")
+            cursor.execute("ALTER TABLE grades RENAME TO grades_backup")
+            
+            # 提交更改
+            conn.commit()
+            print("数据合并完成")
+        else:
+            print("grades表不存在，无需合并数据")
+    
     except Exception as e:
-        print(f"更新表结构时出错: {e}")
+        print(f"合并表时出错: {e}")
         conn.rollback()
-    else:
-        conn.commit()
     finally:
         conn.close()
 
 if __name__ == "__main__":
     merge_tables()
+    print("表合并操作完成")

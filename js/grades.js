@@ -14,100 +14,271 @@ const subjectNames = {
     'kexue': '科学',
     'zonghe': '综合',
     'xinxi': '信息',
-    'shufa': '书法'
+    'shufa': '书法',
+    'xinli': '心理'
 };
 
+// 记录数据检查的最后时间戳
+let lastDataCheckTimestamp = Date.now();
+
+// 为其他页面提供的刷新方法
+window.refreshGradesList = function() {
+    console.log('手动触发成绩列表刷新...');
+    loadGrades();
+};
+
+// 定期检查学生数据是否有变更（例如：学生被删除）
+function startDataChangeChecking() {
+    // 每5秒检查一次
+    setInterval(checkStudentDataChanged, 5000);
+}
+
+// 检查学生数据是否发生变化
+function checkStudentDataChanged() {
+    // 尝试从localStorage获取数据变更时间戳
+    const storedTimestamp = localStorage.getItem('studentDataChangeTimestamp');
+    
+    if (storedTimestamp && parseInt(storedTimestamp) > lastDataCheckTimestamp) {
+        console.log('检测到学生数据变更，刷新成绩列表...');
+        lastDataCheckTimestamp = parseInt(storedTimestamp);
+        loadGrades();  // 重新加载成绩列表
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
-    // 初始化学期选择和数据
-    setupSemesterSelect();
-    
-    // 绑定搜索事件
-    const searchInput = document.getElementById('searchStudent');
-    if (searchInput) {
-        searchInput.addEventListener('input', function() {
-            filterGrades(this.value);
-        });
-    }
-    
-    // 绑定导出成绩按钮事件
-    const exportGradesBtn = document.getElementById('exportGradesBtn');
-    if (exportGradesBtn) {
-        exportGradesBtn.addEventListener('click', function() {
-            exportGrades();
-        });
-    }
-    
-    // 绑定"一键优"按钮事件
-    const setAllExcellentBtn = document.getElementById('setAllExcellentBtn');
-    if (setAllExcellentBtn) {
-        setAllExcellentBtn.addEventListener('click', function() {
-            setAllGradesExcellent();
-        });
-    }
-    
-    // 绑定清空所有成绩按钮事件
-    const clearAllGradesBtn = document.getElementById('clearAllGradesBtn');
-    if (clearAllGradesBtn) {
-        clearAllGradesBtn.addEventListener('click', function() {
-            clearAllGrades();
-        });
-    }
-    
-    // 初始化成绩导入功能
-    initGradesImport();
-    
-    // 绑定成绩选择框变化事件 - 使用事件委托
-    document.addEventListener('change', function(e) {
-        if (e.target && e.target.classList.contains('grade-select')) {
-            updateGrade(e.target);
+    // 获取用户权限信息
+    fetchUserPermissions().then(() => {
+        // 初始化学期选择和数据
+        setupSemesterSelect();
+        
+        // 绑定搜索事件
+        const searchInput = document.getElementById('searchStudent');
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                filterGrades(this.value);
+            });
         }
+        
+        // 绑定导出成绩按钮事件
+        const exportGradesBtn = document.getElementById('exportGradesBtn');
+        if (exportGradesBtn) {
+            exportGradesBtn.addEventListener('click', function() {
+                exportGrades();
+            });
+        }
+        
+        // 绑定"一键优"按钮事件
+        const setAllExcellentBtn = document.getElementById('setAllExcellentBtn');
+        if (setAllExcellentBtn) {
+            setAllExcellentBtn.addEventListener('click', function() {
+                setAllGradesExcellent();
+            });
+        }
+        
+        // 绑定清空所有成绩按钮事件
+        const clearAllGradesBtn = document.getElementById('clearAllGradesBtn');
+        if (clearAllGradesBtn) {
+            clearAllGradesBtn.addEventListener('click', function() {
+                clearAllGrades();
+            });
+        }
+        
+        // 初始化智能成绩导入功能
+        if (typeof initSmartGradeImport === 'function') {
+            initSmartGradeImport();
+        } else {
+            // 降级到旧版导入
+            initGradesImport();
+        }
+        
+        // 绑定成绩选择框变化事件 - 使用事件委托
+        document.addEventListener('change', function(e) {
+            if (e.target && e.target.classList.contains('grade-select')) {
+                updateGrade(e.target);
+            }
+        });
+        
+        // 初始化表格布局
+        adjustTableLayout();
+        
+        // 启动数据变更检查
+        startDataChangeChecking();
+        
+        // ⭐ 监听教师信息更新事件（实时更新）
+        window.addEventListener('teacherInfoUpdated', function(e) {
+            console.log('✅ 检测到教师信息更新，立即重新加载数据...', e.detail);
+            
+            // 显示提示
+            showNotification('任教信息已更新，正在刷新数据...', 'info');
+            
+            // 1. 重新获取用户权限（从服务器）
+            fetchUserPermissions().then(() => {
+                console.log('✅ 权限已更新');
+                
+                // 2. 重新加载成绩数据（从数据库）
+                console.log('✅ 开始重新加载成绩列表...');
+                loadGrades();
+                
+                // 3. 显示成功提示
+                setTimeout(() => {
+                    showNotification('数据已更新！', 'success');
+                }, 500);
+            }).catch(error => {
+                console.error('❌ 更新权限失败:', error);
+                showNotification('更新失败，请刷新页面', 'error');
+            });
+        });
+        
+        // ⭐ 监听localStorage变化（跨标签页/iframe通信）
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'teacherInfoUpdateTimestamp') {
+                console.log('✅ 检测到其他页面更新了教师信息（storage事件）');
+                
+                // 重新获取权限并加载数据
+                fetchUserPermissions().then(() => {
+                    loadGrades();
+                    showNotification('数据已同步更新！', 'success');
+                });
+            }
+        });
+        
+        // ⭐ 定期检查localStorage（用于同一标签页内的iframe通信）
+        let lastTeacherInfoUpdate = localStorage.getItem('teacherInfoUpdateTimestamp') || '0';
+        
+        setInterval(() => {
+            const currentUpdate = localStorage.getItem('teacherInfoUpdateTimestamp') || '0';
+            
+            if (currentUpdate !== lastTeacherInfoUpdate && currentUpdate !== '0') {
+                console.log('✅ 检测到教师信息更新（轮询检查）');
+                lastTeacherInfoUpdate = currentUpdate;
+                
+                // 重新获取权限并加载数据
+                fetchUserPermissions().then(() => {
+                    console.log('✅ 重新加载成绩数据...');
+                    loadGrades();
+                    showNotification('数据已自动更新！', 'success');
+                });
+            }
+        }, 2000); // 每2秒检查一次
+        
+        // 设置数据变更事件监听
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'studentDataChangeTimestamp') {
+                console.log('从localStorage事件检测到学生数据变更');
+                loadGrades();  // 重新加载成绩列表
+            }
+        });
     });
 });
 
+// 存储用户权限信息
+let userPermissions = null;
+let allowedSubjects = null;  // 用户可以查看的学科列表
+
+// 获取用户权限信息
+async function fetchUserPermissions() {
+    try {
+        const response = await fetch('/api/current-user');
+        const data = await response.json();
+        if (data.status === 'ok' && data.permissions) {
+            userPermissions = data.permissions;
+            console.log('用户权限信息:', userPermissions);
+        }
+    } catch (error) {
+        console.error('获取用户权限失败:', error);
+    }
+}
+
+// 检查是否可以编辑某个学科（需要传入班级ID）
+function canEditSubject(subjectFieldName, classId) {
+    if (!userPermissions) {
+        return false;
+    }
+    
+    // 超级管理员可以编辑所有学科
+    if (userPermissions.is_admin) {
+        return true;
+    }
+    
+    // 获取学科显示名称
+    const subjectDisplayName = subjectNames[subjectFieldName];
+    if (!subjectDisplayName) {
+        return false;
+    }
+    
+    // 正班主任可以编辑自己班级的所有学科
+    if (userPermissions.role === '正班主任' && userPermissions.class_id == classId) {
+        return true;
+    }
+    
+    // 其他角色：检查 teaching_map 中是否有该班级的该学科
+    const teachingMap = userPermissions.teaching_map || {};
+    const classSubjects = teachingMap[String(classId)] || [];
+    return classSubjects.includes(subjectDisplayName);
+}
+
 // 设置学期选择器
-function setupSemesterSelect() {
+async function setupSemesterSelect() {
     const semesterSelect = document.getElementById('semesterSelect');
     const importSemesterSelect = document.getElementById('importSemester');
     
-    // 自动计算当前学期
-    const now = new Date();
-    const currentYear = now.getFullYear();
-    const currentMonth = now.getMonth() + 1; // 月份从0开始，需要+1
-    
-    let academicYear, semester;
-    
-    // 3-8月为下学期（春季），9-2月为上学期（秋季）
-    if (currentMonth >= 3 && currentMonth <= 8) {
-        // 春季 - 下学期
-        academicYear = `${currentYear-1}-${currentYear}`;
-        semester = `下学期`;
-    } else {
-        // 秋季 - 上学期（包括9-12月和1-2月）
-        if (currentMonth >= 9) {
-            // 当年秋季
-            academicYear = `${currentYear}-${currentYear+1}`;
+    try {
+        // ⭐ 从数据库获取学年和学期设置
+        const response = await fetch('/api/system-settings');
+        const data = await response.json();
+        
+        let academicYear, semester, semesterText;
+        
+        if (data.status === 'ok' && data.settings) {
+            // 从数据库获取
+            academicYear = data.settings.school_year || '2025-2026';
+            const semesterNum = data.settings.semester || '1';
+            
+            // 转换为文字
+            semesterText = semesterNum === '1' ? '第一学期' : '第二学期';
+            semester = semesterText;
+            
+            console.log('从数据库获取学期设置:', { academicYear, semester });
         } else {
-            // 次年初（1-2月）
-            academicYear = `${currentYear-1}-${currentYear}`;
+            // 如果API失败，使用默认值
+            console.warn('无法从数据库获取学期设置，使用默认值');
+            academicYear = '2025-2026';
+            semester = '第一学期';
         }
-        semester = `上学期`;
+        
+        // 设置当前学期
+        currentSemester = `${academicYear}学年${semester}`;
+        
+        // 更新显示
+        if (semesterSelect) {
+            semesterSelect.textContent = currentSemester;
+        }
+        
+        if (importSemesterSelect) {
+            importSemesterSelect.value = currentSemester;
+        }
+        
+        console.log('当前学期:', currentSemester);
+        
+        // 加载成绩数据
+        loadGrades();
+    } catch (error) {
+        console.error('获取学期设置失败:', error);
+        
+        // 使用默认值
+        currentSemester = '2025-2026学年第一学期';
+        
+        if (semesterSelect) {
+            semesterSelect.textContent = currentSemester;
+        }
+        
+        if (importSemesterSelect) {
+            importSemesterSelect.value = currentSemester;
+        }
+        
+        // 仍然尝试加载成绩
+        loadGrades();
     }
-    
-    // 设置当前学期
-    currentSemester = `${academicYear}学年${semester}`;
-    
-    if (semesterSelect) {
-        // 设置学期显示文本
-        semesterSelect.textContent = currentSemester;
-    }
-    
-    if (importSemesterSelect) {
-        // 设置导入模态框中的学期文本
-        importSemesterSelect.value = currentSemester;
-    }
-
-    // 加载初始数据
-    loadGrades();
 }
 
 // 加载成绩数据
@@ -118,7 +289,7 @@ function loadGrades() {
     // 显示加载状态
     gradesTable.innerHTML = `
         <tr>
-            <td colspan="14" class="text-center py-5">
+            <td colspan="15" class="text-center py-5">
                 <div class="spinner-border text-primary" role="status">
                     <span class="visually-hidden">加载中...</span>
                 </div>
@@ -135,12 +306,33 @@ function loadGrades() {
             console.log('成绩API返回数据:', data);
             if (data.status === 'ok') {
                 console.log('成功获取成绩数据, 学生数量:', data.grades ? data.grades.length : 0);
+                
+                // ⭐ 保存用户权限信息和允许查看的学科列表
+                if (data.user_permissions) {
+                    userPermissions = data.user_permissions;
+                    console.log('用户权限信息:', userPermissions);
+                }
+                
+                // ⭐ 保存允许查看的学科列表
+                if (data.allowed_subjects) {
+                    allowedSubjects = data.allowed_subjects;
+                    console.log('允许查看的学科:', allowedSubjects);
+                }
+                
+                // 检查是否有空班级
+                if (data.empty_classes && data.empty_classes.length > 0) {
+                    console.log('空班级:', data.empty_classes);
+                    // 显示空班级提示
+                    const emptyClassNames = data.empty_classes.map(c => c.class_name).join('、');
+                    showNotification(`提示：${emptyClassNames} 暂无学生数据`, 'info');
+                }
+                
                 renderGradesTable(data.grades || []);
             } else {
                 showNotification(data.message || '加载成绩失败', 'error');
                 gradesTable.innerHTML = `
                     <tr>
-                        <td colspan="13" class="text-center py-5">
+                        <td colspan="15" class="text-center py-5">
                             <div class="empty-state">
                                 <i class='bx bx-error-circle'></i>
                                 <h3>加载失败</h3>
@@ -155,7 +347,7 @@ function loadGrades() {
             console.error('获取成绩数据时出错:', error);
             gradesTable.innerHTML = `
                 <tr>
-                    <td colspan="14" class="text-center py-5">
+                    <td colspan="15" class="text-center py-5">
                         <div class="empty-state">
                             <i class='bx bx-error-circle'></i>
                             <h3>加载失败</h3>
@@ -181,7 +373,7 @@ function renderGradesTable(grades) {
         console.log('没有成绩数据可显示');
         gradesTable.innerHTML = `
             <tr>
-                <td colspan="14" class="text-center py-5">
+                <td colspan="15" class="text-center py-5">
                     <div class="empty-state">
                         <i class='bx bx-file-blank'></i>
                         <h3>暂无成绩数据</h3>
@@ -205,31 +397,118 @@ function renderGradesTable(grades) {
         return parseInt(a.student_id) - parseInt(b.student_id);
     });
     
+    // ⭐ 确定要渲染的学科列表
+    // 所有学科的完整列表
+    const allSubjects = [
+        'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 
+        'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa', 'xinli'
+    ];
+    
+    let subjectsToRender = allSubjects;
+    
+    // 如果用户不是超级管理员且不是正班主任，只显示任教的学科
+    if (userPermissions && !userPermissions.is_admin && userPermissions.role !== '正班主任') {
+        // 从 allowedSubjects 或 teaching_map 获取任教学科
+        let teachingSubjects = [];
+        
+        if (allowedSubjects && allowedSubjects.length > 0) {
+            // 使用 allowedSubjects（学科中文名）
+            teachingSubjects = allowedSubjects;
+            console.log('使用 allowedSubjects:', teachingSubjects);
+        } else if (userPermissions.teaching_map) {
+            // 从 teaching_map 提取所有学科（去重）
+            const subjectSet = new Set();
+            for (const classId in userPermissions.teaching_map) {
+                const subjects = userPermissions.teaching_map[classId];
+                subjects.forEach(s => subjectSet.add(s));
+            }
+            teachingSubjects = Array.from(subjectSet);
+            console.log('从 teaching_map 提取学科:', teachingSubjects);
+        }
+        
+        // 将中文学科名转换为字段名
+        if (teachingSubjects.length > 0) {
+            subjectsToRender = [];
+            teachingSubjects.forEach(chineseName => {
+                // 查找对应的字段名
+                for (const [fieldName, displayName] of Object.entries(subjectNames)) {
+                    if (displayName === chineseName) {
+                        subjectsToRender.push(fieldName);
+                        break;
+                    }
+                }
+            });
+            
+            console.log('科任老师只显示任教学科:', subjectsToRender);
+            
+            // 如果没有找到任何学科，显示提示
+            if (subjectsToRender.length === 0) {
+                gradesTable.innerHTML = `
+                    <tr>
+                        <td colspan="15" class="text-center py-5">
+                            <div class="empty-state">
+                                <i class='bx bx-info-circle'></i>
+                                <h3>暂无任教学科</h3>
+                                <p>您尚未被分配任教学科，请联系管理员</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+        }
+    } else {
+        console.log('超级管理员或正班主任，显示所有学科');
+    }
+    
+    // ⭐ 更新表头，只显示要渲染的学科
+    const tableHeader = document.querySelector('.grades-table table thead tr');
+    if (tableHeader) {
+        // 清空表头
+        tableHeader.innerHTML = '<th>学号</th><th>姓名</th>';
+        
+        // 添加学科列
+        subjectsToRender.forEach(subject => {
+            const th = document.createElement('th');
+            th.textContent = subjectNames[subject] || subject;
+            tableHeader.appendChild(th);
+        });
+        
+        console.log('表头已更新，显示学科:', subjectsToRender.map(s => subjectNames[s]));
+    }
+    
     // 清空表格
     gradesTable.innerHTML = '';
     
     // 分班级渲染学生成绩表
-    console.log('开始渲染成绩表格');
+    console.log('开始渲染成绩表格，总学生数:', grades.length);
+    
+    // 统计每个班级的学生数
+    const classCounts = {};
+    grades.forEach(g => {
+        classCounts[g.class] = (classCounts[g.class] || 0) + 1;
+    });
+    console.log('各班级学生数:', classCounts);
+    
     let currentClass = null;
-    const subjectsToRender = [
-        'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 
-        'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 'xinxi', 'shufa'
-    ];
     
     grades.forEach(studentGrade => {
         // 如果是新班级，添加班级标题行
         if (currentClass !== studentGrade.class) {
             currentClass = studentGrade.class;
+            console.log('添加班级标题行:', currentClass);
             
             const classRow = document.createElement('tr');
             classRow.className = 'table-light';
-            classRow.innerHTML = `<td colspan="14"><strong>${currentClass}</strong></td>`;
+            // colspan 需要根据实际列数调整
+            classRow.innerHTML = `<td colspan="${subjectsToRender.length + 2}"><strong>${currentClass}</strong></td>`;
             gradesTable.appendChild(classRow);
         }
         
         // 创建学生行
         const row = document.createElement('tr');
         row.setAttribute('data-student-id', studentGrade.student_id);
+        row.setAttribute('data-class-id', studentGrade.class_id);  // 添加班级ID属性
         
         // 添加学号和姓名单元格
         row.innerHTML = `
@@ -237,10 +516,13 @@ function renderGradesTable(grades) {
             <td>${studentGrade.student_name}</td>
         `;
         
-        // 添加各科目成绩单元格
+        // ⭐ 只添加要渲染的学科成绩单元格
         subjectsToRender.forEach(subject => {
             const cell = document.createElement('td');
             const gradeValue = studentGrade[subject] !== undefined ? studentGrade[subject] : '';
+            
+            // 检查是否可以编辑该学科（传入班级ID）
+            const canEdit = canEditSubject(subject, studentGrade.class_id);
             
             // 创建成绩选择框
             const select = document.createElement('select');
@@ -248,11 +530,18 @@ function renderGradesTable(grades) {
             select.setAttribute('data-student-id', studentGrade.student_id);
             select.setAttribute('data-subject', subject);
             
-            // 添加选项（支持优、良、及格、待及格四个等级）
-            ['', '优', '良', '及格', '待及格'].forEach(option => {
+            // 如果没有编辑权限，禁用选择框并添加提示
+            if (!canEdit) {
+                select.disabled = true;
+                select.classList.add('disabled-subject');
+                select.title = '您没有权限编辑此学科';
+            }
+            
+            // 添加选项（支持优、良、及格、待及格、/五个等级）
+            ['', '优', '良', '及格', '待及格', '/'].forEach(option => {
                 const optionEl = document.createElement('option');
                 optionEl.value = option;
-                optionEl.textContent = option || '无';
+                optionEl.textContent = option || '未填';
                 if (option === gradeValue) {
                     optionEl.selected = true;
                 }
@@ -268,6 +557,8 @@ function renderGradesTable(grades) {
                 select.classList.add('grade-c');
             } else if (gradeValue === '待及格') {
                 select.classList.add('grade-d');
+            } else if (gradeValue === '/') {
+                select.classList.add('grade-none');
             }
             
             cell.appendChild(select);
@@ -275,6 +566,107 @@ function renderGradesTable(grades) {
         });
         
         gradesTable.appendChild(row);
+    });
+    
+    // 渲染完成后调整表格布局
+    adjustTableLayout();
+    
+    // 重新初始化列选择和粘贴功能
+    initColumnSelectAndPaste();
+}
+
+/**
+ * 调整表格布局，优化显示效果
+ */
+function adjustTableLayout() {
+    console.log('调整表格布局');
+    
+    // 获取表格和表头
+    const table = document.querySelector('.grades-table table');
+    if (!table) return;
+    
+    // 科目单元格默认宽度
+    const defaultColWidth = 80;
+    
+    // 获取表头所有列
+    const headers = table.querySelectorAll('thead th');
+    
+    // 设置科目列宽度
+    headers.forEach((header, index) => {
+        if (index >= 2) { // 跳过学号和姓名列
+            // 根据内容长度设置宽度，但不低于最小宽度
+            const text = header.textContent.trim();
+            // 汉字平均宽度约为16px
+            const contentWidth = Math.max(text.length * 16, defaultColWidth);
+            header.style.width = `${contentWidth}px`;
+            header.style.minWidth = `${defaultColWidth}px`;
+        }
+    });
+    
+    // 确保固定列背景色正确
+    const fixColumns = () => {
+        // 获取所有第一列和第二列的单元格
+        const firstCols = table.querySelectorAll('tr td:first-child, tr th:first-child');
+        const secondCols = table.querySelectorAll('tr td:nth-child(2), tr th:nth-child(2)');
+        
+        // 设置正确的背景色
+        firstCols.forEach(cell => {
+            if (cell.tagName === 'TH') {
+                cell.style.backgroundColor = '#f8f9fa';
+            } else {
+                cell.style.backgroundColor = '#fff';
+            }
+            cell.style.boxShadow = '2px 0 5px -2px rgba(0,0,0,0.1)';
+        });
+        
+        secondCols.forEach(cell => {
+            if (cell.tagName === 'TH') {
+                cell.style.backgroundColor = '#f8f9fa';
+            } else {
+                cell.style.backgroundColor = '#fff';
+            }
+            cell.style.boxShadow = '2px 0 5px -2px rgba(0,0,0,0.1)';
+        });
+    };
+    
+    // 执行固定列样式
+    fixColumns();
+    
+    // 检查水平滚动条是否应该显示
+    const tableContainer = document.querySelector('.table-responsive.grades-table');
+    if (tableContainer) {
+        // 计算表格实际宽度和容器宽度
+        const tableWidth = table.offsetWidth;
+        const containerWidth = tableContainer.offsetWidth;
+        
+        console.log(`表格宽度: ${tableWidth}px, 容器宽度: ${containerWidth}px`);
+        
+        // 如果表格宽度大于容器宽度，应该显示水平滚动条
+        if (tableWidth > containerWidth) {
+            console.log('表格宽度大于容器宽度，应该显示水平滚动条');
+            // 确保overflow-x是auto
+            tableContainer.style.overflowX = 'auto';
+        } else {
+            console.log('表格宽度小于等于容器宽度，不需要水平滚动条');
+        }
+    }
+    
+    // 监听窗口大小变化，重新调整固定列样式
+    window.addEventListener('resize', function() {
+        fixColumns();
+        
+        // 重新检查滚动条
+        const tableContainer = document.querySelector('.table-responsive.grades-table');
+        if (tableContainer) {
+            const tableWidth = table.offsetWidth;
+            const containerWidth = tableContainer.offsetWidth;
+            
+            console.log(`[resize] 表格宽度: ${tableWidth}px, 容器宽度: ${containerWidth}px`);
+            
+            if (tableWidth > containerWidth) {
+                tableContainer.style.overflowX = 'auto';
+            }
+        }
     });
 }
 
@@ -335,6 +727,10 @@ function updateGrade(selectElement) {
     const subject = selectElement.getAttribute('data-subject');
     const value = selectElement.value;
     
+    // 获取学生所在的班级ID（从行数据中获取）
+    const row = selectElement.closest('tr');
+    const classId = row ? row.getAttribute('data-class-id') : null;
+    
     // 显示保存中状态
     const originalBg = selectElement.style.backgroundColor;
     selectElement.style.backgroundColor = '#e6f7ff'; // 浅蓝色表示正在保存
@@ -349,15 +745,18 @@ function updateGrade(selectElement) {
         selectElement.classList.add('grade-c');
     } else if (value === '待及格') {
         selectElement.classList.add('grade-d');
+    } else if (value === '/') {
+        selectElement.classList.add('grade-none');
     }
     
     // 准备要发送的数据
     const gradeData = {
-        semester: currentSemester
+        semester: currentSemester,
+        class_id: classId  // 添加班级ID
     };
     gradeData[subject] = value;
     
-    console.log(`保存学生 ${studentId} 的 ${subject} 成绩: ${value}`);
+    console.log(`保存学生 ${studentId} (班级ID: ${classId}) 的 ${subject} 成绩: ${value}`);
     
     // 发送到服务器
     fetch(`/api/grades/${studentId}`, {
@@ -739,10 +1138,123 @@ function initGradesImport() {
 }
 
 // 导出成绩
-function exportGrades() {
-    // 未实现，可以通过前端Excel库如SheetJS实现，
-    // 或者可以添加后端API返回Excel文件
-    showNotification('导出功能尚未实现', 'info');
+async function exportGrades() {
+    try {
+        // 从系统设置获取当前学期
+        const response = await fetch('/api/system-settings');
+        const settings = await response.json();
+        const semester = settings.semester || currentSemester;
+        
+        if (!semester) {
+            showNotification('无法获取当前学期', 'warning');
+            return;
+        }
+        
+        // 获取班级ID
+        let classId = null;
+        if (userPermissions) {
+            if (userPermissions.is_admin) {
+                const firstRow = document.querySelector('tr[data-class-id]');
+                if (firstRow) {
+                    classId = firstRow.getAttribute('data-class-id');
+                }
+            } else if (userPermissions.class_id) {
+                classId = userPermissions.class_id;
+            }
+        }
+        
+        if (!classId) {
+            showNotification('无法确定班级ID，请确保已加载成绩数据', 'warning');
+            return;
+        }
+        
+        // 弹出格式选择对话框
+        const format = await showExportFormatDialog();
+        if (!format) {
+            return; // 用户取消
+        }
+        
+        // 显示加载提示
+        showNotification(`正在生成${format === 'pdf' ? 'PDF' : 'Excel'}，请稍候...`, 'info');
+        
+        // 构建下载URL
+        const endpoint = format === 'pdf' ? 'export-pdf' : 'export-excel';
+        const url = `/api/grades/${endpoint}?class_id=${classId}&semester=${encodeURIComponent(semester)}`;
+        
+        // 直接跳转触发下载
+        window.location.href = url;
+        
+        // 显示成功消息
+        setTimeout(() => {
+            showNotification(`${format === 'pdf' ? 'PDF' : 'Excel'}导出成功！请查看浏览器下载`, 'success');
+        }, 1000);
+        
+    } catch (error) {
+        console.error('导出失败:', error);
+        showNotification('导出失败: ' + error.message, 'error');
+    }
+}
+
+// 显示导出格式选择对话框
+function showExportFormatDialog() {
+    return new Promise((resolve) => {
+        // 创建模态框HTML
+        const modalHtml = `
+            <div class="modal fade" id="exportFormatModal" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">选择导出格式</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="d-grid gap-3">
+                                <button type="button" class="btn btn-outline-primary btn-lg" data-format="excel">
+                                    <i class="bx bxs-file-export"></i> Excel格式
+                                    <small class="d-block text-muted mt-1">可编辑，方便再次导入</small>
+                                </button>
+                                <button type="button" class="btn btn-outline-danger btn-lg" data-format="pdf">
+                                    <i class="bx bxs-file-pdf"></i> PDF格式
+                                    <small class="d-block text-muted mt-1">包含统计分析，适合打印</small>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // 移除旧的模态框（如果存在）
+        const oldModal = document.getElementById('exportFormatModal');
+        if (oldModal) {
+            oldModal.remove();
+        }
+        
+        // 添加到页面
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        
+        // 获取模态框元素
+        const modalElement = document.getElementById('exportFormatModal');
+        const modal = new bootstrap.Modal(modalElement);
+        
+        // 绑定按钮事件
+        modalElement.querySelectorAll('[data-format]').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const format = this.getAttribute('data-format');
+                modal.hide();
+                resolve(format);
+            });
+        });
+        
+        // 处理取消
+        modalElement.addEventListener('hidden.bs.modal', function() {
+            modalElement.remove();
+            resolve(null);
+        }, { once: true });
+        
+        // 显示模态框
+        modal.show();
+    });
 }
 
 // 一键将所有学生的所有科目成绩设为"优"
@@ -770,6 +1282,10 @@ function setAllGradesExcellent() {
             const studentId = select.getAttribute('data-student-id');
             const subject = select.getAttribute('data-subject');
             
+            // 获取班级ID
+            const row = select.closest('tr');
+            const classId = row ? row.getAttribute('data-class-id') : null;
+            
             // 如果已经是"优"，则不需要更新
             if (select.value !== '优') {
                 // 更新选择框的值
@@ -780,7 +1296,7 @@ function setAllGradesExcellent() {
                 
                 // 将数据添加到更新列表中
                 if (!updatedGrades[studentId]) {
-                    updatedGrades[studentId] = {};
+                    updatedGrades[studentId] = { class_id: classId };
                 }
                 updatedGrades[studentId][subject] = '优';
             }
@@ -871,6 +1387,10 @@ function clearAllGrades() {
             const studentId = select.getAttribute('data-student-id');
             const subject = select.getAttribute('data-subject');
             
+            // 获取班级ID
+            const row = select.closest('tr');
+            const classId = row ? row.getAttribute('data-class-id') : null;
+            
             // 如果已经是空的，则不需要更新
             if (select.value !== '') {
                 // 更新选择框的值
@@ -881,7 +1401,7 @@ function clearAllGrades() {
                 
                 // 将数据添加到更新列表中
                 if (!updatedGrades[studentId]) {
-                    updatedGrades[studentId] = {};
+                    updatedGrades[studentId] = { class_id: classId };
                 }
                 updatedGrades[studentId][subject] = '';
             }
@@ -1024,6 +1544,12 @@ function initColumnSelectAndPaste() {
     if (cancelColumnSelectBtn) {
         cancelColumnSelectBtn.addEventListener('click', cancelColumnSelection);
     }
+    
+    // 绑定撤销粘贴按钮事件
+    const undoPasteBtn = document.getElementById('undoPasteBtn');
+    if (undoPasteBtn) {
+        undoPasteBtn.addEventListener('click', undoLastPaste);
+    }
 }
 
 // 选择列
@@ -1089,34 +1615,110 @@ function cancelColumnSelection() {
     });
 }
 
+// 存储粘贴前的状态，用于撤销
+let lastPasteState = null;
+
 // 将复制的内容粘贴到选中列
 function pasteToSelectedColumn() {
     if (selectedColumn === null || selectedSubject === null) {
-        showNotification('请先选择要粘贴的列', 'warning');
+        showNotification('请先点击表头选择要粘贴的列', 'warning');
         return;
     }
     
-    // 显示粘贴操作指南
-    showNotification(`准备粘贴到「${selectedSubject}」列，请确保您的剪贴板中包含了要粘贴的成绩数据（优、良、及格、待及格）`, 'info');
+    // 检查navigator.clipboard是否可用
+    if (navigator.clipboard && navigator.clipboard.readText) {
+        // 现代浏览器API - 直接读取剪贴板
+        navigator.clipboard.readText()
+            .then(text => {
+                if (!text || !text.trim()) {
+                    showNotification('剪贴板内容为空，请先复制成绩数据 (优、良、及格、待及格)', 'warning');
+                    return;
+                }
+                handlePastedText(text);
+            })
+            .catch(err => {
+                console.error('无法读取剪贴板内容:', err);
+                showNotification('您的浏览器不支持自动读取剪贴板，请手动粘贴(Ctrl+V)或点击右键选择"粘贴"', 'warning');
+                promptForManualPaste();
+            });
+    } else {
+        // 备选方案：提示用户手动粘贴
+        console.warn('浏览器不支持clipboard API，将使用备选方案');
+        showNotification('您的浏览器不支持自动读取剪贴板，请手动粘贴(Ctrl+V)或点击右键选择"粘贴"', 'warning');
+        promptForManualPaste();
+    }
+}
+
+// 提示用户手动粘贴
+function promptForManualPaste() {
+    // 创建临时输入框用于粘贴
+    const textarea = document.createElement('textarea');
+    textarea.style.position = 'fixed';
+    textarea.style.top = '50%';
+    textarea.style.left = '50%';
+    textarea.style.transform = 'translate(-50%, -50%)';
+    textarea.style.width = '400px';
+    textarea.style.height = '200px';
+    textarea.style.zIndex = '9999';
+    textarea.style.border = '2px solid #007bff';
+    textarea.style.padding = '10px';
+    textarea.style.fontSize = '14px';
+    textarea.placeholder = '请在此处粘贴复制的数据 (Ctrl+V)，然后点击外部区域';
     
-    // 提示用户粘贴内容
-    navigator.clipboard.readText()
-        .then(text => {
-            if (!text.trim()) {
-                showNotification('剪贴板内容为空，请先复制数据', 'warning');
-                return;
-            }
-            
-            // 显示收到的数据
-            console.log('从剪贴板读取到的内容:', text);
-            
-            // 处理复制的内容
-            processPastedText(text);
-        })
-        .catch(err => {
-            console.error('无法读取剪贴板内容:', err);
-            showNotification('无法读取剪贴板内容，请确保您已复制数据并允许网站访问剪贴板', 'error');
-        });
+    // 创建遮罩层
+    const overlay = document.createElement('div');
+    overlay.style.position = 'fixed';
+    overlay.style.top = '0';
+    overlay.style.left = '0';
+    overlay.style.width = '100%';
+    overlay.style.height = '100%';
+    overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+    overlay.style.zIndex = '9998';
+    
+    // 添加到文档
+    document.body.appendChild(overlay);
+    document.body.appendChild(textarea);
+    
+    // 自动聚焦
+    textarea.focus();
+    
+    // 处理粘贴操作
+    function handleManualPaste() {
+        const text = textarea.value.trim();
+        if (text) {
+            handlePastedText(text);
+        } else {
+            showNotification('未检测到粘贴内容', 'warning');
+        }
+        
+        // 清理
+        document.body.removeChild(textarea);
+        document.body.removeChild(overlay);
+    }
+    
+    // 监听点击外部和ESC按键
+    overlay.addEventListener('click', handleManualPaste);
+    textarea.addEventListener('blur', handleManualPaste);
+    textarea.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            document.body.removeChild(textarea);
+            document.body.removeChild(overlay);
+        }
+    });
+}
+
+// 处理获取到的文本
+function handlePastedText(text) {
+    if (!text || !text.trim()) {
+        showNotification('剪贴板内容为空，请先复制数据', 'warning');
+        return;
+    }
+    
+    // 显示收到的数据
+    console.log('获取到的粘贴内容:', text);
+    
+    // 处理复制的内容
+    processPastedText(text);
 }
 
 // 处理粘贴的文本
@@ -1222,8 +1824,15 @@ function processPastedText(text) {
         console.log(`找到 ${gradeSelects.length} 个选择框用于粘贴`);
     }
     
+    // 保存粘贴前的状态，用于撤销
+    lastPasteState = {
+        subject: selectedSubject,
+        column: selectedColumn,
+        changes: []
+    };
+    
     // 验证有效的等级
-    const validGrades = ['优', '良', '及格', '待及格'];
+    const validGrades = ['优', '良', '及格', '待及格', '/'];
     
     // 记录要更新的数据
     const updatedGrades = {};
@@ -1235,6 +1844,14 @@ function processPastedText(text) {
         const value = lines[i].trim();
         const select = gradeSelects[i];
         const studentId = select.getAttribute('data-student-id');
+        
+        // 保存原始值
+        const oldValue = select.value;
+        const oldClassName = select.className;
+        
+        // 获取班级ID
+        const row = select.closest('tr');
+        const classId = row ? row.getAttribute('data-class-id') : null;
         
         // 直接使用复制的等级值
         let gradeValue = value.trim();
@@ -1250,11 +1867,21 @@ function processPastedText(text) {
                 gradeValue = '及格';
             } else if (gradeValue === '待及格' || gradeValue === '待' || gradeValue === 'D' || gradeValue === 'd' || gradeValue === '不及格') {
                 gradeValue = '待及格';
+            } else if (gradeValue === '/' || gradeValue === '无' || gradeValue === '缺' || gradeValue === '缺考') {
+                gradeValue = '/';
             }
         }
         
         // 检查是否是有效的等级
         if (validGrades.includes(gradeValue)) {
+            // 保存到撤销状态
+            lastPasteState.changes.push({
+                select: select,
+                oldValue: oldValue,
+                oldClassName: oldClassName,
+                newValue: gradeValue
+            });
+            
             // 更新选择框
             select.value = gradeValue;
             
@@ -1268,11 +1895,13 @@ function processPastedText(text) {
                 select.classList.add('grade-c');
             } else if (gradeValue === '待及格') {
                 select.classList.add('grade-d');
+            } else if (gradeValue === '/') {
+                select.classList.add('grade-none');
             }
             
             // 添加到要保存的数据中
             if (!updatedGrades[studentId]) {
-                updatedGrades[studentId] = {};
+                updatedGrades[studentId] = { class_id: classId };
             }
             updatedGrades[studentId][selectedSubject] = gradeValue;
             validUpdatesCount++;
@@ -1284,12 +1913,83 @@ function processPastedText(text) {
     
     // 如果没有有效更新，显示错误
     if (validUpdatesCount === 0) {
-        showNotification(`无效的数据格式，请确保复制的内容包含有效的成绩等级（优、良、差或相应的数字分数）`, 'error');
+        lastPasteState = null; // 清除撤销状态
+        showNotification(`无效的数据格式，请确保复制的内容包含有效的成绩等级（优、良、及格、待及格、/）`, 'error');
         return;
+    }
+    
+    // 显示撤销按钮
+    const undoPasteBtn = document.getElementById('undoPasteBtn');
+    if (undoPasteBtn) {
+        undoPasteBtn.style.display = 'inline-block';
     }
     
     // 保存更新的成绩
     saveUpdatedGrades(updatedGrades, validUpdatesCount, errorsCount);
+}
+
+// 撤销上次粘贴操作
+function undoLastPaste() {
+    if (!lastPasteState || !lastPasteState.changes || lastPasteState.changes.length === 0) {
+        showNotification('没有可撤销的粘贴操作', 'warning');
+        return;
+    }
+    
+    console.log('撤销粘贴操作，恢复 ' + lastPasteState.changes.length + ' 个成绩');
+    
+    // 恢复所有更改
+    const updatedGrades = {};
+    lastPasteState.changes.forEach(change => {
+        // 恢复选择框的值和样式
+        change.select.value = change.oldValue;
+        change.select.className = change.oldClassName;
+        
+        // 记录要保存到数据库的数据
+        const studentId = change.select.getAttribute('data-student-id');
+        const row = change.select.closest('tr');
+        const classId = row ? row.getAttribute('data-class-id') : null;
+        
+        if (!updatedGrades[studentId]) {
+            updatedGrades[studentId] = { class_id: classId };
+        }
+        updatedGrades[studentId][lastPasteState.subject] = change.oldValue;
+    });
+    
+    // 保存到数据库
+    const promises = [];
+    for (const studentId in updatedGrades) {
+        const gradeData = {
+            semester: currentSemester,
+            ...updatedGrades[studentId]
+        };
+        
+        const promise = fetch(`/api/grades/${studentId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(gradeData)
+        })
+        .then(response => response.json());
+        
+        promises.push(promise);
+    }
+    
+    Promise.all(promises).then(() => {
+        showNotification(`已撤销粘贴操作，恢复了 ${lastPasteState.changes.length} 个成绩`, 'success');
+        
+        // 清除撤销状态
+        lastPasteState = null;
+        
+        // 隐藏撤销按钮
+        const undoPasteBtn = document.getElementById('undoPasteBtn');
+        if (undoPasteBtn) {
+            undoPasteBtn.style.display = 'none';
+        }
+    }).catch(err => {
+        console.error('撤销失败:', err);
+        showNotification('撤销失败，请刷新页面重试', 'error');
+    });
 }
 
 // 保存更新的成绩数据

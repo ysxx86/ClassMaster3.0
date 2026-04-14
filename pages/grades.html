@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>成绩管理 - 德育AI智能系统</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/boxicons@latest/css/boxicons.min.css" rel="stylesheet">
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/boxicons-local.css" rel="stylesheet">
     <style>
         body {
             font-family: 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
@@ -115,6 +115,18 @@
             border-color: #f5c6cb;
         }
         
+        /* 禁用学科的样式 */
+        .grade-select.disabled-subject {
+            background-color: #f5f5f5;
+            color: #999;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        
+        .grade-select.disabled-subject:hover {
+            border-color: #e0e0e0;
+        }
+        
         /* 使表格内容居中 */
         .grades-table th, .grades-table td {
             text-align: center;
@@ -132,9 +144,36 @@
         
         /* 固定表头样式 */
         .table-responsive.grades-table {
-            height: calc(100vh - 200px);
+            max-height: calc(100vh - 250px);
             overflow-y: auto;
-            margin-bottom: 20px;
+            overflow-x: auto;
+            min-width: 100%;
+            margin-bottom: 80px; /* 增加底部边距，避免被底部导航栏遮挡 */
+        }
+        
+        /* 确保表格内容足够宽，以便在窗口缩小时触发滚动条 */
+        .grades-table table {
+            min-width: 1200px; /* 设置最小宽度，确保在窗口缩小时触发滚动 */
+            width: auto; /* 允许表格自然扩展 */
+        }
+        
+        /* 确保滚动条始终可见 */
+        @media (max-width: 1200px) {
+            .table-responsive.grades-table {
+                overflow-x: scroll !important; /* 强制显示滚动条 */
+                scrollbar-width: thin; /* Firefox */
+            }
+            
+            /* 为 Webkit 浏览器自定义滚动条 */
+            .table-responsive.grades-table::-webkit-scrollbar {
+                height: 8px;
+                background-color: #f0f0f0;
+            }
+            
+            .table-responsive.grades-table::-webkit-scrollbar-thumb {
+                background-color: #c1c1c1;
+                border-radius: 4px;
+            }
         }
         
         .grades-table thead tr th {
@@ -143,7 +182,38 @@
             z-index: 10;
             background-color: #f8f9fa;
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-            cursor: pointer; /* 添加指针样式，表示可点击 */
+            cursor: pointer;
+        }
+        
+        /* 设置最小宽度确保内容不会挤压 */
+        .grades-table th, .grades-table td {
+            min-width: 80px;
+            width: 80px;
+        }
+        
+        /* 为学号和姓名列设置特定宽度 */
+        .grades-table th:nth-child(1), .grades-table td:nth-child(1) {
+            min-width: 100px;
+            width: 100px;
+            position: sticky;
+            left: 0;
+            z-index: 2;
+            background-color: #fff;
+        }
+        
+        .grades-table th:nth-child(2), .grades-table td:nth-child(2) {
+            min-width: 100px;
+            width: 100px;
+            position: sticky;
+            left: 100px;
+            z-index: 2;
+            background-color: #fff;
+        }
+        
+        /* 表头的固定列需要更高的z-index来覆盖其他元素 */
+        .grades-table thead th:nth-child(1), .grades-table thead th:nth-child(2) {
+            z-index: 11;
+            background-color: #f8f9fa;
         }
         
         /* 选中列的样式 */
@@ -318,12 +388,15 @@
                         <button class="btn btn-warning me-2 mb-2 paste-button" id="pasteToCellsBtn" style="display:none;">
                             <i class='bx bx-paste me-1'></i> 粘贴成绩
                         </button>
+                        <button class="btn btn-secondary me-2 mb-2 paste-button" id="undoPasteBtn" style="display:none;">
+                            <i class='bx bx-undo me-1'></i> 撤销粘贴
+                        </button>
                         <button class="btn btn-outline-secondary me-2 mb-2 paste-button" id="cancelColumnSelectBtn" style="display:none;">
                             <i class='bx bx-x me-1'></i> 取消选择
                         </button>
-                        <button class="btn btn-success me-2 mb-2" id="setAllExcellentBtn">
+                        <!--<button class="btn btn-success me-2 mb-2" id="setAllExcellentBtn">
                             <i class='bx bx-check-double me-1'></i> 一键优
-                        </button>
+                        </button>-->
                         <button class="btn btn-danger mb-2" id="clearAllGradesBtn">
                             <i class='bx bx-trash me-1'></i> 清空所有
                         </button>
@@ -343,12 +416,15 @@
         </div>
         
         <!-- 成绩表格区域 -->
+        <div class="mb-2 text-muted small">
+            <i class='bx bx-info-circle'></i> 提示：窗口变小时，可以水平滚动查看右侧更多学科。学号和姓名列会保持固定。
+        </div>
         <div class="table-responsive grades-table">
             <table class="table table-hover table-bordered mb-0">
                 <thead>
                     <tr>
-                        <th style="width: 100px;">学号</th>
-                        <th style="width: 100px;">姓名</th>
+                        <th style="width: 100px; z-index: 11; position: sticky; left: 0; background-color: #f8f9fa;">学号</th>
+                        <th style="width: 100px; z-index: 11; position: sticky; left: 100px; background-color: #f8f9fa;">姓名</th>
                         <th>道法</th>
                         <th>语文</th>
                         <th>数学</th>
@@ -361,12 +437,13 @@
                         <th>综合</th>
                         <th>信息</th>
                         <th>书法</th>
+                        <th>心理</th>
                     </tr>
                 </thead>
                 <tbody>
                     <!-- 成绩数据将由JS动态生成 -->
                     <tr>
-                        <td colspan="13" class="text-center py-5">
+                        <td colspan="15" class="text-center py-5">
                             <div class="spinner-border text-primary" role="status">
                                 <span class="visually-hidden">加载中...</span>
                             </div>
@@ -424,8 +501,9 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/libs/bootstrap.bundle.min.js"></script>
     <script src="/js/data.js"></script>
+    <script src="/js/smart-grade-import.js"></script>
     <script src="/js/grades.js"></script>
 </body>
 </html>

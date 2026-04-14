@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>测试角色更新</title>
+</head>
+<body>
+    <h1>测试角色更新功能</h1>
+    
+    <div>
+        <label>用户ID: <input type="text" id="userId" value="5"></label><br><br>
+        <label>角色: 
+            <select id="role">
+                <option value="正班主任">正班主任</option>
+                <option value="副班主任">副班主任</option>
+                <option value="科任老师">科任老师</option>
+                <option value="行政">行政</option>
+                <option value="校级领导">校级领导</option>
+                <option value="超级管理员">超级管理员</option>
+            </select>
+        </label><br><br>
+        <button onclick="testUpdate()">测试更新</button>
+    </div>
+    
+    <div id="result" style="margin-top: 20px; padding: 10px; border: 1px solid #ccc;"></div>
+    
+    <script>
+        function testUpdate() {
+            const userId = document.getElementById('userId').value;
+            const role = document.getElementById('role').value;
+            
+            console.log('测试更新用户', userId, '角色为', role);
+            
+            const userData = {
+                username: '测试用户',
+                role: role,
+                is_admin: false
+            };
+            
+            console.log('发送数据:', JSON.stringify(userData, null, 2));
+            
+            fetch(`/api/users/${userId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(userData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('响应:', data);
+                document.getElementById('result').innerHTML = `
+                    <h3>响应结果:</h3>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            })
+            .catch(error => {
+                console.error('错误:', error);
+                document.getElementById('result').innerHTML = `
+                    <h3>错误:</h3>
+                    <pre>${error.message}</pre>
+                `;
+            });
+        }
+    </script>
+</body>
+</html>

@@ -94,6 +94,12 @@ function loadSettings() {
     if (focusBehavior) focusBehavior.checked = focusSettings.behavior !== false;
     if (focusActivity) focusActivity.checked = focusSettings.activity !== false;
     if (focusSuggestion) focusSuggestion.checked = focusSettings.suggestion !== false;
+
+    // 加载轮播设置
+    getCarouselSettings();
+    
+    // 加载学期设置
+    loadSemesterSettings();
 }
 
 // 绑定事件监听
@@ -101,32 +107,7 @@ function bindEventListeners() {
     // 保存DeepSeek API设置
     const saveDeepseekApiBtn = document.getElementById('saveDeepseekApiBtn');
     if (saveDeepseekApiBtn) {
-        saveDeepseekApiBtn.addEventListener('click', function() {
-            const apiKey = document.getElementById('deepseekApiKey').value.trim();
-            localStorage.setItem('deepseekApiKey', apiKey);
-            
-            // 如果有API端点，也可以发送到服务器
-            fetch('/api/settings/deepseek', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ api_key: apiKey })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    showToast('DeepSeek API设置已保存', 'success');
-                } else {
-                    showToast('保存设置失败: ' + data.message, 'error');
-                }
-            })
-            .catch(error => {
-                console.error('保存API设置出错:', error);
-                // 即使服务器请求失败，也保存在本地
-                showToast('已保存到本地，但同步到服务器失败', 'warning');
-            });
-        });
+        saveDeepseekApiBtn.addEventListener('click', saveDeepseekApiSettings);
     }
     
     // 测试DeepSeek API连接
@@ -187,28 +168,13 @@ function bindEventListeners() {
     // 保存AI评语设置
     const saveAiSettingsBtn = document.getElementById('saveAiSettingsBtn');
     if (saveAiSettingsBtn) {
-        saveAiSettingsBtn.addEventListener('click', function() {
-            // 获取设置
-            const commentLength = document.getElementById('commentLength').value;
-            const commentStyle = document.getElementById('commentStyle').value;
-            const focusAcademic = document.getElementById('focusAcademic').checked;
-            const focusBehavior = document.getElementById('focusBehavior').checked;
-            const focusActivity = document.getElementById('focusActivity').checked;
-            const focusSuggestion = document.getElementById('focusSuggestion').checked;
-            
-            // 保存到本地存储
-            localStorage.setItem('commentLength', commentLength);
-            localStorage.setItem('commentStyle', commentStyle);
-            localStorage.setItem('focusSettings', JSON.stringify({
-                academic: focusAcademic,
-                behavior: focusBehavior,
-                activity: focusActivity,
-                suggestion: focusSuggestion
-            }));
-            
-            // 显示保存成功消息
-            showToast('AI评语设置已保存', 'success');
-        });
+        saveAiSettingsBtn.addEventListener('click', saveAiCommentSettings);
+    }
+
+    // 保存学期设置
+    const saveSemesterSettingsBtn = document.getElementById('saveSemesterSettingsBtn');
+    if (saveSemesterSettingsBtn) {
+        saveSemesterSettingsBtn.addEventListener('click', saveSemesterSettings);
     }
 
     // 切换DeepSeek API密钥显示/隐藏
@@ -323,4 +289,261 @@ function showToast(message, type = 'info') {
             toastContainer.removeChild(toast);
         }, 300);
     }, 3000);
+}
+
+// 加载轮播设置
+function getCarouselSettings() {
+    // Implementation of getCarouselSettings function
+}
+
+// 加载学期设置
+function loadSemesterSettings() {
+    fetch('/api/settings')
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'ok') {
+                const settings = data.settings || {};
+                
+                // 设置学年
+                if (settings.school_year) {
+                    document.getElementById('schoolYearSetting').value = settings.school_year;
+                }
+                
+                // 设置学期
+                if (settings.semester) {
+                    document.getElementById('semesterSetting').value = settings.semester;
+                }
+                
+                // 设置开学时间
+                if (settings.start_date) {
+                    document.getElementById('startDateSetting').value = settings.start_date;
+                }
+            }
+        })
+        .catch(error => {
+            console.error('获取学期设置失败:', error);
+            showToast('error', '获取学期设置失败: ' + error.message);
+        });
+}
+
+// 保存学期设置
+function saveSemesterSettings() {
+    // 获取表单数据
+    const schoolYear = document.getElementById('schoolYearSetting').value;
+    const semester = document.getElementById('semesterSetting').value;
+    const startDate = document.getElementById('startDateSetting').value;
+    
+    // 验证数据
+    if (!schoolYear || !semester || !startDate) {
+        showToast('error', '请填写所有必填字段');
+        return;
+    }
+    
+    // 验证学年格式
+    const yearPattern = /^\d{4}-\d{4}$/;
+    if (!yearPattern.test(schoolYear)) {
+        showToast('error', '学年格式不正确，应为YYYY-YYYY，例如：2024-2025');
+        return;
+    }
+    
+    // 显示保存中状态
+    const statusElement = document.getElementById('semesterSettingsStatus');
+    if (statusElement) {
+        statusElement.innerHTML = '<div class="alert alert-info">正在保存设置...</div>';
+    }
+    
+    // 禁用保存按钮
+    const saveBtn = document.getElementById('saveSemesterSettingsBtn');
+    if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 保存中...';
+    }
+    
+    // 发送请求
+    fetch('/api/settings/semester', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            school_year: schoolYear,
+            semester: semester,
+            start_date: startDate
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'ok') {
+            if (statusElement) {
+                statusElement.innerHTML = '<div class="alert alert-success">设置已保存</div>';
+            }
+            showToast('success', '学期设置已保存');
+        } else {
+            if (statusElement) {
+                statusElement.innerHTML = `<div class="alert alert-danger">保存失败: ${data.message}</div>`;
+            }
+            showToast('error', data.message || '保存设置失败');
+        }
+    })
+    .catch(error => {
+        console.error('保存学期设置失败:', error);
+        if (statusElement) {
+            statusElement.innerHTML = `<div class="alert alert-danger">保存失败: ${error.message}</div>`;
+        }
+        showToast('error', '保存设置失败: ' + error.message);
+    })
+    .finally(() => {
+        // 恢复按钮状态
+        if (saveBtn) {
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = '<i class="bx bx-save"></i> 保存设置';
+        }
+        
+        // 3秒后清除状态消息
+        setTimeout(() => {
+            if (statusElement) {
+                statusElement.innerHTML = '';
+            }
+        }, 3000);
+    });
+}
+
+// 保存DeepSeek API设置
+function saveDeepseekApiSettings() {
+    const apiKey = document.getElementById('deepseekApiKey').value.trim();
+    
+    // 显示保存中状态
+    const statusElement = document.getElementById('apiStatus');
+    if (statusElement) {
+        statusElement.innerHTML = '<div class="alert alert-info">正在保存设置...</div>';
+    }
+    
+    // 禁用保存按钮
+    const saveBtn = document.getElementById('saveDeepseekApiBtn');
+    if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 保存中...';
+    }
+    
+    // 发送请求
+    fetch('/api/settings/deepseek', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ api_key: apiKey })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'ok') {
+            if (statusElement) {
+                statusElement.innerHTML = '<div class="alert alert-success">设置已保存</div>';
+            }
+            showToast('success', 'DeepSeek API设置已保存');
+        } else {
+            if (statusElement) {
+                statusElement.innerHTML = `<div class="alert alert-danger">保存失败: ${data.message}</div>`;
+            }
+            showToast('error', data.message || '保存设置失败');
+        }
+    })
+    .catch(error => {
+        console.error('保存API设置失败:', error);
+        if (statusElement) {
+            statusElement.innerHTML = `<div class="alert alert-danger">保存失败: ${error.message}</div>`;
+        }
+        showToast('error', '保存设置失败: ' + error.message);
+    })
+    .finally(() => {
+        // 恢复按钮状态
+        if (saveBtn) {
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = '<i class="bx bx-save"></i> 保存设置';
+        }
+        
+        // 3秒后清除状态消息
+        setTimeout(() => {
+            if (statusElement) {
+                statusElement.innerHTML = '';
+            }
+        }, 3000);
+    });
+}
+
+// 保存AI评语设置
+function saveAiCommentSettings() {
+    // 获取设置
+    const commentLength = document.getElementById('commentLength').value;
+    const commentStyle = document.getElementById('commentStyle').value;
+    const focusAcademic = document.getElementById('focusAcademic').checked;
+    const focusBehavior = document.getElementById('focusBehavior').checked;
+    const focusActivity = document.getElementById('focusActivity').checked;
+    const focusSuggestion = document.getElementById('focusSuggestion').checked;
+    
+    // 构建设置对象
+    const settings = {
+        length: commentLength,
+        style: commentStyle,
+        focus_academic: focusAcademic,
+        focus_behavior: focusBehavior,
+        focus_activity: focusActivity,
+        focus_suggestion: focusSuggestion
+    };
+    
+    // 显示保存中状态
+    const statusElement = document.getElementById('aiSettingsStatus');
+    if (statusElement) {
+        statusElement.innerHTML = '<div class="alert alert-info">正在保存设置...</div>';
+    }
+    
+    // 禁用保存按钮
+    const saveBtn = document.getElementById('saveAiSettingsBtn');
+    if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 保存中...';
+    }
+    
+    // 发送请求
+    fetch('/api/settings/ai-comments', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(settings)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'ok') {
+            if (statusElement) {
+                statusElement.innerHTML = '<div class="alert alert-success">设置已保存</div>';
+            }
+            showToast('success', 'AI评语设置已保存');
+        } else {
+            if (statusElement) {
+                statusElement.innerHTML = `<div class="alert alert-danger">保存失败: ${data.message}</div>`;
+            }
+            showToast('error', data.message || '保存设置失败');
+        }
+    })
+    .catch(error => {
+        console.error('保存AI评语设置失败:', error);
+        if (statusElement) {
+            statusElement.innerHTML = `<div class="alert alert-danger">保存失败: ${error.message}</div>`;
+        }
+        showToast('error', '保存设置失败: ' + error.message);
+    })
+    .finally(() => {
+        // 恢复按钮状态
+        if (saveBtn) {
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = '<i class="bx bx-save"></i> 保存设置';
+        }
+        
+        // 3秒后清除状态消息
+        setTimeout(() => {
+            if (statusElement) {
+                statusElement.innerHTML = '';
+            }
+        }, 3000);
+    });
 } 

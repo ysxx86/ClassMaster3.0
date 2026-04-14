@@ -15,6 +15,34 @@ class GradesManager:
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
         
+        # 首先创建students表（如果不存在）
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS students (
+            id TEXT PRIMARY KEY,
+            name TEXT NOT NULL,
+            gender TEXT NOT NULL,
+            class TEXT,
+            class_id INTEGER,
+            height REAL,
+            weight REAL,
+            chest_circumference REAL,
+            vital_capacity REAL,
+            dental_caries TEXT,
+            vision_left REAL,
+            vision_right REAL,
+            physical_test_status TEXT,
+            comments TEXT,
+            pinzhi INTEGER,
+            xuexi INTEGER,
+            jiankang INTEGER,
+            shenmei INTEGER,
+            shijian INTEGER,
+            shenghuo INTEGER,
+            created_at TEXT,
+            updated_at TEXT
+        )
+        ''')
+        
         # 检查学生表结构
         cursor.execute("PRAGMA table_info(students)")
         columns = cursor.fetchall()
@@ -24,17 +52,27 @@ class GradesManager:
         grade_fields = [
             'daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 
             'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 
-            'xinxi', 'shufa'
+            'xinxi', 'shufa', 'xinli'
         ]
         
         # 添加缺失的字段
         for field in grade_fields:
             if field not in column_names:
-                cursor.execute(f"ALTER TABLE students ADD COLUMN {field} TEXT DEFAULT ''")
+                try:
+                    cursor.execute(f"ALTER TABLE students ADD COLUMN {field} TEXT DEFAULT ''")
+                except sqlite3.OperationalError as e:
+                    # 如果列已存在，忽略错误
+                    if "duplicate column name" not in str(e).lower():
+                        raise
         
         # 确保存在学期字段
         if 'semester' not in column_names:
-            cursor.execute("ALTER TABLE students ADD COLUMN semester TEXT DEFAULT '上学期'")
+            try:
+                cursor.execute("ALTER TABLE students ADD COLUMN semester TEXT DEFAULT '上学期'")
+            except sqlite3.OperationalError as e:
+                # 如果列已存在，忽略错误
+                if "duplicate column name" not in str(e).lower():
+                    raise
         
         conn.commit()
         conn.close()
@@ -49,25 +87,26 @@ class GradesManager:
             # 构建SQL查询
             sql = '''
                 SELECT 
-                    id AS student_id, 
-                    class_id,
-                    name AS student_name, 
-                    class, 
-                    daof, yuwen, shuxue, yingyu, laodong, 
-                    tiyu, yinyue, meishu, kexue, zonghe, 
-                    xinxi, shufa
-                FROM students
+                    s.id AS student_id, 
+                    s.class_id,
+                    s.name AS student_name, 
+                    c.class_name as class, 
+                    s.daof, s.yuwen, s.shuxue, s.yingyu, s.laodong, 
+                    s.tiyu, s.yinyue, s.meishu, s.kexue, s.zonghe, 
+                    s.xinxi, s.shufa, s.xinli
+                FROM students s
+                LEFT JOIN classes c ON s.class_id = c.id
             '''
             
             params = []
             
             # 添加班级ID筛选
             if class_id:
-                sql += " WHERE class_id = ?"
+                sql += " WHERE s.class_id = ?"
                 params.append(class_id)
             
             # 添加排序
-            sql += " ORDER BY class, CAST(id AS INTEGER)"
+            sql += " ORDER BY class, CAST(s.id AS INTEGER)"
             
             # 执行查询
             cursor.execute(sql, params)
@@ -102,7 +141,7 @@ class GradesManager:
             SELECT id, name, class, 
                    daof, yuwen, shuxue, yingyu, laodong, 
                    tiyu, yinyue, meishu, kexue, zonghe, 
-                   xinxi, shufa, 
+                   xinxi, shufa, xinli, 
                    COALESCE(semester, ?) AS semester
             FROM students 
             WHERE id = ? AND class_id = ? AND (semester = ? OR semester IS NULL OR semester = '')
@@ -130,11 +169,12 @@ class GradesManager:
                 'zonghe': row[12] or '',
                 'xinxi': row[13] or '',
                 'shufa': row[14] or '',
-                'semester': row[15]
+                'xinli': row[15] or '',
+                'semester': row[16]
             }
         else:
             # 查找学生基本信息
-            cursor.execute('SELECT id, name, class FROM students WHERE id = ? AND class_id = ?', (student_id, class_id))
+            cursor.execute('SELECT id, name, c.class_name as class FROM students s LEFT JOIN classes c ON s.class_id = c.id WHERE id = ? AND class_id = ?', (student_id, class_id))
             student = cursor.fetchone()
             
             if student:
@@ -155,7 +195,8 @@ class GradesManager:
                     'kexue': '',
                     'zonghe': '',
                     'xinxi': '',
-                    'shufa': ''
+                    'shufa': '',
+                    'xinli': '',
                 }
             return None  # 学生不存在
     
@@ -169,7 +210,7 @@ class GradesManager:
             SELECT id, name, class, 
                    daof, yuwen, shuxue, yingyu, laodong, 
                    tiyu, yinyue, meishu, kexue, zonghe, 
-                   xinxi, shufa, 
+                   xinxi, shufa, xinli, 
                    COALESCE(semester, ?) AS semester
             FROM students 
             WHERE id = ? AND class_id = ? AND (semester = ? OR semester IS NULL OR semester = '')
@@ -197,11 +238,12 @@ class GradesManager:
                 'zonghe': row[12] or '',
                 'xinxi': row[13] or '',
                 'shufa': row[14] or '',
-                'semester': row[15]
+                'xinli': row[15] or '',
+                'semester': row[16]
             }
         else:
             # 查找学生基本信息
-            cursor.execute('SELECT id, name, class FROM students WHERE id = ? AND class_id = ?', (student_id, class_id))
+            cursor.execute('SELECT id, name, c.class_name as class FROM students s LEFT JOIN classes c ON s.class_id = c.id WHERE id = ? AND class_id = ?', (student_id, class_id))
             student = cursor.fetchone()
             
             if student:
@@ -222,7 +264,8 @@ class GradesManager:
                     'kexue': '',
                     'zonghe': '',
                     'xinxi': '',
-                    'shufa': ''
+                    'shufa': '',
+                    'xinli': '',
                 }
             return None  # 学生不存在
     
@@ -249,12 +292,12 @@ class GradesManager:
             
             for field in ['daof', 'yuwen', 'shuxue', 'yingyu', 'laodong', 
                         'tiyu', 'yinyue', 'meishu', 'kexue', 'zonghe', 
-                        'xinxi', 'shufa']:
+                        'xinxi', 'shufa', 'xinli']:
                 if field in grade_data:
                     value = grade_data.get(field, '')
                     
-                    # 验证成绩值是否符合「优、良、及格、待及格」四级制
-                    if value and value not in ['优', '良', '及格', '待及格', '差', '']:
+                    # 验证成绩值是否符合「优、良、及格、待及格、/」五级制
+                    if value and value not in ['优', '良', '及格', '待及格', '/']:
                         print(f"警告: {student_id} 的 {field} 成绩 '{value}' 不符合要求，已自动清空")
                         value = ''  # 清空不符合要求的值
                         
@@ -356,14 +399,17 @@ class GradesManager:
             column_mapping = self._get_column_mapping()
             
             # 允许的成绩值
-            allowed_grades = ['优', '良', '及格', '待及格', '差', '']
+            allowed_grades = ['优', '良', '及格', '待及格', '/']
             
-            # 成绩值标准化映射表
+            # 成绩映射表 - 将不同格式的成绩转换为标准格式
             grade_mapping = {
-                '优秀': '优',
-                '良好': '良',
+                '优秀': '优', 'A': '优', 'a': '优',
+                '良好': '良', 'B': '良', 'b': '良',
+                '中等': '及格', '中': '及格', 'C': '及格', 'c': '及格',
                 '及': '及格',
-                '待': '待及格'
+                '不及格': '待及格', '差': '待及格', 'D': '待及格', 'd': '待及格',
+                '待': '待及格',
+                '无': '/', '缺': '/', '免修': '/'
             }
             
             # 检查是否包含姓名列，用于校验
@@ -541,14 +587,17 @@ class GradesManager:
             column_mapping = self._get_column_mapping()
             
             # 允许的成绩值
-            allowed_grades = ['优', '良', '及格', '待及格', '差', '']
+            allowed_grades = ['优', '良', '及格', '待及格', '/']
             
-            # 成绩值标准化映射表
+            # 成绩映射表 - 将不同格式的成绩转换为标准格式
             grade_mapping = {
-                '优秀': '优',
-                '良好': '良',
+                '优秀': '优', 'A': '优', 'a': '优',
+                '良好': '良', 'B': '良', 'b': '良',
+                '中等': '及格', '中': '及格', 'C': '及格', 'c': '及格',
                 '及': '及格',
-                '待': '待及格'
+                '不及格': '待及格', '差': '待及格', 'D': '待及格', 'd': '待及格',
+                '待': '待及格',
+                '无': '/', '缺': '/', '免修': '/'
             }
             
             # 从数据库获取学生信息
@@ -557,9 +606,9 @@ class GradesManager:
             
             # 根据班级ID筛选学生
             if class_id:
-                cursor.execute('SELECT id, name, class FROM students WHERE class_id = ?', (class_id,))
+                cursor.execute('SELECT s.id, s.name, c.class_name as class FROM students s LEFT JOIN classes c ON s.class_id = c.id WHERE s.class_id = ?', (class_id,))
             else:
-                cursor.execute('SELECT id, name, class FROM students')
+                cursor.execute('SELECT s.id, s.name, c.class_name as class FROM students s LEFT JOIN classes c ON s.class_id = c.id')
             
             students_dict = {row[0]: {'name': row[1], 'class': row[2]} for row in cursor.fetchall()}
             conn.close()
@@ -797,7 +846,7 @@ class GradesManager:
         # 添加科目列标题 - 仅包含已识别的科目
         if recognized_subjects:
             for subject in ['道法', '语文', '数学', '英语', '劳动', '体育', '音乐', 
-                            '美术', '科学', '综合', '信息', '书法']:
+                            '美术', '科学', '综合', '信息', '书法', '心理']:
                 if subject in recognized_subjects:
                     html += f"""
                         <th style="background-color: #d1fae5;">{subject}</th>
@@ -817,6 +866,7 @@ class GradesManager:
                         <th>综合</th>
                         <th>信息</th>
                         <th>书法</th>
+                        <th>心理</th>
             """
             
         html += """
@@ -856,6 +906,7 @@ class GradesManager:
                     <td>{grade.get('zonghe', '-')}</td>
                     <td>{grade.get('xinxi', '-')}</td>
                     <td>{grade.get('shufa', '-')}</td>
+                    <td>{grade.get('xinli', '-')}</td>
                 """
                 
             html += """
@@ -920,7 +971,8 @@ class GradesManager:
             '科学': 'kexue',
             '综合': 'zonghe',
             '信息': 'xinxi',
-            '书法': 'shufa'
+            '书法': 'shufa',
+            '心理': 'xinli'
         }
     
     def get_subject_names(self):
@@ -937,7 +989,8 @@ class GradesManager:
             'kexue': '科学',
             'zonghe': '综合',
             'xinxi': '信息',
-            'shufa': '书法'
+            'shufa': '书法',
+            'xinli': '心理'
         }
         
     def create_empty_template(self, output_path=None, class_id=None):
@@ -953,14 +1006,14 @@ class GradesManager:
         # 根据班级ID筛选学生
         if class_id:
             cursor.execute('''
-            SELECT id, name, class, class_id FROM students
-            WHERE class_id = ?
-            ORDER BY class, CAST(id AS INTEGER)
+            SELECT s.id, s.name, c.class_name as class, c.class_name as class_id FROM students s LEFT JOIN classes c ON s.class_id = c.id
+            WHERE s.class_id = ?
+            ORDER BY c.class_name, CAST(s.id AS INTEGER)
             ''', (class_id,))
         else:
             cursor.execute('''
-            SELECT id, name, class, class_id FROM students
-            ORDER BY class, CAST(id AS INTEGER)
+            SELECT s.id, s.name, c.class_name as class, c.class_name as class_id FROM students s LEFT JOIN classes c ON s.class_id = c.id
+            ORDER BY c.class_name, CAST(s.id AS INTEGER)
             ''')
         
         students = []
@@ -996,6 +1049,7 @@ class GradesManager:
             {'header': '综合', 'key': 'zonghe', 'width': 10},
             {'header': '信息', 'key': 'xinxi', 'width': 10},
             {'header': '书法', 'key': 'shufa', 'width': 10},
+            {'header': '心理', 'key': 'xinli', 'width': 10},
         ]
         
         # 设置标题行
@@ -1017,9 +1071,11 @@ class GradesManager:
         ws.cell(row=notes_row+1, column=1, value="1. 成绩可填写：优、良、及格、待及格，请勿使用其他评分方式")
         ws.cell(row=notes_row+2, column=1, value="2. 请勿修改学号、姓名和班级")
         ws.cell(row=notes_row+3, column=1, value="3. 导入时只需填写有变更的成绩")
+        ws.cell(row=notes_row+4, column=1, value="4. 没有教授的学科成绩填/")
+        ws.cell(row=notes_row+5, column=1, value="5. 导入时要把这些说明事项都删除，方可导入")
         
         # 合并说明文字的单元格
-        for i in range(4):
+        for i in range(6):
             ws.merge_cells(start_row=notes_row+i, start_column=1, end_row=notes_row+i, end_column=6)
         
         # 确定保存路径
@@ -1046,4 +1102,44 @@ class GradesManager:
                 return backup_path
             except Exception as e2:
                 print(f"保存到备用位置也失败: {e2}")
-                return None 
+                return None
+    
+    def update_student_grade(self, student_id, class_id, grades_data):
+        """更新学生成绩"""
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            
+            # 构建更新字段和参数
+            update_fields = []
+            parameters = []
+            
+            # 成绩字段
+            grade_fields = ['yuwen', 'shuxue', 'yingyu', 'daof', 'kexue', 'zonghe', 
+                            'tiyu', 'yinyue', 'meishu', 'laodong', 'xinxi', 'shufa', 'xinli']
+            
+            for field in grade_fields:
+                if field in grades_data and grades_data[field] is not None:
+                    update_fields.append(f"{field} = ?")
+                    parameters.append(grades_data[field])
+            
+            # 学期字段
+            if 'semester' in grades_data and grades_data['semester']:
+                update_fields.append("semester = ?")
+                parameters.append(grades_data['semester'])
+            
+            # 只有在有字段需要更新时才执行
+            if update_fields:
+                parameters.extend([student_id, class_id])
+                update_sql = f"UPDATE students SET {', '.join(update_fields)} WHERE id = ? AND class_id = ?"
+                
+                cursor.execute(update_sql, parameters)
+                conn.commit()
+            
+            conn.close()
+            return True
+        except Exception as e:
+            logger.error(f"更新学生成绩时出错: {str(e)}")
+            if conn:
+                conn.close()
+            return False 

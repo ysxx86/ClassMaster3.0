@@ -1,4 +1,4 @@
-  // @charset UTF-8
+// @charset UTF-8
 // 导出报告模块
 
 // 全局变量，防止重复初始化和重复上传
@@ -8,6 +8,38 @@ let templateContent = null;
 let templateFile = null;
 let currentExportRequestId = null; // 用于跟踪当前导出请求ID
 let abortController = null; // 用于取消请求
+let exportInProgress = false;  // 新增：导出进行中标志
+let exportStartTime = null; // 导出开始时间
+
+// 全局变量，用于记录轮询状态
+let progressPoller = null; 
+
+// 记录数据检查的最后时间戳
+let lastDataCheckTimestamp = Date.now();
+
+// 为其他页面提供的刷新方法
+window.refreshStudentsList = function() {
+    console.log('手动触发学生列表刷新...');
+    initStudentList();
+};
+
+// 定期检查学生数据是否有变更（例如：学生被删除）
+function startDataChangeChecking() {
+    // 每5秒检查一次
+    setInterval(checkStudentDataChanged, 5000);
+}
+
+// 检查学生数据是否发生变化
+function checkStudentDataChanged() {
+    // 尝试从localStorage获取数据变更时间戳
+    const storedTimestamp = localStorage.getItem('studentDataChangeTimestamp');
+    
+    if (storedTimestamp && parseInt(storedTimestamp) > lastDataCheckTimestamp) {
+        console.log('检测到学生数据变更，刷新学生选择列表...');
+        lastDataCheckTimestamp = parseInt(storedTimestamp);
+        initStudentList();  // 重新加载学生列表
+    }
+}
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('初始化导出页面开始...');
@@ -57,6 +89,20 @@ document.addEventListener('DOMContentLoaded', function() {
     // 初始化导出功能
     initExportFunctions();
     
+    // 启动数据变更检查
+    startDataChangeChecking();
+    
+    // 设置数据变更事件监听
+    window.addEventListener('storage', function(e) {
+        if (e.key === 'studentDataChangeTimestamp') {
+            console.log('从localStorage事件检测到学生数据变更');
+            initStudentList();  // 重新加载学生列表
+        }
+    });
+    
+    // 初始化导出拦截器
+    setupExportInterceptor();
+    
     console.log('导出页面初始化完成');
 });
 
@@ -72,23 +118,23 @@ function initExportSettings() {
             if (data.status === 'success' || data.status === 'ok') {
                 const serverSettings = data.data || data.settings || {};
                 
-                // 更新学年和学期信息
-                if (serverSettings.school_year || serverSettings.schoolYear) {
-                    // 优先使用设置中的学年信息
-                    const schoolYear = serverSettings.school_year || serverSettings.schoolYear;
-                    document.getElementById('schoolYear').value = schoolYear;
-                    settings.schoolYear = schoolYear;
+                // 更新学年信息
+                if (serverSettings.school_year) {
+                    // 使用服务器设置的学年信息
+                    document.getElementById('schoolYear').value = serverSettings.school_year;
+                    settings.schoolYear = serverSettings.school_year;
                 } else {
-                    // 使用默认学年，确保与首页一致
+                    // 使用默认学年
                     document.getElementById('schoolYear').value = "2024-2025";
                     settings.schoolYear = "2024-2025";
                 }
                 
+                // 更新学期信息
                 if (serverSettings.semester) {
                     let semesterText = '第一学期';
                     let semesterValue = '1';
                     
-                    if (serverSettings.semester === '第二学期' || serverSettings.semester === '下学期' || serverSettings.semester === '2') {
+                    if (serverSettings.semester === '2' || serverSettings.semester === '第二学期') {
                         semesterText = '第二学期';
                         semesterValue = '2';
                     }
@@ -103,7 +149,7 @@ function initExportSettings() {
                     settings.semester = semesterValue;
                     settings.semesterText = semesterText;
                 } else {
-                    // 使用默认学期，确保与首页一致
+                    // 使用默认学期
                     const semesterInput = document.getElementById('semester');
                     const semesterValueInput = document.getElementById('semesterValue');
                     
@@ -114,8 +160,12 @@ function initExportSettings() {
                     settings.semesterText = "第二学期";
                 }
                 
-                // 根据学期设置合适的开学时间
-                if (document.getElementById('startDate')) {
+                // 更新开学时间
+                if (serverSettings.start_date && document.getElementById('startDate')) {
+                    document.getElementById('startDate').value = serverSettings.start_date;
+                    settings.startDate = serverSettings.start_date;
+                } else if (document.getElementById('startDate')) {
+                    // 使用默认开学时间
                     const currentYear = new Date().getFullYear();
                     let defaultStartDate;
                     
@@ -127,12 +177,8 @@ function initExportSettings() {
                         defaultStartDate = `${currentYear}-03-01`;
                     }
                     
-                    // 如果没有特别设置过开学时间，用默认值
-                    if (!settings.startDate) {
-                        settings.startDate = defaultStartDate;
-                    }
-                    
-                    document.getElementById('startDate').value = settings.startDate;
+                    document.getElementById('startDate').value = defaultStartDate;
+                    settings.startDate = defaultStartDate;
                 }
                 
                 // 保存更新后的设置
@@ -152,16 +198,6 @@ function initExportSettings() {
             // 设置默认学年学期
             setDefaultSemesterInfo(settings);
         });
-    
-    // 设置默认值
-    document.getElementById('schoolYear').value = settings.schoolYear || "2024-2025";
-    document.getElementById('semester').value = settings.semester === '1' ? '第一学期' : '第二学期';
-    document.getElementById('semesterValue').value = settings.semester || "2";
-    
-    // 设置开学时间
-    if (document.getElementById('startDate')) {
-        document.getElementById('startDate').value = settings.startDate || '';
-    }
     
     // 设置包含内容复选框
     document.getElementById('includeBasicInfo').checked = settings.includeBasicInfo !== false;
@@ -802,8 +838,19 @@ function clearAllModals() {
 // 修改导出完成的处理函数，确保清除模态框
 async function exportReports(exportType = 'word') {
     try {
-        // 生成唯一的请求ID
-        currentExportRequestId = Date.now().toString();
+        // 设置导出进行中标志
+        exportInProgress = true;
+        
+        // 启用导出拦截器
+        setupExportInterceptor();
+        
+        // 记录导出开始时间
+        exportStartTime = new Date();
+        
+        // 生成唯一的请求ID（只在没有活动请求时生成新ID）
+        if (!currentExportRequestId || !exportInProgress) {
+            currentExportRequestId = Date.now().toString();
+        }
         // 创建新的AbortController用于取消请求
         abortController = new AbortController();
         
@@ -875,8 +922,11 @@ async function exportReports(exportType = 'word') {
         
         progressModal.show();
             
-        // 更新进度
+        // 更新初始进度
         updateProgress(10, exportType === 'pdf' ? '正在准备PDF导出...' : '正在准备导出...');
+        
+        // 立即开始轮询进度 - 将这一行移到这里，确保在发送请求前就开始轮询
+        startPollingProgress(currentExportRequestId);
         
         try {
             // 防止重复请求
@@ -914,7 +964,7 @@ async function exportReports(exportType = 'word') {
             // 请求完成，重置标志
             window.isExporting = false;
             
-            // 更新进度
+            // 更新进度 - 只提供消息，不显示百分比
             updateProgress(60, exportType === 'pdf' ? '正在将Word转换为PDF...' : '正在处理响应...');
             console.log('服务器响应状态:', response.status);
             console.log('服务器响应类型:', response.headers.get('Content-Type'));
@@ -941,32 +991,70 @@ async function exportReports(exportType = 'word') {
                 
                 // 下载文件
                 const blob = await response.blob();
-                updateProgress(90, exportType === 'pdf' ? '正在下载PDF文件...' : '正在下载文件...');
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `student_reports_${exportType}_` + new Date().toISOString().slice(0,10) + '.zip';
-                document.body.appendChild(a);
-                a.click();
+                updateProgress(90, exportType === 'pdf' ? '正在准备下载PDF文件...' : '正在准备下载文件...');
                 
-                // 清理
-                setTimeout(() => {
-                    document.body.removeChild(a);
-                    window.URL.revokeObjectURL(url);
-                    window.isExporting = false; // 确保导出状态被重置
-                }, 100);
+                // 计算最终耗时
+                const totalElapsedTime = formatElapsedTime(exportStartTime);
+                const filename = `class_reports_${exportType}_` + new Date().toISOString().slice(0,10) + '.zip';
                 
-                updateProgress(100, '导出完成!', 'success');
+                // 尝试使用现代浏览器的文件保存API
+                if (window.showSaveFilePicker) {
+                    try {
+                        updateProgress(95, '请选择保存位置...');
+                        const fileHandle = await window.showSaveFilePicker({
+                            suggestedName: filename,
+                            types: [{
+                                description: 'ZIP files',
+                                accept: { 'application/zip': ['.zip'] }
+                            }]
+                        });
+                        
+                        const writable = await fileHandle.createWritable();
+                        await writable.write(blob);
+                        await writable.close();
+                        
+                        updateProgress(100, `导出完成！${totalElapsedTime ? ` 总耗时: ${totalElapsedTime}` : ''}`, 'success');
+                    } catch (err) {
+                        if (err.name !== 'AbortError') {
+                            console.error('文件保存失败:', err);
+                            // 回退到传统下载方式
+                            downloadFileTraditional(blob, filename);
+                            updateProgress(100, `导出完成！${totalElapsedTime ? ` 总耗时: ${totalElapsedTime}` : ''}`, 'success');
+                        } else {
+                            updateProgress(100, '用户取消了文件保存', 'warning');
+                        }
+                    }
+                } else {
+                    // 浏览器不支持新API，使用传统下载方式
+                                         downloadFileTraditional(blob, filename);
+                     updateProgress(100, `导出完成！${totalElapsedTime ? ` 总耗时: ${totalElapsedTime}` : ''}`, 'success');
+                 }
                 
                 // 延迟一秒后关闭进度条，让用户看到100%完成状态
                 setTimeout(() => {
+                    // 重置导出状态
+                    exportInProgress = false;
+                    
+                    // 停止导出拦截器
+                    stopExportInterceptor();
+                    
+                    // 重置请求ID
+                    currentExportRequestId = null;
+                    abortController = null;
+                    window.isExporting = false;
+                    
                     // 隐藏进度模态框
                     hideProgressModal();
                     
                     // 显示完成模态框
+                    const totalTime = formatElapsedTime(exportStartTime);
+                    const completionMessage = totalTime ? 
+                        `已成功导出${selectedStudentIds.length}份学生报告！总耗时：${totalTime}` :
+                        `已成功导出${selectedStudentIds.length}份学生报告！`;
+                    
                     showExportCompleteModal(
                         `${exportType === 'pdf' ? 'PDF' : 'Word'}导出成功`, 
-                        `已成功导出${selectedStudentIds.length}份学生报告！`, 
+                        completionMessage, 
                         'success'
                     );
                     
@@ -1028,6 +1116,13 @@ async function exportReports(exportType = 'word') {
                         updateProgress(100, '导出完成!');
                         
                         setTimeout(() => {
+                            // 重置导出状态
+                            exportInProgress = false;
+                            stopExportInterceptor();
+                            currentExportRequestId = null;
+                            abortController = null;
+                            window.isExporting = false;
+                            
                             if (progressModal) {
                                 progressModal.hide();
                             }
@@ -1045,10 +1140,65 @@ async function exportReports(exportType = 'word') {
                 console.log('服务器JSON响应:', result);
                 
                 if (result.status === 'error') {
+                    // 如果是数据验证失败，则显示更详细的错误信息
+                    if (result.validation_failed) {
+                        resetExportButton(exportType);
+                        
+                        if (progressModal) {
+                            progressModal.hide();
+                        }
+                        
+                        // 创建自定义的错误模态框，显示详细问题
+                        let modalHTML = `
+                            <div class="modal fade" id="validationErrorModal" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header bg-danger text-white">
+                                            <h5 class="modal-title">
+                                                <i class="bx bx-error-circle me-1"></i>
+                                                数据验证失败
+                                            </h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="alert alert-warning">
+                                                <p><strong>${result.message}</strong></p>
+                                                ${result.details ? `<pre style="margin-top:10px;white-space:pre-wrap;max-height:300px;overflow-y:auto">${result.details}</pre>` : ''}
+                                            </div>
+                                            <p class="mb-0">请修复以上问题后再尝试导出报告。</p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        
+                        // 移除之前的错误模态框（如果存在）
+                        const existingModal = document.getElementById('validationErrorModal');
+                        if (existingModal) {
+                            existingModal.remove();
+                        }
+                        
+                        // 添加模态框到页面并显示
+                        document.body.insertAdjacentHTML('beforeend', modalHTML);
+                        const validationErrorModal = new bootstrap.Modal(document.getElementById('validationErrorModal'));
+                        validationErrorModal.show();
+                        
+                        // 如果有问题学生的ID列表，高亮显示这些学生
+                        if (result.problem_students && result.problem_students.length > 0) {
+                            setTimeout(() => {
+                                highlightProblemStudents(result.problem_students);
+                            }, 500);
+                        }
+                        
+                        return;
+                    }
+                    
                     throw new Error(result.message || '导出报告失败');
                 }
                 
-                // 处理警告状态 - 当PDF转换失败但提供了Word版本时
                 if (result.status === 'warning') {
                     // 从服务器下载生成的文件
                     updateProgress(90, '正在下载文件...');
@@ -1072,6 +1222,13 @@ async function exportReports(exportType = 'word') {
                     
                     // 延迟一秒后关闭进度条，让用户看到100%完成状态
                     setTimeout(() => {
+                        // 重置导出状态
+                        exportInProgress = false;
+                        stopExportInterceptor();
+                        currentExportRequestId = null;
+                        abortController = null;
+                        window.isExporting = false;
+                        
                         if (progressModal) {
                             progressModal.hide();
                         }
@@ -1105,6 +1262,13 @@ async function exportReports(exportType = 'word') {
                     
                     // 延迟一秒后关闭进度条，让用户看到100%完成状态
                     setTimeout(() => {
+                        // 重置导出状态
+                        exportInProgress = false;
+                        stopExportInterceptor();
+                        currentExportRequestId = null;
+                        abortController = null;
+                        window.isExporting = false;
+                        
                         if (progressModal) {
                             progressModal.hide();
                         }
@@ -1170,30 +1334,28 @@ async function exportReports(exportType = 'word') {
         resetExportButton(exportType);
         
         // 重置导出状态
+        exportInProgress = false;
+        
+        // 停止导出拦截器
+        stopExportInterceptor();
+        
         window.isExporting = false;
         currentExportRequestId = null;
         abortController = null;
     }
 }
 
-// 取消导出函数
+// 取消导出操作
 function cancelExport(requestId) {
-    if (!requestId || requestId !== currentExportRequestId) {
-        console.warn('没有进行中的导出或请求ID不匹配');
+    if (!requestId) {
+        console.warn('取消导出时未提供requestId');
         return;
     }
     
-    console.log('正在取消导出请求:', requestId);
+    // 停止轮询进度
+    stopPollingProgress();
     
-    // 更新UI显示状态
-    updateProgress(0, '正在取消导出...', 'warning');
-    
-    // 取消进行中的fetch请求
-    if (abortController) {
-        abortController.abort();
-    }
-    
-    // 向服务器发送取消请求
+    console.log('发送取消导出请求:', requestId);
     fetch('/api/cancel-export', {
         method: 'POST',
         headers: {
@@ -1216,6 +1378,11 @@ function cancelExport(requestId) {
     })
     .finally(() => {
         // 无论成功与否，都重置状态
+        exportInProgress = false;
+        
+        // 停止导出拦截器
+        stopExportInterceptor();
+        
         currentExportRequestId = null;
         abortController = null;
         window.isExporting = false;
@@ -1232,33 +1399,29 @@ function cancelExport(requestId) {
     });
 }
 
-// 更新进度条和文本
+// 修改updateProgress函数，不显示百分比
 function updateProgress(percent, message, type = 'normal') {
     const progressBar = document.getElementById('progressBar');
     const progressText = document.getElementById('progressText');
     
-    if (progressBar) {
+    if (progressBar && progressText) {
+        // 只显示消息，不显示百分比
+        progressText.textContent = message;
+        
+        // 更新进度条
         progressBar.style.width = `${percent}%`;
         progressBar.setAttribute('aria-valuenow', percent);
         
-        // 根据类型设置进度条颜色
+        // 更新进度条样式
         progressBar.className = 'progress-bar';
-        if (type === 'error') {
-            progressBar.classList.add('bg-danger');
-        } else if (percent === 100) {
+        if (type === 'success') {
             progressBar.classList.add('bg-success');
+        } else if (type === 'warning') {
+            progressBar.classList.add('bg-warning');
+        } else if (type === 'error') {
+            progressBar.classList.add('bg-danger');
         } else {
             progressBar.classList.add('bg-primary', 'progress-bar-striped', 'progress-bar-animated');
-        }
-    }
-    
-    if (progressText) {
-        progressText.innerHTML = `${message} <span class="badge bg-secondary">${percent}%</span>`;
-        
-        if (type === 'error') {
-            progressText.classList.add('text-danger');
-        } else {
-            progressText.classList.remove('text-danger');
         }
     }
 }
@@ -1464,10 +1627,10 @@ async function loadDocxTemplaterLibraries() {
                     resolve();
                 };
                 script.onerror = () => {
-                    console.error('本地PizZip库加载失败，尝试CDN');
-                    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pizzip/3.1.4/pizzip.min.js';
+                    console.error('本地PizZip库加载失败，尝试备用路径');
+                    script.src = '../libs/pizzip.min.js';
                     script.onload = () => {
-                        console.log('CDN PizZip库加载成功');
+                        console.log('备用PizZip库加载成功');
                         window.PizZip = typeof PizZip !== 'undefined' ? PizZip : null;
                         resolve();
                     };
@@ -1498,10 +1661,10 @@ async function loadDocxTemplaterLibraries() {
                     resolve();
                 };
                 script.onerror = () => {
-                    console.error('本地Docxtemplater库加载失败，尝试CDN');
-                    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/docxtemplater/3.37.11/docxtemplater.js';
+                    console.error('本地Docxtemplater库加载失败，尝试备用路径');
+                    script.src = '../libs/docxtemplater.js';
                     script.onload = () => {
-                        console.log('CDN Docxtemplater库加载成功');
+                        console.log('备用Docxtemplater库加载成功');
                         if (typeof window.docxtemplater !== 'undefined') {
                             window.Docxtemplater = window.docxtemplater;
                         } else if (typeof docxtemplater !== 'undefined') {
@@ -1985,6 +2148,40 @@ function formatDate(date) {
     return `${year}-${month}-${day}`;
 }
 
+// 计算和格式化导出耗时
+function formatElapsedTime(startTime) {
+    if (!startTime) return '';
+    
+    const now = new Date();
+    const elapsedMs = now - startTime;
+    const elapsedSeconds = Math.floor(elapsedMs / 1000);
+    
+    if (elapsedSeconds < 60) {
+        return `${elapsedSeconds}秒`;
+    } else {
+        const minutes = Math.floor(elapsedSeconds / 60);
+        const seconds = elapsedSeconds % 60;
+        return `${minutes}分${seconds}秒`;
+    }
+}
+
+// 传统方式下载文件
+function downloadFileTraditional(blob, filename) {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    
+    // 清理
+    setTimeout(() => {
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+    }, 100);
+}
+
 /**
  * 保存导出设置
  */
@@ -2198,6 +2395,9 @@ function initExportFunctions() {
 // 隐藏进度模态框
 function hideProgressModal() {
     try {
+        // ⭐ 首先停止轮询进度
+        stopPollingProgress();
+        
         const progressModal = bootstrap.Modal.getInstance(document.getElementById('progressModal'));
         if (progressModal) {
             progressModal.hide();
@@ -2364,3 +2564,356 @@ function clearAllModalBackdrops() {
     
     console.log('已清理所有模态框背景');
 }
+
+// 开始轮询导出进度
+function startPollingProgress(requestId) {
+    // 先清除可能存在的旧轮询器
+    stopPollingProgress();
+    
+    // 设置轮询间隔
+    progressPoller = setInterval(async () => {
+        try {
+            // 构建查询URL，如果有requestId则添加参数
+            let progressUrl = '/api/export-progress';
+            if (requestId) {
+                progressUrl += `?request_id=${encodeURIComponent(requestId)}`;
+            }
+            
+            // 调用API获取最新进度
+            const response = await fetch(progressUrl, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            });
+            
+            if (!response.ok) {
+                console.warn('获取进度信息失败:', response.status);
+                return;
+            }
+            
+            const progressData = await response.json();
+            
+            // 检查进度信息是否有效
+            if (progressData.status === 'idle') {
+                // 没有活动的导出任务，忽略
+                return;
+            }
+            
+            // 检查是否导出已完成
+            if (progressData.status === 'completed') {
+                console.log('导出已完成，停止轮询');
+                stopPollingProgress();
+                return;
+            }
+            
+            // 检查是否是当前请求的进度（如果有requestId）
+            if (requestId && progressData.request_id && progressData.request_id !== requestId) {
+                console.warn('收到的进度信息不属于当前请求:', progressData.request_id, '!=', requestId);
+                return;
+            }
+            
+            // 获取进度条和文本元素
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            
+            // 更新进度条和文本
+            if (progressBar && progressText && progressData.message) {
+                // 显示详细的进度信息（包含百分比和耗时）
+                const elapsedTime = formatElapsedTime(exportStartTime);
+                const progressMessage = elapsedTime ? 
+                    `${progressData.message} (耗时: ${elapsedTime})` : 
+                    progressData.message;
+                
+                progressText.textContent = progressMessage;
+                
+                // 更新进度条
+                progressBar.style.width = `${progressData.percent}%`;
+                progressBar.setAttribute('aria-valuenow', progressData.percent);
+                
+                // 根据进度阶段设置颜色
+                progressBar.className = 'progress-bar';
+                if (progressData.percent === 100) {
+                    progressBar.classList.add('bg-success');
+                } else {
+                    progressBar.classList.add('bg-primary', 'progress-bar-striped', 'progress-bar-animated');
+                }
+                
+                // 更新阻塞对话框的状态显示
+                updateBlockingDialogStatus();
+            }
+        } catch (error) {
+            console.error('轮询进度时出错:', error);
+        }
+    }, 500); // 每500毫秒轮询一次
+    
+    console.log(`开始轮询导出进度 [请求ID: ${requestId}]...`);
+}
+
+// 停止轮询导出进度
+function stopPollingProgress() {
+    if (progressPoller) {
+        clearInterval(progressPoller);
+        progressPoller = null;
+        console.log('已停止轮询导出进度');
+    }
+}
+
+// 高亮有问题的学生
+function highlightProblemStudents(problemStudentIds) {
+    // 先移除所有已有的高亮
+    document.querySelectorAll('.student-item').forEach(item => {
+        item.classList.remove('problem-student');
+    });
+    
+    // 添加高亮样式到页面
+    const style = document.createElement('style');
+    style.innerHTML = `
+        .student-item.problem-student {
+            animation: problem-student-pulse 2s infinite;
+            background-color: rgba(255, 82, 82, 0.1);
+            border: 1px solid #ff5252;
+            border-radius: 5px;
+        }
+        @keyframes problem-student-pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 82, 82, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 82, 82, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 82, 82, 0); }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // 高亮有问题的学生
+    problemStudentIds.forEach(studentId => {
+        const studentItem = document.querySelector(`.student-item[data-student-id="${studentId}"]`);
+        if (studentItem) {
+            studentItem.classList.add('problem-student');
+            
+            // 确保学生被选中
+            const checkbox = studentItem.querySelector('.student-checkbox');
+            if (checkbox) {
+                checkbox.checked = true;
+            }
+            
+            // 如果学生不在可视区域，滚动到学生位置
+            const studentList = document.querySelector('.student-list');
+            if (studentList) {
+                const itemTop = studentItem.offsetTop;
+                const listHeight = studentList.offsetHeight;
+                const scrollTop = studentList.scrollTop;
+                
+                if (itemTop < scrollTop || itemTop > scrollTop + listHeight) {
+                    studentList.scrollTop = itemTop - (listHeight / 2);
+                }
+            }
+        }
+    });
+    
+    // 显示提示消息
+    showNotification(`已高亮显示 ${problemStudentIds.length} 名有数据问题的学生`, 'info');
+}
+
+// 全局导出拦截器状态
+let exportInterceptorActive = false;
+
+// 导出期间操作拦截器
+function setupExportInterceptor() {
+    if (exportInterceptorActive) {
+        return; // 避免重复设置
+    }
+    exportInterceptorActive = true;
+    
+    // 监听页面关闭/刷新，静默取消导出（不阻止页面关闭）
+    window.addEventListener('beforeunload', handlePageUnload);
+    
+    // 拦截点击模态框以外的空白位置
+    document.addEventListener('click', handleModalBackdropClick);
+    
+    console.log('导出拦截器已启用');
+}
+
+// 停止导出拦截器
+function stopExportInterceptor() {
+    if (!exportInterceptorActive) {
+        return;
+    }
+    exportInterceptorActive = false;
+    
+    // 移除事件监听器
+    window.removeEventListener('beforeunload', handlePageUnload);
+    document.removeEventListener('click', handleModalBackdropClick);
+    
+    console.log('导出拦截器已停用');
+}
+
+
+
+
+// 处理页面关闭/刷新 - 静默取消导出（不阻止页面关闭）
+function handlePageUnload(e) {
+    if (exportInProgress) {
+        // 确定要取消的导出请求ID
+        const requestIdToCancel = currentExportRequestId || currentClassExportRequestId;
+        
+        if (requestIdToCancel) {
+            console.log('页面即将关闭，静默取消导出请求:', requestIdToCancel);
+            
+            // 使用sendBeacon确保请求能在页面关闭前发送成功
+            if (navigator.sendBeacon) {
+                const cancelData = JSON.stringify({
+                    requestId: requestIdToCancel
+                });
+                
+                navigator.sendBeacon('/api/cancel-export', new Blob([cancelData], {
+                    type: 'application/json'
+                }));
+            } else {
+                // 降级方案：使用同步XMLHttpRequest（不推荐但作为备用）
+                try {
+                    const xhr = new XMLHttpRequest();
+                    xhr.open('POST', '/api/cancel-export', false); // 同步请求
+                    xhr.setRequestHeader('Content-Type', 'application/json');
+                    xhr.send(JSON.stringify({
+                        requestId: requestIdToCancel
+                    }));
+                } catch (error) {
+                    console.warn('同步取消请求失败:', error);
+                }
+            }
+        }
+    }
+    
+    // 不阻止页面关闭，让用户正常离开
+}
+
+// 处理模态框外点击
+function handleModalBackdropClick(e) {
+    if (exportInProgress) {
+        // 只拦截点击模态框背景的情况
+        // 不拦截页面上其他UI元素的正常点击
+        if (e.target.classList.contains('modal') || 
+            e.target.classList.contains('modal-backdrop')) {
+            e.preventDefault();
+            e.stopPropagation();
+            showExportBlockingDialog();
+        }
+    }
+}
+
+// 显示导出阻塞对话框
+function showExportBlockingDialog() {
+    
+    // 创建模态框HTML
+    const modalHtml = `
+        <div class="modal fade" id="exportBlockingModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-warning">
+                        <h5 class="modal-title"><i class="bx bx-error-circle me-2"></i>正在进行导出，是否要取消导出任务？</h5>
+                    </div>
+                    <div class="modal-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
+                            <span class="text-muted">当前导出进度：<span id="currentExportStatus">处理中...</span></span>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" onclick="continueExport()" data-allow-during-export="true">取消</button>
+                        <button type="button" class="btn btn-danger" onclick="confirmStopExport()" data-allow-during-export="true">确定</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // 移除旧的模态框
+    const oldModal = document.getElementById('exportBlockingModal');
+    if (oldModal) {
+        oldModal.remove();
+    }
+    
+    // 添加新的模态框
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    // 显示模态框
+    const modal = new bootstrap.Modal(document.getElementById('exportBlockingModal'));
+    modal.show();
+    
+    // 更新当前导出状态
+    updateBlockingDialogStatus();
+}
+
+// 更新阻塞对话框中的导出状态
+function updateBlockingDialogStatus() {
+    const statusElement = document.getElementById('currentExportStatus');
+    if (statusElement) {
+        // 从进度文本获取当前状态
+        const progressText = document.getElementById('progressText');
+        if (progressText && progressText.textContent) {
+            statusElement.textContent = progressText.textContent;
+        }
+    }
+}
+
+// 继续导出（用户选择"取消"按钮）
+function continueExport() {
+    // 隐藏阻塞对话框
+    const modal = bootstrap.Modal.getInstance(document.getElementById('exportBlockingModal'));
+    if (modal) {
+        modal.hide();
+    }
+    
+    // 移除模态框DOM元素
+    const modalElement = document.getElementById('exportBlockingModal');
+    if (modalElement) {
+        modalElement.remove();
+    }
+    
+    // 确保进度模态框重新显示
+    const progressModal = document.getElementById('progressModal');
+    if (progressModal && exportInProgress) {
+        const progressModalInstance = bootstrap.Modal.getInstance(progressModal) || new bootstrap.Modal(progressModal);
+        progressModalInstance.show();
+    }
+}
+
+// 确认停止导出（用户选择"确定"按钮）
+function confirmStopExport() {
+    // 隐藏阻塞对话框
+    const modal = bootstrap.Modal.getInstance(document.getElementById('exportBlockingModal'));
+    if (modal) {
+        modal.hide();
+    }
+    
+    // 移除模态框DOM元素
+    const modalElement = document.getElementById('exportBlockingModal');
+    if (modalElement) {
+        modalElement.remove();
+    }
+    
+    // 取消导出
+    if (currentExportRequestId) {
+        cancelExport(currentExportRequestId);
+    } else if (currentClassExportRequestId) {
+        // 如果是班级导出
+        cancelClassExport(currentClassExportRequestId);
+    }
+    
+    // 停止拦截器
+    stopExportInterceptor();
+    
+    // 重置状态
+    exportInProgress = false;
+    stopPollingProgress();
+    hideProgressModal();
+    
+    showNotification('导出已取消', 'warning');
+}
+
+// 强制停止导出（保留原函数以兼容）
+function forceStopExport() {
+    confirmStopExport();
+}
+
+

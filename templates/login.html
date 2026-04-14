@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>德育AI智能系统 - 登录</title>
     <!-- 引入 Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
     <link href="/css/boxicons-local.css" rel="stylesheet">
     <!-- 自定义样式 -->
     <style>
@@ -15,25 +15,10 @@
             height: 100vh;
             overflow: hidden;
             position: relative;
-        }
-        
-        .background-carousel {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-        }
-        
-        .carousel-item {
-            height: 100vh;
-        }
-        
-        .carousel-item img {
-            object-fit: cover;
-            width: 100%;
-            height: 100%;
+            background-image: url('/img/backgrounds/bg01.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
         }
         
         .login-wrapper {
@@ -79,9 +64,6 @@
             padding-right: 1rem; /* 添加额外右侧内边距 */
             position: relative; /* 为伪元素定位 */
         }
-        
-        /* 添加一个分隔符 */
-        
         
         .login-logo img {
             max-width: 200%;
@@ -177,65 +159,9 @@
         }
         
         .copyright {
-            color: #1a5fb4;
+            color: #ffffff;
             font-size: 0.8rem;
             
-        }
-        
-        .carousel-control-prev, .carousel-control-next {
-            display: none;
-        }
-        
-        .carousel-indicators {
-            bottom: 20px;
-        }
-        
-        /* 圆角矩形条指示器样式 */
-        .carousel-indicators {
-            bottom: 20px;
-            margin-bottom: 0;
-            display: flex;
-            justify-content: center;
-            gap: 5px;
-            z-index: 15;
-            list-style: none;
-        }
-        
-        .carousel-indicators button {
-            box-sizing: content-box;
-            flex: 0 1 auto;
-            width: 30px;
-            height: 3px;
-            margin: 0;
-            text-indent: -999px;
-            cursor: pointer;
-            border: 0;
-            border-radius: 20px;
-            opacity: 0.5;
-            transition: all 0.6s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .carousel-indicators button.active {
-            opacity: 1;
-        }
-        
-        /* 进度条动画 */
-        .carousel-indicators button.active::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            height: 100%;
-            width: 0;
-            background-color: rgba(255, 255, 255, 0.5);
-            animation: progress-animation 5s linear forwards;
-        }
-        
-        @keyframes progress-animation {
-            0% { width: 0; }
-            100% { width: 100%; }
         }
         
         /* 在小屏幕上调整登录框位置和布局 */
@@ -279,6 +205,35 @@
                 padding-top: 0.5rem;
             }
         }
+        
+        /* 添加样式 */
+        .timeout-message {
+            margin-bottom: 15px;
+        }
+        
+        .alert {
+            padding: 10px 15px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .alert-warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+        }
+        
+        .alert-danger {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .alert i {
+            margin-right: 8px;
+            font-size: 1.2em;
+        }
     </style>
     <script>
         // 检查是否是由于会话超时导致的重定向
@@ -286,346 +241,13 @@
             // 从URL参数中检查是否有超时标记
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.has('timeout') && urlParams.get('timeout') === 'true') {
-                // 显示超时提示
-                const alertContainer = document.createElement('div');
-                alertContainer.className = 'alert alert-warning alert-dismissible fade show mb-4';
-                alertContainer.setAttribute('role', 'alert');
-                alertContainer.innerHTML = `
-                    <strong>会话已超时</strong> 由于长时间未操作，您已被自动登出。
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                `;
-                
-                // 将提示插入到页面中
-                const loginForm = document.querySelector('.login-form');
-                if (loginForm) {
-                    loginForm.parentNode.insertBefore(alertContainer, loginForm);
-                } else {
-                    document.body.insertBefore(alertContainer, document.body.firstChild);
-                }
-            }
-            
-            // 加载轮播图片和设置
-            loadCarouselSettings();
-            
-            // 加载轮播设置和图片
-            function loadCarouselSettings() {
-                // 显示默认图片，以防API加载失败时有内容显示
-                initDefaultBackground();
-                
-                // 获取轮播设置
-                fetch('/api/carousel/settings')
-                .then(response => {
-                    if (!response.ok) {
-                        console.error('获取轮播设置失败，状态码:', response.status);
-                        throw new Error('获取轮播设置失败，状态码: ' + response.status);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    console.log('成功获取轮播设置:', data);
-                    if (data.status === 'success' && data.settings) {
-                        // 应用轮播设置
-                        applyCarouselSettings(data.settings);
-                    } else {
-                        // 使用默认设置
-                        console.warn('使用默认轮播设置');
-                        applyCarouselSettings({
-                            interval: 5000,
-                            animation: 'fade',
-                            indicatorStyle: 'rounded-pill',
-                            indicatorColor: '#ffffff',
-                            showProgress: true,
-                            maxImages: 5
-                        });
-                    }
-                })
-                .catch(error => {
-                    console.error('获取轮播设置失败，使用默认设置:', error);
-                    // 应用默认设置
-                    applyCarouselSettings({
-                        interval: 5000,
-                        animation: 'fade',
-                        indicatorStyle: 'rounded-pill',
-                        indicatorColor: '#ffffff',
-                        showProgress: true,
-                        maxImages: 5
-                    });
-                })
-                .finally(() => {
-                    // 加载轮播图片
-                    fetchBackgroundImages();
-                });
-            }
-            
-            // 初始化默认背景
-            function initDefaultBackground() {
-                const carouselInner = document.querySelector('.carousel-inner');
-                if (carouselInner && carouselInner.children.length === 0) {
-                    carouselInner.innerHTML = `
-                        <div class="carousel-item active">
-                            <img src="/img/backgrounds/bg01.jpg" class="d-block" alt="校园风景" 
-                                 onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiMzNDk4ZGIiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjI0IiBmaWxsPSIjZmZmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBhbGlnbm1lbnQtYmFzZWxpbmU9Im1pZGRsZSI+6KeG6aKR5Yqg6L295aSx6LSlPC90ZXh0Pjwvc3ZnPg=='">
-                        </div>
-                    `;
-                }
-            }
-            
-            function applyCarouselSettings(settings) {
-                const carousel = document.getElementById('backgroundCarousel');
-                if (!carousel) return;
-                
-                // 设置轮播间隔
-                if (settings.interval) {
-                    carousel.setAttribute('data-bs-interval', settings.interval);
-                    
-                    // 重启轮播以应用新的间隔时间
-                    const carouselInstance = bootstrap.Carousel.getInstance(carousel);
-                    if (carouselInstance) {
-                        carouselInstance.dispose();
-                    }
-                    new bootstrap.Carousel(carousel, {
-                        interval: parseInt(settings.interval)
-                    });
-                }
-                
-                // 设置动画效果
-                if (settings.animation) {
-                    carousel.classList.remove('carousel-fade');
-                    if (settings.animation === 'fade') {
-                        carousel.classList.add('carousel-fade');
-                    }
-                }
-                
-                // 设置指示器样式
-                if (settings.indicatorStyle) {
-                    const indicators = carousel.querySelector('.carousel-indicators');
-                    if (indicators) {
-                        indicators.querySelectorAll('button').forEach(btn => {
-                            // 重置样式
-                            btn.style.width = '30px';
-                            btn.style.height = '3px';
-                            btn.style.borderRadius = '20px';
-                            
-                            if (settings.indicatorStyle === 'circle') {
-                                btn.style.width = '12px';
-                                btn.style.height = '12px';
-                                btn.style.borderRadius = '50%';
-                            } else if (settings.indicatorStyle === 'rectangle') {
-                                btn.style.width = '25px';
-                                btn.style.height = '5px';
-                                btn.style.borderRadius = '0';
-                            }
-                        });
-                    }
-                }
-                
-                // 设置指示器颜色
-                if (settings.indicatorColor) {
-                    const indicators = carousel.querySelector('.carousel-indicators');
-                    if (indicators) {
-                        indicators.querySelectorAll('button').forEach(btn => {
-                            btn.style.backgroundColor = settings.indicatorColor;
-                        });
-                    }
-                }
-                
-                // 设置进度动画
-                if (settings.showProgress !== undefined) {
-                    const style = document.createElement('style');
-                    if (settings.showProgress) {
-                        const duration = settings.interval || 5000;
-                        style.textContent = `
-                            .carousel-indicators button.active::after {
-                                animation-duration: ${duration}ms;
-                            }
-                        `;
-                    } else {
-                        style.textContent = `
-                            .carousel-indicators button.active::after {
-                                display: none;
-                            }
-                        `;
-                    }
-                    document.head.appendChild(style);
-                }
-            }
-            
-            function fetchBackgroundImages() {
-                // 从API获取背景图片
-                fetch('/api/carousel/images')
-                .then(response => {
-                    if (!response.ok) {
-                        console.error('获取背景图片失败，状态码:', response.status);
-                        throw new Error('获取背景图片失败，状态码: ' + response.status);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    console.log('成功获取轮播图片:', data);
-                    if (data.status === 'success' && data.images && data.images.length > 0) {
-                        // 获取轮播设置中的最大图片数量
-                        fetch('/api/carousel/settings')
-                        .then(response => response.json())
-                        .then(settingsData => {
-                            let maxImages = 5; // 默认值
-                            if (settingsData.status === 'success' && settingsData.settings) {
-                                maxImages = settingsData.settings.maxImages || 5;
-                            }
-                            
-                            // 限制图片数量
-                            const limitedImages = data.images.slice(0, maxImages).map(img => img.url);
-                            console.log('限制后的轮播图片URL列表:', limitedImages);
-                            renderCarouselItems(limitedImages);
-                        })
-                        .catch(error => {
-                            console.error('获取轮播设置失败:', error);
-                            // 使用默认限制
-                            const limitedImages = data.images.slice(0, 5).map(img => img.url);
-                            renderCarouselItems(limitedImages);
-                        });
-                    } else {
-                        // 没有图片或API失败，使用默认图片
-                        console.warn('未找到背景图片或API失败，使用默认图片');
-                        renderDefaultCarouselItems();
-                    }
-                })
-                .catch(error => {
-                    console.error('获取背景图片失败，使用默认图片:', error);
-                    renderDefaultCarouselItems();
-                });
-            }
-            
-            // 渲染默认的轮播图片
-            function renderDefaultCarouselItems() {
-                const bgImages = [
-                    'bg01.jpg', 'bg02.jpg', 'bg03.jpg', 'bg04.jpg', 'bg05.jpg',
-                    'bg06.jpg', 'bg07.jpg', 'bg08.jpg', 'bg09.jpg'
-                ];
-                
-                // 获取最大图片数量
-                let maxImages = 5; // 默认为5
-                try {
-                    fetch('/api/carousel/settings')
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.status === 'success' && data.settings) {
-                            maxImages = data.settings.maxImages || 5;
-                            // 限制默认图片数量
-                            const limitedImages = maxImages > 0 ? bgImages.slice(0, maxImages) : bgImages;
-                            // 使用绝对路径，避免相对路径拼接问题
-                            const defaultImages = limitedImages.map(img => `/img/backgrounds/${img}`);
-                            renderCarouselItems(defaultImages);
-                        } else {
-                            // 使用默认5张图片
-                            const defaultImages = bgImages.slice(0, 5).map(img => `/img/backgrounds/${img}`);
-                            renderCarouselItems(defaultImages);
-                        }
-                    })
-                    .catch(error => {
-                        console.error("获取轮播设置失败:", error);
-                        // 出错时使用默认5张图片
-                        const defaultImages = bgImages.slice(0, 5).map(img => `/img/backgrounds/${img}`);
-                        renderCarouselItems(defaultImages);
-                    });
-                } catch (error) {
-                    console.error("处理默认轮播图片出错:", error);
-                    // 出错时使用默认5张图片
-                    const defaultImages = bgImages.slice(0, 5).map(img => `/img/backgrounds/${img}`);
-                    renderCarouselItems(defaultImages);
-                }
-            }
-            
-            function renderCarouselItems(images) {
-                const carouselInner = document.querySelector('.carousel-inner');
-                const indicators = document.querySelector('.carousel-indicators');
-                
-                if (!carouselInner || !indicators) return;
-                
-                // 清空现有内容
-                carouselInner.innerHTML = '';
-                indicators.innerHTML = '';
-                
-                // 如果没有图片，添加一个默认图片
-                if (!images || images.length === 0) {
-                    images = ['/img/backgrounds/bg01.jpg'];
-                }
-                
-                // 添加新的轮播项
-                images.forEach((img, index) => {
-                    // 创建轮播指示器按钮
-                    const indicator = document.createElement('button');
-                    indicator.setAttribute('type', 'button');
-                    indicator.setAttribute('data-bs-target', '#backgroundCarousel');
-                    indicator.setAttribute('data-bs-slide-to', index);
-                    indicator.setAttribute('aria-label', `Slide ${index + 1}`);
-                    
-                    if (index === 0) {
-                        indicator.classList.add('active');
-                        indicator.setAttribute('aria-current', 'true');
-                    }
-                    
-                    indicators.appendChild(indicator);
-                    
-                    // 创建轮播项
-                    const item = document.createElement('div');
-                    item.classList.add('carousel-item');
-                    if (index === 0) {
-                        item.classList.add('active');
-                    }
-                    
-                    const image = document.createElement('img');
-                    // 判断img是否已经包含完整路径
-                    if (img.startsWith('http') || img.startsWith('/')) {
-                        image.src = img;
-                    } else {
-                        // 使用绝对路径，避免路径拼接问题
-                        image.src = `/img/backgrounds/${img}`;
-                    }
-                    image.classList.add('d-block');
-                    image.alt = `校园风景 ${index + 1}`;
-                    
-                    // 添加错误处理
-                    image.onerror = function() {
-                        this.onerror = null;
-                        this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiMzNDk4ZGIiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjI0IiBmaWxsPSIjZmZmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBhbGlnbm1lbnQtYmFzZWxpbmU9Im1pZGRsZSI+6KeG6aKR5Yqg6L295aSx6LSlPC90ZXh0Pjwvc3ZnPg==';
-                        console.error(`图片加载失败: ${this.src}`);
-                    };
-                    
-                    item.appendChild(image);
-                    carouselInner.appendChild(item);
-                });
-                
-                // 重新初始化轮播
-                const carousel = document.getElementById('backgroundCarousel');
-                if (carousel) {
-                    const carouselInstance = bootstrap.Carousel.getInstance(carousel);
-                    if (carouselInstance) {
-                        carouselInstance.dispose();
-                    }
-                    // 设置间隔
-                    const interval = carousel.getAttribute('data-bs-interval') || 5000;
-                    new bootstrap.Carousel(carousel, {
-                        interval: parseInt(interval)
-                    });
-                }
-            }
+                // 不必添加额外的超时消息，模板已经处理了这个情况
+                console.log("检测到会话超时重定向");
+            }  
         });
     </script>
 </head>
 <body>
-    <!-- 背景图片轮播 -->
-    <div id="backgroundCarousel" class="carousel slide carousel-fade background-carousel" data-bs-ride="carousel" data-bs-interval="5000">
-        <div class="carousel-indicators">
-            <!-- 轮播指示器将由JavaScript动态生成 -->
-        </div>
-        <div class="carousel-inner">
-            <!-- 轮播项将由JavaScript动态生成 -->
-            <div class="carousel-item active">
-                <img src="/img/backgrounds/bg01.jpg" class="d-block" alt="校园风景">
-            </div>
-        </div>
-    </div>
-
     <div class="login-wrapper">
         <div class="login-container">
             <!-- 第一行：Logo和标题 -->
@@ -640,10 +262,21 @@
             
             <!-- 第二行：登录表单 -->
             <form method="post" action="/login" class="login-form-section">
+                {% if timeout %}
+                <div class="timeout-message">
+                    <div class="alert alert-warning">
+                        <i class='bx bx-time'></i>
+                        <span>您的会话已超时，请重新登录</span>
+                    </div>
+                </div>
+                {% endif %}
+
                 {% if error %}
-                <div class="alert alert-danger alert-dismissible fade show" role="alert" style="position: absolute; top: -40px; left: 0; right: 0;">
-                    {{ error }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                <div class="error-message">
+                    <div class="alert alert-danger">
+                        <i class='bx bx-error'></i>
+                        <span>{{ error }}</span>
+                    </div>
                 </div>
                 {% endif %}
                 
@@ -668,6 +301,6 @@
     </div>
     
     <!-- 引入 Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/libs/bootstrap.bundle.min.js"></script>
 </body>
 </html> 

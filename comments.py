@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from flask import Blueprint, request, jsonify, send_from_directory, current_app, make_response
+from flask import Blueprint, request, jsonify, send_from_directory, current_app, make_response, send_file
 from flask_login import current_user
 import sqlite3
 import os
@@ -11,6 +11,10 @@ import zipfile
 import sys
 import platform
 import threading
+import time
+import re
+from werkzeug.utils import secure_filename
+import urllib.parse
 
 # 尝试导入pythoncom，如果不可用则跳过
 try:
@@ -23,6 +27,7 @@ except ImportError:
 # 导入评语相关的工具类
 from utils.comment_processor import batch_update_comments, generate_comments_pdf, generate_preview_html
 from utils.comment_generator import CommentGenerator
+from utils.permission_checker import can_access_comments, get_accessible_classes, require_head_teacher
 try:
     from utils.pdf_exporter_fixed import export_comments_to_pdf
 except ImportError:
@@ -34,9 +39,67 @@ except ImportError:
         }
     print("! PDF导出功能不可用，请安装reportlab模块")
 
+# 导入Excel相关库
+import pandas as pd
+import numpy as np
+import json
+from io import BytesIO
+
 # 创建评语管理蓝图
 comments_bp = Blueprint('comments', __name__)
 logger = logging.getLogger(__name__)
+
+# 添加导出进度全局变量 - 改为基于用户的进度跟踪
+user_export_progress = {}
+progress_lock = threading.Lock()
+
+# 更新导出进度信息
+def websocket_progress(message, percent=None, request_id=None):
+    """
+    更新导出进度信息
+    
+    参数:
+    - message: 进度消息内容
+    - percent: 百分比值(0-100)
+    - request_id: 请求ID
+    """
+    global user_export_progress
+    
+    # 获取当前用户ID，如果没有request_id则使用用户ID
+    user_id = None
+    if hasattr(current_user, 'id') and current_user.is_authenticated:
+        user_id = str(current_user.id)
+    
+    # 使用request_id作为主键，如果没有则使用user_id
+    progress_key = request_id if request_id else user_id
+    if not progress_key:
+        progress_key = 'anonymous'
+    
+    # 线程安全地更新进度信息
+    with progress_lock:
+        current_time = time.time()
+        if progress_key not in user_export_progress:
+            user_export_progress[progress_key] = {}
+        
+        user_export_progress[progress_key].update({
+            'message': message,
+            'percent': percent if percent is not None else user_export_progress[progress_key].get('percent', 0),
+            'timestamp': current_time,
+            'request_id': request_id,
+            'user_id': user_id
+        })
+    
+    # 清理消息中的特殊字符并打印日志
+    def clean_unicode_for_logging(text):
+        """清理字符串中的特殊Unicode字符，用于日志输出"""
+        if not isinstance(text, str):
+            return text
+        return text.replace('\xa0', ' ').replace('\u00a0', ' ').encode('gbk', errors='ignore').decode('gbk')
+    
+    clean_message = clean_unicode_for_logging(message)
+    logger.info(f"导出进度更新 [用户:{user_id}, 请求:{request_id}]: {clean_message} ({percent if percent is not None else ''}%)")
+    
+    return user_export_progress.get(progress_key, {})
 
 # 获取数据库连接函数
 def get_db_connection():
@@ -305,6 +368,107 @@ def batch_update_comments_api():
         logger.error(f"批量更新评语时出错: {str(e)}")
         return jsonify({'status': 'error', 'message': f'服务器错误: {str(e)}'})
 
+# 清除当前班级所有评语
+@comments_bp.route('/api/clear-all-comments', methods=['POST'])
+def clear_all_comments():
+    try:
+        data = request.get_json()
+        if not data:
+            logger.error("清除评语 - 未接收到数据")
+            return jsonify({'status': 'error', 'message': '未接收到数据'})
+        
+        # 获取班级ID
+        class_id = data.get('class_id')
+        
+        # 记录班级ID的类型和值，帮助调试
+        logger.info(f"清除评语 - 接收到的班级ID: {class_id}, 类型: {type(class_id)}")
+        
+        # 确保class_id是整数
+        try:
+            class_id = int(class_id)
+            logger.info(f"清除评语 - 转换后的班级ID: {class_id}")
+        except (TypeError, ValueError):
+            logger.error(f"清除评语时班级ID类型转换失败: {class_id}")
+            return jsonify({'status': 'error', 'message': f'班级ID格式不正确: {class_id}'})
+        
+        # 获取数据库连接
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        try:
+            # 获取当前时间
+            now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            
+            # 先获取班级中有评语的学生数量
+            cursor.execute('SELECT COUNT(*) FROM students WHERE class_id = ? AND (comments IS NOT NULL AND comments <> "")', (class_id,))
+            affected_count = cursor.fetchone()[0]
+            
+            logger.info(f"清除评语 - 班级ID {class_id} 中有评语的学生数量: {affected_count}")
+            
+            # 调试：获取班级中的学生总数
+            cursor.execute('SELECT COUNT(*) FROM students WHERE class_id = ?', (class_id,))
+            total_students = cursor.fetchone()[0]
+            logger.info(f"清除评语 - 班级ID {class_id} 中的学生总数: {total_students}")
+            
+            # 调试：获取所有班级ID和对应的学生数量
+            cursor.execute('SELECT class_id, COUNT(*) as student_count FROM students GROUP BY class_id')
+            all_classes = cursor.fetchall()
+            logger.info(f"清除评语 - 数据库中的所有班级ID和学生数量: {all_classes}")
+            
+            # 如果没有找到任何学生，尝试查询这个班级是否存在
+            if total_students == 0:
+                cursor.execute('SELECT DISTINCT class_id FROM students')
+                all_class_ids = [row[0] for row in cursor.fetchall()]
+                logger.warning(f"清除评语 - 班级ID {class_id} 没有学生。数据库中存在的班级ID: {all_class_ids}")
+                return jsonify({
+                    'status': 'error', 
+                    'message': f'班级ID {class_id} 不存在或没有学生',
+                    'available_class_ids': all_class_ids
+                })
+            
+            # 清除指定班级所有学生的评语 - 使用空字符串而不是NULL，确保兼容性
+            update_sql = 'UPDATE students SET comments = "", updated_at = ? WHERE class_id = ?'
+            logger.info(f"清除评语 - 执行SQL: {update_sql}, 参数: ({now}, {class_id})")
+            
+            cursor.execute(update_sql, (now, class_id))
+            
+            # 检查影响的行数
+            rows_affected = cursor.rowcount
+            logger.info(f"清除评语 - 实际影响的行数: {rows_affected}")
+            
+            # 验证是否真的清除了评语
+            cursor.execute('SELECT COUNT(*) FROM students WHERE class_id = ? AND (comments IS NOT NULL AND comments <> "")', (class_id,))
+            remaining_comments = cursor.fetchone()[0]
+            logger.info(f"清除评语 - 操作后仍有评语的学生数量: {remaining_comments}")
+            
+            conn.commit()
+        except Exception as e:
+            conn.rollback()
+            logger.error(f"清除评语 - 数据库操作失败: {str(e)}")
+            raise
+        finally:
+            conn.close()
+        
+        # 如果没有影响任何行，但有学生有评语，可能是SQL执行问题
+        if rows_affected == 0 and affected_count > 0:
+            logger.warning(f"清除评语 - 有{affected_count}名学生有评语，但SQL影响了0行")
+            return jsonify({
+                'status': 'error', 
+                'message': f'清除评语失败，请检查数据库权限',
+                'affected_count': 0
+            })
+        
+        return jsonify({
+            'status': 'ok', 
+            'message': f'已成功清除 {affected_count} 名学生的评语',
+            'affected_count': affected_count
+        })
+        
+    except Exception as e:
+        logger.error(f"清除评语时出错: {str(e)}")
+        logger.error(traceback.format_exc())  # 添加堆栈跟踪以便更好地调试
+        return jsonify({'status': 'error', 'message': f'服务器错误: {str(e)}'})
+
 # AI生成评语API
 @comments_bp.route('/api/generate-comment', methods=['POST'])
 def generate_comment():
@@ -378,7 +542,9 @@ def generate_comment():
         # 获取评语参数
         style = data.get('style', '鼓励性的')
         tone = data.get('tone', '正式的')
-        max_length = int(data.get('max_length', 260))
+        # 强制设置最大字数为260，忽略前端传入的值
+        max_length = 50000  # 无论前端传入什么值，都固定为260
+        min_length = 200  # 最小字数固定为200
         additional_instructions = data.get('additional_instructions', '')
         
         # 如果有额外指令，添加到学生信息中
@@ -394,7 +560,8 @@ def generate_comment():
                 student_info=student_info,
                 style=style,
                 tone=tone,
-                max_length=max_length
+                max_length=max_length,
+                min_length=min_length  # 添加最小字数参数
             )
         except Exception as e:
             logger.error(f"评语生成引擎错误: {str(e)}")
@@ -411,7 +578,9 @@ def generate_comment():
                 "status": "ok",
                 "comment": result["comment"],
                 "student_id": student_id,
-                "class_id": class_id
+                "class_id": class_id,
+                "reasoning_content": result.get("reasoning_content", ""),
+                "content_field": result.get("content_field", "")
             })
         else:
             return jsonify({
@@ -438,16 +607,16 @@ def api_export_comments_pdf():
     
     try:
         # 检查用户权限
-        if not current_user.is_authenticated:
-            return jsonify({'status': 'error', 'message': '未登录'}), 401
+        if not hasattr(current_user, 'is_authenticated') or not current_user.is_authenticated:
+            return jsonify({'status': 'error', 'message': '您需要登录后才能导出评语', 'code': 'login_required'}), 401
             
         # 如果是班主任，检查是否有权限导出指定班级
-        if not current_user.is_admin and current_user.class_id:
+        if hasattr(current_user, 'is_admin') and not current_user.is_admin and hasattr(current_user, 'class_id') and current_user.class_id:
             # 如果未指定班级，则使用班主任自己的班级
             if not class_name:
                 conn = get_db_connection()
                 cursor = conn.cursor()
-                cursor.execute('SELECT class FROM students WHERE class_id = ? LIMIT 1', (current_user.class_id,))
+                cursor.execute('SELECT c.class_name as class FROM students s LEFT JOIN classes c ON s.class_id = c.id WHERE class_id = ? LIMIT 1', (current_user.class_id,))
                 result = cursor.fetchone()
                 conn.close()
                 
@@ -458,7 +627,7 @@ def api_export_comments_pdf():
             elif class_name:
                 conn = get_db_connection()
                 cursor = conn.cursor()
-                cursor.execute('SELECT class FROM students WHERE class_id = ? LIMIT 1', (current_user.class_id,))
+                cursor.execute('SELECT c.class_name as class FROM students s LEFT JOIN classes c ON s.class_id = c.id WHERE class_id = ? LIMIT 1', (current_user.class_id,))
                 result = cursor.fetchone()
                 conn.close()
                 
@@ -578,16 +747,16 @@ def api_preview_comments():
     
     try:
         # 检查用户权限
-        if not current_user.is_authenticated:
-            return jsonify({'status': 'error', 'message': '未登录'}), 401
+        if not hasattr(current_user, 'is_authenticated') or not current_user.is_authenticated:
+            return jsonify({'status': 'error', 'message': '未登录', 'code': 'login_required'}), 401
             
         # 如果是班主任，检查是否有权限预览指定班级
-        if not current_user.is_admin and current_user.class_id:
+        if hasattr(current_user, 'is_admin') and not current_user.is_admin and hasattr(current_user, 'class_id') and current_user.class_id:
             # 如果未指定班级，则使用班主任自己的班级
             if not class_name:
                 conn = get_db_connection()
                 cursor = conn.cursor()
-                cursor.execute('SELECT class FROM students WHERE class_id = ? LIMIT 1', (current_user.class_id,))
+                cursor.execute('SELECT c.class_name as class FROM students s LEFT JOIN classes c ON s.class_id = c.id WHERE class_id = ? LIMIT 1', (current_user.class_id,))
                 result = cursor.fetchone()
                 conn.close()
                 
@@ -598,7 +767,7 @@ def api_preview_comments():
             elif class_name:
                 conn = get_db_connection()
                 cursor = conn.cursor()
-                cursor.execute('SELECT class FROM students WHERE class_id = ? LIMIT 1', (current_user.class_id,))
+                cursor.execute('SELECT c.class_name as class FROM students s LEFT JOIN classes c ON s.class_id = c.id WHERE class_id = ? LIMIT 1', (current_user.class_id,))
                 result = cursor.fetchone()
                 conn.close()
                 
@@ -654,7 +823,9 @@ def cleanup_export_requests():
     with export_requests_lock:
         expired_requests = []
         for req_id, info in active_export_requests.items():
-            if (now - info['started_at']).total_seconds() > 1800:  # 30分钟
+            # 兼容两种时间字段名
+            start_time = info.get('started_at') or info.get('timestamp')
+            if start_time and (now - start_time).total_seconds() > 1800:  # 30分钟
                 expired_requests.append(req_id)
                 
         for req_id in expired_requests:
@@ -673,17 +844,24 @@ def cancel_export():
             
         logger.info(f"收到取消导出请求: {request_id}")
         
-        # 清理过期请求
-        cleanup_export_requests()
-        
-        # 标记请求为已取消
+        # 标记请求为已取消（优先执行，确保取消标志设置成功）
         found = False
         with export_requests_lock:
             if request_id in active_export_requests:
                 active_export_requests[request_id]['cancelled'] = True
                 active_export_requests[request_id]['status'] = 'cancelled'
+                active_export_requests[request_id]['cancelled_at'] = datetime.datetime.now()
                 found = True
                 logger.info(f"已标记导出请求 {request_id} 为已取消")
+                
+                # 立即更新进度为取消状态
+                websocket_progress("导出已取消", 0, request_id)
+        
+        # 尝试清理过期请求（如果出错不影响取消操作）
+        try:
+            cleanup_export_requests()
+        except Exception as cleanup_error:
+            logger.warning(f"清理过期请求时出错: {str(cleanup_error)}，但取消操作继续")
             
         if found:
             return jsonify({
@@ -898,8 +1076,9 @@ def convert_docx_to_pdf(input_file, output_file, request_id=None):
                 try:
                     word.Quit()
                     logger.info("Word应用已退出")
-                except:
-                    logger.warning("退出Word时出错")
+                except Exception as e:
+                    # Word 退出失败通常不影响功能，降级为 debug 日志
+                    logger.debug(f"退出Word时出错（可忽略）: {str(e)}")
                 
             except ImportError:
                 # 如果win32com不可用，尝试使用docx2pdf
@@ -954,6 +1133,11 @@ def convert_docx_to_pdf(input_file, output_file, request_id=None):
 @comments_bp.route('/api/export-reports', methods=['POST'])
 def api_export_reports():
     try:
+        # 检查用户是否已登录
+        if not hasattr(current_user, 'is_authenticated') or not current_user.is_authenticated:
+            logger.warning("未登录用户或会话过期，尝试导出报告")
+            return jsonify({'status': 'error', 'message': '您需要登录后才能导出报告', 'code': 'login_required'}), 401
+            
         # 获取请求数据
         data = request.get_json()
         
@@ -1021,79 +1205,90 @@ def api_export_reports():
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         
-        # 准备SQL查询
+        # 准备SQL查询，对班主任进行班级过滤
         placeholders = ','.join(['?' for _ in student_ids])
         
-        # 添加班级ID筛选，确保班主任只能导出本班级的学生
+        # 构建SQL查询，根据用户身份添加班级过滤条件
         if current_user.is_admin:
-            # 管理员可以导出所有学生
-            query = f'SELECT * FROM students WHERE id IN ({placeholders})'
-            params = student_ids
+            # 管理员可以查询所有班级学生
+            student_sql = f'''
+                SELECT * FROM students 
+                WHERE id IN ({placeholders})
+            '''
+            cursor.execute(student_sql, student_ids)
         else:
-            # 班主任只能导出本班级学生
-            query = f'SELECT * FROM students WHERE id IN ({placeholders}) AND class_id = ?'
+            # 班主任只能查询自己班级的学生
+            student_sql = f'''
+                SELECT * FROM students 
+                WHERE id IN ({placeholders}) AND class_id = ?
+            '''
             params = student_ids + [current_user.class_id]
-            logger.info(f"班主任模式：只导出班级ID为 {current_user.class_id} 的学生")
+            cursor.execute(student_sql, params)
         
-        # 执行查询
-        cursor.execute(query, params)
-        students_rows = cursor.fetchall()
+        students = [dict(row) for row in cursor.fetchall()]
         
-        # 转换成字典列表，确保字段非空
-        students = []
-        for row in students_rows:
-            student_dict = dict(row)
-            # 确保关键字段非空 - 这里补充空字符串而不是None
-            for key in ['id', 'name', 'gender', 'class']:
-                if key not in student_dict or student_dict[key] is None:
-                    student_dict[key] = ''
-            students.append(student_dict)
-            
-        # 如果没有找到任何学生，返回错误
+        # 记录实际查询到的学生数量，并检查是否与请求的学生数量一致
+        logger.info(f"找到 {len(students)} 名学生的数据 (请求了 {len(student_ids)} 名学生)")
+        if len(students) < len(student_ids) and not current_user.is_admin:
+            logger.warning(f"有 {len(student_ids) - len(students)} 名学生不属于当前班主任的班级")
+        
         if not students:
-            logger.error(f"未找到任何符合条件的学生: {student_ids}")
-            return jsonify({'status': 'error', 'message': '未找到所选学生数据，或者您没有权限导出这些学生的报告'})
+            return jsonify({'status': 'error', 'message': '未找到任何学生数据，或没有符合查询条件的学生'})
             
-        # 获取评语数据
-        comments_dict = {}
-        for student in students:
-            student_id = str(student['id'])  # 确保是字符串
-            # 评语直接从学生表中获取
-            cursor.execute('SELECT comments FROM students WHERE id = ? AND class_id = ?', 
-                          (student_id, student.get('class_id')))
-            row = cursor.fetchone()
-            if row and row['comments']:
-                comments_dict[student_id] = {'content': row['comments']}
-            else:
-                comments_dict[student_id] = {'content': ''}
+        # 更新student_ids，只包含当前查询到的学生
+        student_ids = [s['id'] for s in students]
         
-        # 获取成绩数据
-        grades_dict = {}
-        for student in students:
-            student_id = str(student['id'])  # 确保是字符串
-            
-            try:
-                # 尝试从grades表获取成绩
-                cursor.execute('SELECT * FROM grades WHERE student_id = ?', (student_id,))
-                grades_row = cursor.fetchone()
+        # 查询学生评语
+        comments_dict = {}
+        for student_id in student_ids:
+            # 对非管理员用户，确保只查询本班级学生
+            if not current_user.is_admin:
+                cursor.execute('SELECT id, name, comments FROM students WHERE id = ? AND class_id = ?', 
+                             (student_id, current_user.class_id))
+            else:
+                cursor.execute('SELECT id, name, comments FROM students WHERE id = ?', (student_id,))
                 
-                if grades_row:
-                    grades = dict(grades_row)
-                    # 移除不需要的字段
-                    if 'id' in grades: del grades['id']
-                    if 'student_id' in grades: del grades['student_id']
-                    grades_dict[student_id] = {'grades': grades}
+            student = cursor.fetchone()
+            if student and student['comments']:
+                comments_dict[student_id] = {
+                    'studentId': student_id,
+                    'studentName': student['name'],
+                    'content': student['comments']
+                }
+            else:
+                comments_dict[student_id] = {
+                    'studentId': student_id,
+                    'studentName': student['name'] if student else 'Unknown',
+                    'content': ''  # 空评语
+                }
+        
+        # 查询学生成绩
+        grades_dict = {}
+        for student_id in student_ids:
+            try:
+                # 对非管理员用户，确保只查询本班级学生
+                if not current_user.is_admin:
+                    cursor.execute('''
+                        SELECT daof, yuwen, shuxue, yingyu, laodong, tiyu, yinyue, 
+                               meishu, kexue, zonghe, xinxi, shufa
+                        FROM students WHERE id = ? AND class_id = ?
+                    ''', (student_id, current_user.class_id))
                 else:
-                    # 尝试从students表获取成绩字段
-                    cursor.execute('SELECT yuwen, shuxue, yingyu, daof, kexue, tiyu, yinyue, meishu, laodong, xinxi, zonghe, shufa FROM students WHERE id = ? AND class_id = ?', (student_id, student.get('class_id')))
-                    grades_row = cursor.fetchone()
-                    
-                    if grades_row:
-                        grades = dict(grades_row)
-                        grades_dict[student_id] = {'grades': grades}
-                    else:
-                        # 都没有成绩数据，使用空成绩
-                        grades_dict[student_id] = {'grades': {}}
+                    cursor.execute('''
+                        SELECT daof, yuwen, shuxue, yingyu, laodong, tiyu, yinyue, 
+                               meishu, kexue, zonghe, xinxi, shufa
+                        FROM students WHERE id = ?
+                    ''', (student_id,))
+                
+                grade = cursor.fetchone()
+                
+                if grade:
+                    grade_dict = dict(grade)
+                    grades_dict[student_id] = {
+                        'grades': grade_dict
+                    }
+                else:
+                    grades_dict[student_id] = {'grades': {}}
             except sqlite3.OperationalError as e:
                 # 处理表不存在或列不存在的情况
                 logger.warning(f"获取成绩时出错: {str(e)}, 将使用空成绩数据")
@@ -1102,6 +1297,82 @@ def api_export_reports():
         # 关闭数据库连接
         conn.close()
         
+        # 执行数据完整性验证
+        try:
+            from utils.data_validator import DataValidator
+            logger.info("导出前进行数据完整性验证...")
+            
+            is_valid, error_message, problem_students = DataValidator.validate_export_data(
+                students=students,
+                comments=comments_dict,
+                grades=grades_dict
+            )
+            
+            if not is_valid:
+                logger.error(f"数据验证失败: {error_message}")
+                
+                # 处理问题学生列表，对于班主任只显示本班级的学生
+                filtered_problem_students = []
+                if problem_students:
+                    # 如果是班主任且有班级ID，则过滤问题学生列表
+                    if hasattr(current_user, 'is_admin') and not current_user.is_admin and hasattr(current_user, 'class_id') and current_user.class_id:
+                        for student in problem_students:
+                            # 检查学生是否属于班主任的班级
+                            for s in students:
+                                if s['id'] == student['id'] and s.get('class_id') == current_user.class_id:
+                                    filtered_problem_students.append(student)
+                                    break
+                        logger.info(f"根据班主任班级筛选后的问题学生数量: {len(filtered_problem_students)}/{len(problem_students)}")
+                    else:
+                        # 如果是管理员，保留所有问题学生
+                        filtered_problem_students = problem_students
+                
+                # 构建更详细的错误信息
+                details = ""
+                if filtered_problem_students:
+                    details = "\n\n问题学生列表:\n"
+                    for i, student in enumerate(filtered_problem_students[:10], 1):  # 限制显示前10个
+                        problems_text = ", ".join(student['problems'])
+                        details += f"{i}. {student['name']} (学号: {student['id']}): {problems_text}\n"
+                    
+                    if len(filtered_problem_students) > 10:
+                        details += f"... 以及其他 {len(filtered_problem_students) - 10} 名学生"
+                
+                # 更新错误消息，显示筛选后的学生数量
+                if hasattr(current_user, 'is_admin') and not current_user.is_admin and hasattr(current_user, 'class_id') and current_user.class_id:
+                    if filtered_problem_students:
+                        error_message = f"发现 {len(filtered_problem_students)} 名本班学生的数据不完整，无法导出报告。"
+                    else:
+                        # 如果本班学生数据已完整但有其他验证问题(如全优或全满分)，仍阻止导出
+                        if "均为'优'" in error_message or "均为满分" in error_message:
+                            logger.info(f"验证失败: {error_message}")
+                        # 如果确实只是其他班级的问题，允许导出
+                        else:
+                            logger.info("本班学生数据已完整，忽略其他班级的数据问题，继续导出报告")
+                            # 继续执行导出流程
+                            pass
+                
+                # 只有在本班没有问题学生且不是全优或全满分问题时才继续执行
+                if (hasattr(current_user, 'is_admin') and not current_user.is_admin and hasattr(current_user, 'class_id') and current_user.class_id and 
+                    not filtered_problem_students and 
+                    "均为'优'" not in error_message and 
+                    "均为满分" not in error_message):
+                    logger.info("跳过验证错误，允许导出本班学生数据")
+                else:
+                    return jsonify({
+                        'status': 'error', 
+                        'message': error_message,
+                        'details': details,
+                        'validation_failed': True,
+                        'problem_students': [s['id'] for s in filtered_problem_students]
+                    })
+            
+            logger.info("数据验证通过，继续导出报告...")
+        except Exception as e:
+            logger.error(f"执行数据验证时出错: {str(e)}")
+            logger.error(traceback.format_exc())
+            # 出错时不阻止导出，继续执行
+            
         # 生成报告
         try:
             from utils.report_exporter import ReportExporter
@@ -1316,6 +1587,28 @@ def api_export_reports():
                         os.makedirs(pdf_dir, exist_ok=True)
                         logger.info(f"创建PDF输出目录: {pdf_dir}")
                         
+                        # 建立文件名与学生信息的映射，以便显示正确的学生名称
+                        student_name_map = {}
+                        for student in students:
+                            student_id = student['id']
+                            student_name = student['name']
+                            # 根据fileNameFormat设置确定文件名格式
+                            file_name_format = settings.get('fileNameFormat', 'id_name')
+                            if file_name_format == 'id_name':
+                                file_prefix = f"{student_id}_{student_name}"
+                            elif file_name_format == 'name_id':
+                                file_prefix = f"{student_name}_{student_id}"
+                            else:
+                                file_prefix = student_id
+                            
+                            # 将文件名前缀与学生名称关联
+                            for docx_file in docx_files:
+                                if docx_file.startswith(file_prefix) or file_prefix in docx_file:
+                                    student_name_map[docx_file] = student_name
+                                    break
+                        
+                        logger.info(f"创建学生文件名映射: {student_name_map}")
+                        
                         # 设置转换计数器
                         total_files = len(docx_files)
                         successful_conversions = 0
@@ -1323,9 +1616,17 @@ def api_export_reports():
                         # 转换DOCX文件为PDF
                         pdf_files = []
                         for i, docx_file in enumerate(docx_files):
-                            # 检查请求是否已取消
+                            # 转换前检查请求是否已取消
                             if request_id and is_export_cancelled(request_id):
                                 logger.info(f"转换过程中检测到请求已取消: {request_id}")
+                                # 清理进度信息
+                                try:
+                                    with export_requests_lock:
+                                        if request_id in active_export_requests:
+                                            del active_export_requests[request_id]
+                                            logger.info(f"已清理取消的导出请求: {request_id}")
+                                except:
+                                    pass
                                 return jsonify({
                                     'status': 'warning',
                                     'message': '导出操作已被用户取消'
@@ -1336,71 +1637,362 @@ def api_export_reports():
                             pdf_file = docx_file.replace('.docx', '.pdf')
                             pdf_path = os.path.join(pdf_dir, pdf_file)
                             
+                            # 获取学生信息，尝试从映射中获取学生名称
+                            student_name = student_name_map.get(docx_file, "")
+                            if not student_name:
+                                # 如果映射中没有，则从文件名提取
+                                student_name = docx_file.replace('.docx', '').split('_')[-1] if '_' in docx_file else docx_file.replace('.docx', '')
+                            
+                            # 更新进度信息，显示当前学生名称和进度
+                            progress_message = update_progress_in_pdf_conversion(docx_file, student_name, i+1, total_files, request_id)
+                            logger.info(progress_message)
+                            
                             # 执行转换，添加重试逻辑
                             logger.info(f"开始转换 [{i+1}/{total_files}]: {docx_path} -> {pdf_path}")
                             
                             # 尝试最多3次转换
                             success = False
                             for attempt in range(3):
+                                # 每次重试前检查是否被取消
+                                if request_id and is_export_cancelled(request_id):
+                                    logger.info(f"在重试第{attempt+1}次转换前检测到请求已取消: {request_id}")
+                                    # 清理进度信息
+                                    try:
+                                        with export_requests_lock:
+                                            if request_id in active_export_requests:
+                                                del active_export_requests[request_id]
+                                                logger.info(f"已清理取消的导出请求: {request_id}")
+                                    except:
+                                        pass
+                                    return jsonify({
+                                        'status': 'warning',
+                                        'message': '导出操作已被用户取消'
+                                    })
+                                
                                 try:
                                     if attempt > 0:
                                         logger.info(f"重试第{attempt+1}次转换: {docx_file}")
                                     
-                                    # 执行转换
+                                    # 执行转换（convert_docx_to_pdf内部也会检查取消状态）
                                     success = convert_docx_to_pdf(docx_path, pdf_path, request_id)
                                     
                                     if success:
                                         logger.info(f"转换成功 (尝试 {attempt+1}): {docx_file}")
-                                        break
+                                        pdf_files.append(pdf_file)
+                                        successful_conversions += 1
+                                        break  # 成功则退出重试循环
                                     else:
-                                        logger.warning(f"转换失败 (尝试 {attempt+1}): {docx_file}")
+                                        # 如果转换失败，检查是否是因为取消导致的
+                                        if request_id and is_export_cancelled(request_id):
+                                            logger.info(f"PDF转换失败是因为用户取消: {docx_file}")
+                                            # 清理进度信息
+                                            try:
+                                                with export_requests_lock:
+                                                    if request_id in active_export_requests:
+                                                        del active_export_requests[request_id]
+                                                        logger.info(f"已清理取消的导出请求: {request_id}")
+                                            except:
+                                                pass
+                                            return jsonify({
+                                                'status': 'warning',
+                                                'message': '导出操作已被用户取消'
+                                            })
                                 except Exception as e:
-                                    logger.error(f"转换异常 (尝试 {attempt+1}): {str(e)}")
-                                    if attempt == 2:  # 最后一次尝试
-                                        logger.error(f"转换 {docx_file} 的所有尝试均失败")
+                                    logger.error(f"尝试转换第{attempt+1}次失败: {str(e)}")
+                                    success = False
+                                
+                                # 如果所有尝试都失败，记录错误
+                                if not success and attempt == 2:  # 最后一次尝试
+                                    logger.error(f"转换失败 {docx_file} 在3次尝试后")
                             
-                            if success and os.path.exists(pdf_path):
-                                pdf_size = os.path.getsize(pdf_path)
-                                if pdf_size > 0:
-                                    logger.info(f"转换成功: {pdf_file} (大小: {pdf_size} 字节)")
-                                    pdf_files.append(pdf_file)
-                                    successful_conversions += 1
-                                else:
-                                    logger.warning(f"PDF文件大小为0: {pdf_file}")
-                            else:
-                                logger.warning(f"转换失败: {docx_file}")
+                            # 每个文档转换完成后再次检查取消状态
+                            if request_id and is_export_cancelled(request_id):
+                                logger.info(f"文档 {docx_file} 转换完成后检测到请求已取消")
+                                # 清理进度信息
+                                try:
+                                    with export_requests_lock:
+                                        if request_id in active_export_requests:
+                                            del active_export_requests[request_id]
+                                            logger.info(f"已清理取消的导出请求: {request_id}")
+                                except:
+                                    pass
+                                return jsonify({
+                                    'status': 'warning',
+                                    'message': '导出操作已被用户取消'
+                                })
                         
-                        # 检查转换成功率
-                        if len(pdf_files) == 0:
-                            logger.error("没有成功转换的PDF文件")
-                            raise Exception("未能成功转换任何PDF文件")
-                        elif len(pdf_files) < total_files:
-                            success_rate = (successful_conversions / total_files) * 100
-                            logger.warning(f"部分文件转换失败: {successful_conversions}/{total_files} 成功 (成功率: {success_rate:.1f}%)")
-                            # 如果成功率太低，可以考虑回退到Word格式
-                            if success_rate < 50:
-                                logger.error(f"成功率低于50%，回退到Word格式")
-                                raise Exception(f"PDF转换成功率太低 ({success_rate:.1f}%)，回退到Word格式")
-                        else:
-                            logger.info(f"所有文件均成功转换: {successful_conversions}/{total_files}")
-                            
-                        # 再次检查请求是否已取消
+                        # 记录转换完成情况
+                        logger.info(f"完成转换: 成功 {successful_conversions}/{total_files} 文件")
+                        
+                        # 检查是否被取消
                         if request_id and is_export_cancelled(request_id):
-                            logger.info(f"转换完成后检测到请求已取消: {request_id}")
+                            logger.info(f"PDF转换完成后检测到请求已取消: {request_id}")
+                            # 清理进度信息
+                            try:
+                                with export_requests_lock:
+                                    if request_id in active_export_requests:
+                                        del active_export_requests[request_id]
+                                        logger.info(f"已清理取消的导出请求: {request_id}")
+                            except:
+                                pass
                             return jsonify({
                                 'status': 'warning',
                                 'message': '导出操作已被用户取消'
                             })
+                        
+                        # 如果没有成功转换任何文件，返回错误
+                        if successful_conversions == 0:
+                            logger.error("没有成功转换任何文件为PDF")
+                            # 回退到原始Word文档结果
+                            return send_file(
+                                original_word_result,
+                                mimetype='application/zip',
+                                as_attachment=True,
+                                download_name='student_reports_word.zip'
+                            )
+                        
+                        # 将PDF文件合并为一个文件
+                        try:
+                            # 尝试导入PyPDF2
+                            try:
+                                import PyPDF2
+                                logger.info("成功导入PyPDF2")
+                            except ImportError:
+                                logger.error("无法导入PyPDF2库，尝试安装")
+                                try:
+                                    import subprocess
+                                    subprocess.check_call([sys.executable, "-m", "pip", "install", "PyPDF2"])
+                                    import PyPDF2
+                                    logger.info("成功安装并导入PyPDF2")
+                                except Exception as e:
+                                    logger.error(f"安装PyPDF2失败: {str(e)}")
+                                    # 如果无法安装则跳过合并，只提供单独的PDF文件
+                                    raise
                             
-                        # 创建PDF文件的ZIP
+                            # 检查是否有PDF文件需要合并
+                            if len(pdf_files) > 1:
+                                # 合并前检查是否被取消
+                                if request_id and is_export_cancelled(request_id):
+                                    logger.info(f"PDF合并前检测到请求已取消: {request_id}")
+                                    # 清理进度信息
+                                    try:
+                                        with export_requests_lock:
+                                            if request_id in active_export_requests:
+                                                del active_export_requests[request_id]
+                                                logger.info(f"已清理取消的导出请求: {request_id}")
+                                    except:
+                                        pass
+                                    return jsonify({
+                                        'status': 'warning',
+                                        'message': '导出操作已被用户取消'
+                                    })
+                                
+                                # 更新进度信息，显示正在合并
+                                merge_message = f"正在合并 {len(pdf_files)} 个PDF文件..."
+                                websocket_progress(merge_message, 90, request_id)
+                                logger.info(merge_message)
+                                
+                                # 根据班主任的class_id获取完整的班级名称
+                                class_name = ""
+                                try:
+                                    # 获取当前登录用户的class_id
+                                    class_id = current_user.class_id if hasattr(current_user, 'class_id') else None
+                                    
+                                    if class_id:
+                                        # 连接数据库
+                                        conn = get_db_connection()
+                                        cursor = conn.cursor()
+                                        
+                                        # 查询classes表获取班级名称（使用正确的列名 class_name）
+                                        cursor.execute('SELECT class_name FROM classes WHERE id = ?', (class_id,))
+                                        class_record = cursor.fetchone()
+                                        conn.close()
+                                        
+                                        if class_record and 'class_name' in class_record:
+                                            class_name = class_record['class_name']
+                                            logger.info(f"从数据库获取班级名称: '{class_name}'")
+                                        else:
+                                            logger.warning(f"未找到class_id为{class_id}的班级记录")
+                                            
+                                            # 尝试从学生信息中获取班级名称作为备选
+                                            if students and len(students) > 0:
+                                                class_name = students[0].get('class', '')
+                                                logger.info(f"从学生记录获取班级名称: '{class_name}'")
+                                    else:
+                                        logger.warning("当前用户没有关联的班级ID")
+                                        
+                                        # 尝试从学生信息中获取班级名称作为备选
+                                        if students and len(students) > 0:
+                                            class_name = students[0].get('class', '')
+                                            logger.info(f"从学生记录获取班级名称: '{class_name}'")
+                                except Exception as e:
+                                    logger.error(f"获取班级名称时出错: {str(e)}")
+                                    # 如果出错，尝试从学生信息获取班级
+                                    if students and len(students) > 0:
+                                        class_name = students[0].get('class', '')
+                                        logger.info(f"从学生记录获取班级名称: '{class_name}'")
+                                
+                                # 去除班级名称中可能存在的非法文件名字符
+                                if class_name:
+                                    import re
+                                    class_name = re.sub(r'[\\/*?:"<>|]', '', class_name)  # 移除Windows不允许的文件名字符
+                                
+                                # 生成合并PDF的文件名
+                                merged_pdf_filename = f"{class_name}合并.pdf" if class_name else "合并报告.pdf"
+                                logger.info(f"使用班级名称 '{class_name}' 生成合并PDF文件名: {merged_pdf_filename}")
+                                
+                                merged_pdf_path = os.path.join(pdf_dir, merged_pdf_filename)
+                                
+                                # 创建PDF合并器
+                                merger = PyPDF2.PdfMerger()
+                                
+                                # 添加所有PDF文件，确保按学号顺序合并
+                                # 创建一个映射，关联文件名与对应的学生信息
+                                student_pdf_mapping = []
+                                for pdf_file in pdf_files:
+                                    # 跳过合并后的PDF文件
+                                    if pdf_file == merged_pdf_filename:
+                                        continue
+                                        
+                                    # 从文件名中提取学生ID
+                                    # 假设文件名格式为: ID_姓名.pdf 或 ID.pdf
+                                    student_id = pdf_file.split('_')[0].split('.')[0]
+                                    try:
+                                        # 尝试将学号转为整数进行比较
+                                        numeric_id = int(student_id)
+                                        student_pdf_mapping.append((numeric_id, pdf_file))
+                                    except ValueError:
+                                        # 如果学号不是数字，则保持原样
+                                        logger.warning(f"无法将学号解析为数字: {student_id}，文件名: {pdf_file}")
+                                        student_pdf_mapping.append((student_id, pdf_file))
+                                
+                                # 按学号排序
+                                student_pdf_mapping.sort(key=lambda x: x[0])
+                                logger.info(f"按学号顺序排序后的PDF文件列表: {[mapping[1] for mapping in student_pdf_mapping]}")
+                                
+                                # 按学号顺序合并PDF文件
+                                for idx, (_, pdf_file) in enumerate(student_pdf_mapping):
+                                    # 合并过程中检查是否被取消
+                                    if request_id and is_export_cancelled(request_id):
+                                        logger.info(f"PDF合并过程中检测到请求已取消: {request_id}")
+                                        # 清理进度信息
+                                        try:
+                                            with export_requests_lock:
+                                                if request_id in active_export_requests:
+                                                    del active_export_requests[request_id]
+                                                    logger.info(f"已清理取消的导出请求: {request_id}")
+                                        except:
+                                            pass
+                                        return jsonify({
+                                            'status': 'warning',
+                                            'message': '导出操作已被用户取消'
+                                        })
+                                    
+                                    pdf_path = os.path.join(pdf_dir, pdf_file)
+                                    if os.path.exists(pdf_path):
+                                        try:
+                                            merger.append(pdf_path)
+                                            # 更新合并进度
+                                            merge_progress = f"正在合并PDF文件 ({idx+1}/{len(student_pdf_mapping)})"
+                                            websocket_progress(merge_progress, 90 + int((idx+1)/len(student_pdf_mapping)*5), request_id)
+                                            logger.info(f"成功添加PDF文件到合并器: {pdf_file}")
+                                        except Exception as e:
+                                            logger.error(f"添加PDF文件到合并器失败: {pdf_file}, 错误: {str(e)}")
+                                
+                                # 写入合并后的PDF文件
+                                try:
+                                    # 写入前检查是否被取消
+                                    if request_id and is_export_cancelled(request_id):
+                                        logger.info(f"写入合并PDF前检测到请求已取消: {request_id}")
+                                        # 清理进度信息
+                                        try:
+                                            with export_requests_lock:
+                                                if request_id in active_export_requests:
+                                                    del active_export_requests[request_id]
+                                                    logger.info(f"已清理取消的导出请求: {request_id}")
+                                        except:
+                                            pass
+                                        return jsonify({
+                                            'status': 'warning',
+                                            'message': '导出操作已被用户取消'
+                                        })
+                                    
+                                    # 更新进度为正在写入合并文件
+                                    websocket_progress("正在生成合并后的PDF文件...", 95, request_id)
+                                    merger.write(merged_pdf_path)
+                                    merger.close()
+                                    # 更新进度为合并完成
+                                    websocket_progress("PDF文件合并完成", 98, request_id)
+                                    logger.info(f"成功创建合并的PDF文件: {merged_pdf_path}")
+                                    
+                                    # 将合并的PDF文件添加到pdf_files列表中，确保它会被包含在zip包中
+                                    pdf_files.append(merged_pdf_filename)
+                                except Exception as e:
+                                    logger.error(f"写入合并的PDF文件失败: {str(e)}")
+                            else:
+                                logger.info("只有一个或没有PDF文件，跳过合并步骤")
+                        except Exception as e:
+                            logger.error(f"合并PDF文件时出错: {str(e)}")
+                            logger.error(traceback.format_exc())
+                            # 如果合并失败，继续处理，仍然提供单独的PDF文件
+                        
+                        # 创建ZIP文件前检查是否被取消
+                        if request_id and is_export_cancelled(request_id):
+                            logger.info(f"创建ZIP前检测到请求已取消: {request_id}")
+                            # 清理进度信息
+                            try:
+                                with export_requests_lock:
+                                    if request_id in active_export_requests:
+                                        del active_export_requests[request_id]
+                                        logger.info(f"已清理取消的导出请求: {request_id}")
+                            except:
+                                pass
+                            return jsonify({
+                                'status': 'warning',
+                                'message': '导出操作已被用户取消'
+                            })
+                        
+                        # 创建PDF文件的压缩包
                         pdf_zip_path = os.path.join(temp_dir, "pdf_reports.zip")
                         logger.info(f"创建PDF ZIP文件: {pdf_zip_path}")
                         
                         with zipfile.ZipFile(pdf_zip_path, 'w') as zipf:
                             for pdf_file in pdf_files:
+                                # ZIP过程中检查是否被取消
+                                if request_id and is_export_cancelled(request_id):
+                                    logger.info(f"ZIP过程中检测到请求已取消: {request_id}")
+                                    # 清理进度信息
+                                    try:
+                                        with export_requests_lock:
+                                            if request_id in active_export_requests:
+                                                del active_export_requests[request_id]
+                                                logger.info(f"已清理取消的导出请求: {request_id}")
+                                    except:
+                                        pass
+                                    return jsonify({
+                                        'status': 'warning',
+                                        'message': '导出操作已被用户取消'
+                                    })
+                                
                                 file_path = os.path.join(pdf_dir, pdf_file)
                                 logger.info(f"添加PDF到ZIP: {file_path} -> {pdf_file}")
                                 zipf.write(file_path, pdf_file)
+                        
+                        # 读取最终ZIP文件前检查是否被取消
+                        if request_id and is_export_cancelled(request_id):
+                            logger.info(f"读取最终ZIP文件前检测到请求已取消: {request_id}")
+                            # 清理进度信息
+                            try:
+                                with export_requests_lock:
+                                    if request_id in active_export_requests:
+                                        del active_export_requests[request_id]
+                                        logger.info(f"已清理取消的导出请求: {request_id}")
+                            except:
+                                pass
+                            return jsonify({
+                                'status': 'warning',
+                                'message': '导出操作已被用户取消'
+                            })
                         
                         # 读取最终的ZIP文件
                         with open(pdf_zip_path, 'rb') as f:
@@ -1512,15 +2104,18 @@ def get_students():
         cursor = conn.cursor()
         
         # 获取当前用户信息
-        if not current_user.is_authenticated:
-            return jsonify({'error': '未登录'}), 401
+        if not hasattr(current_user, 'is_authenticated') or not current_user.is_authenticated:
+            return jsonify({'status': 'error', 'message': '未登录', 'code': 'login_required'}), 401
             
         # 如果是管理员，返回所有学生
-        if current_user.is_admin:
+        if hasattr(current_user, 'is_admin') and current_user.is_admin:
             cursor.execute('SELECT * FROM students ORDER BY class, CAST(id AS INTEGER)')
         else:
             # 如果是班主任，只返回其班级的学生
-            cursor.execute('SELECT * FROM students WHERE class_id = ? ORDER BY CAST(id AS INTEGER)', (current_user.class_id,))
+            if hasattr(current_user, 'class_id') and current_user.class_id:
+                cursor.execute('SELECT * FROM students WHERE class_id = ? ORDER BY CAST(id AS INTEGER)', (current_user.class_id,))
+            else:
+                return jsonify({'status': 'error', 'message': '您没有关联的班级'}), 403
             
         students = cursor.fetchall()
         conn.close()
@@ -1539,3 +2134,832 @@ def get_students():
         logger.error(f"获取学生列表时出错: {str(e)}")
         logger.error(traceback.format_exc())
         return jsonify({'error': f'获取学生列表时出错: {str(e)}'}), 500
+
+# 清理过期的导出进度
+def cleanup_export_progress():
+    """清理超过30分钟的导出进度信息"""
+    global user_export_progress
+    
+    current_time = time.time()
+    with progress_lock:
+        expired_keys = []
+        for key, progress in user_export_progress.items():
+            if current_time - progress.get('timestamp', 0) > 1800:  # 30分钟
+                expired_keys.append(key)
+        
+        for key in expired_keys:
+            logger.info(f"清理过期的导出进度: {key}")
+            del user_export_progress[key]
+
+# 添加导出进度查询接口
+@comments_bp.route('/api/export-progress', methods=['GET'])
+def get_export_progress():
+    """获取当前导出进度信息"""
+    global user_export_progress
+    
+    # 清理过期的进度信息
+    cleanup_export_progress()
+    
+    # 获取当前用户ID
+    user_id = None
+    if hasattr(current_user, 'id') and current_user.is_authenticated:
+        user_id = str(current_user.id)
+    
+    # 获取请求中的request_id参数
+    request_id = request.args.get('request_id')
+    
+    # 确定要查询的进度键
+    progress_key = request_id if request_id else user_id
+    if not progress_key:
+        progress_key = 'anonymous'
+    
+    # 线程安全地获取进度信息
+    with progress_lock:
+        user_progress = user_export_progress.get(progress_key, {})
+    
+    # 检查是否有有效的进度信息
+    current_time = time.time()
+    if not user_progress or current_time - user_progress.get('timestamp', 0) > 300:  # 5分钟内的进度才是有效的
+        # 超过5分钟没有更新或没有进度信息，返回空进度
+        return jsonify({
+            'status': 'idle',
+            'message': '',
+            'percent': 0
+        })
+    
+    # 检查是否有导出完成的标记
+    progress_status = 'idle'
+    if user_progress.get('message'):
+        if user_progress.get('percent') == 100 or '导出完成' in user_progress.get('message', ''):
+            progress_status = 'completed'
+        else:
+            progress_status = 'processing'
+    
+    # 返回当前用户的进度
+    return jsonify({
+        'status': progress_status,
+        'message': user_progress.get('message', ''),
+        'percent': user_progress.get('percent', 0),
+        'request_id': user_progress.get('request_id'),
+        'user_id': user_progress.get('user_id')
+    })
+
+# 更新导出报告的转换和合并进度显示
+def update_progress_in_pdf_conversion(docx_file, student_name, current_index, total_files, request_id=None):
+    """更新PDF转换进度"""
+    # 构建更清晰的进度信息
+    progress_message = f"正在导出学生报告: {student_name} ({current_index}/{total_files})"
+    # 计算百分比 (但前端不会显示)
+    percent = int((current_index / total_files) * 80) if total_files > 0 else 0
+    # 调用websocket_progress更新进度
+    websocket_progress(progress_message, percent, request_id)
+    return progress_message
+
+# 評語导入预览API
+@comments_bp.route('/api/preview-import-comments', methods=['POST'])
+def preview_import_comments():
+    """预览Excel文件中的评语数据，不执行真正的导入"""
+    
+    try:
+        # 检查用户是否已登录
+        if not hasattr(current_user, 'is_authenticated') or not current_user.is_authenticated:
+            return jsonify({'status': 'error', 'message': '您需要登录后才能导入评语', 'code': 'login_required'}), 401
+            
+        # 检查是否有文件上传
+        if 'file' not in request.files:
+            return jsonify({'status': 'error', 'message': '没有选择文件'}), 400
+        
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({'status': 'error', 'message': '没有选择文件'}), 400
+        
+        # 检查文件类型
+        if not file.filename.lower().endswith('.xlsx'):
+            return jsonify({'status': 'error', 'message': '请上传Excel文件（.xlsx格式），不支持旧版.xls格式'}), 400
+        
+        # 确保uploads目录存在
+        os.makedirs('uploads', exist_ok=True)
+        
+        # 【彻底修复】保存文件逻辑，确保保留.xlsx扩展名
+        filename = secure_filename(file.filename)
+        timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+        # 确保文件名包含扩展名
+        base_name, ext = os.path.splitext(filename)
+        if not ext or ext.lower() != '.xlsx':
+            ext = '.xlsx'  # 强制添加正确的扩展名
+        saved_filename = f"{timestamp}_{base_name}{ext}"
+        upload_path = os.path.join('uploads', saved_filename)
+        
+        logger.info(f"将保存Excel文件为: {upload_path}，原文件名: {filename}")
+        
+        # 保存文件
+        try:
+            file.save(upload_path)
+            logger.info(f"成功保存上传的Excel文件: {upload_path}")
+        except Exception as save_error:
+            logger.error(f"保存上传文件失败: {str(save_error)}")
+            return jsonify({'status': 'error', 'message': f'保存文件失败: {str(save_error)}'}), 500
+        
+        # 使用CommentsExcelProcessor处理Excel文件
+        try:
+            from utils.excel_processor import CommentsExcelProcessor
+            
+            # 获取当前班级ID
+            if not hasattr(current_user, 'class_id') or not current_user.class_id:
+                return jsonify({'status': 'error', 'message': '您没有关联的班级，无法导入评语'}), 403
+                
+            class_id = current_user.class_id
+            
+            # 创建处理器实例
+            processor = CommentsExcelProcessor()
+            
+            # 处理Excel文件
+            result = processor.process_file(upload_path, class_id)
+            if 'error' in result:
+                # 删除已上传的文件
+                try:
+                    if os.path.exists(upload_path):
+                        os.remove(upload_path)
+                except:
+                    pass
+                
+                return jsonify({'status': 'error', 'message': result['error']}), 400
+            
+            # 获取当前班级学生
+            try:
+                conn = get_db_connection()
+                cursor = conn.cursor()
+                
+                # 查询当前班级所有学生
+                cursor.execute('SELECT id, name FROM students WHERE class_id = ?', (class_id,))
+                students = cursor.fetchall()
+                
+                # 转换为字典，方便查找
+                students_dict = {student['name']: {'id': student['id']} for student in students}
+                conn.close()
+                
+                logger.info(f"从数据库获取学生信息成功，班级ID: {class_id}, 学生数量: {len(students_dict)}")
+            except Exception as db_error:
+                logger.error(f"数据库查询失败: {str(db_error)}")
+                return jsonify({'status': 'error', 'message': f'数据库查询失败: {str(db_error)}'}), 500
+            
+            # 将评语与学生匹配
+            match_result = processor.match_students_with_comments(result['comments'], students_dict)
+            
+            # 返回预览结果
+            return jsonify({
+                'status': 'ok',
+                'file_path': upload_path,
+                'previews': match_result['previews'],
+                'total_count': match_result['total_count'],
+                'match_count': match_result['match_count'],
+                'valid_count': match_result['valid_count'],
+                'all_valid': match_result['all_valid']
+            })
+            
+        except ImportError:
+            logger.error("CommentsExcelProcessor模块不可用")
+            
+            # 回退到原始代码处理Excel文件
+            return process_excel_file_legacy(upload_path, class_id=current_user.class_id)
+            
+    except Exception as e:
+        logger.error(f"预览评语导入时出错: {str(e)}")
+        logger.error(traceback.format_exc())
+        return jsonify({'status': 'error', 'message': f'服务器错误: {str(e)}'}), 500
+
+# 原始Excel处理函数，用作回退
+def process_excel_file_legacy(file_path, class_id=None):
+    """原始Excel文件处理函数，当新处理器不可用时回退使用"""
+    
+    try:
+        import openpyxl
+        
+        # 验证是否确实是一个Excel文件
+        try:
+            wb = openpyxl.load_workbook(file_path)
+            ws = wb.active
+            logger.info(f"成功读取Excel文件，工作表名称: {ws.title}")
+        except Exception as wb_error:
+            # 记录详细的解析错误
+            logger.error(f"无法解析Excel文件: {str(wb_error)}")
+            
+            # 尝试删除已保存的文件
+            try:
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+            except:
+                pass
+            
+            return jsonify({
+                'status': 'error', 
+                'message': f'无法解析Excel文件，请确保是标准的.xlsx格式。错误信息: {str(wb_error)}'
+            }), 400
+    except ImportError:
+        logger.error("openpyxl模块未安装")
+        return jsonify({'status': 'error', 'message': 'openpyxl模块未安装，请联系管理员'}), 500
+    
+    # 检查必要的列是否存在
+    headers = []
+    for cell in ws[1]:
+        if cell.value:
+            headers.append(str(cell.value).strip())
+    
+    if '姓名' not in headers or '评语' not in headers:
+        # 删除已上传的文件
+        try:
+            if os.path.exists(file_path):
+                os.remove(file_path)
+        except:
+            pass
+            
+        return jsonify({
+            'status': 'error', 
+            'message': f'Excel文件格式错误：缺少必要的列"姓名"和"评语"。请下载并使用标准模板。当前表头: {", ".join(headers)}'
+        }), 400
+    
+    logger.info(f"Excel文件校验成功，表头: {headers}")
+    
+    # 获取姓名和评语列的索引
+    name_index = headers.index('姓名')
+    comment_index = headers.index('评语')
+    
+    # 获取当前班级学生
+    try:
+        # 获取班级ID
+        if class_id is None:
+            if not hasattr(current_user, 'class_id') or not current_user.class_id:
+                return jsonify({'status': 'error', 'message': '您没有关联的班级，无法导入评语'}), 403
+            class_id = current_user.class_id
+        
+        # 获取数据库连接
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # 查询当前班级所有学生
+        cursor.execute('SELECT id, name FROM students WHERE class_id = ?', (class_id,))
+        students = cursor.fetchall()
+        
+        # 转换为字典，方便查找
+        students_dict = {student['name']: student['id'] for student in students}
+        conn.close()
+        
+        logger.info(f"从数据库获取学生信息成功，班级ID: {class_id}, 学生数量: {len(students_dict)}")
+    except Exception as db_error:
+        logger.error(f"数据库查询失败: {str(db_error)}")
+        return jsonify({'status': 'error', 'message': f'数据库查询失败: {str(db_error)}'}), 500
+    
+    # 解析Excel数据
+    previews = []
+    row_index = 0
+    match_count = 0
+    total_count = 0
+    
+    # 获取所有数据行
+    data_rows = list(ws.iter_rows(min_row=2))  # 跳过表头
+    
+    # 遍历数据行
+    for row in data_rows:
+        row_index += 1
+        if row_index > 30:  # 限制预览行数为30行
+            break
+            
+        # 获取姓名和评语，确保name_index和comment_index在有效范围内
+        name = row[name_index].value if name_index < len(row) and row[name_index].value else ""
+        comment = row[comment_index].value if comment_index < len(row) and row[comment_index].value else ""
+        
+        # 确保名称为字符串类型
+        if name is not None and not isinstance(name, str):
+            name = str(name)
+            
+        # 确保评语为字符串类型
+        if comment is not None and not isinstance(comment, str):
+            comment = str(comment)
+        
+        if not name or not comment:
+            continue
+        
+        total_count += 1
+        # 检查是否匹配到学生
+        matched = name in students_dict
+        if matched:
+            match_count += 1
+            
+        # 添加到预览数据
+        previews.append({
+            'name': name,
+            'comment': comment if len(comment) <= 5000 else comment[:5000] + '...(已截断)',
+            'matched': matched
+        })
+    
+    # 统计Excel中的总行数（不包括表头）
+    valid_rows_count = 0
+    for row in data_rows:
+        name = row[name_index].value if name_index < len(row) else None
+        comment = row[comment_index].value if comment_index < len(row) else None
+        if name and comment:
+            valid_rows_count += 1
+    
+    logger.info(f"Excel文件解析完成，总行数: {valid_rows_count}，匹配学生数: {match_count}")
+            
+    return jsonify({
+        'status': 'ok',
+        'file_path': file_path,
+        'previews': previews,
+        'total_count': valid_rows_count,
+        'match_count': match_count
+    })
+
+# 确认导入评语API
+@comments_bp.route('/api/confirm-import-comments', methods=['POST'])
+def confirm_import_comments():
+    """确认导入评语数据"""
+    
+    try:
+        # 检查用户是否已登录
+        if not hasattr(current_user, 'is_authenticated') or not current_user.is_authenticated:
+            return jsonify({'status': 'error', 'message': '您需要登录后才能导入评语', 'code': 'login_required'}), 401
+            
+        data = request.get_json()
+        
+        # 验证请求数据
+        if not data or 'file_path' not in data:
+            logger.error("确认导入请求缺少file_path参数")
+            return jsonify({'status': 'error', 'message': '缺少必要的参数'}), 400
+        
+        file_path = data['file_path']
+        append_mode = data.get('append_mode', False)  # 默认使用替换模式
+        
+        # 详细记录请求信息，帮助调试
+        logger.info(f"确认导入请求: 文件路径={file_path}, 追加模式={append_mode}")
+        
+        # 检查文件是否存在
+        if not os.path.exists(file_path):
+            logger.error(f"导入文件不存在: {file_path}")
+            return jsonify({'status': 'error', 'message': '找不到上传的文件，可能已被删除或过期'}), 400
+        
+        # 检查文件扩展名，如果缺少，则添加临时副本
+        base_name, ext = os.path.splitext(file_path)
+        temp_file_path = file_path
+        
+        if not ext or ext.lower() != '.xlsx':
+            # 创建带扩展名的临时文件
+            temp_file_path = f"{file_path}.xlsx"
+            try:
+                import shutil
+                shutil.copy2(file_path, temp_file_path)
+                logger.info(f"为确保文件格式识别，创建了带扩展名的临时文件副本: {temp_file_path}")
+            except Exception as copy_error:
+                logger.warning(f"创建临时文件副本失败: {str(copy_error)}，将继续尝试使用原文件")
+                temp_file_path = file_path  # 回退到原始文件
+
+        # 尝试验证Excel文件
+        try:
+            import openpyxl
+            
+            logger.info(f"尝试打开文件验证Excel格式: {temp_file_path}")
+            wb = openpyxl.load_workbook(temp_file_path)
+            ws = wb.active
+            logger.info(f"成功验证Excel文件: {temp_file_path}, 工作表: {ws.title}")
+        except Exception as excel_error:
+            logger.error(f"文件不是有效的Excel文件: {temp_file_path}, 错误: {str(excel_error)}")
+            
+            # 清理临时文件
+            if temp_file_path != file_path and os.path.exists(temp_file_path):
+                try:
+                    os.remove(temp_file_path)
+                    logger.info(f"已删除临时文件: {temp_file_path}")
+                except:
+                    pass
+                    
+            return jsonify({'status': 'error', 'message': f'无法解析Excel文件: {str(excel_error)}'}), 400
+
+        # 获取当前班级ID
+        class_id = current_user.class_id
+        
+        # 使用CommentsExcelProcessor处理Excel文件
+        try:
+            from utils.excel_processor import CommentsExcelProcessor
+            
+            # 创建处理器实例
+            processor = CommentsExcelProcessor()
+            
+            # 处理Excel文件 - 使用带扩展名的临时文件
+            result = processor.process_file(temp_file_path, class_id)
+            
+            if 'error' in result:
+                logger.error(f"处理Excel文件失败: {result['error']}")
+                
+                # 清理临时文件
+                if temp_file_path != file_path and os.path.exists(temp_file_path):
+                    try:
+                        os.remove(temp_file_path)
+                    except:
+                        pass
+                        
+                return jsonify({'status': 'error', 'message': result['error']}), 400
+                
+            # 获取当前班级学生
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            
+            # 查询当前班级所有学生
+            cursor.execute('SELECT id, name, comments FROM students WHERE class_id = ?', (class_id,))
+            students = cursor.fetchall()
+            
+            # 转换为字典，方便查找
+            students_dict = {student['name']: {
+                'id': student['id'],
+                'comments': student['comments']
+            } for student in students}
+            
+            logger.info(f"从数据库获取学生: {len(students_dict)}名")
+            
+            # 匹配评语和学生
+            logger.info(f"匹配评语和学生...")
+            match_result = processor.match_students_with_comments(result['comments'], students_dict)
+            previews = match_result['previews']
+            logger.info(f"评语匹配结果: 总数={match_result['total_count']}, 匹配={match_result['match_count']}, 有效评语={match_result['valid_count']}")
+            
+            # 执行导入
+            success_count = 0
+            error_count = 0
+            error_details = []
+            skipped_count = 0
+            now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            
+            # 开始事务
+            conn.execute('BEGIN TRANSACTION')
+            
+            for preview in previews:
+                # 只导入匹配的且有效的评语（不超过5000字）
+                if preview['matched'] and preview['valid']:
+                    student_name = preview['name']
+                    student_id = students_dict[student_name]['id']
+                    comment = preview['comment']
+                    existing_comment = students_dict[student_name]['comments']
+                    
+                    # 根据模式更新评语
+                    if append_mode and existing_comment:
+                        # 追加模式
+                        updated_comment = f"{existing_comment}\n\n--- {now} ---\n{comment}"
+                    else:
+                        # 替换模式
+                        updated_comment = comment
+                    
+                    try:
+                        # 更新学生评语
+                        cursor.execute(
+                            'UPDATE students SET comments = ?, updated_at = ? WHERE id = ? AND class_id = ?',
+                            (updated_comment, now, student_id, class_id)
+                        )
+                        success_count += 1
+                    except Exception as update_error:
+                        error_count += 1
+                        error_detail = f"更新学生 {student_name} 的评语失败: {str(update_error)}"
+                        error_details.append(error_detail)
+                        logger.error(f"更新学生评语时出错: {error_detail}")
+                else:
+                    skipped_count += 1
+                    # 记录跳过原因 
+                    if not preview['matched']:
+                        logger.info(f"跳过未匹配学生的评语: {preview['name']}")
+                    elif not preview['valid']:
+                        logger.info(f"跳过无效评语: {preview['name']}, 长度: {preview['length']}字")
+            
+            # 提交事务
+            conn.commit()
+            conn.close()
+            
+            # 清理临时和原始文件
+            try:
+                # 先删除临时文件（如果创建了的话）
+                if temp_file_path != file_path and os.path.exists(temp_file_path):
+                    os.remove(temp_file_path)
+                    logger.info(f"已删除临时文件: {temp_file_path}")
+                    
+                # 再删除原始文件
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+                    logger.info(f"已删除原始上传文件: {file_path}")
+            except Exception as file_error:
+                logger.warning(f"删除文件失败: {str(file_error)}")
+            
+            # 根据成功和失败的数量确定状态
+            status = 'ok' if error_count == 0 else 'partial' if success_count > 0 else 'error'
+            
+            logger.info(f"评语导入完成: 成功 {success_count} 条, 失败 {error_count} 条, 跳过 {skipped_count} 条")
+            
+            # 限制错误详情的数量
+            if len(error_details) > 10:
+                error_details = error_details[:10] + [f"...还有 {len(error_details) - 10} 条错误未显示"]
+            
+            return jsonify({
+                'status': status,
+                'success_count': success_count,
+                'error_count': error_count,
+                'skipped_count': skipped_count,
+                'error_details': error_details
+            })
+            
+        except ImportError as import_error:
+            logger.warning(f"CommentsExcelProcessor模块不可用: {str(import_error)}")
+            logger.warning("回退到原始导入逻辑")
+            
+            # 清理临时文件
+            if temp_file_path != file_path and os.path.exists(temp_file_path):
+                try:
+                    os.remove(temp_file_path)
+                except:
+                    pass
+            
+            # 如果CommentsExcelProcessor不可用，使用原始导入逻辑
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            
+            # 查询当前班级所有学生
+            cursor.execute('SELECT id, name, comments FROM students WHERE class_id = ?', (class_id,))
+            students = cursor.fetchall()
+            
+            # 转换为字典，方便查找
+            students_dict = {student['name']: {
+                'id': student['id'],
+                'comments': student['comments']
+            } for student in students}
+            
+            logger.info(f"已获取班级学生信息，共{len(students_dict)}名学生")
+            
+            # 使用openpyxl读取Excel文件
+            try:
+                import openpyxl
+                
+                try:
+                    # 尝试读取临时文件，如果失败则尝试原始文件
+                    try:
+                        wb = openpyxl.load_workbook(temp_file_path)
+                        excel_file_used = temp_file_path
+                    except:
+                        wb = openpyxl.load_workbook(file_path)
+                        excel_file_used = file_path
+                        
+                    ws = wb.active
+                    logger.info(f"导入确认：成功读取Excel文件 {excel_file_used}")
+                except Exception as wb_error:
+                    conn.close()
+                    logger.error(f"导入确认：无法解析Excel文件: {str(wb_error)}")
+                    return jsonify({'status': 'error', 'message': f'无法解析Excel文件: {str(wb_error)}'}), 500
+            except ImportError as ie:
+                conn.close()
+                logger.error(f"导入确认：缺少openpyxl模块: {str(ie)}")
+                return jsonify({'status': 'error', 'message': 'openpyxl模块未安装，请联系管理员'}), 500
+            
+            # 获取表头
+            headers = []
+            for cell in ws[1]:
+                if cell.value:
+                    headers.append(str(cell.value).strip())
+            
+            if '姓名' not in headers or '评语' not in headers:
+                conn.close()
+                logger.error(f"文件格式错误，缺少必要的列，表头: {headers}")
+                return jsonify({'status': 'error', 'message': '文件格式错误，缺少必要的列'}), 400
+            
+            # 获取姓名和评语列的索引
+            name_index = headers.index('姓名')
+            comment_index = headers.index('评语')
+            
+            # 开始导入
+            success_count = 0
+            error_count = 0
+            error_details = []
+            skipped_count = 0
+            now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            
+            # 开始事务
+            conn.execute('BEGIN TRANSACTION')
+            
+            try:
+                # 遍历Excel行
+                data_rows = list(ws.iter_rows(min_row=2))  # 跳过表头
+                logger.info(f"开始处理Excel数据，共{len(data_rows)}行")
+                
+                for row in data_rows:
+                    # 确保索引在有效范围内
+                    if name_index >= len(row) or comment_index >= len(row):
+                        error_count += 1
+                        error_details.append("Excel行数据结构错误，列索引超出范围")
+                        continue
+                    
+                    # 获取姓名和评语
+                    name = row[name_index].value
+                    comment = row[comment_index].value
+                    
+                    # 确保名称为字符串类型
+                    if name is not None and not isinstance(name, str):
+                        name = str(name)
+                    
+                    # 确保评语为字符串类型
+                    if comment is not None and not isinstance(comment, str):
+                        comment = str(comment)
+                    
+                    if not name or not comment:
+                        skipped_count += 1
+                        continue
+                    
+                    # 截断评语（如果超过5000字符）
+                    if len(comment) > 5000:  # 临时调整为5000字
+                        comment = comment[:5000]
+                    
+                    # 检查是否匹配到学生
+                    if name in students_dict:
+                        student_info = students_dict[name]
+                        student_id = student_info['id']
+                        existing_comment = student_info['comments']
+                        
+                        # 根据模式更新评语
+                        if append_mode and existing_comment:
+                            # 追加模式
+                            updated_comment = f"{existing_comment}\n\n--- {now} ---\n{comment}"
+                        else:
+                            # 替换模式
+                            updated_comment = comment
+                        
+                        try:
+                            # 更新学生评语
+                            cursor.execute(
+                                'UPDATE students SET comments = ?, updated_at = ? WHERE id = ? AND class_id = ?',
+                                (updated_comment, now, student_id, class_id)
+                            )
+                            success_count += 1
+                        except Exception as update_error:
+                            error_count += 1
+                            error_detail = f"更新学生 {name} 的评语失败: {str(update_error)}"
+                            error_details.append(error_detail)
+                            logger.error(f"更新学生评语时出错: {error_detail}")
+                    else:
+                        error_count += 1
+                        error_details.append(f"找不到匹配的学生: {name}")
+                
+                # 提交事务
+                conn.commit()
+                
+                # 关闭数据库连接
+                conn.close()
+                
+                # 清理文件
+                try:
+                    # 先删除临时文件（如果创建了的话）
+                    if temp_file_path != file_path and os.path.exists(temp_file_path):
+                        os.remove(temp_file_path)
+                        logger.info(f"已删除临时文件: {temp_file_path}")
+                        
+                    # 再删除原始文件
+                    if os.path.exists(file_path):
+                        os.remove(file_path)
+                        logger.info(f"已删除原始上传文件: {file_path}")
+                except Exception as file_error:
+                    logger.warning(f"删除文件失败: {str(file_error)}")
+                
+                # 生成响应
+                status = 'ok' if error_count == 0 else 'partial' if success_count > 0 else 'error'
+                
+                logger.info(f"导入完成: 成功 {success_count} 条, 失败 {error_count} 条, 跳过 {skipped_count} 条")
+                
+                # 限制错误详情的数量，避免响应太大
+                if len(error_details) > 10:
+                    error_details = error_details[:10] + [f"...还有 {len(error_details) - 10} 条错误未显示"]
+                
+                return jsonify({
+                    'status': status,
+                    'success_count': success_count,
+                    'error_count': error_count,
+                    'skipped_count': skipped_count,
+                    'error_details': error_details
+                })
+                
+            except Exception as e:
+                # 回滚事务
+                conn.rollback()
+                conn.close()
+                
+                # 清理文件
+                try:
+                    if temp_file_path != file_path and os.path.exists(temp_file_path):
+                        os.remove(temp_file_path)
+                except:
+                    pass
+                
+                logger.error(f"导入评语时出错: {str(e)}")
+                logger.error(traceback.format_exc())
+                return jsonify({
+                    'status': 'error',
+                    'message': f'导入评语时出错: {str(e)}'
+                }), 500
+        
+    except Exception as e:
+        logger.error(f"确认导入评语时出错: {str(e)}")
+        logger.error(traceback.format_exc())
+        return jsonify({'status': 'error', 'message': f'服务器错误: {str(e)}'}), 500
+
+# 导出评语为Excel
+@comments_bp.route('/api/export-comments-excel', methods=['GET'])
+def export_comments_excel():
+    """导出班级学生评语为Excel文件"""
+    try:
+        logger.info("收到导出评语Excel请求")
+        
+        # 检查用户是否已登录
+        if not hasattr(current_user, 'is_authenticated') or not current_user.is_authenticated:
+            logger.error("用户未登录，无法导出评语")
+            return jsonify({'status': 'error', 'message': '您需要登录后才能导出评语', 'code': 'login_required'}), 401
+        
+        # 获取班级ID，优先使用请求参数中的class_id，如果没有则使用当前用户的class_id
+        class_id = request.args.get('class_id')
+        if not class_id and hasattr(current_user, 'class_id'):
+            class_id = current_user.class_id
+            logger.info(f"使用当前用户班级ID: {class_id}")
+        
+        # 如果没有班级ID，返回错误
+        if not class_id:
+            logger.error("未指定班级ID")
+            return jsonify({'status': 'error', 'message': '未指定班级ID'}), 400
+            
+        logger.info(f"导出评语Excel: 班级ID={class_id}")
+        
+        # 获取班级学生数据
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # 查询班级名称 - 使用正确的列名class_name
+        cursor.execute('SELECT class_name FROM classes WHERE id = ?', (class_id,))
+        class_result = cursor.fetchone()
+        class_name = class_result['class_name'] if class_result else f"班级{class_id}"
+        logger.info(f"班级名称: {class_name}")
+        
+        # 查询学生数据
+        cursor.execute('SELECT id, name, comments FROM students WHERE class_id = ? ORDER BY CAST(id AS INTEGER)', (class_id,))
+        students = cursor.fetchall()
+        conn.close()
+        
+        if not students:
+            logger.error(f"未找到班级{class_id}的学生数据")
+            return jsonify({'status': 'error', 'message': '未找到班级学生数据'}), 404
+        
+        logger.info(f"找到{len(students)}名学生的数据")
+        
+        try:
+            # 尝试导入pandas
+            import pandas as pd
+            from io import BytesIO
+            import urllib.parse
+        except ImportError as e:
+            logger.error(f"缺少必要的库，无法导出Excel: {str(e)}")
+            return jsonify({'status': 'error', 'message': f'服务器缺少必要的库，无法导出Excel: {str(e)}'}), 500
+        
+        # 创建DataFrame
+        data = []
+        for student in students:
+            data.append({
+                '姓名': student['name'],
+                '评语': student['comments'] if student['comments'] else ''
+            })
+        
+        df = pd.DataFrame(data)
+        
+        # 创建Excel文件
+        output = BytesIO()
+        try:
+            with pd.ExcelWriter(output, engine='openpyxl') as writer:
+                df.to_excel(writer, sheet_name='评语数据', index=False)
+                
+                # 获取工作表以设置列宽
+                worksheet = writer.sheets['评语数据']
+                worksheet.column_dimensions['A'].width = 15  # 姓名列宽
+                worksheet.column_dimensions['B'].width = 60  # 评语列宽
+        except Exception as excel_error:
+            logger.error(f"创建Excel文件失败: {str(excel_error)}")
+            return jsonify({'status': 'error', 'message': f'创建Excel文件失败: {str(excel_error)}'}), 500
+        
+        # 设置响应头
+        output.seek(0)
+        timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+        
+        # 生成文件名并进行URL编码
+        raw_filename = f"{class_name}_评语导出_{timestamp}.xlsx"
+        encoded_filename = urllib.parse.quote(raw_filename)
+        
+        # 创建响应
+        response = make_response(output.getvalue())
+        response.headers['Content-Type'] = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        response.headers['Content-Disposition'] = f'attachment; filename*=UTF-8\'\'{encoded_filename}'
+        
+        logger.info(f"成功导出评语Excel: 班级={class_name}, 学生数量={len(students)}")
+        return response
+        
+    except Exception as e:
+        logger.error(f"导出评语Excel时出错: {str(e)}")
+        logger.error(traceback.format_exc())
+        return jsonify({
+            'status': 'error',
+            'message': f'导出评语Excel时出错: {str(e)}'
+        }), 500

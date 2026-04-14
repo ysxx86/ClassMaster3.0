@@ -171,8 +171,9 @@ body {
     z-index: 1050 !important;
 }
 
+/* 模态框打开时的body样式 - 修复滚动问题 */
 .modal-open {
-    overflow: hidden;
+    /* 不再禁用overflow，允许页面滚动 */
     padding-right: 0 !important;
 }
 

@@ -3,22 +3,57 @@ document.addEventListener('DOMContentLoaded', function() {
     // 添加数据加载
     try {
         // 加载首页数据总览
-    loadDashboardData();
+        loadDashboardData();
         
         // 加载图表数据
         loadGradeDistribution();
         loadCommentsProgress();
     
-    // 为快捷操作绑定点击事件
-    setupQuickActions();
+        // 为快捷操作绑定点击事件
+        setupQuickActions();
     
-    // 动态加载待办事项和最近活动
-    loadTodos();
-    loadActivities();
+        // 动态加载待办事项和最近活动
+        loadTodos();
+        loadActivities();
+        
+        // 记录最后数据检查的时间戳
+        lastDataCheckTimestamp = Date.now();
+        
+        // 启动数据变更检查
+        startDataChangeChecking();
+        
+        // 设置数据变更事件监听
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'studentDataChangeTimestamp') {
+                console.log('从localStorage事件检测到学生数据变更');
+                loadDashboardData();  // 重新加载首页数据
+            }
+        });
     } catch (e) {
         console.error('初始化仪表盘出错:', e);
     }
 });
+
+// 记录数据检查的最后时间戳
+let lastDataCheckTimestamp = Date.now();
+
+// 定期检查学生数据是否有变更（例如：学生被删除）
+function startDataChangeChecking() {
+    // 每5秒检查一次
+    setInterval(checkStudentDataChanged, 5000);
+}
+
+// 检查学生数据是否发生变化
+function checkStudentDataChanged() {
+    // 尝试从localStorage获取数据变更时间戳
+    const storedTimestamp = localStorage.getItem('studentDataChangeTimestamp');
+    
+    if (storedTimestamp && parseInt(storedTimestamp) > lastDataCheckTimestamp) {
+        console.log('检测到学生数据变更，刷新首页数据...');
+        lastDataCheckTimestamp = parseInt(storedTimestamp);
+        loadDashboardData();  // 重新加载首页数据
+    }
+}
 
 // 加载首页基本数据
 function loadDashboardData() {
@@ -51,16 +86,16 @@ function loadDashboardData() {
                 cards[0].querySelector('.dashboard-value').textContent = data.total_students;
                 
                 // 评语完成 - 第二个卡片
-                cards[1].querySelector('.dashboard-value').textContent = data.comments_completed;
-                cards[1].querySelector('.dashboard-desc').textContent = `已完成评语的学生数 (${data.comments_percentage}%)`;
+                cards[1].querySelector('.dashboard-value').textContent = data.comments.completed;
+                cards[1].querySelector('.dashboard-desc').textContent = `已完成评语的学生数 (${data.comments.percentage}%)`;
                 
                 // 成绩录入 - 第三个卡片
-                cards[2].querySelector('.dashboard-value').textContent = data.grades_completed;
-                cards[2].querySelector('.dashboard-desc').textContent = `已录入成绩的学生数 (${data.grades_percentage}%)`;
+                cards[2].querySelector('.dashboard-value').textContent = data.grades.completed;
+                cards[2].querySelector('.dashboard-desc').textContent = `已录入成绩的学生数 (${data.grades.percentage}%)`;
                 
                 // 报告生成 - 第四个卡片
-                cards[3].querySelector('.dashboard-value').textContent = data.reports_ready;
-                cards[3].querySelector('.dashboard-desc').textContent = `已生成报告的学生数 (${data.reports_percentage}%)`;
+                cards[3].querySelector('.dashboard-value').textContent = data.reports.completed;
+                cards[3].querySelector('.dashboard-desc').textContent = `已生成报告的学生数 (${data.reports.percentage}%)`;
             } else {
                 console.error('获取仪表盘数据失败', result.message);
                 showErrorMessage('获取数据失败，请刷新页面重试');
@@ -119,21 +154,21 @@ function updateDashboardWithData(data) {
         
         // 评语完成
         const commentCard = cards[1];
-        commentCard.querySelector('.dashboard-value').textContent = data.comments_completed || '0';
+        commentCard.querySelector('.dashboard-value').textContent = data.comments.completed || '0';
         commentCard.querySelector('.dashboard-desc').textContent = 
-            `已完成评语的学生数 (${data.comments_percentage || '0'}%)`;
+            `已完成评语的学生数 (${data.comments.percentage || '0'}%)`;
         
         // 成绩录入
         const gradeCard = cards[2];
-        gradeCard.querySelector('.dashboard-value').textContent = data.grades_completed || '0';
+        gradeCard.querySelector('.dashboard-value').textContent = data.grades.completed || '0';
         gradeCard.querySelector('.dashboard-desc').textContent = 
-            `已录入成绩的学生数 (${data.grades_percentage || '0'}%)`;
+            `已录入成绩的学生数 (${data.grades.percentage || '0'}%)`;
         
         // 报告生成
         const reportCard = cards[3];
-        reportCard.querySelector('.dashboard-value').textContent = data.reports_ready || '0';
+        reportCard.querySelector('.dashboard-value').textContent = data.reports.completed || '0';
         reportCard.querySelector('.dashboard-desc').textContent = 
-            `已生成报告的学生数 (${data.reports_percentage || '0'}%)`;
+            `已生成报告的学生数 (${data.reports.percentage || '0'}%)`;
     }
 }
 

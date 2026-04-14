@@ -15,6 +15,7 @@ from werkzeug.utils import secure_filename
 from flask_login import login_required, current_user
 from utils.class_filter import class_filter, user_can_access
 from utils.grades_manager import GradesManager
+from utils.permission_checker import can_access_deyu, get_accessible_classes, require_head_teacher
 import logging
 import pandas as pd
 import numpy as np
@@ -117,10 +118,11 @@ def get_all_deyu():
             if not current_user.class_id:
                 logger.warning("非管理员用户未分配班级")
                 return jsonify({
-                    'status': 'ok',
+                    'status': 'error',
+                    'code': 'NO_CLASS_ASSIGNED',
                     'deyu': [],
                     'message': '您尚未被分配班级，无法查看学生德育维度'
-                })
+                }), 403
             class_id = current_user.class_id
             logger.info(f"非管理员用户，使用其班级ID: {class_id}")
         
@@ -148,7 +150,7 @@ def get_all_deyu():
             logger.info(f"students表列名: {column_names}")
             
             # 确认必要的列存在
-            required_columns = ['id', 'name', 'class', 'class_id', 'pinzhi', 'xuexi', 'jiankang', 'shenmei', 'shijian', 'shenghuo']
+            required_columns = ['id', 'name', 'class_id', 'pinzhi', 'xuexi', 'jiankang', 'shenmei', 'shijian', 'shenghuo']
             missing_columns = [col for col in required_columns if col not in column_names]
             
             if missing_columns:
@@ -176,10 +178,10 @@ def get_all_deyu():
             query_attempts += 1
             
             cursor.execute('''
-                SELECT id, name, class, class_id, pinzhi, xuexi, jiankang, shenmei, shijian, shenghuo 
-                FROM students 
-                WHERE class_id = ?
-                ORDER BY id
+                SELECT s.id, s.name, s.class_id, s.pinzhi, s.xuexi, s.jiankang, s.shenmei, s.shijian, s.shenghuo 
+                FROM students s
+                WHERE s.class_id = ?
+                ORDER BY s.id
             ''', (int_class_id,))
             students = cursor.fetchall()
             logger.info(f"按班级ID查询结果: 找到{len(students)}名学生")
@@ -194,9 +196,9 @@ def get_all_deyu():
             query_attempts += 1
             
             cursor.execute('''
-                SELECT id, name, class, class_id, pinzhi, xuexi, jiankang, shenmei, shijian, shenghuo 
+                SELECT id, name, class_id, pinzhi, xuexi, jiankang, shenmei, shijian, shenghuo 
                 FROM students 
-                WHERE class = ?
+                WHERE class_id = ?
                 ORDER BY id
             ''', (class_id,))
             students = cursor.fetchall()
@@ -208,9 +210,9 @@ def get_all_deyu():
             query_attempts += 1
             
             cursor.execute('''
-                SELECT id, name, class, class_id, pinzhi, xuexi, jiankang, shenmei, shijian, shenghuo 
+                SELECT id, name, class_id, pinzhi, xuexi, jiankang, shenmei, shijian, shenghuo 
                 FROM students 
-                WHERE class LIKE ?
+                WHERE class_id LIKE ?
                 ORDER BY id
             ''', (f'%{class_id}%',))
             students = cursor.fetchall()
@@ -222,9 +224,9 @@ def get_all_deyu():
                 query_attempts += 1
                 
                 cursor.execute('''
-                    SELECT id, name, class, class_id, pinzhi, xuexi, jiankang, shenmei, shijian, shenghuo 
+                    SELECT id, name, class_id, pinzhi, xuexi, jiankang, shenmei, shijian, shenghuo 
                     FROM students 
-                    ORDER BY class, id
+                    ORDER BY class_id, id
                 ''')
                 students = cursor.fetchall()
                 logger.info(f"获取所有学生结果: 找到{len(students)}名学生")
@@ -264,10 +266,21 @@ def get_all_deyu():
                 field_value = student_data.get(field)
                 deyu_fields[field] = field_value or 0  # 将None转为0
             
+            # 获取班级名称
+            class_name = ''
+            try:
+                class_cursor = conn.cursor()
+                class_cursor.execute('SELECT class_name FROM classes WHERE id = ?', (student_data['class_id'],))
+                class_row = class_cursor.fetchone()
+                if class_row:
+                    class_name = dict(class_row)['class_name']
+            except Exception as e:
+                logger.warning(f"获取班级名称失败: {e}")
+
             result.append({
                 'student_id': student_data['id'],
                 'name': student_data['name'],
-                'class': student_data['class'],
+                'class': class_name,  # 使用查询到的班级名称
                 'class_id': student_data['class_id'],
                 'pinzhi': deyu_fields['pinzhi'],      # 品质
                 'xuexi': deyu_fields['xuexi'],        # 学习
@@ -311,28 +324,32 @@ def get_student_deyu(student_id):
         conn = get_db_connection()
         cursor = conn.cursor()
         
-        # 查询学生信息，包括德育维度字段
+        # 查询学生信息，包括德育维度字段（去除class字段）
         cursor.execute('''
-            SELECT id, name, class, pinzhi, xuexi, jiankang, shenmei, shijian, shenghuo 
+            SELECT id, name, class_id, pinzhi, xuexi, jiankang, shenmei, shijian, shenghuo 
             FROM students 
             WHERE id = ? AND class_id = ?
         ''', (student_id, class_id))
         
-        student = cursor.fetchone()
-        conn.close()
-        
-        if not student:
-            logger.error(f"未找到学生，ID: {student_id}, 班级ID: {class_id}")
-            return jsonify({'status': 'error', 'message': '未找到学生'}), 404
-        
-        # 转换为字典
-        student_data = dict(student)
-        
-        # 包装为API响应格式
+        student_data = cursor.fetchone()
+        if not student_data:
+            return jsonify({'status': 'error', 'message': '未找到该学生德育维度数据'})
+        student_data = dict(student_data)
+        # 获取班级名称
+        class_name = ''
+        try:
+            class_cursor = conn.cursor()
+            class_cursor.execute('SELECT name FROM classes WHERE id=?', (student_data.get('class_id', ''),))
+            class_row = class_cursor.fetchone()
+            if class_row:
+                class_name = class_row[0]
+        except Exception as e:
+            logger.warning(f"获取班级名称失败: {e}")
         result = {
             'student_id': student_data['id'],
             'name': student_data['name'],
-            'class': student_data['class'],
+            'class_id': student_data['class_id'],
+            'class_name': class_name,
             'pinzhi': student_data['pinzhi'] or 0,      # 品质
             'xuexi': student_data['xuexi'] or 0,        # 学习
             'jiankang': student_data['jiankang'] or 0,  # 健康
@@ -411,44 +428,37 @@ def save_student_deyu(student_id):
         now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         
         # 查询条件：如果有班级ID，则同时匹配学生ID和班级ID；否则只匹配学生ID
-        query = "SELECT id, class_id, name, class FROM students WHERE id = ?"
+        query = "SELECT s.id, s.class_id, s.name, c.class_name FROM students s LEFT JOIN classes c ON s.class_id = c.id WHERE s.id = ?"
         params = [student_id]
-        
         if class_id:
             try:
-                # 尝试将class_id转为整数
                 int_class_id = int(class_id)
-                query += " AND class_id = ?"
+                query += " AND s.class_id = ?"
                 params.append(int_class_id)
                 logger.info(f"使用学生ID和班级ID查询: {student_id}, {int_class_id}")
             except (ValueError, TypeError):
-                # 如果不能转为整数，就当作班级名称查询
-                query += " AND class = ?"
-                params.append(class_id)
-                logger.info(f"使用学生ID和班级名称查询: {student_id}, {class_id}")
-        
+                logger.error("班级ID不是有效整数，无法查询学生")
+                conn.close()
+                return jsonify({'status': 'error', 'message': '班级ID无效'}), 400
         # 检查学生是否存在
         logger.info(f"执行查询: {query}, 参数: {params}")
         cursor.execute(query, params)
         student = cursor.fetchone()
-        
         if not student:
             logger.error(f"学生不存在或不在指定班级，ID: {student_id}, 班级ID: {class_id}")
             # 尝试不带班级条件查询学生，仅用于调试
-            cursor.execute("SELECT id, class_id, name, class FROM students WHERE id = ?", (student_id,))
+            cursor.execute("SELECT s.id, s.class_id, s.name, c.class_name FROM students s LEFT JOIN classes c ON s.class_id = c.id WHERE s.id = ?", (student_id,))
             debug_student = cursor.fetchone()
             if debug_student:
                 debug_info = dict(debug_student)
                 logger.info(f"找到学生记录，但班级不匹配: {debug_info}")
             conn.close()
             return jsonify({'status': 'error', 'message': '学生不存在或不在指定班级'}), 404
-        
-        # 从查询结果中获取实际的class_id
+        # 从查询结果中获取实际的class_id和班级名称
         student_info = dict(student)
         actual_class_id = student_info['class_id']
         actual_name = student_info['name']
-        actual_class = student_info['class']
-        
+        actual_class = student_info['class_name']
         logger.info(f"找到学生: {actual_name} (ID: {student_id}), 班级: {actual_class} (ID: {actual_class_id})")
         
         # 构建SQL更新语句

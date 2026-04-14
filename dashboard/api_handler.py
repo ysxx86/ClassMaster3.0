@@ -41,11 +41,11 @@ class DashboardAPI:
         try:
             current_class = self.db_manager.get_current_class(current_user)
             current_semester = self.db_manager.get_current_semester()
-            total_students = self.db_manager.get_total_students()
+            total_students = self.db_manager.get_total_students(current_user)
             
-            comments = self.db_manager.get_comments_completion()
-            grades = self.db_manager.get_grades_completion()
-            reports = self.db_manager.get_reports_generation()
+            comments = self.db_manager.get_comments_completion(current_user)
+            grades = self.db_manager.get_grades_completion(current_user)
+            reports = self.db_manager.get_reports_generation(current_user)
             
             return jsonify({
                 'status': 'success',
@@ -53,12 +53,21 @@ class DashboardAPI:
                     'current_class': current_class,
                     'current_semester': current_semester,
                     'total_students': total_students,
-                    'comments_completed': comments['completed'],
-                    'comments_percentage': comments['percentage'],
-                    'grades_completed': grades['all_completed'],
-                    'grades_percentage': round((grades['all_completed'] / grades['total'] * 100) if grades['total'] > 0 else 0, 1),
-                    'reports_ready': reports['ready'],
-                    'reports_percentage': reports['percentage']
+                    'comments': {
+                        'completed': comments['completed'],
+                        'total': comments['total'],
+                        'percentage': comments['percentage']
+                    },
+                    'grades': {
+                        'completed': grades['all_completed'],
+                        'total': grades['total'],
+                        'percentage': grades['percentage']
+                    },
+                    'reports': {
+                        'completed': reports['ready'],
+                        'total': reports['total'],
+                        'percentage': reports['percentage']
+                    }
                 }
             })
         except Exception as e:
@@ -70,7 +79,7 @@ class DashboardAPI:
     def get_comments_info(self):
         """获取评语完成情况"""
         try:
-            comments = self.db_manager.get_comments_completion()
+            comments = self.db_manager.get_comments_completion(current_user)
             return jsonify({
                 'status': 'success',
                 'data': comments
@@ -84,7 +93,7 @@ class DashboardAPI:
     def get_grades_info(self):
         """获取成绩录入情况"""
         try:
-            grades = self.db_manager.get_grades_completion()
+            grades = self.db_manager.get_grades_completion(current_user)
             return jsonify({
                 'status': 'success',
                 'data': grades
@@ -98,7 +107,7 @@ class DashboardAPI:
     def get_reports_info(self):
         """获取报告生成情况"""
         try:
-            reports = self.db_manager.get_reports_generation()
+            reports = self.db_manager.get_reports_generation(current_user)
             return jsonify({
                 'status': 'success',
                 'data': reports

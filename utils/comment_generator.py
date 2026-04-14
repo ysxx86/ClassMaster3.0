@@ -24,7 +24,8 @@ class CommentGenerator:
                         student_info: Dict[str, Any],
                         style: str = "鼓励性的",
                         tone: str = "正式的",
-                        max_length: int = 260) -> Dict[str, Any]:
+                        max_length: int = 50000,
+                        min_length: int = 200) -> Dict[str, Any]:
         """生成学生评语
         
         Args:
@@ -38,6 +39,7 @@ class CommentGenerator:
             style: 评语风格
             tone: 评语语气
             max_length: 评语最大字数
+            min_length: 评语最小字数，默认200字
             
         Returns:
             Dict[str, Any]: 包含生成结果的字典
@@ -49,14 +51,15 @@ class CommentGenerator:
         """
         try:
             logger.info(f"开始为学生 {student_info.get('name')} 生成评语")
-            logger.info(f"生成参数: style={style}, tone={tone}, max_length={max_length}")
+            logger.info(f"生成参数: style={style}, tone={tone}, max_length={max_length}, min_length={min_length}")
             
             # 调用DeepSeek API生成评语
             result = self.deepseek_api.generate_comment(
                 student_info=student_info,
                 style=style,
                 tone=tone,
-                max_length=max_length
+                max_length=max_length,
+                min_length=min_length
             )
             
             # 检查API返回结果
@@ -65,7 +68,9 @@ class CommentGenerator:
                 return {
                     "status": "ok",
                     "comment": result["comment"],
-                    "message": "评语生成成功"
+                    "message": "评语生成成功",
+                    "reasoning_content": result.get("reasoning_content", ""),
+                    "content_field": result.get("content_field", "")
                 }
             else:
                 logger.error(f"API返回错误: {result}")
@@ -121,8 +126,8 @@ class CommentGenerator:
         if "max_length" in request_data:
             try:
                 max_length = int(request_data["max_length"])
-                if not (50 <= max_length <= 260):
-                    return False, "最大字数必须在50-260之间"
+                if not (50 <= max_length <= 5000):  # 临时调整为5000字
+                    return False, "最大字数必须在50-5000之间"
             except ValueError:
                 return False, "最大字数必须是有效的数字"
         
