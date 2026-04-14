@@ -38,7 +38,7 @@ EXPORTS_FOLDER = 'exports'
 # 确保导出目录存在
 if not os.path.exists(EXPORTS_FOLDER):
     try:
-os.makedirs(EXPORTS_FOLDER, exist_ok=True)
+        os.makedirs(EXPORTS_FOLDER, exist_ok=True)
         logger.info(f"创建导出目录: {EXPORTS_FOLDER}")
     except Exception as e:
         logger.error(f"创建导出目录失败: {str(e)}")
@@ -164,8 +164,8 @@ def export_comments_to_pdf(class_name=None, output_file=None, school_name=None, 
     
     # 注册字体
     try:
-    font_name = register_fonts()
-    logger.info(f"使用字体: {font_name}")
+        font_name = register_fonts()
+        logger.info(f"使用字体: {font_name}")
     except Exception as e:
         logger.error(f"注册字体时出错: {str(e)}")
         return {'status': 'error', 'message': f'注册字体时出错: {str(e)}'}
@@ -302,7 +302,7 @@ def export_comments_to_pdf(class_name=None, output_file=None, school_name=None, 
                     max_height = 0
                     
                     for student in row_students:
-                    raw_comments = student.get('comments', '')
+                        raw_comments = student.get('comments', '')
                         comments = str(raw_comments).replace('<', ' ').replace('>', ' ') if raw_comments else '暂无评语'
                         
                         # 创建评语段落以测量高度
