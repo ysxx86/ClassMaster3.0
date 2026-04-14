@@ -704,135 +704,251 @@ def cancel_export():
 # 在文件转换过程中定期检查取消状态
 def convert_docx_to_pdf(input_file, output_file, request_id=None):
     """转换单个Word文档为PDF，确保COM环境正确初始化，并支持取消操作"""
-    # 如果pythoncom不可用，直接返回错误
-    if not PYTHONCOM_AVAILABLE:
-        logger.error("无法转换Word文档：pythoncom模块不可用，请安装pywin32包")
-        return False
-        
-    try:
-        # 检查是否已取消
-        if request_id and is_export_cancelled(request_id):
-            logger.info(f"文件 {os.path.basename(input_file)} 的转换已被取消")
-            return False
-            
-        # 初始化COM环境
-        logger.info(f"为文件 {os.path.basename(input_file)} 初始化COM环境")
-        pythoncom.CoInitialize()
-        
-        # 直接使用win32com进行更可靠的转换，而不是依赖docx2pdf
+    
+    # 检测操作系统
+    system = platform.system()
+    logger.info(f"当前操作系统: {system}")
+    
+    # Linux系统使用LibreOffice或unoconv转换
+    if system == "Linux":
         try:
-            from win32com.client import Dispatch, constants
+            logger.info(f"Linux系统，尝试转换文件：{input_file} -> {output_file}")
             
             # 确保输入文件路径是绝对路径
             input_file_abs = os.path.abspath(input_file)
             output_file_abs = os.path.abspath(output_file)
+            output_dir = os.path.dirname(output_file_abs)
             
-            logger.info(f"使用win32com直接转换: {input_file_abs} -> {output_file_abs}")
+            # 确保输出目录存在
+            if not os.path.exists(output_dir):
+                os.makedirs(output_dir, exist_ok=True)
             
-            # 创建Word应用实例
-            word = Dispatch('Word.Application')
-            word.Visible = False  # 不显示Word界面
+            # 先尝试使用unoconv转换
+            import subprocess
+            check_cmd = ["which", "unoconv"]
+            result = subprocess.run(check_cmd, capture_output=True, text=True)
             
-            # 检查Word是否成功启动
-            if word is None:
-                logger.error("无法创建Word应用程序实例")
+            if result.returncode == 0:
+                logger.info("检测到unoconv，使用unoconv进行转换")
+                # 使用unoconv转换
+                cmd = [
+                    "unoconv", 
+                    "-f", "pdf",
+                    "-o", output_file_abs,
+                    input_file_abs
+                ]
+                
+                # 执行命令
+                result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+                
+                # 检查命令输出
+                if result.returncode != 0:
+                    logger.error(f"unoconv转换失败，退出码: {result.returncode}")
+                    logger.error(f"错误输出: {result.stderr}")
+                    logger.warning("unoconv失败，尝试使用LibreOffice")
+                else:
+                    # 验证文件是否生成
+                    if os.path.exists(output_file_abs) and os.path.getsize(output_file_abs) > 0:
+                        logger.info(f"unoconv成功转换文件: {output_file_abs}")
+                        return True
+                    else:
+                        logger.error(f"未找到unoconv转换后的PDF文件: {output_file_abs}")
+            else:
+                logger.info("未检测到unoconv，尝试使用LibreOffice")
+                
+            # 如果unoconv不可用或失败，尝试使用LibreOffice
+            check_cmd = ["which", "libreoffice"]
+            result = subprocess.run(check_cmd, capture_output=True, text=True)
+            
+            if result.returncode != 0:
+                logger.warning("在Linux上未找到LibreOffice，尝试使用soffice命令")
+                check_cmd = ["which", "soffice"]
+                result = subprocess.run(check_cmd, capture_output=True, text=True)
+                if result.returncode != 0:
+                    logger.error("未找到LibreOffice或soffice命令，无法转换PDF")
+                    return False
+                libreoffice_cmd = "soffice"
+            else:
+                libreoffice_cmd = "libreoffice"
+            
+            # 使用LibreOffice转换
+            logger.info(f"使用 {libreoffice_cmd} 转换文档")
+            cmd = [
+                libreoffice_cmd, 
+                "--headless", 
+                "--convert-to", 
+                "pdf", 
+                "--outdir", 
+                output_dir,
+                input_file_abs
+            ]
+            
+            # 执行命令
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+            
+            # 检查命令输出
+            if result.returncode != 0:
+                logger.error(f"LibreOffice转换失败，退出码: {result.returncode}")
+                logger.error(f"错误输出: {result.stderr}")
                 return False
                 
-            logger.info("Word应用程序实例创建成功")
+            # 检查目标文件是否存在
+            converted_file = os.path.join(output_dir, os.path.basename(input_file_abs).replace('.docx', '.pdf'))
             
-            # 打开文档
-            try:
-                doc = word.Documents.Open(input_file_abs)
-                logger.info(f"成功打开文档: {input_file_abs}")
-            except Exception as e:
-                logger.error(f"打开文档失败: {str(e)}")
-                word.Quit()
-                return False
+            # 如果输出文件名与默认名不同，需要重命名
+            if converted_file != output_file_abs and os.path.exists(converted_file):
+                os.rename(converted_file, output_file_abs)
+                logger.info(f"重命名转换文件: {converted_file} -> {output_file_abs}")
             
-            # 另存为PDF
-            try:
-                # 检查目录是否存在
-                output_dir = os.path.dirname(output_file_abs)
-                if not os.path.exists(output_dir):
-                    os.makedirs(output_dir, exist_ok=True)
-                
-                # 使用不同的常量格式另存为PDF
-                try:
-                    # PDF格式常量(17)
-                    doc.SaveAs(output_file_abs, FileFormat=17)
-                    logger.info(f"使用FileFormat=17成功保存PDF: {output_file_abs}")
-                except Exception as save_error:
-                    logger.warning(f"使用FileFormat=17保存失败: {str(save_error)}，尝试使用wdFormatPDF")
-                    try:
-                        # 尝试使用常量名
-                        doc.SaveAs(output_file_abs, FileFormat=constants.wdFormatPDF)
-                        logger.info(f"使用wdFormatPDF成功保存PDF: {output_file_abs}")
-                    except Exception as e:
-                        logger.error(f"所有保存方法都失败: {str(e)}")
-                        raise
-            except Exception as e:
-                logger.error(f"保存PDF时出错: {str(e)}")
-                doc.Close(False)  # 不保存更改
-                word.Quit()
-                return False
-            finally:
-                # 关闭文档
-                try:
-                    doc.Close()
-                    logger.info("文档已关闭")
-                except:
-                    logger.warning("关闭文档时出错")
-            
-            # 退出Word
-            try:
-                word.Quit()
-                logger.info("Word应用已退出")
-            except:
-                logger.warning("退出Word时出错")
-            
-        except ImportError:
-            # 如果win32com不可用，尝试使用docx2pdf
-            logger.warning("win32com不可用，回退到docx2pdf")
-            from docx2pdf import convert
-            logger.info(f"使用docx2pdf转换Word文件: {input_file} -> {output_file}")
-            convert(input_file, output_file)
-        
-        # 再次检查是否在转换过程中被取消
-        if request_id and is_export_cancelled(request_id):
-            logger.info(f"文件 {os.path.basename(input_file)} 转换完成，但请求已被取消")
-            # 如果已取消，尝试删除生成的文件
-            if os.path.exists(output_file):
-                try:
-                    os.remove(output_file)
-                    logger.info(f"已删除已取消请求生成的文件: {output_file}")
-                except Exception as e:
-                    logger.warning(f"无法删除已取消请求生成的文件: {output_file}, 错误: {str(e)}")
-            return False
-        
-        # 验证文件是否成功创建
-        if os.path.exists(output_file):
-            file_size = os.path.getsize(output_file)
-            if file_size > 0:
-                logger.info(f"成功转换文件为PDF: {output_file}, 文件大小: {file_size} 字节")
+            # 验证文件是否生成
+            if os.path.exists(output_file_abs) and os.path.getsize(output_file_abs) > 0:
+                logger.info(f"LibreOffice成功转换文件: {output_file_abs}")
                 return True
             else:
-                logger.error(f"转换后的PDF文件大小为0: {output_file}")
+                logger.error(f"未找到转换后的PDF文件: {output_file_abs}")
                 return False
-        else:
-            logger.error(f"转换后的PDF文件不存在: {output_file}")
+                
+        except Exception as e:
+            logger.error(f"Linux下文档转换失败: {str(e)}")
+            logger.error(traceback.format_exc())
             return False
-    except Exception as e:
-        logger.error(f"转换文件 {os.path.basename(input_file)} 失败: {str(e)}")
-        logger.error(f"错误详情: {traceback.format_exc()}")
-        return False
-    finally:
-        # 释放COM资源
+    
+    # Windows系统使用原有代码
+    elif system == "Windows":
+        # 如果pythoncom不可用，直接返回错误
+        if not PYTHONCOM_AVAILABLE:
+            logger.error("无法转换Word文档：pythoncom模块不可用，请安装pywin32包")
+            return False
+            
         try:
-            if PYTHONCOM_AVAILABLE:
-                logger.info(f"释放文件 {os.path.basename(input_file)} 的COM资源")
-                pythoncom.CoUninitialize()
-        except:
-            logger.warning("CoUninitialize失败，可能COM资源未正确初始化")
+            # 检查是否已取消
+            if request_id and is_export_cancelled(request_id):
+                logger.info(f"文件 {os.path.basename(input_file)} 的转换已被取消")
+                return False
+                
+            # 初始化COM环境
+            logger.info(f"为文件 {os.path.basename(input_file)} 初始化COM环境")
+            pythoncom.CoInitialize()
+            
+            # 直接使用win32com进行更可靠的转换，而不是依赖docx2pdf
+            try:
+                from win32com.client import Dispatch, constants
+                
+                # 确保输入文件路径是绝对路径
+                input_file_abs = os.path.abspath(input_file)
+                output_file_abs = os.path.abspath(output_file)
+                
+                logger.info(f"使用win32com直接转换: {input_file_abs} -> {output_file_abs}")
+                
+                # 创建Word应用实例
+                word = Dispatch('Word.Application')
+                word.Visible = False  # 不显示Word界面
+                
+                # 检查Word是否成功启动
+                if word is None:
+                    logger.error("无法创建Word应用程序实例")
+                    return False
+                    
+                logger.info("Word应用程序实例创建成功")
+                
+                # 打开文档
+                try:
+                    doc = word.Documents.Open(input_file_abs)
+                    logger.info(f"成功打开文档: {input_file_abs}")
+                except Exception as e:
+                    logger.error(f"打开文档失败: {str(e)}")
+                    word.Quit()
+                    return False
+                
+                # 另存为PDF
+                try:
+                    # 检查目录是否存在
+                    output_dir = os.path.dirname(output_file_abs)
+                    if not os.path.exists(output_dir):
+                        os.makedirs(output_dir, exist_ok=True)
+                    
+                    # 使用不同的常量格式另存为PDF
+                    try:
+                        # PDF格式常量(17)
+                        doc.SaveAs(output_file_abs, FileFormat=17)
+                        logger.info(f"使用FileFormat=17成功保存PDF: {output_file_abs}")
+                    except Exception as save_error:
+                        logger.warning(f"使用FileFormat=17保存失败: {str(save_error)}，尝试使用wdFormatPDF")
+                        try:
+                            # 尝试使用常量名
+                            doc.SaveAs(output_file_abs, FileFormat=constants.wdFormatPDF)
+                            logger.info(f"使用wdFormatPDF成功保存PDF: {output_file_abs}")
+                        except Exception as e:
+                            logger.error(f"所有保存方法都失败: {str(e)}")
+                            raise
+                except Exception as e:
+                    logger.error(f"保存PDF时出错: {str(e)}")
+                    doc.Close(False)  # 不保存更改
+                    word.Quit()
+                    return False
+                finally:
+                    # 关闭文档
+                    try:
+                        doc.Close()
+                        logger.info("文档已关闭")
+                    except:
+                        logger.warning("关闭文档时出错")
+                
+                # 退出Word
+                try:
+                    word.Quit()
+                    logger.info("Word应用已退出")
+                except:
+                    logger.warning("退出Word时出错")
+                
+            except ImportError:
+                # 如果win32com不可用，尝试使用docx2pdf
+                logger.warning("win32com不可用，回退到docx2pdf")
+                from docx2pdf import convert
+                logger.info(f"使用docx2pdf转换Word文件: {input_file} -> {output_file}")
+                convert(input_file, output_file)
+            
+            # 再次检查是否在转换过程中被取消
+            if request_id and is_export_cancelled(request_id):
+                logger.info(f"文件 {os.path.basename(input_file)} 转换完成，但请求已被取消")
+                # 如果已取消，尝试删除生成的文件
+                if os.path.exists(output_file):
+                    try:
+                        os.remove(output_file)
+                        logger.info(f"已删除已取消请求生成的文件: {output_file}")
+                    except Exception as e:
+                        logger.warning(f"无法删除已取消请求生成的文件: {output_file}, 错误: {str(e)}")
+                return False
+            
+            # 验证文件是否成功创建
+            if os.path.exists(output_file):
+                file_size = os.path.getsize(output_file)
+                if file_size > 0:
+                    logger.info(f"成功转换文件为PDF: {output_file}, 文件大小: {file_size} 字节")
+                    return True
+                else:
+                    logger.error(f"转换后的PDF文件大小为0: {output_file}")
+                    return False
+            else:
+                logger.error(f"转换后的PDF文件不存在: {output_file}")
+                return False
+        except Exception as e:
+            logger.error(f"转换文件 {os.path.basename(input_file)} 失败: {str(e)}")
+            logger.error(f"错误详情: {traceback.format_exc()}")
+            return False
+        finally:
+            # 释放COM资源
+            try:
+                if PYTHONCOM_AVAILABLE:
+                    logger.info(f"释放文件 {os.path.basename(input_file)} 的COM资源")
+                    pythoncom.CoUninitialize()
+            except:
+                logger.warning("CoUninitialize失败，可能COM资源未正确初始化")
+    
+    # 其他操作系统（如macOS）
+    else:
+        logger.error(f"不支持的操作系统: {system}, 无法转换PDF")
+        return False
 
 # 导出报告API
 @comments_bp.route('/api/export-reports', methods=['POST'])
@@ -1034,8 +1150,8 @@ def api_export_reports():
             
             # 检查系统是否安装了Microsoft Word
             def check_word_installed():
-                """检查系统是否安装了Microsoft Word"""
-                logger.info("开始检查Microsoft Word是否安装")
+                """检查系统是否安装了Microsoft Word或LibreOffice"""
+                logger.info("开始检查文档转换软件是否安装")
                 try:
                     # 根据操作系统类型采用不同的检测方法
                     system = platform.system()
@@ -1085,24 +1201,54 @@ def api_export_reports():
                         return False
                         
                     elif system == "Linux":
-                        # Linux上可能使用LibreOffice
+                        # Linux上检查LibreOffice或unoconv
                         try:
                             import subprocess
-                            result = subprocess.run(["which", "libreoffice"], capture_output=True, text=True)
-                            if result.returncode == 0:
-                                logger.info("在Linux上找到LibreOffice，可用于文档转换")
+                            logger.info("检查Linux系统上的文档转换工具")
+                            
+                            # 先尝试检查unoconv
+                            which_result = subprocess.run(["which", "unoconv"], capture_output=True, text=True)
+                            if which_result.returncode == 0:
+                                unoconv_path = which_result.stdout.strip()
+                                logger.info(f"在Linux上找到unoconv: {unoconv_path}")
                                 return True
-                            else:
-                                logger.warning("在Linux上未找到LibreOffice")
-                                return False
+                            
+                            # 再尝试使用which命令查找libreoffice
+                            which_result = subprocess.run(["which", "libreoffice"], capture_output=True, text=True)
+                            if which_result.returncode == 0:
+                                libreoffice_path = which_result.stdout.strip()
+                                logger.info(f"在Linux上找到LibreOffice: {libreoffice_path}")
+                                return True
+                            
+                            # 如果找不到libreoffice，尝试查找soffice
+                            which_result = subprocess.run(["which", "soffice"], capture_output=True, text=True)
+                            if which_result.returncode == 0:
+                                soffice_path = which_result.stdout.strip()
+                                logger.info(f"在Linux上找到LibreOffice (soffice): {soffice_path}")
+                                return True
+                            
+                            # 如果以上命令都找不到，尝试检查常见安装位置
+                            common_paths = [
+                                "/usr/bin/libreoffice",
+                                "/usr/bin/soffice",
+                                "/usr/bin/unoconv",
+                                "/usr/lib/libreoffice/program/soffice"
+                            ]
+                            for path in common_paths:
+                                if os.path.exists(path):
+                                    logger.info(f"在Linux上找到文档转换工具: {path}")
+                                    return True
+                            
+                            logger.warning("在Linux上未找到LibreOffice或unoconv")
+                            return False
                         except Exception as e:
-                            logger.error(f"检查LibreOffice时出错: {str(e)}")
+                            logger.error(f"检查文档转换工具时出错: {str(e)}")
                             return False
                     else:
-                        logger.warning(f"未知操作系统类型: {system}，无法确定Word安装状态")
+                        logger.warning(f"未知操作系统类型: {system}，无法确定文档转换软件状态")
                         return False
                 except Exception as e:
-                    logger.error(f"检查Word安装状态时出错: {str(e)}")
+                    logger.error(f"检查文档转换软件安装状态时出错: {str(e)}")
                     logger.error(traceback.format_exc())
                     return False
 

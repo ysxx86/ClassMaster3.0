@@ -123,6 +123,7 @@ class DeepSeekAPI:
             包含生成评语的字典，格式为 {"status": "ok|error", "comment": "...", "message": "..."}
         """
         logger.info(f"开始为学生 {student_info.get('name')} 生成评语")
+        logger.info(f"学生特征信息: 个性特点={student_info.get('personality', '未提供')}, 学习表现={student_info.get('study_performance', '未提供')}, 爱好={student_info.get('hobbies', '未提供')}, 待改进={student_info.get('improvement', '未提供')}")
         
         if not self.api_key:
             logger.error("API密钥未设置，无法调用API")
@@ -144,6 +145,12 @@ class DeepSeekAPI:
         # 获取额外指令
         additional_instructions = student_info.get('additional_instructions', '')
         
+        # 检查是否有提供学生特征信息
+        has_personality = student_info.get('personality', '').strip() != ''
+        has_study_info = student_info.get('study_performance', '').strip() != ''
+        has_hobbies = student_info.get('hobbies', '').strip() != ''
+        has_improvement = student_info.get('improvement', '').strip() != ''
+        
         prompt = f"""
 你是一名经验丰富的班主任，请为以下学生生成一段评语。
 评语应该是{style}和{tone}的。
@@ -163,10 +170,35 @@ class DeepSeekAPI:
 2. 不要生成超过{max_length}个字的评语然后截断，而是从一开始就精确控制好字数
 3. 评语内容必须完整，不能因字数限制而出现不完整的句子
 4. 确保评语内容积极向上且有指导意义
+5. 必须高度个性化，根据提供的学生具体特点生成评语，避免千篇一律的模板化表达
+6. 格式要求：不要在段落中间或段落之间添加空行；评语结尾不要添加字数统计信息；如果以"某某同学："开头，后面直接接正文，不要空行
+7. 直接输出评语内容，不要添加任何标题、前缀或后缀
+"""
 
+        # 根据是否提供了特征信息添加额外指导
+        if has_personality or has_study_info or has_hobbies or has_improvement:
+            prompt += "\n额外要求：\n"
+            
+            if has_personality:
+                prompt += f"- 一定要突出学生的个性特点：\"{student_info.get('personality')}\"，并据此给出针对性评价\n"
+            
+            if has_study_info:
+                prompt += f"- 评语中要明确反映学生的学习表现：\"{student_info.get('study_performance')}\"，并给予恰当评价\n"
+            
+            if has_hobbies:
+                prompt += f"- 要提及并积极肯定学生的爱好特长：\"{student_info.get('hobbies')}\"\n"
+            
+            if has_improvement:
+                prompt += f"- 对于学生需要改进的方面：\"{student_info.get('improvement')}\"，给予建设性且鼓励性的建议\n"
+
+        # 添加额外指令和结束提示
+        prompt += f"""
 {additional_instructions}
 不要在回复中写除了评语之外的任何内容。
 """
+
+        # 记录最终生成的提示词
+        logger.info(f"最终提示词: {prompt}")
 
         # 构建请求体
         payload = {
@@ -175,7 +207,8 @@ class DeepSeekAPI:
                 {"role": "system", "content": "你是一名专业的班主任，善于为学生撰写个性化、有启发性的评语。"},
                 {"role": "user", "content": prompt}
             ],
-            "temperature": 0.7,
+            "temperature": 0.8,  # 增加温度，提高创造性
+            "top_p": 0.95,       # 使用top_p采样，增加多样性
             "max_tokens": max_length * 2  # 确保有足够的token来生成评语
         }
         

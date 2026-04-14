@@ -414,7 +414,7 @@ function saveComment() {
     }
     
     // 检查评语字数是否超过限制
-    const maxLength = 200;
+    const maxLength = 260;
     if (content.length > maxLength) {
         console.warn(`评语内容超过字数限制: ${content.length}/${maxLength}，将自动截断`);
         // 自动截断内容而不是显示错误
@@ -1193,24 +1193,31 @@ function showAICommentAssistant(studentId, studentName, classId) {
                         <!-- AI评语生成设置 -->
                         <div class="card mb-3">
                             <div class="card-body">
+                                <div class="alert alert-info mb-3">
+                                    <i class='bx bx-bulb'></i> 请尽量填写以下学生特征信息，AI将根据这些信息生成<strong>个性化</strong>的评语，不同信息会生成不同风格的评语。
+                                </div>
                                 <div class="row mb-3">
                                     <div class="col-md-6">
-                                        <label class="form-label">学生个性特点</label>
+                                        <label class="form-label">学生个性特点 <span class="text-primary">*</span></label>
                                         <textarea class="form-control" id="aiPersonalityInput" rows="2" placeholder="例如：活泼开朗、喜欢思考、认真负责..."></textarea>
+                                        <small class="form-text text-muted">填写学生的性格和个性特点</small>
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label">学习表现</label>
+                                        <label class="form-label">学习表现 <span class="text-primary">*</span></label>
                                         <textarea class="form-control" id="aiStudyInput" rows="2" placeholder="例如：数学成绩优秀、语文需要提高、认真听讲..."></textarea>
+                                        <small class="form-text text-muted">填写学生的学习情况和成绩表现</small>
                                     </div>
                                 </div>
                                 <div class="row mb-3">
                                     <div class="col-md-6">
-                                        <label class="form-label">爱好/特长</label>
+                                        <label class="form-label">爱好/特长 <span class="text-primary">*</span></label>
                                         <textarea class="form-control" id="aiHobbiesInput" rows="2" placeholder="例如：喜欢画画、擅长球类运动、对科学感兴趣..."></textarea>
+                                        <small class="form-text text-muted">填写学生的兴趣爱好和特长</small>
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label">需要改进的方面</label>
+                                        <label class="form-label">需要改进的方面 <span class="text-primary">*</span></label>
                                         <textarea class="form-control" id="aiImprovementInput" rows="2" placeholder="例如：注意力不集中、作业拖延、不爱发言..."></textarea>
+                                        <small class="form-text text-muted">填写学生需要改进或提高的地方</small>
                                     </div>
                                 </div>
                                 <div class="row mb-3">
@@ -1393,11 +1400,28 @@ async function generateAIComment(studentId, classId) {
         const style = modal.querySelector('#aiStyleSelect').value;
         const tone = modal.querySelector('#aiToneSelect').value;
         const maxLength = parseInt(modal.querySelector('#aiMaxLengthInput').value);
-        const personality = modal.querySelector('#aiPersonalityInput').value;
-        const studyPerformance = modal.querySelector('#aiStudyInput').value;
-        const hobbies = modal.querySelector('#aiHobbiesInput').value;
-        const improvement = modal.querySelector('#aiImprovementInput').value;
+        const personality = modal.querySelector('#aiPersonalityInput').value.trim();
+        const studyPerformance = modal.querySelector('#aiStudyInput').value.trim();
+        const hobbies = modal.querySelector('#aiHobbiesInput').value.trim();
+        const improvement = modal.querySelector('#aiImprovementInput').value.trim();
         const additionalInstructions = '';
+
+        // 检查是否填写了任何学生特征信息
+        if (!personality && !studyPerformance && !hobbies && !improvement) {
+            if (!confirm('您没有填写任何学生特征信息，这将导致生成的评语缺乏个性化。是否仍要继续？')) {
+                return; // 用户选择取消生成
+            }
+        }
+
+        // 打印调试信息，检查是否获取了用户输入的特征信息
+        console.log('学生特征信息:');
+        console.log('- 个性特点:', personality);
+        console.log('- 学习表现:', studyPerformance);
+        console.log('- 爱好特长:', hobbies);
+        console.log('- 需要改进:', improvement);
+        console.log('- 评语风格:', style);
+        console.log('- 评语语气:', tone);
+        console.log('- 最大字数:', maxLength);
 
         // 显示加载状态
         const generateBtn = modal.querySelector('#generateAICommentBtn');

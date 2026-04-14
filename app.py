@@ -32,4 +32,3 @@ def update_last_activity():
     session['last_activity'] = datetime.now().isoformat()
 
 # 初始化数据库
-// ... existing code ... 
