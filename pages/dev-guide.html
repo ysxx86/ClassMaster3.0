@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClassMaster 开发指南</title>
+    <link href="/css/dev-guide.css" rel="stylesheet">
+    <link href="/css/boxicons-local.css" rel="stylesheet">
+</head>
+<body>
+    <header class="header-bar">
+        <div class="header-left">
+            <i class='bx bx-book-open'></i>
+            <h1>ClassMaster 开发指南</h1>
+        </div>
+        <div class="header-right">
+            <button id="btn-export-pdf" class="btn-export">
+                <i class='bx bx-export'></i>
+                <span>导出PDF</span>
+            </button>
+        </div>
+    </header>
+
+    <div class="main-layout">
+        <button id="sidebar-toggle" class="sidebar-toggle">
+            <i class='bx bx-menu'></i>
+        </button>
+
+        <aside id="sidebar" class="sidebar">
+            <div class="nav-section">
+                <div class="nav-section-title">开发手册</div>
+                <nav id="nav-dev-manual">
+                    <a class="nav-item" data-target="sec-architecture">
+                        <i class='bx bx-sitemap'></i> 项目架构
+                    </a>
+                    <a class="nav-item nav-sub-item" data-target="sec-architecture">
+                        项目架构
+                    </a>
+                    <a class="nav-item" data-target="sec-tech-stack">
+                        <i class='bx bx-layer'></i> 技术栈
+                    </a>
+                    <a class="nav-item nav-sub-item" data-target="sec-tech-stack">
+                        技术栈
+                    </a>
+                    <a class="nav-item" data-target="sec-dev-env">
+                        <i class='bx bx-laptop'></i> 开发环境
+                    </a>
+                    <a class="nav-item nav-sub-item" data-target="sec-dev-env">
+                        开发环境
+                    </a>
+                    <a class="nav-item" data-target="sec-coding-standards">
+                        <i class='bx bx-code-block'></i> 编码规范
+                    </a>
+                    <a class="nav-item nav-sub-item" data-target="sec-coding-standards">
+                        编码规范
+                    </a>
+                    <a class="nav-item" data-target="sec-modules">
+                        <i class='bx bx-package'></i> 模块功能
+                    </a>
+                    <a class="nav-item nav-sub-item" data-target="sec-modules">
+                        模块功能
+                    </a>
+                    <a class="nav-item" data-target="sec-dev-workflow">
+                        <i class='bx bx-git-branch'></i> 开发流程
+                    </a>
+                    <a class="nav-item nav-sub-item" data-target="sec-dev-workflow">
+                        开发流程
+                    </a>
+                </nav>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">安装手册</div>
+                <nav id="nav-install-manual">
+                    <a class="nav-item" data-target="sec-env-deps">
+                        <i class='bx bx-check-shield'></i> 环境依赖
+                    </a>
+                    <a class="nav-item nav-sub-item" data-target="sec-env-deps">
+                        环境依赖
+                    </a>
+                    <a class="nav-item" data-target="sec-clone">
+                        <i class='bx bx-copy-alt'></i> 项目克隆
+                    </a>
+                    <a class="nav-item nav-sub-item" data-target="sec-clone">
+                        项目克隆
+                    </a>
+                    <a class="nav-item" data-target="sec-config">
+                        <i class='bx bx-cog'></i> 配置文件
+                    </a>
+                    <a class="nav-item nav-sub-item" data-target="sec-config">
+                        配置文件
+                    </a>
+                    <a class="nav-item" data-target="sec-deps-install">
+                        <i class='bx bx-download'></i> 依赖安装
+                    </a>
+                    <a class="nav-item nav-sub-item" data-target="sec-deps-install">
+                        依赖安装
+                    </a>
+                    <a class="nav-item" data-target="sec-db-init">
+                        <i class='bx bx-data'></i> 数据库初始化
+                    </a>
+                    <a class="nav-item nav-sub-item" data-target="sec-db-init">
+                        数据库初始化
+                    </a>
+                    <a class="nav-item" data-target="sec-local-start">
+                        <i class='bx bx-rocket'></i> 本地启动
+                    </a>
+                    <a class="nav-item nav-sub-item" data-target="sec-local-start">
+                        本地启动
+                    </a>
+                </nav>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">开发记录</div>
+                <nav id="nav-dev-records">
+                    <a class="nav-item" data-target="sec-commit-history">
+                        <i class='bx bx-time-five'></i> 提交历史
+                    </a>
+                    <a class="nav-item nav-sub-item" data-target="sec-commit-history">
+                        提交历史
+                    </a>
+                </nav>
+            </div>
+        </aside>
+
+        <main id="content-area" class="content-area">
+            <div class="content-inner">
+
+                <section id="sec-architecture" class="content-section">
+                    <h2>项目架构</h2>
+                    <p>ClassMaster 采用经典的三层架构设计，各层职责清晰分离：</p>
+                    <div class="arch-diagram">
+                        <div class="arch-layer">
+                            <div class="arch-layer-title">前端展示层</div>
+                            <div class="arch-layer-desc">HTML + CSS + JavaScript（原生，无框架依赖）</div>
+                        </div>
+                        <div class="arch-arrow"><i class='bx bx-down-arrow-alt'></i></div>
+                        <div class="arch-layer">
+                            <div class="arch-layer-title">后端业务层</div>
+                            <div class="arch-layer-desc">Python + Flask（轻量级 Web 框架）</div>
+                        </div>
+                        <div class="arch-arrow"><i class='bx bx-down-arrow-alt'></i></div>
+                        <div class="arch-layer">
+                            <div class="arch-layer-title">数据存储层</div>
+                            <div class="arch-layer-desc">SQLite（免配置本地数据库）</div>
+                        </div>
+                    </div>
+                    <h3>项目目录结构</h3>
+                    <div class="code-block">
+<pre>ClassMaster3.0/
+├── app.py                 # 应用主入口
+├── server.py              # 兼容启动入口
+├── app_factory.py         # Flask 应用工厂
+├── config_manager.py      # 统一配置管理
+├── dependency_manager.py  # 依赖管理
+├── config.py              # 基础配置
+├── requirements.txt       # 依赖列表
+├── api/                   # API 接口层
+├── core/                  # 核心业务逻辑
+├── utils/                 # 工具函数
+│   ├── deepseek_api.py    # DeepSeek API 集成
+│   ├── excel_processor.py # Excel 处理
+│   ├── pdf_exporter.py    # PDF 导出
+│   ├── comment_generator.py # 评语生成器
+│   └── report_exporter.py # 报告导出
+├── templates/             # HTML 模板
+│   └── login.html         # 登录页面
+├── pages/                 # 功能页面
+├── css/                   # 样式文件
+├── js/                    # JavaScript 文件
+├── img/                   # 图片资源
+└── fonts/                 # 字体文件</pre>
+                    </div>
+                </section>
+
+                <section id="sec-tech-stack" class="content-section">
+                    <h2>技术栈</h2>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>类别</th>
+                                <th>技术</th>
+                                <th>版本</th>
+                                <th>说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>后端框架</td>
+                                <td>Python + Flask</td>
+                                <td>3.8+ / 2.0+</td>
+                                <td>轻量级 Web 框架</td>
+                            </tr>
+                            <tr>
+                                <td>用户认证</td>
+                                <td>Flask-Login</td>
+                                <td>0.5+</td>
+                                <td>会话管理与权限控制</td>
+                            </tr>
+                            <tr>
+                                <td>数据库</td>
+                                <td>SQLite</td>
+                                <td>-</td>
+                                <td>免配置本地存储</td>
+                            </tr>
+                            <tr>
+                                <td>ORM</td>
+                                <td>SQLAlchemy</td>
+                                <td>1.4+</td>
+                                <td>数据库操作</td>
+                            </tr>
+                            <tr>
+                                <td>AI 大模型</td>
+                                <td>DeepSeek V3/R1</td>
+                                <td>-</td>
+                                <td>评语生成与智能分析</td>
+                            </tr>
+                            <tr>
+                                <td>数据处理</td>
+                                <td>Pandas + NumPy</td>
+                                <td>1.5+ / 1.24+</td>
+                                <td>成绩统计与分析</td>
+                            </tr>
+                            <tr>
+                                <td>文档处理</td>
+                                <td>python-docx + openpyxl</td>
+                                <td>0.8+ / 3.0+</td>
+                                <td>Word/Excel 导出</td>
+                            </tr>
+                            <tr>
+                                <td>PDF 生成</td>
+                                <td>reportlab</td>
+                                <td>4.0+</td>
+                                <td>PDF 文档导出</td>
+                            </tr>
+                            <tr>
+                                <td>前端</td>
+                                <td>HTML + CSS + JavaScript</td>
+                                <td>-</td>
+                                <td>原生前端，无框架依赖</td>
+                            </tr>
+                            <tr>
+                                <td>图表</td>
+                                <td>Chart.js</td>
+                                <td>-</td>
+                                <td>数据可视化</td>
+                            </tr>
+                            <tr>
+                                <td>图标</td>
+                                <td>Boxicons</td>
+                                <td>-</td>
+                                <td>图标库</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </section>
+
+                <section id="sec-dev-env" class="content-section">
+                    <h2>开发环境</h2>
+                    <div class="step-list">
+                        <div class="step-item">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <h3>操作系统</h3>
+                                <p>Windows 10/11（推荐）、macOS、Linux</p>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <h3>Python</h3>
+                                <p>3.8+ 版本</p>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <h3>IDE</h3>
+                                <p>VS Code / Cursor（推荐）</p>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">4</div>
+                            <div class="step-content">
+                                <h3>浏览器</h3>
+                                <p>Chrome / Edge（推荐）</p>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">5</div>
+                            <div class="step-content">
+                                <h3>Git</h3>
+                                <p>2.0+ 版本</p>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">6</div>
+                            <div class="step-content">
+                                <h3>DeepSeek API Key</h3>
+                                <p>前往 <a href="https://platform.deepseek.com" target="_blank">platform.deepseek.com</a> 申请</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="sec-coding-standards" class="content-section">
+                    <h2>编码规范</h2>
+                    <h3>Python 后端</h3>
+                    <div class="standards-grid">
+                        <div class="standard-item">
+                            <div class="standard-label">代码风格</div>
+                            <div class="standard-value">遵循 PEP 8</div>
+                        </div>
+                        <div class="standard-item">
+                            <div class="standard-label">类名</div>
+                            <div class="standard-value">PascalCase（大驼峰）</div>
+                        </div>
+                        <div class="standard-item">
+                            <div class="standard-label">函数/变量名</div>
+                            <div class="standard-value">snake_case（下划线）</div>
+                        </div>
+                        <div class="standard-item">
+                            <div class="standard-label">常量</div>
+                            <div class="standard-value">UPPER_SNAKE_CASE</div>
+                        </div>
+                        <div class="standard-item">
+                            <div class="standard-label">文档字符串</div>
+                            <div class="standard-value">公共函数必须添加 Docstring</div>
+                        </div>
+                        <div class="standard-item">
+                            <div class="standard-label">行宽限制</div>
+                            <div class="standard-value">最大 120 字符</div>
+                        </div>
+                    </div>
+                    <h3>前端</h3>
+                    <div class="standards-grid">
+                        <div class="standard-item">
+                            <div class="standard-label">HTML</div>
+                            <div class="standard-value">语义化标签，2 空格缩进</div>
+                        </div>
+                        <div class="standard-item">
+                            <div class="standard-label">CSS 类名</div>
+                            <div class="standard-value">BEM 风格，kebab-case</div>
+                        </div>
+                        <div class="standard-item">
+                            <div class="standard-label">JS 变量/函数</div>
+                            <div class="standard-value">camelCase（小驼峰）</div>
+                        </div>
+                        <div class="standard-item">
+                            <div class="standard-label">JS 类</div>
+                            <div class="standard-value">PascalCase（大驼峰）</div>
+                        </div>
+                        <div class="standard-item">
+                            <div class="standard-label">变量声明</div>
+                            <div class="standard-value">使用 const/let，禁止 var</div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="sec-modules" class="content-section">
+                    <h2>模块功能</h2>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>模块</th>
+                                <th>文件</th>
+                                <th>功能说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>评语管理</td>
+                                <td>comments.py, js/comments.js</td>
+                                <td>AI评语生成、评语编辑、批量导出Word</td>
+                            </tr>
+                            <tr>
+                                <td>成绩分析</td>
+                                <td>grade_analysis.py, js/grade_analysis.js</td>
+                                <td>成绩导入、统计分析、趋势图表</td>
+                            </tr>
+                            <tr>
+                                <td>德育评价</td>
+                                <td>deyu.py, js/deyu.js</td>
+                                <td>六维度评价、实时记录、汇总生成</td>
+                            </tr>
+                            <tr>
+                                <td>学生管理</td>
+                                <td>students.py, js/students.js</td>
+                                <td>学生信息CRUD、Excel批量导入</td>
+                            </tr>
+                            <tr>
+                                <td>班级管理</td>
+                                <td>classes.py</td>
+                                <td>班级创建、班主任绑定</td>
+                            </tr>
+                            <tr>
+                                <td>成绩管理</td>
+                                <td>grades.py, js/grades.js</td>
+                                <td>成绩录入、考试管理</td>
+                            </tr>
+                            <tr>
+                                <td>用户管理</td>
+                                <td>users.py</td>
+                                <td>多角色权限、账号管理</td>
+                            </tr>
+                            <tr>
+                                <td>仪表盘</td>
+                                <td>dashboard.py, js/dashboard.js</td>
+                                <td>数据总览、待办提醒</td>
+                            </tr>
+                            <tr>
+                                <td>学科管理</td>
+                                <td>subjects.py, js/subjects.js</td>
+                                <td>学科配置、教师分配</td>
+                            </tr>
+                            <tr>
+                                <td>绩效考核</td>
+                                <td>performance.py, js/performance.js</td>
+                                <td>教师绩效评估</td>
+                            </tr>
+                            <tr>
+                                <td>家长端</td>
+                                <td>parent.py, pages/parent.html</td>
+                                <td>家长查看学生信息、提交寄语</td>
+                            </tr>
+                            <tr>
+                                <td>系统设置</td>
+                                <td>system_api.py, js/settings.js</td>
+                                <td>DeepSeek API配置、学期设置</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </section>
+
+                <section id="sec-dev-workflow" class="content-section">
+                    <h2>开发流程</h2>
+                    <div class="step-list">
+                        <div class="step-item">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <h3>Fork 仓库</h3>
+                                <p>在 Gitee/GitHub 上 Fork 项目仓库</p>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <h3>克隆到本地</h3>
+                                <div class="code-block">
+<pre>git clone https://gitee.com/你的用户名/class-master.git</pre>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <h3>创建分支</h3>
+                                <div class="code-block">
+<pre>git checkout -b feature/你的功能名</pre>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">4</div>
+                            <div class="step-content">
+                                <h3>开发功能</h3>
+                                <p>按照编码规范进行开发</p>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">5</div>
+                            <div class="step-content">
+                                <h3>本地测试</h3>
+                                <div class="code-block">
+<pre>python server.py</pre>
+                                </div>
+                                <p>启动并测试功能</p>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">6</div>
+                            <div class="step-content">
+                                <h3>提交代码</h3>
+                                <div class="code-block">
+<pre>git add . &amp;&amp; git commit -m "描述"</pre>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">7</div>
+                            <div class="step-content">
+                                <h3>推送分支</h3>
+                                <div class="code-block">
+<pre>git push origin feature/你的功能名</pre>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">8</div>
+                            <div class="step-content">
+                                <h3>创建 PR</h3>
+                                <p>在 Gitee/GitHub 上提交 Pull Request</p>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">9</div>
+                            <div class="step-content">
+                                <h3>代码审查</h3>
+                                <p>等待项目维护者审查代码</p>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">10</div>
+                            <div class="step-content">
+                                <h3>合并上线</h3>
+                                <p>审查通过后合并到主分支</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="sec-env-deps" class="content-section">
+                    <h2>环境依赖</h2>
+                    <div class="step-list">
+                        <div class="step-item">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <h3>安装 Python</h3>
+                                <p>前往 <a href="https://www.python.org" target="_blank">python.org</a> 下载并安装 Python 3.8+ 版本</p>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <h3>安装 Git</h3>
+                                <p>前往 <a href="https://git-scm.com" target="_blank">git-scm.com</a> 下载并安装 Git</p>
+                            </div>
+                        </div>
+                        <div class="step-item">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <h3>申请 DeepSeek API Key</h3>
+                                <p>前往 <a href="https://platform.deepseek.com" target="_blank">platform.deepseek.com</a> 注册并申请 API Key</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="sec-clone" class="content-section">
+                    <h2>项目克隆</h2>
+                    <h3>Gitee（国内推荐）</h3>
+                    <div class="code-block">
+<pre>git clone https://gitee.com/ysxx86/class-master.git
+cd class-master</pre>
+                    </div>
+                    <h3>GitHub</h3>
+                    <div class="code-block">
+<pre>git clone https://github.com/ysxx86/ClassMaster3.0.git
+cd ClassMaster3.0</pre>
+                    </div>
+                </section>
+
+                <section id="sec-config" class="content-section">
+                    <h2>配置文件</h2>
+                    <h3>创建 .env 文件</h3>
+                    <div class="code-block">
+<pre>cp .env.example .env</pre>
+                    </div>
+                    <h3>编辑 .env 文件</h3>
+                    <p>添加 DeepSeek API Key：</p>
+                    <div class="code-block">
+<pre>DEEPSEEK_API_KEY=sk-your-api-key-here</pre>
+                    </div>
+                    <div class="info-box">
+                        <i class='bx bx-info-circle'></i>
+                        <span>config.json 在首次运行时自动生成，使用默认设置即可</span>
+                    </div>
+                </section>
+
+                <section id="sec-deps-install" class="content-section">
+                    <h2>依赖安装</h2>
+                    <div class="code-block">
+<pre>pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple</pre>
+                    </div>
+                    <div class="info-box">
+                        <i class='bx bx-info-circle'></i>
+                        <span>项目内置依赖自动检测机制（dependency_manager.py），首次启动时会自动检查并提示缺失依赖</span>
+                    </div>
+                </section>
+
+                <section id="sec-db-init" class="content-section">
+                    <h2>数据库初始化</h2>
+                    <p>SQLite 数据库在首次启动时自动创建和初始化，无需手动操作。</p>
+                    <div class="info-box info-box-warning">
+                        <i class='bx bx-error'></i>
+                        <span>默认管理员账号：用户名 <strong>admin</strong>，密码 <strong>admin123</strong>。首次登录后请立即修改密码！</span>
+                    </div>
+                </section>
+
+                <section id="sec-local-start" class="content-section">
+                    <h2>本地启动</h2>
+                    <div class="code-block">
+<pre>python server.py
+# 或
+python app.py</pre>
+                    </div>
+                    <p>启动后访问：<a href="http://localhost:8080" target="_blank">http://localhost:8080</a></p>
+                    <h3>可选启动参数</h3>
+                    <div class="code-block">
+<pre>python server.py --host 0.0.0.0 --port 8080 --debug</pre>
+                    </div>
+                </section>
+
+                <section id="sec-commit-history" class="content-section">
+                    <h2>提交历史</h2>
+                    <div id="commits-container" class="commits-container">
+                        <div class="commits-loading">加载中...</div>
+                    </div>
+                    <div id="commits-pagination" class="commits-pagination"></div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <script src="/js/dev-guide.js"></script>
+</body>
+</html>
