@@ -7,6 +7,19 @@
 import os
 import json
 import logging
+from pathlib import Path
+
+# 尝试加载 .env 文件（如果存在）
+try:
+    from dotenv import load_dotenv
+    env_path = Path(__file__).parent / '.env'
+    if env_path.exists():
+        load_dotenv(env_path)
+        print(f"✓ 已加载 .env 配置文件")
+    else:
+        print("! .env 文件不存在，使用环境变量")
+except ImportError:
+    print("! python-dotenv 未安装，将仅使用环境变量")
 
 class ConfigManager:
     """配置管理器"""

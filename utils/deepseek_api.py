@@ -20,28 +20,20 @@ class DeepSeekAPI:
     
     def __init__(self, api_key: Optional[str] = None):
         """初始化DeepSeek API客户端
-        
+
         Args:
-            api_key: DeepSeek API密钥，如果不提供则从环境变量获取，如果环境变量也没有则使用默认值
+            api_key: DeepSeek API密钥，如果不提供则从环境变量获取
         """
-        # 默认API密钥 - 已更新为用户提供的密钥
-        default_api_key = "sk-04f7d75638d044ed8a707d7aadf46782"
-        
         # 检查传入的API密钥是否有效
         if api_key and api_key.strip():
-            # 传入的API密钥有效
             self.api_key = api_key.strip()
             logger.info("使用自定义DeepSeek API密钥")
         elif os.environ.get("DEEPSEEK_API_KEY", "").strip():
-            # 环境变量中的API密钥有效
             self.api_key = os.environ.get("DEEPSEEK_API_KEY").strip()
             logger.info("使用环境变量中的DeepSeek API密钥")
         else:
-            # 使用默认API密钥
-            self.api_key = default_api_key
-            logger.info("使用默认DeepSeek API密钥")
-            
-        # 验证API密钥格式
+            raise ValueError("DeepSeek API密钥未设置。请在 .env 文件或环境变量中设置 DEEPSEEK_API_KEY")
+
         if not self.api_key.startswith("sk-"):
             logger.warning(f"DeepSeek API密钥格式可能不正确: {self.api_key[:5]}...")
     

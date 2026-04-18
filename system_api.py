@@ -28,7 +28,9 @@ def get_current_user():
         user_info = {
             'id': current_user.id,
             'username': current_user.username,
-            'is_admin': current_user.is_admin
+            'is_admin': current_user.is_admin,
+            'primary_role': getattr(current_user, 'primary_role', ''),
+            'class_id': getattr(current_user, 'class_id', None)
         }
         
         # 获取用户的班级信息

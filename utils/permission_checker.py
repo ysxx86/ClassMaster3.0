@@ -5,21 +5,13 @@
 用于验证用户是否有权限访问特定功能和数据
 """
 
-import sqlite3
 from functools import wraps
 from flask import jsonify
 from flask_login import current_user
 import logging
+from utils.db import get_db_connection, DATABASE
 
 logger = logging.getLogger(__name__)
-
-DATABASE = 'students.db'
-
-def get_db_connection():
-    """获取数据库连接"""
-    conn = sqlite3.connect(DATABASE)
-    conn.row_factory = sqlite3.Row
-    return conn
 
 def get_user_subjects(user_id):
     """获取用户任教的学科列表"""
