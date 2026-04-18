@@ -8,7 +8,7 @@ import sys
 import importlib
 
 # 设置环境变量
-os.environ["FLASK_APP"] = "server.py"
+os.environ["FLASK_APP"] = "app.py"
 os.environ["FLASK_DEBUG"] = "1"
 
 # 主函数

@@ -72,7 +72,7 @@ logger = logging.getLogger("热重载服务器")
 def load_app():
     """动态加载 Flask 应用"""
     try:
-        spec = importlib.util.spec_from_file_location("server", "server.py")
+        spec = importlib.util.spec_from_file_location("app", "app.py")
         server = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(server)
         return server.app
@@ -96,7 +96,7 @@ def run_server():
         target=werkzeug.serving._reloader_stat,
         args=(
             [
-                "server.py", 
+                "app.py", 
                 "utils", 
                 "pages", 
                 "templates", 

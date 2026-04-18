@@ -43,7 +43,7 @@ def start_server():
         cmd = [
             sys.executable, "-m", "gunicorn",
             "--config", "gunicorn_config.py",
-            "server:app"
+            "app:app"
         ]
         
         logger.info("正在启动 Gunicorn 服务器...")

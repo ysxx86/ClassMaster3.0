@@ -61,7 +61,7 @@ def run_gunicorn():
     cmd = [
         sys.executable, '-m', 'gunicorn',
         '--config', 'gunicorn_config.py',
-        'server:app'
+        'app:app'
     ]
     
     logger.info(f"启动命令: {' '.join(cmd)}")

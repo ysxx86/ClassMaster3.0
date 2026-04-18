@@ -24,7 +24,7 @@ if not os.path.exists("logs"):
 def load_app():
     """动态加载Flask应用程序而不执行主程序"""
     try:
-        spec = importlib.util.spec_from_file_location("server", "server.py")
+        spec = importlib.util.spec_from_file_location("app", "app.py")
         server = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(server)
         return server.app

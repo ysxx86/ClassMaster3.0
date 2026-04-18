@@ -35,7 +35,7 @@ reload_engine = "auto"
 
 # 监控变更的文件或目录列表
 reload_extra_files = [
-    "server.py",
+    "app.py",
     "utils/*.py",
     "templates/*.html",
 ]

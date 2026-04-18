@@ -48,7 +48,7 @@ def run_server():
         target=werkzeug.serving._reloader_stat,
         args=(
             [
-                "server.py", 
+                "app.py", 
                 "utils", 
                 "pages", 
                 "templates", 

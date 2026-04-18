@@ -48,7 +48,7 @@ def run_flask_dev_server():
     """运行Flask开发服务器（带热重载）"""
     try:
         # 设置Flask环境变量
-        os.environ["FLASK_APP"] = "server.py"
+        os.environ["FLASK_APP"] = "app.py"
         os.environ["FLASK_ENV"] = "development"
         os.environ["FLASK_DEBUG"] = "1"
         

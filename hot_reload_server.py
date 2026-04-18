@@ -110,7 +110,7 @@ def start_server():
     # 构建 Gunicorn 命令
     cmd = [
         sys.executable, "-m", "gunicorn",
-        "server:app",
+        "app:app",
         "--bind", "0.0.0.0:8080",
         "--workers", "1",  # 开发环境使用单进程更方便调试
         "--timeout", "120",

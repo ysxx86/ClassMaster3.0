@@ -7,7 +7,7 @@ import sys
 from flask import Flask
 
 # 创建一个简单的代理应用来避免重复路由定义问题
-from server import app
+from app import app
 
 if __name__ == '__main__':
     print("\n=============== 班主任管理系统服务器 - 简化版 ===============")
