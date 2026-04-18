@@ -364,6 +364,139 @@
         .student-search:focus {
             border-color: #667eea;
         }
+
+        .overview-card {
+            background: white;
+            border-radius: 12px;
+            padding: 14px 12px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            transition: transform 0.2s, box-shadow 0.2s;
+            border-left: 4px solid transparent;
+        }
+        .overview-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+        .overview-total { border-left-color: #667eea; }
+        .overview-excellent { border-left-color: #27ae60; }
+        .overview-pass { border-left-color: #3498db; }
+        .overview-deyu { border-left-color: #9b59b6; }
+        .overview-deyu-pass { border-left-color: #e67e22; }
+        .overview-avg { border-left-color: #1abc9c; }
+        .overview-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+            line-height: 1.2;
+        }
+        .overview-label {
+            font-size: 0.72rem;
+            color: #888;
+            margin-top: 4px;
+            white-space: nowrap;
+        }
+
+        .heatmap-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            min-width: 600px;
+        }
+        .heatmap-table th, .heatmap-table td {
+            padding: 10px 6px;
+            text-align: center;
+            border: 1px solid #eee;
+        }
+        .heatmap-table thead th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            min-width: 70px;
+        }
+        .heatmap-table thead th:first-child {
+            background: #5a67d8;
+            min-width: 80px;
+            text-align: left;
+            padding-left: 14px;
+        }
+        .heatmap-table tbody tr:nth-child(even) { background: #fafbff; }
+        .heatmap-table tbody tr:hover { background: #f0f3ff; }
+        .heatmap-table tbody td:first-child {
+            font-weight: 600;
+            color: #444;
+            text-align: left;
+            padding-left: 14px;
+            background: #f8f9ff;
+            position: sticky;
+            left: 0;
+            z-index: 1;
+        }
+
+        .heat-cell {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            padding: 6px 4px;
+            min-width: 56px;
+            cursor: default;
+            transition: transform 0.15s;
+        }
+        .heat-cell:hover { transform: scale(1.08); z-index: 2; }
+        .heat-cell-count {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: rgba(255,255,255,0.95);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.15);
+        }
+        .heat-cell-pct {
+            font-size: 0.68rem;
+            color: rgba(255,255,255,0.85);
+            margin-top: 1px;
+        }
+
+        .color-scale-legend {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 0;
+            flex-wrap: wrap;
+        }
+        .color-scale-legend .legend-title {
+            font-size: 0.78rem;
+            color: #666;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        .scale-bar {
+            display: flex;
+            flex: 1;
+            max-width: 280px;
+            height: 16px;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .scale-segment { flex: 1; }
+        .scale-label {
+            font-size: 0.7rem;
+            color: #999;
+        }
+        .scale-label.text-right {
+            margin-left: auto;
+        }
+
+        .weak-badge {
+            background: #e74c3c;
+            color: white;
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-left: 8px;
+            font-weight: 500;
+        }
+
         @media (max-width: 768px) {
             .page-header { padding: 20px 15px; border-radius: 0 0 15px 15px; }
             .page-title { font-size: 1.4rem; }
@@ -470,24 +603,80 @@
         </div>
 
         <div id="class-section" class="section-content">
+            <div id="classOverviewCards" class="row mb-3" style="display:none;">
+                <div class="col-md-2 col-sm-4 col-6 mb-2">
+                    <div class="overview-card overview-total">
+                        <div class="overview-value" id="overviewTotal">--</div>
+                        <div class="overview-label">总人数</div>
+                    </div>
+                </div>
+                <div class="col-md-2 col-sm-4 col-6 mb-2">
+                    <div class="overview-card overview-excellent">
+                        <div class="overview-value" id="overviewExcellent">--</div>
+                        <div class="overview-label">学科均优秀率</div>
+                    </div>
+                </div>
+                <div class="col-md-2 col-sm-4 col-6 mb-2">
+                    <div class="overview-card overview-pass">
+                        <div class="overview-value" id="overviewPass">--</div>
+                        <div class="overview-label">学科均及格率</div>
+                    </div>
+                </div>
+                <div class="col-md-2 col-sm-4 col-6 mb-2">
+                    <div class="overview-card overview-deyu">
+                        <div class="overview-value" id="overviewDeyuAvg">--</div>
+                        <div class="overview-label">德育平均分</div>
+                    </div>
+                </div>
+                <div class="col-md-2 col-sm-4 col-6 mb-2">
+                    <div class="overview-card overview-deyu-pass">
+                        <div class="overview-value" id="overviewDeyuPass">--</div>
+                        <div class="overview-label">德育及格率</div>
+                    </div>
+                </div>
+                <div class="col-md-2 col-sm-4 col-6 mb-2">
+                    <div class="overview-card overview-avg">
+                        <div class="overview-value" id="overviewAvgScore">--</div>
+                        <div class="overview-label">学科均分</div>
+                    </div>
+                </div>
+            </div>
+
             <div class="row">
-                <div class="col-md-8">
+                <div class="col-lg-8 col-md-7">
                     <div class="card">
                         <div class="card-header">
-                            <span><i class='bx bx-grid-3x3' style="color: #667eea"></i> 学科成绩分布热力图</span>
-                            <select class="form-select admin-only" id="classSelect" style="width: auto;">
+                            <span><i class='bx bx-grid-alt' style="color: #667eea"></i> 学科成绩分布热力图</span>
+                            <select class="form-select admin-only" id="classSelect" style="width: auto; max-width: 160px;">
                                 <option value="">-- 选择班级 --</option>
                             </select>
                             <span id="currentClassName" class="teacher-only" style="color: #667eea; font-weight: 500;"></span>
                         </div>
-                        <div class="card-body">
-                            <div class="heatmap-grid" id="heatmapGrid" style="grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));">
-                                <div class="empty-state">
-                                    <i class='bx bx-building'></i>
-                                    <p>加载中...</p>
+                        <div class="card-body p-0 overflow-auto" style="max-height: 520px;">
+                            <table class="heatmap-table" id="heatmapTable">
+                                <thead id="heatmapHead"></thead>
+                                <tbody id="heatmapBody"></tbody>
+                            </table>
+                        </div>
+                        <div class="card-body pt-0">
+                            <div class="color-scale-legend">
+                                <span class="legend-title">人数色阶：</span>
+                                <div class="scale-bar">
+                                    <div class="scale-segment" style="background: #e8f5e9"></div>
+                                    <div class="scale-segment" style="background: #c8e6c9"></div>
+                                    <div class="scale-segment" style="background: #a5d6a7"></div>
+                                    <div class="scale-segment" style="background: #81c784"></div>
+                                    <div class="scale-segment" style="background: #66bb6a"></div>
+                                    <div class="scale-segment" style="background: #4caf50"></div>
+                                    <div class="scale-segment" style="background: #43a047"></div>
+                                    <div class="scale-segment" style="background: #388e3c"></div>
+                                    <div class="scale-segment" style="background: #2e7d32"></div>
+                                    <div class="scale-segment" style="background: #1b5e20"></div>
                                 </div>
+                                <span class="scale-label">少</span>
+                                <span class="scale-label text-right">多</span>
                             </div>
-                            <div class="grade-legend">
+                            <div class="grade-legend mt-2">
                                 <div class="legend-item"><div class="legend-color" style="background: #27ae60"></div> 优 (≥90)</div>
                                 <div class="legend-item"><div class="legend-color" style="background: #3498db"></div> 良 (75-89)</div>
                                 <div class="legend-item"><div class="legend-color" style="background: #f39c12"></div> 及格 (60-74)</div>
@@ -495,11 +684,24 @@
                             </div>
                         </div>
                     </div>
+
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <span><i class='bx bx-bar-chart-alt' style="color: #764ba2"></i> 班级德育总分分布形态</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container" style="height: 220px;">
+                                <canvas id="deyuDistributionChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-md-4">
+
+                <div class="col-lg-4 col-md-5">
                     <div class="card">
                         <div class="card-header">
                             <span><i class='bx bx-warning' style="color: #e74c3c"></i> 薄弱学科预警</span>
+                            <span id="weakCountBadge" class="weak-badge" style="display:none;"></span>
                         </div>
                         <div class="card-body" id="weakSubjectsContainer">
                             <div class="empty-state">
@@ -667,6 +869,7 @@
         }
 
         let allStudentsData = [];
+        let subjectStatsCache = null;
 
         function loadAllStudents() {
             fetch('/api/students')
@@ -741,12 +944,11 @@
                 .then(r => r.json())
                 .then(data => {
                     if (data.status === 'ok') {
-                        renderHeatmap(data.subject_stats);
-                        renderWeakSubjects(data.weak_subjects);
-                        renderDeyuPieChart(data.deyu_stats);
+                        subjectStatsCache = data.subject_stats;
+                        renderClassProfile(data);
                     } else if (data.error) {
-                        document.getElementById('heatmapGrid').innerHTML = 
-                            `<div class="empty-state"><i class='bx bx-error'></i><p>${data.error}</p></div>`;
+                        document.getElementById('heatmapBody').innerHTML =
+                            `<tr><td colspan="7" class="text-center text-muted py-4"><i class='bx bx-error'></i> ${data.error}</td></tr>`;
                     }
                 });
         }
@@ -882,52 +1084,121 @@
                 .then(r => r.json())
                 .then(data => {
                     if (data.status === 'ok') {
-                        renderHeatmap(data.subject_stats);
-                        renderWeakSubjects(data.weak_subjects);
-                        renderDeyuPieChart(data.deyu_stats);
+                        subjectStatsCache = data.subject_stats;
+                        renderClassProfile(data);
                     } else if (data.error) {
                         alert(data.error);
                     }
                 });
         }
 
-        function renderHeatmap(subjectStats) {
-            const grid = document.getElementById('heatmapGrid');
-            const subjects = ['yuwen', 'shuxue', 'yingyu', 'daof', 'kexue', 'zonghe', 'tiyu', 'yinyue', 'meishu', 'laodong'];
+        function renderClassProfile(data) {
+            renderClassOverview(data.class_overview);
+            renderHeatmap(data.score_matrix, data.grade_ranges, data.student_count);
+            renderWeakSubjects(data.weak_subjects);
+            renderDeyuPieChart(data.deyu_stats);
+            renderScoreDistribution(data.deyu_distribution, data.deyu_distribution_pct);
+        }
 
-            let html = '';
-            subjects.forEach(key => {
-                const stats = subjectStats[key];
-                if (!stats) return;
+        function renderClassOverview(overview) {
+            if (!overview) return;
+            document.getElementById('classOverviewCards').style.display = '';
+            document.getElementById('overviewTotal').textContent = overview.student_count + '人';
+            document.getElementById('overviewExcellent').textContent = overview.overall_excellent_rate + '%';
+            document.getElementById('overviewPass').textContent = overview.overall_pass_rate + '%';
+            document.getElementById('overviewDeyuAvg').textContent = overview.avg_deyu_score;
+            document.getElementById('overviewDeyuPass').textContent = overview.deyu_pass_rate + '%';
+            document.getElementById('overviewAvgScore').textContent = overview.overall_avg_score;
+        }
 
-                const excellentRate = stats.excellent_rate;
-                let color;
-                if (excellentRate >= 60) color = '#27ae60';
-                else if (excellentRate >= 40) color = '#3498db';
-                else if (excellentRate >= 20) color = '#f39c12';
-                else color = '#e74c3c';
+        const HEAT_COLORS = [
+            '#e8f5e9', '#c8e6c9', '#a5d6a7', '#81c784', '#66bb6a',
+            '#4caf50', '#43a047', '#388e3c', '#2e7d32', '#1b5e20'
+        ];
 
-                html += `
-                    <div class="heatmap-cell" style="background: ${color}">
-                        <div class="subject">${stats.name}</div>
-                        <div class="rate">${excellentRate}%</div>
-                        <div class="label">优秀率</div>
-                    </div>
-                `;
+        function getHeatColor(value, minVal, maxVal) {
+            if (maxVal === minVal) return HEAT_COLORS[0];
+            const ratio = (value - minVal) / (maxVal - minVal);
+            const idx = Math.min(Math.floor(ratio * HEAT_COLORS.length), HEAT_COLORS.length - 1);
+            return HEAT_COLORS[idx];
+        }
+
+        function renderHeatmap(scoreMatrix, gradeRanges, totalStudents) {
+            const thead = document.getElementById('heatmapHead');
+            const tbody = document.getElementById('heatmapBody');
+
+            const subjectKeys = Object.keys(scoreMatrix);
+            if (subjectKeys.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">暂无数据</td></tr>';
+                return;
+            }
+
+            let headHtml = '<tr><th>学科</th>';
+            gradeRanges.forEach(g => { headHtml += `<th>${g}</th>`; });
+            headHtml += '<th>优秀率</th><th>及格率</th><th>均分</th></tr>';
+            thead.innerHTML = headHtml;
+
+            let maxCount = 0;
+            subjectKeys.forEach(key => {
+                const dist = scoreMatrix[key].distribution;
+                Object.values(dist).forEach(v => { if (v > maxCount) maxCount = v; });
             });
-            grid.innerHTML = html;
+
+            let bodyHtml = '';
+            subjectKeys.forEach(key => {
+                const info = scoreMatrix[key];
+                const dist = info.distribution;
+                const pct = info.percentages;
+                const stats = subjectStatsCache ? subjectStatsCache[key] : null;
+
+                bodyHtml += '<tr>';
+                bodyHtml += `<td>${info.name}</td>`;
+                gradeRanges.forEach((g, gi) => {
+                    const count = dist[g] || 0;
+                    const color = getHeatColor(count, 0, maxCount || 1);
+                    bodyHtml += `<td><div class="heat-cell" style="background:${color}" title="${info.name} - ${g}: ${count}人 (${pct[g]}%)">`;
+                    bodyHtml += `<span class="heat-cell-count">${count}</span>`;
+                    bodyHtml += `<span class="heat-cell-pct">${pct[g] || 0}%</span>`;
+                    bodyHtml += '</div></td>';
+                });
+
+                if (stats) {
+                    bodyHtml += `<td style="font-weight:600;color:${stats.excellent_rate >= 50 ? '#27ae60' : stats.excellent_rate >= 30 ? '#f39c12' : '#e74c3c'}">${stats.excellent_rate}%</td>`;
+                    bodyHtml += `<td style="color:${stats.pass_rate >= 85 ? '#27ae60' : stats.pass_rate >= 70 ? '#f39c12' : '#e74c3c'}">${stats.pass_rate}%</td>`;
+                    bodyHtml += `<td>${stats.average_score}</td>`;
+                } else {
+                    bodyHtml += '<td>--</td><td>--</td><td>--</td>';
+                }
+                bodyHtml += '</tr>';
+            });
+            tbody.innerHTML = bodyHtml;
         }
 
         function renderWeakSubjects(weakSubjects) {
             const container = document.getElementById('weakSubjectsContainer');
+            const badge = document.getElementById('weakCountBadge');
+
             if (!weakSubjects || weakSubjects.length === 0) {
-                container.innerHTML = '<div class="empty-state"><i class="bx bx-check-circle"></i><p>暂无预警</p></div>';
+                container.innerHTML = '<div class="empty-state"><i class="bx bx-check-circle"></i><p>各学科表现均衡，暂无预警</p></div>';
+                badge.style.display = 'none';
                 return;
             }
+
+            badge.textContent = weakSubjects.length + '项';
+            badge.style.display = '';
+
             container.innerHTML = weakSubjects.map(w => `
-                <div class="weak-warning">
-                    <div class="subject-name">⚠️ ${w.subject}</div>
-                    <div class="suggestion">${w.suggestion}</div>
+                <div class="weak-warning" style="margin-bottom:10px;padding:12px;border-radius:8px;border-left:4px solid #e74c3c;background:#fef5f5;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                        <div class="subject-name" style="font-size:0.9rem;font-weight:600;">⚠️ ${w.subject}</div>
+                        <span style="font-size:0.72rem;color:#e74c3c;background:#fce4ec;padding:2px 8px;border-radius:10px;">优秀${w.excellent_rate}%</span>
+                    </div>
+                    <div style="display:flex;gap:12px;margin-bottom:6px;font-size:0.78rem;color:#666;">
+                        <span>及格率: <strong style="color:${w.pass_rate >= 80 ? '#27ae60' : '#e74c3c'}">${w.pass_rate}%</strong></span>
+                        <span>低分率: <strong style="color:${w.low_rate > 15 ? '#e74c3c' : '#27ae60'}">${w.low_rate}%</strong></span>
+                        <span>均分: <strong>${w.average_score}</strong></span>
+                    </div>
+                    <div class="suggestion" style="font-size:0.8rem;color:#c0392b;background:white;padding:6px 10px;border-radius:6px;">💡 ${w.suggestion}</div>
                 </div>
             `).join('');
         }
@@ -939,16 +1210,71 @@
             deyuPieChart = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['优秀', '良好', '及格', '待及格'],
+                    labels: ['优秀(≥90)', '良好(75-89)', '及格(60-74)', '待及格(<60)'],
                     datasets: [{
                         data: [stats['优'] || 0, stats['良'] || 0, stats['及格'] || 0, stats['待及格'] || 0],
-                        backgroundColor: ['#27ae60', '#3498db', '#f39c12', '#e74c3c']
+                        backgroundColor: ['#27ae60', '#3498db', '#f39c12', '#e74c3c'],
+                        borderWidth: 2,
+                        borderColor: '#fff'
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { position: 'bottom' } }
+                    plugins: {
+                        legend: { position: 'bottom', labels: { padding: 15, font: { size: 11 } } },
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => `${ctx.label}: ${ctx.raw}人 (${Math.round(ctx.raw / ctx.dataset.data.reduce((a,b)=>a+b,0) * 100)}%)`
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        let deyuDistChart = null;
+
+        function renderScoreDistribution(distribution, distributionPct) {
+            const ctx = document.getElementById('deyuDistributionChart').getContext('2d');
+            if (deyuDistChart) deyuDistChart.destroy();
+
+            const labels = Object.keys(distribution);
+            const values = Object.values(distribution);
+
+            deyuDistChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '人数',
+                        data: values,
+                        backgroundColor: ['#27ae60', '#3498db', '#f39c12', '#e74c3c'],
+                        borderRadius: 6,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                afterLabel: (ctx) => `占比: ${Object.values(distributionPct)[ctx.dataIndex]}%`
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { stepSize: 1 },
+                            grid: { color: '#f0f0f0' }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    }
                 }
             });
         }

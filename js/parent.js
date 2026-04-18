@@ -159,7 +159,20 @@ function renderStudentHeader(student) {
 function renderComment(comments) {
     var $content = $('#comment-content');
     if (comments && comments.trim()) {
-        $content.text(comments);
+        var lines = comments.split('\n');
+        var lastLine = lines[lines.length - 1].trim();
+        var bodyLines, signatureHtml;
+
+        if (lastLine.indexOf('班主任：') === 0 || lastLine.indexOf('班主任:') === 0) {
+            bodyLines = lines.slice(0, -1);
+            signatureHtml = '<div class="comment-signature">' + escapeHtml(lastLine) + '</div>';
+        } else {
+            bodyLines = lines;
+            signatureHtml = '';
+        }
+
+        var bodyText = bodyLines.join('\n');
+        $content.html('<div class="comment-body">' + escapeHtml(bodyText) + '</div>' + signatureHtml);
     } else {
         $content.html('<div class="empty-tip">暂无评语</div>');
     }
@@ -494,20 +507,7 @@ function onLogout() {
         url: '/api/parent/logout',
         method: 'POST'
     }).always(function () {
-        editingMessageId = null;
-        historyLoaded = false;
-        if (deyuChart) {
-            deyuChart.destroy();
-            deyuChart = null;
-        }
-        $('#grade-select').val('');
-        $('#class-select').val('').prop('disabled', true).find('option:not(:first)').remove();
-        $('#class-select').append($('<option>').val('').text('请先选择年级'));
-        $('#student-name').val('');
-        $('#message-input').val('').trigger('input');
-        $('#submit-msg-btn .btn-text').text('提交寄语');
-        hideVerifyError();
-        switchView('verify');
+        window.location.href = '/login';
     });
 }
 

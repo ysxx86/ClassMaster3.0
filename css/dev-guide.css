@@ -750,200 +750,183 @@ pre code {
 
 .timeline-container {
     position: relative;
-    padding-left: 28px;
+    padding-left: 26px;
 }
 
 .timeline-container::before {
     content: '';
     position: absolute;
-    left: 10px;
+    left: 8px;
     top: 0;
     bottom: 0;
     width: 2px;
-    background: linear-gradient(to bottom, var(--dg-primary), var(--dg-secondary), var(--dg-border));
+    background: linear-gradient(to bottom, var(--dg-primary), var(--dg-secondary), #e2e8f0);
 }
 
 .timeline-year {
-    margin-bottom: 24px;
+    margin-bottom: 20px;
 }
 
 .timeline-year-header {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 10px 16px;
+    gap: 8px;
+    padding: 6px 14px;
     background: linear-gradient(135deg, var(--dg-primary), var(--dg-secondary));
     color: white;
-    border-radius: 8px;
-    font-size: 15px;
+    border-radius: 6px;
+    font-size: 13.5px;
     font-weight: 600;
     cursor: pointer;
     user-select: none;
-    transition: all 0.2s ease;
+    transition: opacity 0.2s ease;
     position: relative;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .timeline-year-header::before {
     content: '';
     position: absolute;
-    left: -22px;
+    left: -23px;
     top: 50%;
     transform: translateY(-50%);
-    width: 14px;
-    height: 14px;
-    background: var(--dg-primary);
-    border: 3px solid white;
+    width: 12px;
+    height: 12px;
+    background: white;
+    border: 2px solid white;
     border-radius: 50%;
-    box-shadow: 0 0 0 2px var(--dg-primary);
+    box-shadow: 0 0 0 3px var(--dg-primary);
+    box-sizing: border-box;
+    z-index: 2;
 }
 
-.timeline-year-header:hover {
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+.timeline-year-header:hover { opacity: 0.9; }
+.timeline-year-header.collapsed { animation: breathe-collapsed 2s ease-in-out infinite; }
+
+@keyframes breathe-collapsed {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.65; }
 }
 
 .timeline-year-header .toggle-icon {
     margin-left: auto;
-    font-size: 18px;
-    transition: transform 0.3s ease;
+    font-size: 16px;
+    transition: transform 0.25s ease;
+    flex-shrink: 0;
 }
-
-.timeline-year-header.collapsed .toggle-icon {
-    transform: rotate(-90deg);
-}
+.timeline-year-header.collapsed .toggle-icon { transform: rotate(-90deg); }
 
 .timeline-month {
-    margin: 8px 0 8px 16px;
+    margin: 4px 0 4px 0;
+    padding-left: 16px;
 }
 
 .timeline-month-header {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 8px 14px;
-    background: #f0f4ff;
-    border-radius: 6px;
-    font-size: 13.5px;
-    font-weight: 600;
+    gap: 5px;
+    padding: 3px 10px;
+    background: #eef2ff;
     color: var(--dg-primary);
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
     cursor: pointer;
     user-select: none;
-    transition: all 0.2s ease;
+    transition: background 0.2s ease;
     position: relative;
+    margin-bottom: 4px;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .timeline-month-header::before {
     content: '';
     position: absolute;
-    left: -20px;
+    left: -38px;
     top: 50%;
     transform: translateY(-50%);
-    width: 10px;
-    height: 10px;
-    background: white;
-    border: 2px solid var(--dg-primary);
+    width: 9px;
+    height: 9px;
+    background: var(--dg-primary);
     border-radius: 50%;
+    box-sizing: border-box;
+    z-index: 2;
 }
 
-.timeline-month-header:hover {
-    background: #e0e7ff;
-}
+.timeline-month-header:hover { background: #dfe6ff; }
+.timeline-month-header.collapsed { animation: breathe-collapsed 2s ease-in-out infinite; }
 
 .timeline-month-header .toggle-icon {
-    margin-left: auto;
-    font-size: 16px;
-    transition: transform 0.3s ease;
+    font-size: 13px;
+    transition: transform 0.25s ease;
     color: var(--dg-text-lighter);
 }
-
-.timeline-month-header.collapsed .toggle-icon {
-    transform: rotate(-90deg);
-}
+.timeline-month-header.collapsed .toggle-icon { transform: rotate(-90deg); }
 
 .timeline-month-content {
-    max-height: 2000px;
+    max-height: 5000px;
     overflow: hidden;
-    transition: max-height 0.4s ease;
+    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
+    will-change: max-height, opacity;
+    opacity: 1;
 }
-
 .timeline-month-content.collapsed {
-    max-height: 0;
+    max-height: 0 !important;
+    opacity: 0;
 }
 
 .timeline-year-content {
-    max-height: 5000px;
+    max-height: 10000px;
     overflow: hidden;
-    transition: max-height 0.5s ease;
+    transition: max-height 0.45s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.22s ease;
+    will-change: max-height, opacity;
+    opacity: 1;
 }
-
 .timeline-year-content.collapsed {
-    max-height: 0;
+    max-height: 0 !important;
+    opacity: 0;
 }
 
 .commit-item {
     display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 10px 14px;
-    margin: 4px 0 4px 16px;
-    background: white;
-    border-radius: 6px;
-    border: 1px solid var(--dg-border);
+    align-items: baseline;
+    gap: 10px;
+    padding: 1px 0 1px 20px;
     position: relative;
-    transition: box-shadow 0.2s ease;
+    font-size: 13.5px;
+    line-height: 1.65;
+    transition: background 0.15s ease;
+    border-radius: 4px;
 }
 
 .commit-item::before {
     content: '';
     position: absolute;
-    left: -20px;
-    top: 16px;
-    width: 6px;
-    height: 6px;
+    left: -37px;
+    top: 11px;
+    width: 8px;
+    height: 8px;
     background: var(--dg-primary);
     border-radius: 50%;
+    z-index: 2;
 }
 
-.commit-item:hover {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-.commit-icon {
-    flex-shrink: 0;
-    width: 28px;
-    height: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #f0f4ff;
-    color: var(--dg-primary);
-    border-radius: 6px;
-    font-size: 14px;
-}
-
-.commit-info {
-    flex: 1;
-    min-width: 0;
-}
+.commit-item:hover { background: rgba(102, 126, 234, 0.04); }
 
 .commit-message {
-    font-size: 13.5px;
     color: var(--dg-text);
     word-break: break-word;
-    line-height: 1.5;
+    flex: 1;
 }
 
 .commit-meta {
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin-top: 4px;
+    gap: 10px;
     font-size: 12px;
     color: var(--dg-text-lighter);
-}
-
-.commit-meta i {
-    font-size: 13px;
-    margin-right: 2px;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .commits-loading-indicator {

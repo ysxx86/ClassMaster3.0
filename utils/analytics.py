@@ -240,14 +240,14 @@ def generate_suggestions(current_scores: Dict[str, int], avg_scores: Dict[str, f
 
 def get_class_profile(class_id: int, semester: str = None) -> Dict[str, Any]:
     """
-    获取班级学情图谱数据
+    获取班级学情图谱数据（增强版）
 
     Args:
         class_id: 班级ID
         semester: 学期筛选（可选）
 
     Returns:
-        包含热力图数据、德育分布数据的字典
+        包含热力图矩阵、核心指标、德育分布、薄弱学科等完整数据
     """
     try:
         conn = get_db_connection()
@@ -274,41 +274,71 @@ def get_class_profile(class_id: int, semester: str = None) -> Dict[str, Any]:
             conn.close()
             return {'error': '班级不存在或没有学生数据'}
 
+        student_count = len(students)
+
+        grade_ranges = ['优', '良', '及格', '待及格', '未评分']
         subject_stats = {}
+        score_matrix = {}
+
+        all_subject_totals = []
+        all_subject_pass_counts = []
+        all_subject_excellent_counts = []
+
         for subj_key, subj_name in SUBJECT_NAMES.items():
-            grades = {'优': 0, '良': 0, '及格': 0, '待及格': 0, '未评分': 0}
-            total = 0
-            count = 0
+            grades = {g: 0 for g in grade_ranges}
+            total_score = 0
+            valid_count = 0
 
             for student in students:
                 grade = student[subj_key] if subj_key in student.keys() else '/'
                 grade_display = grade if grade and grade != '' else '/'
+
                 if grade_display in grades:
                     grades[grade_display] += 1
                 else:
                     grades['未评分'] += 1
 
                 numeric = SUBJECT_GRADE_MAP.get(grade, 0)
-                total += numeric
-                count += 1
+                total_score += numeric
+                if numeric > 0:
+                    valid_count += 1
 
-            excellent_rate = round((grades['优'] / count) * 100, 1) if count > 0 else 0
-            pass_rate = round(((grades['优'] + grades['良'] + grades['及格']) / count) * 100, 1) if count > 0 else 0
+            excellent_rate = round((grades['优'] / student_count) * 100, 1) if student_count > 0 else 0
+            pass_rate = round(((grades['优'] + grades['良'] + grades['及格']) / student_count) * 100, 1) if student_count > 0 else 0
+            low_rate = round((grades['待及格'] / student_count) * 100, 1) if student_count > 0 else 0
+            avg_score = round(total_score / valid_count, 2) if valid_count > 0 else 0
 
             subject_stats[subj_key] = {
                 'name': subj_name,
                 'grades': grades,
                 'excellent_rate': excellent_rate,
                 'pass_rate': pass_rate,
-                'average_score': round(total / count, 2) if count > 0 else 0
+                'low_rate': low_rate,
+                'average_score': avg_score,
+                'total_students': student_count
             }
 
+            score_matrix[subj_key] = {
+                'name': subj_name,
+                'distribution': {g: grades[g] for g in ['优', '良', '及格', '待及格']},
+                'percentages': {
+                    g: round((grades[g] / student_count) * 100, 1) if student_count > 0 else 0
+                    for g in ['优', '良', '及格', '待及格']
+                }
+            }
+
+            all_subject_totals.append(avg_score)
+            all_subject_pass_counts.append(pass_rate)
+            all_subject_excellent_counts.append(excellent_rate)
+
         deyu_stats = {'优': 0, '良': 0, '及格': 0, '待及格': 0}
+        deyu_total_scores = []
         for student in students:
             total = sum([
                 student['pinzhi'] or 0, student['xuexi'] or 0, student['jiankang'] or 0,
                 student['shenmei'] or 0, student['shijian'] or 0, student['shenghuo'] or 0
             ])
+            deyu_total_scores.append(total)
             if total >= 90:
                 deyu_stats['优'] += 1
             elif total >= 75:
@@ -318,14 +348,62 @@ def get_class_profile(class_id: int, semester: str = None) -> Dict[str, Any]:
             else:
                 deyu_stats['待及格'] += 1
 
+        overall_avg_deyu = round(sum(deyu_total_scores) / len(deyu_total_scores), 2) if deyu_total_scores else 0
+        overall_pass_deyu = sum(1 for s in deyu_total_scores if s >= 60)
+        overall_pass_rate_deyu = round((overall_pass_deyu / student_count) * 100, 1) if student_count > 0 else 0
+
+        deyu_distribution = {
+            '≥90分(优)': deyu_stats['优'],
+            '75-89分(良)': deyu_stats['良'],
+            '60-74分(及格)': deyu_stats['及格'],
+            '<60分(待及格)': deyu_stats['待及格']
+        }
+        deyu_distribution_pct = {
+            k: round((v / student_count) * 100, 1) if student_count > 0 else 0
+            for k, v in deyu_distribution.items()
+        }
+
+        empty_subject_keys = [
+            k for k, v in score_matrix.items()
+            if all(d == 0 for d in v['distribution'].values())
+        ]
+
+        if empty_subject_keys:
+            empty_set = set(empty_subject_keys)
+            subject_stats = {k: v for k, v in subject_stats.items() if k not in empty_set}
+            score_matrix = {k: v for k, v in score_matrix.items() if k not in empty_set}
+            filtered = [(t, p, e) for t, p, e, k in zip(all_subject_totals, all_subject_pass_counts, all_subject_excellent_counts, list(SUBJECT_NAMES.keys())) if k not in empty_set]
+            if filtered:
+                all_subject_totals, all_subject_pass_counts, all_subject_excellent_counts = zip(*filtered)
+                all_subject_totals = list(all_subject_totals)
+                all_subject_pass_counts = list(all_subject_pass_counts)
+                all_subject_excellent_counts = list(all_subject_excellent_counts)
+
         weak_subjects = []
         for subj_key, stats in subject_stats.items():
+            reasons = []
             if stats['excellent_rate'] < 40:
+                reasons.append(f'优秀率仅{stats["excellent_rate"]}%')
+            if stats['pass_rate'] < 80:
+                reasons.append(f'及格率仅{stats["pass_rate"]}%')
+            if stats['low_rate'] > 15:
+                reasons.append(f'低分率高达{stats["low_rate"]}%')
+            if reasons:
                 weak_subjects.append({
                     'subject': stats['name'],
+                    'key': subj_key,
                     'excellent_rate': stats['excellent_rate'],
-                    'suggestion': f'建议加强{stats["name"]}教学，当前优秀率仅{stats["excellent_rate"]}%'
+                    'pass_rate': stats['pass_rate'],
+                    'low_rate': stats['low_rate'],
+                    'average_score': stats['average_score'],
+                    'suggestion': f'{stats["name"]}：{"；".join(reasons)}，建议加强教学'
                 })
+
+        weak_subjects.sort(key=lambda x: x['excellent_rate'])
+
+        class_overall_avg = round(sum(all_subject_totals) / len(all_subject_totals), 2) if all_subject_totals else 0
+        class_overall_pass = round(sum(all_subject_pass_counts) / len(all_subject_pass_counts), 1) if all_subject_pass_counts else 0
+        class_overall_excellent = round(sum(all_subject_excellent_counts) / len(all_subject_excellent_counts), 1) if all_subject_excellent_counts else 0
 
         cursor.execute('SELECT class_name FROM classes WHERE id = ?', (class_id,))
         class_row = cursor.fetchone()
@@ -337,15 +415,29 @@ def get_class_profile(class_id: int, semester: str = None) -> Dict[str, Any]:
             'status': 'ok',
             'class_id': class_id,
             'class_name': class_name,
-            'student_count': len(students),
+            'student_count': student_count,
             'subject_stats': subject_stats,
+            'score_matrix': score_matrix,
             'deyu_stats': deyu_stats,
+            'deyu_distribution': deyu_distribution,
+            'deyu_distribution_pct': deyu_distribution_pct,
             'weak_subjects': weak_subjects,
-            'semester': semester or '全部学期'
+            'class_overview': {
+                'student_count': student_count,
+                'overall_avg_score': class_overall_avg,
+                'overall_pass_rate': class_overall_pass,
+                'overall_excellent_rate': class_overall_excellent,
+                'avg_deyu_score': overall_avg_deyu,
+                'deyu_pass_rate': overall_pass_rate_deyu
+            },
+            'semester': semester or '全部学期',
+            'grade_ranges': ['优', '良', '及格', '待及格']
         }
 
     except Exception as e:
         logger.error(f"获取班级学情失败: {e}")
+        import traceback
+        traceback.print_exc()
         return {'error': str(e)}
 
 

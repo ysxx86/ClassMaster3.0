@@ -174,40 +174,45 @@ def get_student_info():
         cursor.execute('SELECT class_name FROM classes WHERE id = ?', (student['class_id'],))
         class_row = cursor.fetchone()
         class_name = class_row['class_name'] if class_row else ''
+
+        cursor.execute(
+            'SELECT username FROM users WHERE class_id = ? AND primary_role = ? LIMIT 1',
+            (student['class_id'], '正班主任')
+        )
+        teacher_row = cursor.fetchone()
+        teacher_name = teacher_row['username'] if teacher_row else ''
         conn.close()
 
-        deyu_map = {
-            'pinzhi': '品质',
-            'xuexi': '学习',
-            'jiankang': '健康',
-            'shenmei': '审美',
-            'shijian': '实践',
-            'shenghuo': '生活'
-        }
-
-        score_map = {
-            'yuwen': '语文',
-            'shuxue': '数学',
-            'yingyu': '英语',
-            'daof': '道法',
-            'kexue': '科学',
-            'zonghe': '综合',
-            'tiyu': '体育',
-            'yinyue': '音乐',
-            'meishu': '美术',
-            'laodong': '劳动',
-            'xinxi': '信息',
-            'shufa': '书法',
-            'xinli': '心理'
+        DEYU_DIMENSIONS = {
+            'pinzhi': {'name': '品德修养', 'max': 30},
+            'xuexi': {'name': '学习素养', 'max': 20},
+            'jiankang': {'name': '身心健康', 'max': 20},
+            'shenmei': {'name': '审美素养', 'max': 10},
+            'shijian': {'name': '实践创新', 'max': 10},
+            'shenghuo': {'name': '生活素养', 'max': 10}
         }
 
         deyu = {}
-        for field, label in deyu_map.items():
-            deyu[label] = student[field] if student[field] is not None else 0
+        for dim_key, dim_info in DEYU_DIMENSIONS.items():
+            score = student[dim_key] if student[dim_key] is not None else 0
+            deyu[dim_info['name']] = round((score / dim_info['max']) * 100, 1) if dim_info['max'] > 0 else 0
+
+        score_map = {
+            'yuwen': '语文', 'shuxue': '数学', 'yingyu': '英语',
+            'daof': '道法', 'kexue': '科学', 'zonghe': '综合',
+            'tiyu': '体育', 'yinyue': '音乐', 'meishu': '美术',
+            'laodong': '劳动', 'xinxi': '信息', 'shufa': '书法', 'xinli': '心理'
+        }
 
         scores = {}
         for field, label in score_map.items():
             scores[label] = student[field] if student[field] is not None else ''
+
+        raw_comment = student['comments'] or ''
+        if teacher_name:
+            if raw_comment and not raw_comment.endswith('\n'):
+                raw_comment += '\n'
+            raw_comment += '班主任：%s老师' % teacher_name
 
         return jsonify({
             'status': 'ok',
@@ -217,7 +222,7 @@ def get_student_info():
                 'gender': student['gender'],
                 'class_id': student['class_id'],
                 'class_name': class_name,
-                'comments': student['comments'] or '',
+                'comments': raw_comment,
                 'deyu': deyu,
                 'scores': scores
             }

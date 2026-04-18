@@ -181,8 +181,18 @@ body {
     line-height: 1.8;
     color: #333;
     font-size: 0.95rem;
+}
+
+.comment-body {
+    text-indent: 2em;
     white-space: pre-wrap;
-    word-break: break-word;
+}
+
+.comment-signature {
+    text-align: right;
+    margin-top: 16px;
+    color: #555;
+    font-size: 0.9rem;
 }
 
 .empty-tip {

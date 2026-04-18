@@ -9,7 +9,7 @@
     var navItems = document.querySelectorAll('.nav-item[data-target]');
 
     var currentSkip = 0;
-    var loadLimit = 20;
+    var loadLimit = 500;
     var isLoading = false;
     var hasMore = true;
     var isExporting = false;
@@ -18,11 +18,12 @@
     function initSidebarToggle() {
         var sectionTitles = document.querySelectorAll('.nav-section-title');
         sectionTitles.forEach(function (title) {
-            title.addEventListener('click', function () {
+            title.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
                 var targetId = this.getAttribute('data-toggle');
                 var targetNav = document.getElementById(targetId);
                 if (!targetNav) return;
-
                 this.classList.toggle('collapsed');
                 targetNav.classList.toggle('collapsed');
             });
@@ -73,16 +74,32 @@
     }
 
     function initInfiniteScroll() {
-        window.addEventListener('scroll', function () {
+        if (!contentArea) return;
+        contentArea.addEventListener('scroll', function () {
             if (isLoading || !hasMore) return;
 
-            var scrollBottom = window.innerHeight + window.scrollY;
-            var docHeight = document.documentElement.scrollHeight;
+            var scrollTop = contentArea.scrollTop;
+            var clientHeight = contentArea.clientHeight;
+            var scrollHeight = contentArea.scrollHeight;
 
-            if (scrollBottom >= docHeight - 400) {
+            if (scrollTop + clientHeight >= scrollHeight - 60) {
                 loadCommits();
             }
         });
+    }
+
+    function formatCommitTime(timeStr) {
+        if (!timeStr || !timeStr.trim()) return '';
+        var t = timeStr.trim();
+
+        var match = t.match(/^(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2}):(\d{2})/);
+        if (match) {
+            var y = match[1], mo = match[2], d = match[3], h = match[4], mi = match[5];
+            return y + '年' + parseInt(mo) + '月' + parseInt(d) + '日 ' + h + ':' + mi;
+        }
+
+        if (t.length > 19) t = t.substring(0, 19);
+        return t.replace(/T/, ' ').replace(/\+\d+$/, '');
     }
 
     function loadCommits() {
@@ -117,7 +134,6 @@
 
                 renderTimeline();
             } catch (e) {
-                // ignore parse errors
             }
         };
         xhr.onerror = function () {
@@ -142,7 +158,7 @@
 
         years.forEach(function (year) {
             html += '<div class="timeline-year">';
-            html += '<div class="timeline-year-header" onclick="this.classList.toggle(\'collapsed\'); this.nextElementSibling.classList.toggle(\'collapsed\')">';
+            html += '<div class="timeline-year-header" data-toggle-year>';
             html += '<i class=\'bx bx-calendar\'></i> ' + escapeHtml(year) + ' 年';
             html += ' <span style="font-size:12px;font-weight:400;opacity:0.8">(' + countYearCommits(grouped[year]) + ' 条记录)</span>';
             html += '<i class=\'bx bx-chevron-down toggle-icon\'></i>';
@@ -155,7 +171,7 @@
                 var monthLabel = monthNames[parseInt(month)] || month + '月';
 
                 html += '<div class="timeline-month">';
-                html += '<div class="timeline-month-header" onclick="this.classList.toggle(\'collapsed\'); this.nextElementSibling.classList.toggle(\'collapsed\')">';
+                html += '<div class="timeline-month-header" data-toggle-month>';
                 html += '<i class=\'bx bx-calendar-event\'></i> ' + escapeHtml(monthLabel);
                 html += ' <span style="font-size:11px;font-weight:400;opacity:0.7">(' + grouped[year][month].length + ' 条)</span>';
                 html += '<i class=\'bx bx-chevron-down toggle-icon\'></i>';
@@ -163,17 +179,10 @@
                 html += '<div class="timeline-month-content">';
 
                 grouped[year][month].forEach(function (c) {
-                    var timeStr = c.time || '';
-                    if (timeStr.length > 19) timeStr = timeStr.substring(0, 19);
+                    var formattedTime = formatCommitTime(c.time);
                     html += '<div class="commit-item">';
-                    html += '<div class="commit-icon"><i class=\'bx bx-git-commit\'></i></div>';
-                    html += '<div class="commit-info">';
-                    html += '<div class="commit-message">' + escapeHtml(c.message) + '</div>';
-                    html += '<div class="commit-meta">';
-                    html += '<span><i class=\'bx bx-time-five\'></i> ' + escapeHtml(timeStr) + '</span>';
-                    html += '<span><i class=\'bx bx-user\'></i> ' + escapeHtml(c.author) + '</span>';
-                    html += '</div>';
-                    html += '</div>';
+                    html += '<span class="commit-message">' + escapeHtml(c.message) + '</span>';
+                    html += '<span class="commit-meta">' + escapeHtml(formattedTime) + ' ' + escapeHtml(c.author) + '</span>';
                     html += '</div>';
                 });
 
@@ -185,11 +194,41 @@
 
         commitsContainer.innerHTML = html;
 
+        bindTimelineToggleEvents();
+
         if (!hasMore) {
             commitsEnd.style.display = 'block';
         } else {
             commitsEnd.style.display = 'none';
         }
+    }
+
+    function bindTimelineToggleEvents() {
+        var yearHeaders = commitsContainer.querySelectorAll('.timeline-year-header[data-toggle-year]');
+        yearHeaders.forEach(function (header) {
+            header.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                this.classList.toggle('collapsed');
+                var content = this.nextElementSibling;
+                if (content && content.classList.contains('timeline-year-content')) {
+                    content.classList.toggle('collapsed');
+                }
+            });
+        });
+
+        var monthHeaders = commitsContainer.querySelectorAll('.timeline-month-header[data-toggle-month]');
+        monthHeaders.forEach(function (header) {
+            header.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                this.classList.toggle('collapsed');
+                var content = this.nextElementSibling;
+                if (content && content.classList.contains('timeline-month-content')) {
+                    content.classList.toggle('collapsed');
+                }
+            });
+        });
     }
 
     function countYearCommits(yearData) {

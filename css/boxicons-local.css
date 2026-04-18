@@ -129,3 +129,11 @@
 .bx-heart:before {
   content: "\ea9c";
 }
+
+.bx-line-chart:before {
+  content: "\eae2";
+}
+
+.bx-user-voice:before {
+  content: "\eb4f";
+}
