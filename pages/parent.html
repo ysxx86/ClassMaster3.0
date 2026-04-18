@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>家长端 - 德育AI智能系统</title>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/boxicons-local.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/parent.css">
+</head>
+<body>
+    <div class="parent-container">
+
+        <div id="verify-view" class="view-section active">
+            <div class="verify-card">
+                <div class="verify-header">
+                    <h1 class="verify-title">家长端</h1>
+                    <p class="verify-subtitle">查看孩子在校表现</p>
+                </div>
+                <div class="verify-form">
+                    <div class="mb-3">
+                        <label for="grade-select" class="form-label">年级</label>
+                        <select id="grade-select" class="form-select">
+                            <option value="">请选择年级</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="class-select" class="form-label">班级</label>
+                        <select id="class-select" class="form-select" disabled>
+                            <option value="">请先选择年级</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="student-name" class="form-label">学生姓名</label>
+                        <input type="text" id="student-name" class="form-control" placeholder="请输入学生姓名" maxlength="10">
+                    </div>
+                    <button id="verify-btn" class="btn btn-verify w-100" type="button">
+                        <span class="btn-text">查询</span>
+                        <span class="btn-loading d-none">
+                            <span class="spinner-border spinner-border-sm me-1"></span>查询中...
+                        </span>
+                    </button>
+                    <div id="verify-error" class="error-tip d-none"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="info-view" class="view-section">
+            <div class="student-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 id="student-name-display" class="student-name-text"></h2>
+                        <p id="student-class-display" class="student-class-text"></p>
+                    </div>
+                    <button id="logout-btn" class="btn btn-logout">
+                        <i class='bx bx-log-out'></i> 退出
+                    </button>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <div class="info-card-title">
+                    <i class='bx bx-message-rounded-detail'></i> 教师评语
+                </div>
+                <div class="info-card-body">
+                    <div id="comment-content" class="comment-text"></div>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <div class="info-card-title">
+                    <i class='bx bx-shield-quarter'></i> 德育发展
+                </div>
+                <div class="info-card-body">
+                    <div id="deyu-chart-wrapper">
+                        <canvas id="deyu-chart"></canvas>
+                    </div>
+                    <div id="deyu-empty" class="empty-tip d-none">暂无德育数据</div>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <div class="info-card-title">
+                    <i class='bx bx-book-open'></i> 学科成绩
+                </div>
+                <div class="info-card-body">
+                    <div id="grades-list"></div>
+                    <div id="grades-empty" class="empty-tip d-none">暂无成绩数据</div>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <div class="info-card-title">
+                    <i class='bx bx-history'></i> 历史成绩
+                </div>
+                <div class="info-card-body">
+                    <button id="history-btn" class="btn btn-outline-secondary btn-sm w-100" type="button">
+                        查看历史成绩
+                    </button>
+                    <div id="history-section" class="d-none mt-3"></div>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <div class="info-card-title">
+                    <i class='bx bx-message-square-edit'></i> 家长寄语
+                </div>
+                <div class="info-card-body">
+                    <div id="messages-list"></div>
+                    <div class="message-input-area mt-3">
+                        <textarea id="message-input" class="form-control" rows="4" placeholder="请输入家长寄语（最多200字）" maxlength="200"></textarea>
+                        <div class="d-flex justify-content-between align-items-center mt-2">
+                            <span id="char-count" class="char-counter">0/200</span>
+                            <button id="submit-msg-btn" class="btn btn-submit-msg" type="button">
+                                <span class="btn-text">提交寄语</span>
+                                <span class="btn-loading d-none">
+                                    <span class="spinner-border spinner-border-sm me-1"></span>提交中...
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="/js/libs/jquery.min.js"></script>
+    <script src="/js/libs/bootstrap.bundle.min.js"></script>
+    <script src="/js/libs/chart.js"></script>
+    <script src="/js/parent.js"></script>
+</body>
+</html>
