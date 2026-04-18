@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学情分析 - 德育AI智能系统</title>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/boxicons-local.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+        }
+        .page-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 0;
+            margin-bottom: 30px;
+            border-radius: 0 0 20px 20px;
+        }
+        .page-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin: 0;
+        }
+        .page-subtitle {
+            font-size: 0.95rem;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+        .card {
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            margin-bottom: 20px;
+            border: none;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+        }
+        .card-header {
+            background-color: #fff;
+            border-bottom: 2px solid #f0f0f0;
+            padding: 15px 20px;
+            font-weight: 600;
+            border-radius: 12px 12px 0 0 !important;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .card-body {
+            padding: 20px;
+        }
+        .chart-container {
+            position: relative;
+            height: 320px;
+            width: 100%;
+        }
+        .chart-container canvas {
+            max-height: 100%;
+        }
+        .stat-card {
+            text-align: center;
+            padding: 20px;
+            border-radius: 10px;
+            background: #f8f9fa;
+        }
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+        .stat-label {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 5px;
+        }
+        .suggestion-item {
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+        }
+        .suggestion-item.warning {
+            border-left-color: #f39c12;
+            background: #fff8e6;
+        }
+        .suggestion-item.success {
+            border-left-color: #27ae60;
+            background: #e8f8f0;
+        }
+        .weak-warning {
+            background: linear-gradient(135deg, #fff5f5 0%, #ffe8e8 100%);
+            border: 1px solid #fc8181;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .weak-warning .subject-name {
+            font-weight: 600;
+            color: #c53030;
+        }
+        .weak-warning .suggestion {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 5px;
+        }
+        .heatmap-grid {
+            display: grid;
+            gap: 8px;
+        }
+        .heatmap-cell {
+            padding: 12px;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 0.85rem;
+            color: white;
+            min-height: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .heatmap-cell .subject { font-weight: 600; }
+        .heatmap-cell .rate { font-size: 1.2rem; font-weight: 700; }
+        .heatmap-cell .label { font-size: 0.75rem; opacity: 0.9; }
+        .grade-legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+        }
+        .legend-color {
+            width: 14px;
+            height: 14px;
+            border-radius: 3px;
+        }
+        .section-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        .section-tab {
+            padding: 8px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+            color: #666;
+            background: #f0f0f0;
+        }
+        .section-tab:hover {
+            background: #e0e0e0;
+        }
+        .section-tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .section-content {
+            display: none;
+        }
+        .section-content.active {
+            display: block;
+        }
+        .trend-chart-container {
+            height: 280px;
+        }
+        .ranking-table {
+            width: 100%;
+        }
+        .ranking-table th {
+            font-weight: 600;
+            color: #666;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+        .ranking-table td {
+            vertical-align: middle;
+        }
+        .rank-badge {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+        .rank-1 { background: linear-gradient(135deg, #ffd700, #ffb400); color: white; }
+        .rank-2 { background: linear-gradient(135deg, #c0c0c0, #a0a0a0); color: white; }
+        .rank-3 { background: linear-gradient(135deg, #cd7f32, #a0522d); color: white; }
+        .rank-other { background: #f0f0f0; color: #666; }
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            border-radius: 12px;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #f0f0f0;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 15px;
+        }
+        .form-select {
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            padding: 8px 12px;
+            font-size: 0.9rem;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 8px;
+            padding: 10px 24px;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #5a6fd6 0%, #6a4190 100%);
+        }
+        .admin-only {
+            display: none;
+        }
+        .role-badge {
+            font-size: 0.75rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            background: #e8f4f8;
+            color: #3498db;
+            margin-left: 10px;
+        }
+        .student-list-card {
+            height: calc(100vh - 220px);
+        }
+        .student-list-card .card-header {
+            position: sticky;
+            top: 0;
+            z-index: 2;
+        }
+        .student-list-body {
+            max-height: calc(100vh - 300px);
+            overflow-y: auto;
+            padding: 8px !important;
+        }
+        .student-list-body::-webkit-scrollbar {
+            width: 4px;
+        }
+        .student-list-body::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 2px;
+        }
+        .student-count {
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+            background: #667eea;
+            color: white;
+            margin-left: 8px;
+        }
+        .student-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 2px;
+            font-size: 0.9rem;
+            color: #333;
+            border: 1px solid transparent;
+        }
+        .student-item:hover {
+            background: #f0f3ff;
+            border-color: #d0d8ff;
+        }
+        .student-item.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+            font-weight: 500;
+        }
+        .student-item.active .student-item-class {
+            color: rgba(255,255,255,0.8);
+        }
+        .student-item-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #e8f4f8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #667eea;
+            flex-shrink: 0;
+        }
+        .student-item.active .student-item-icon {
+            background: rgba(255,255,255,0.25);
+            color: white;
+        }
+        .student-item-name {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .student-item-class {
+            font-size: 0.7rem;
+            color: #999;
+            margin-left: 6px;
+            white-space: nowrap;
+        }
+        .selected-student-name {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #667eea;
+            margin-left: 10px;
+        }
+        .student-search {
+            width: 100%;
+            padding: 6px 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .student-search:focus {
+            border-color: #667eea;
+        }
+        @media (max-width: 768px) {
+            .page-header { padding: 20px 15px; border-radius: 0 0 15px 15px; }
+            .page-title { font-size: 1.4rem; }
+            .chart-container { height: 250px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-header">
+        <div class="container">
+            <h1 class="page-title"><i class='bx bx-chart-bar'></i> 学情分析 <span class="role-badge" id="roleBadge"></span></h1>
+            <p class="page-subtitle" id="pageSubtitle">学生德育成长画像 · 班级学情图谱 · 发展趋势分析</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="section-tabs">
+            <div class="section-tab active" data-section="student">学生德育画像</div>
+            <div class="section-tab" data-section="class">班级学情图谱</div>
+            <div class="section-tab" data-section="trend">发展趋势</div>
+        </div>
+
+        <div id="student-section" class="section-content active">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="card student-list-card">
+                        <div class="card-header">
+                            <span><i class='bx bx-group' style="color: #667eea"></i> 学生列表</span>
+                            <span id="studentCount" class="student-count"></span>
+                        </div>
+                        <div class="card-body student-list-body" id="studentListContainer">
+                            <div class="empty-state">
+                                <i class='bx bx-loader-alt bx-spin'></i>
+                                <p>加载中...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-9">
+                    <div class="row">
+                        <div class="col-md-5">
+                            <div class="card">
+                                <div class="card-header">
+                                    <span><i class='bx bx-radar' style="color: #667eea"></i> 德育雷达图</span>
+                                    <span id="selectedStudentName" class="selected-student-name"></span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="chart-container" id="radarChartContainer">
+                                        <canvas id="radarChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <span><i class='bx bx-user' style="color: #764ba2"></i> 学生信息</span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="stat-card mb-3">
+                                        <div class="stat-value" id="studentTotalScore">--</div>
+                                        <div class="stat-label">德育总分</div>
+                                    </div>
+                                    <div class="stat-card mb-3">
+                                        <div class="stat-value" id="studentRank">--</div>
+                                        <div class="stat-label">班级排名</div>
+                                    </div>
+                                    <div class="stat-card">
+                                        <div class="stat-value" id="progressRate">--</div>
+                                        <div class="stat-label">进步率</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card">
+                                <div class="card-header">
+                                    <span><i class='bx bx-bulb' style="color: #f39c12"></i> 成长建议</span>
+                                </div>
+                                <div class="card-body">
+                                    <div id="suggestionsContainer">
+                                        <div class="empty-state">
+                                            <i class='bx bx-search'></i>
+                                            <p>选择学生后查看建议</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <span><i class='bx bx-trending-up' style="color: #27ae60"></i> 德育趋势</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container" id="trendChartContainer">
+                                <canvas id="trendChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="class-section" class="section-content">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <span><i class='bx bx-grid-3x3' style="color: #667eea"></i> 学科成绩分布热力图</span>
+                            <select class="form-select admin-only" id="classSelect" style="width: auto;">
+                                <option value="">-- 选择班级 --</option>
+                            </select>
+                            <span id="currentClassName" class="teacher-only" style="color: #667eea; font-weight: 500;"></span>
+                        </div>
+                        <div class="card-body">
+                            <div class="heatmap-grid" id="heatmapGrid" style="grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));">
+                                <div class="empty-state">
+                                    <i class='bx bx-building'></i>
+                                    <p>加载中...</p>
+                                </div>
+                            </div>
+                            <div class="grade-legend">
+                                <div class="legend-item"><div class="legend-color" style="background: #27ae60"></div> 优 (≥90)</div>
+                                <div class="legend-item"><div class="legend-color" style="background: #3498db"></div> 良 (75-89)</div>
+                                <div class="legend-item"><div class="legend-color" style="background: #f39c12"></div> 及格 (60-74)</div>
+                                <div class="legend-item"><div class="legend-color" style="background: #e74c3c"></div> 待及格 (&lt;60)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <span><i class='bx bx-warning' style="color: #e74c3c"></i> 薄弱学科预警</span>
+                        </div>
+                        <div class="card-body" id="weakSubjectsContainer">
+                            <div class="empty-state">
+                                <i class='bx bx-check-circle'></i>
+                                <p>暂无预警</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <span><i class='bx bx-pie-chart' style="color: #764ba2"></i> 德育等级分布</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container" style="height: 200px;">
+                                <canvas id="deyuPieChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="trend-section" class="section-content">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <span><i class='bx bx-line-chart' style="color: #667eea"></i> 学期趋势对比</span>
+                            <select class="form-select" id="trendClassSelect" style="width: auto;">
+                                <option value="">-- 全校趋势 --</option>
+                            </select>
+                        </div>
+                        <div class="card-body">
+                            <div class="trend-chart-container">
+                                <canvas id="trendLineChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <span><i class='bx bx-trophy' style="color: #f39c12"></i> 班级排名</span>
+                        </div>
+                        <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                            <table class="ranking-table" id="rankingTable">
+                                <thead>
+                                    <tr>
+                                        <th>排名</th>
+                                        <th>班级</th>
+                                        <th>平均分</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="rankingTableBody">
+                                    <tr><td colspan="3" class="text-center text-muted py-4">加载中...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/libs/chart.js"></script>
+    <script>
+        let currentUser = null;
+        let isCurrentUserAdmin = false;
+        let currentUserClassId = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initTabs();
+            loadCurrentUser();
+        });
+
+        function initTabs() {
+            const tabs = document.querySelectorAll('.section-tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    document.querySelectorAll('.section-content').forEach(s => s.classList.remove('active'));
+                    document.getElementById(this.dataset.section + '-section').classList.add('active');
+                });
+            });
+        }
+
+        function loadCurrentUser() {
+            fetch('/api/current-user')
+                .then(r => r.json())
+                .then(data => {
+                    if (data.status === 'ok' && data.user) {
+                        currentUser = data.user;
+                        isCurrentUserAdmin = !!data.user.is_admin;
+                        currentUserClassId = data.user.class_id || null;
+
+                        updateUIByRole();
+                        loadDataByRole();
+                    }
+                })
+                .catch(err => {
+                    console.error('获取用户信息失败:', err);
+                });
+        }
+
+        function updateUIByRole() {
+            const roleBadge = document.getElementById('roleBadge');
+            const pageSubtitle = document.getElementById('pageSubtitle');
+            const trendClassSelect = document.getElementById('trendClassSelect');
+            const rankingCard = document.getElementById('rankingTable').closest('.card');
+
+            if (isCurrentUserAdmin) {
+                roleBadge.textContent = '管理员';
+                roleBadge.style.background = '#fff3e0';
+                roleBadge.style.color = '#e65100';
+                pageSubtitle.textContent = '全校学情分析 · 班级排名 · 发展趋势';
+                document.querySelectorAll('.admin-only').forEach(el => el.style.display = '');
+                document.querySelectorAll('.teacher-only').forEach(el => el.style.display = 'none');
+                if (trendClassSelect) trendClassSelect.style.display = '';
+                if (rankingCard) rankingCard.style.display = '';
+            } else {
+                const roleName = currentUser.primary_role || '班主任';
+                roleBadge.textContent = roleName;
+                roleBadge.style.background = '#e8f4f8';
+                roleBadge.style.color = '#3498db';
+                pageSubtitle.textContent = `${currentUser.class_name || '本班'}学情分析 · 学生成长画像 · 发展趋势`;
+                document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
+                document.querySelectorAll('.teacher-only').forEach(el => el.style.display = '');
+                if (trendClassSelect) trendClassSelect.style.display = 'none';
+                if (rankingCard) rankingCard.style.display = 'none';
+
+                if (currentUser.class_name) {
+                    document.getElementById('currentClassName').textContent = `当前班级: ${currentUser.class_name}`;
+                }
+            }
+        }
+
+        function loadDataByRole() {
+            if (isCurrentUserAdmin) {
+                loadClassesForSelect();
+                loadAllStudents();
+                loadSchoolRanking();
+            } else {
+                loadMyClassStudents();
+                loadMyClassProfile();
+                loadMyClassTrend();
+            }
+        }
+
+        function loadClassesForSelect() {
+            fetch('/api/classes')
+                .then(r => r.json())
+                .then(data => {
+                    if (data.classes) {
+                        const classSelect = document.getElementById('classSelect');
+                        const trendClassSelect = document.getElementById('trendClassSelect');
+                        data.classes.forEach(cls => {
+                            classSelect.innerHTML += `<option value="${cls.id}">${cls.class_name}</option>`;
+                            trendClassSelect.innerHTML += `<option value="${cls.id}">${cls.class_name}</option>`;
+                        });
+                        classSelect.addEventListener('change', loadClassProfile);
+                        trendClassSelect.addEventListener('change', loadTrendData);
+                    }
+                });
+        }
+
+        let allStudentsData = [];
+
+        function loadAllStudents() {
+            fetch('/api/students')
+                .then(r => r.json())
+                .then(data => {
+                    if (data.students) {
+                        allStudentsData = data.students;
+                        renderStudentList(data.students, true);
+                    }
+                });
+        }
+
+        function loadMyClassStudents() {
+            fetch('/api/students')
+                .then(r => r.json())
+                .then(data => {
+                    if (data.students) {
+                        allStudentsData = data.students;
+                        renderStudentList(data.students, false);
+                    }
+                });
+        }
+
+        function renderStudentList(students, showClassName) {
+            const container = document.getElementById('studentListContainer');
+            const countEl = document.getElementById('studentCount');
+            countEl.textContent = students.length + '人';
+
+            let html = '<input type="text" class="student-search" id="studentSearchInput" placeholder="搜索学生...">';
+            html += '<div id="studentListItems">';
+            students.forEach((s, index) => {
+                const initial = s.name ? s.name.charAt(0) : '?';
+                const classLabel = showClassName ? `<span class="student-item-class">${s.class_name || s.class_id + '班'}</span>` : '';
+                html += `
+                    <div class="student-item" data-student-id="${s.id}" data-student-name="${s.name}" onclick="selectStudent(${s.id}, '${s.name}')">
+                        <div class="student-item-icon">${initial}</div>
+                        <span class="student-item-name">${s.name}</span>
+                        ${classLabel}
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+
+            document.getElementById('studentSearchInput').addEventListener('input', function() {
+                const keyword = this.value.trim().toLowerCase();
+                const items = document.querySelectorAll('#studentListItems .student-item');
+                items.forEach(item => {
+                    const name = item.getAttribute('data-student-name').toLowerCase();
+                    item.style.display = name.includes(keyword) ? '' : 'none';
+                });
+            });
+
+            if (students.length > 0) {
+                selectStudent(students[0].id, students[0].name);
+            }
+        }
+
+        function selectStudent(studentId, studentName) {
+            document.querySelectorAll('.student-item').forEach(el => el.classList.remove('active'));
+            const target = document.querySelector(`.student-item[data-student-id="${studentId}"]`);
+            if (target) {
+                target.classList.add('active');
+                target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+            document.getElementById('selectedStudentName').textContent = studentName || '';
+            loadStudentProfile(studentId);
+        }
+
+        function loadMyClassProfile() {
+            fetch('/api/analytics/my-class/profile')
+                .then(r => r.json())
+                .then(data => {
+                    if (data.status === 'ok') {
+                        renderHeatmap(data.subject_stats);
+                        renderWeakSubjects(data.weak_subjects);
+                        renderDeyuPieChart(data.deyu_stats);
+                    } else if (data.error) {
+                        document.getElementById('heatmapGrid').innerHTML = 
+                            `<div class="empty-state"><i class='bx bx-error'></i><p>${data.error}</p></div>`;
+                    }
+                });
+        }
+
+        function loadMyClassTrend() {
+            fetch('/api/analytics/my-class/trend')
+                .then(r => r.json())
+                .then(data => {
+                    if (data.status === 'ok') {
+                        renderTrendLineChart(data.trend_data);
+                    } else if (data.error) {
+                        document.getElementById('rankingTableBody').innerHTML = 
+                            `<tr><td colspan="3" class="text-center text-muted py-4">${data.error}</td></tr>`;
+                    }
+                });
+        }
+
+        let radarChart, trendChart, deyuPieChart, trendLineChart;
+
+        function loadStudentProfile(studentId) {
+            if (!studentId) return;
+
+            fetch(`/api/analytics/student/${studentId}/profile`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.status === 'ok') {
+                        renderRadarChart(data.radar_data);
+                        renderTrendChart(data.trend_data);
+                        document.getElementById('studentTotalScore').textContent = data.current_total + '分';
+                        if (data.class_rank && data.class_rank.rank > 0) {
+                            document.getElementById('studentRank').textContent = `#${data.class_rank.rank}/${data.class_rank.total_students}`;
+                        } else {
+                            document.getElementById('studentRank').textContent = '#--';
+                        }
+                        document.getElementById('progressRate').textContent = '--';
+                        renderSuggestions(data.suggestions || []);
+                    } else if (data.error) {
+                        alert(data.error);
+                    }
+                });
+
+            fetch(`/api/analytics/student/${studentId}/progress`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.status === 'ok') {
+                        const rate = data.progress_rate;
+                        const rateText = rate > 0 ? `+${rate}%` : `${rate}%`;
+                        document.getElementById('progressRate').textContent = rateText;
+                        document.getElementById('progressRate').style.color = rate > 0 ? '#27ae60' : (rate < 0 ? '#e74c3c' : '#667eea');
+                    }
+                });
+        }
+
+        function renderRadarChart(data) {
+            const ctx = document.getElementById('radarChart').getContext('2d');
+            if (radarChart) radarChart.destroy();
+
+            radarChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: data.map(d => d.name),
+                    datasets: [{
+                        label: '德育得分',
+                        data: data.map(d => d.percentage),
+                        backgroundColor: 'rgba(102, 126, 234, 0.2)',
+                        borderColor: '#667eea',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#667eea',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#667eea'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: { stepSize: 20 }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderTrendChart(data) {
+            const ctx = document.getElementById('trendChart').getContext('2d');
+            if (trendChart) trendChart.destroy();
+
+            trendChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.map(d => d.semester),
+                    datasets: [{
+                        label: '德育总分',
+                        data: data.map(d => d.total),
+                        borderColor: '#27ae60',
+                        backgroundColor: 'rgba(39, 174, 96, 0.1)',
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: false, min: 50 }
+                    }
+                }
+            });
+        }
+
+        function renderSuggestions(suggestions) {
+            const container = document.getElementById('suggestionsContainer');
+            if (!suggestions.length) {
+                container.innerHTML = '<div class="empty-state"><i class="bx bx-check-circle"></i><p>表现良好</p></div>';
+                return;
+            }
+            container.innerHTML = suggestions.map(s => {
+                const type = s.includes('优秀') ? 'success' : (s.includes('加强') || s.includes('关注') ? 'warning' : '');
+                return `<div class="suggestion-item ${type}">${s}</div>`;
+            }).join('');
+        }
+
+        function loadClassProfile() {
+            const classId = document.getElementById('classSelect').value;
+            if (!classId) return;
+
+            fetch(`/api/analytics/class/${classId}/profile`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.status === 'ok') {
+                        renderHeatmap(data.subject_stats);
+                        renderWeakSubjects(data.weak_subjects);
+                        renderDeyuPieChart(data.deyu_stats);
+                    } else if (data.error) {
+                        alert(data.error);
+                    }
+                });
+        }
+
+        function renderHeatmap(subjectStats) {
+            const grid = document.getElementById('heatmapGrid');
+            const subjects = ['yuwen', 'shuxue', 'yingyu', 'daof', 'kexue', 'zonghe', 'tiyu', 'yinyue', 'meishu', 'laodong'];
+
+            let html = '';
+            subjects.forEach(key => {
+                const stats = subjectStats[key];
+                if (!stats) return;
+
+                const excellentRate = stats.excellent_rate;
+                let color;
+                if (excellentRate >= 60) color = '#27ae60';
+                else if (excellentRate >= 40) color = '#3498db';
+                else if (excellentRate >= 20) color = '#f39c12';
+                else color = '#e74c3c';
+
+                html += `
+                    <div class="heatmap-cell" style="background: ${color}">
+                        <div class="subject">${stats.name}</div>
+                        <div class="rate">${excellentRate}%</div>
+                        <div class="label">优秀率</div>
+                    </div>
+                `;
+            });
+            grid.innerHTML = html;
+        }
+
+        function renderWeakSubjects(weakSubjects) {
+            const container = document.getElementById('weakSubjectsContainer');
+            if (!weakSubjects || weakSubjects.length === 0) {
+                container.innerHTML = '<div class="empty-state"><i class="bx bx-check-circle"></i><p>暂无预警</p></div>';
+                return;
+            }
+            container.innerHTML = weakSubjects.map(w => `
+                <div class="weak-warning">
+                    <div class="subject-name">⚠️ ${w.subject}</div>
+                    <div class="suggestion">${w.suggestion}</div>
+                </div>
+            `).join('');
+        }
+
+        function renderDeyuPieChart(stats) {
+            const ctx = document.getElementById('deyuPieChart').getContext('2d');
+            if (deyuPieChart) deyuPieChart.destroy();
+
+            deyuPieChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['优秀', '良好', '及格', '待及格'],
+                    datasets: [{
+                        data: [stats['优'] || 0, stats['良'] || 0, stats['及格'] || 0, stats['待及格'] || 0],
+                        backgroundColor: ['#27ae60', '#3498db', '#f39c12', '#e74c3c']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+        }
+
+        function loadTrendData() {
+            const classId = document.getElementById('trendClassSelect').value;
+            const url = classId
+                ? `/api/analytics/class/${classId}/trend`
+                : `/api/analytics/school/trend`;
+
+            fetch(url)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.status === 'ok') {
+                        renderTrendLineChart(data.trend_data);
+                    } else if (data.error) {
+                        alert(data.error);
+                    }
+                });
+        }
+
+        function renderTrendLineChart(data) {
+            const ctx = document.getElementById('trendLineChart').getContext('2d');
+            if (trendLineChart) trendLineChart.destroy();
+
+            trendLineChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.map(d => d.semester),
+                    datasets: [{
+                        label: '德育平均分',
+                        data: data.map(d => d.avg_deyu),
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: false, min: 50 }
+                    }
+                }
+            });
+        }
+
+        function loadSchoolRanking() {
+            fetch('/api/analytics/school/ranking')
+                .then(r => r.json())
+                .then(data => {
+                    if (data.status === 'ok') {
+                        renderRankingTable(data.rankings || []);
+                    } else if (data.error) {
+                        document.getElementById('rankingTableBody').innerHTML = 
+                            `<tr><td colspan="3" class="text-center text-muted py-4">${data.error}</td></tr>`;
+                    }
+                });
+        }
+
+        function renderRankingTable(rankings) {
+            const tbody = document.getElementById('rankingTableBody');
+            if (!rankings.length) {
+                tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted py-4">暂无数据</td></tr>';
+                return;
+            }
+            tbody.innerHTML = rankings.map(r => {
+                const rankClass = r.rank <= 3 ? `rank-${r.rank}` : 'rank-other';
+                return `
+                    <tr>
+                        <td><span class="rank-badge ${rankClass}">${r.rank}</span></td>
+                        <td>${r.class_name}</td>
+                        <td><strong>${r.avg_total}</strong></td>
+                    </tr>
+                `;
+            }).join('');
+        }
+    </script>
+</body>
+</html>
