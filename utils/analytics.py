@@ -206,7 +206,7 @@ def calculate_student_rank(cursor: sqlite3.Cursor, student_id: int, class_id: in
     rank = 0
     student_total = 0
     for idx, s in enumerate(sorted_students):
-        if s['id'] == student_id:
+        if str(s['id']) == str(student_id):
             rank = idx + 1
             student_total = s['total']
             break

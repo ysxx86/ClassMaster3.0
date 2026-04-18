@@ -31,11 +31,16 @@ def init_parent(app):
         CREATE TABLE IF NOT EXISTS parent_messages (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             student_id TEXT NOT NULL,
+            class_id TEXT NOT NULL,
             content TEXT NOT NULL,
             created_at TEXT NOT NULL,
             updated_at TEXT NOT NULL
         )
     ''')
+    try:
+        cursor.execute('ALTER TABLE parent_messages ADD COLUMN class_id TEXT NOT NULL DEFAULT ""')
+    except Exception:
+        pass
     conn.commit()
     conn.close()
     logger.info("家长端模块初始化完成")
@@ -44,7 +49,7 @@ def init_parent(app):
 def parent_login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if 'parent_student_id' not in session:
+        if 'parent_student_id' not in session or 'parent_class_id' not in session:
             return jsonify({'status': 'error', 'message': '请先验证身份', 'code': 'UNAUTHORIZED'}), 401
         return f(*args, **kwargs)
     return decorated_function
@@ -125,6 +130,7 @@ def verify():
             return jsonify({'status': 'error', 'message': '未找到匹配的学生信息'}), 404
 
         session['parent_student_id'] = student['id']
+        session['parent_class_id'] = student['class_id']
         session['parent_student_name'] = student['name']
 
         conn.close()
@@ -149,6 +155,7 @@ def verify():
 def get_student_info():
     try:
         student_id = session.get('parent_student_id')
+        class_id = session.get('parent_class_id')
 
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -156,8 +163,8 @@ def get_student_info():
         cursor.execute('''
             SELECT name, gender, class_id, comments, pinzhi, xuexi, jiankang, shenmei, shijian, shenghuo,
                    yuwen, shuxue, yingyu, daof, kexue, zonghe, tiyu, yinyue, meishu, laodong, xinxi, shufa, xinli
-            FROM students WHERE id = ?
-        ''', (student_id,))
+            FROM students WHERE id = ? AND class_id = ?
+        ''', (student_id, class_id))
         student = cursor.fetchone()
 
         if not student:
@@ -226,6 +233,7 @@ def get_student_info():
 def get_student_history_grades():
     try:
         student_id = session.get('parent_student_id')
+        class_id = session.get('parent_class_id')
 
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -234,9 +242,9 @@ def get_student_history_grades():
             SELECT es.subject, es.score, e.exam_name, e.exam_date
             FROM exam_scores es
             JOIN exams e ON es.exam_id = e.id
-            WHERE es.student_id = ?
+            WHERE es.student_id = ? AND es.class_id = ?
             ORDER BY e.exam_date DESC
-        ''', (student_id,))
+        ''', (student_id, class_id))
         rows = cursor.fetchall()
         conn.close()
 
@@ -278,12 +286,13 @@ def get_student_history_grades():
 def get_messages():
     try:
         student_id = session.get('parent_student_id')
+        class_id = session.get('parent_class_id')
 
         conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute(
-            'SELECT id, student_id, content, created_at, updated_at FROM parent_messages WHERE student_id = ? ORDER BY created_at DESC',
-            (student_id,)
+            'SELECT id, student_id, class_id, content, created_at, updated_at FROM parent_messages WHERE student_id = ? AND class_id = ? ORDER BY created_at DESC',
+            (student_id, class_id)
         )
         rows = cursor.fetchall()
         conn.close()
@@ -310,13 +319,14 @@ def create_message():
             return jsonify({'status': 'error', 'message': '寄语内容不能超过200字'}), 400
 
         student_id = session.get('parent_student_id')
+        class_id = session.get('parent_class_id')
         now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute(
-            'INSERT INTO parent_messages (student_id, content, created_at, updated_at) VALUES (?, ?, ?, ?)',
-            (student_id, content, now, now)
+            'INSERT INTO parent_messages (student_id, class_id, content, created_at, updated_at) VALUES (?, ?, ?, ?, ?)',
+            (student_id, class_id, content, now, now)
         )
         conn.commit()
         conn.close()
@@ -342,19 +352,20 @@ def update_message(message_id):
             return jsonify({'status': 'error', 'message': '寄语内容不能超过200字'}), 400
 
         student_id = session.get('parent_student_id')
+        class_id = session.get('parent_class_id')
         now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         conn = get_db_connection()
         cursor = conn.cursor()
 
-        cursor.execute('SELECT student_id FROM parent_messages WHERE id = ?', (message_id,))
+        cursor.execute('SELECT student_id, class_id FROM parent_messages WHERE id = ?', (message_id,))
         msg = cursor.fetchone()
 
         if not msg:
             conn.close()
             return jsonify({'status': 'error', 'message': '寄语不存在'}), 404
 
-        if msg['student_id'] != student_id:
+        if msg['student_id'] != student_id or msg['class_id'] != class_id:
             conn.close()
             return jsonify({'status': 'error', 'message': '无权修改此寄语'}), 403
 
@@ -377,18 +388,19 @@ def update_message(message_id):
 def delete_message(message_id):
     try:
         student_id = session.get('parent_student_id')
+        class_id = session.get('parent_class_id')
 
         conn = get_db_connection()
         cursor = conn.cursor()
 
-        cursor.execute('SELECT student_id FROM parent_messages WHERE id = ?', (message_id,))
+        cursor.execute('SELECT student_id, class_id FROM parent_messages WHERE id = ?', (message_id,))
         msg = cursor.fetchone()
 
         if not msg:
             conn.close()
             return jsonify({'status': 'error', 'message': '寄语不存在'}), 404
 
-        if msg['student_id'] != student_id:
+        if msg['student_id'] != student_id or msg['class_id'] != class_id:
             conn.close()
             return jsonify({'status': 'error', 'message': '无权删除此寄语'}), 403
 
@@ -406,5 +418,6 @@ def delete_message(message_id):
 @parent_bp.route('/api/parent/logout', methods=['POST'])
 def logout():
     session.pop('parent_student_id', None)
+    session.pop('parent_class_id', None)
     session.pop('parent_student_name', None)
     return jsonify({'status': 'ok', 'message': '已退出'})

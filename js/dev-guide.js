@@ -4,13 +4,30 @@
     var sidebarToggle = document.getElementById('sidebar-toggle');
     var btnExportPdf = document.getElementById('btn-export-pdf');
     var commitsContainer = document.getElementById('commits-container');
-    var commitsPagination = document.getElementById('commits-pagination');
+    var commitsLoading = document.getElementById('commits-loading');
+    var commitsEnd = document.getElementById('commits-end');
     var navItems = document.querySelectorAll('.nav-item[data-target]');
 
-    var currentPage = 1;
-    var perPage = 20;
-    var totalCommits = 0;
+    var currentSkip = 0;
+    var loadLimit = 20;
+    var isLoading = false;
+    var hasMore = true;
     var isExporting = false;
+    var allCommits = [];
+
+    function initSidebarToggle() {
+        var sectionTitles = document.querySelectorAll('.nav-section-title');
+        sectionTitles.forEach(function (title) {
+            title.addEventListener('click', function () {
+                var targetId = this.getAttribute('data-toggle');
+                var targetNav = document.getElementById(targetId);
+                if (!targetNav) return;
+
+                this.classList.toggle('collapsed');
+                targetNav.classList.toggle('collapsed');
+            });
+        });
+    }
 
     function initNavigation() {
         navItems.forEach(function (item) {
@@ -20,12 +37,10 @@
                 var targetEl = document.getElementById(targetId);
                 if (!targetEl) return;
 
-                contentArea.scrollTo({
-                    top: targetEl.offsetTop - contentArea.offsetTop - 20,
-                    behavior: 'smooth'
-                });
+                targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-                setActiveNav(this);
+                navItems.forEach(function (n) { n.classList.remove('active'); });
+                this.classList.add('active');
 
                 if (window.innerWidth <= 768 && sidebar.classList.contains('active')) {
                     sidebar.classList.remove('active');
@@ -34,155 +49,155 @@
         });
     }
 
-    function setActiveNav(activeItem) {
-        navItems.forEach(function (item) {
-            item.classList.remove('active');
-        });
-        if (activeItem) {
-            activeItem.classList.add('active');
-            var subItems = document.querySelectorAll('.nav-sub-item[data-target="' + activeItem.getAttribute('data-target') + '"]');
-            subItems.forEach(function (sub) {
-                sub.classList.add('active');
-            });
-            var mainItems = document.querySelectorAll('.nav-item:not(.nav-sub-item)[data-target="' + activeItem.getAttribute('data-target') + '"]');
-            mainItems.forEach(function (main) {
-                main.classList.add('active');
-            });
-        }
-    }
-
     function initScrollSpy() {
         if (!contentArea) return;
-
-        contentArea.addEventListener('scroll', function () {
-            var sections = document.querySelectorAll('.content-section');
-            var scrollTop = contentArea.scrollTop;
-            var currentSection = null;
-
-            sections.forEach(function (section) {
-                var sectionTop = section.offsetTop - contentArea.offsetTop - 40;
-                if (scrollTop >= sectionTop) {
-                    currentSection = section;
+        var observer = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+                if (entry.isIntersecting) {
+                    var targetId = entry.target.id;
+                    navItems.forEach(function (n) { n.classList.remove('active'); });
+                    var matching = document.querySelectorAll('.nav-item[data-target="' + targetId + '"]');
+                    matching.forEach(function (m) { m.classList.add('active'); });
                 }
             });
+        }, {
+            root: null,
+            rootMargin: '-80px 0px -60% 0px',
+            threshold: 0
+        });
 
-            if (currentSection) {
-                var targetId = currentSection.id;
-                navItems.forEach(function (item) {
-                    item.classList.remove('active');
-                });
-                var matchingItems = document.querySelectorAll('.nav-item[data-target="' + targetId + '"]');
-                matchingItems.forEach(function (item) {
-                    item.classList.add('active');
-                });
+        var sections = document.querySelectorAll('.content-section');
+        sections.forEach(function (sec) {
+            observer.observe(sec);
+        });
+    }
+
+    function initInfiniteScroll() {
+        window.addEventListener('scroll', function () {
+            if (isLoading || !hasMore) return;
+
+            var scrollBottom = window.innerHeight + window.scrollY;
+            var docHeight = document.documentElement.scrollHeight;
+
+            if (scrollBottom >= docHeight - 400) {
+                loadCommits();
             }
         });
     }
 
-    function loadCommits(page) {
-        currentPage = page || 1;
+    function loadCommits() {
+        if (isLoading || !hasMore) return;
 
-        commitsContainer.innerHTML = '<div class="commits-loading">加载中...</div>';
+        isLoading = true;
+        commitsLoading.style.display = 'flex';
 
         var xhr = new XMLHttpRequest();
-        xhr.open('GET', '/dev-guide/api/commits?page=' + currentPage + '&per_page=' + perPage, true);
+        xhr.open('GET', '/dev-guide/api/commits?skip=' + currentSkip + '&limit=' + loadLimit, true);
         xhr.setRequestHeader('Content-Type', 'application/json');
         xhr.onreadystatechange = function () {
             if (xhr.readyState !== 4) return;
 
+            isLoading = false;
+            commitsLoading.style.display = 'none';
+
             if (xhr.status !== 200) {
-                commitsContainer.innerHTML = '<div class="commits-error">无法加载开发记录，请稍后重试</div>';
                 return;
             }
 
             try {
                 var data = JSON.parse(xhr.responseText);
-                if (data.status !== 'ok') {
-                    commitsContainer.innerHTML = '<div class="commits-error">无法加载开发记录</div>';
-                    return;
-                }
+                if (data.status !== 'ok') return;
 
-                totalCommits = data.total;
-                renderCommits(data.commits);
-                renderPagination(data.page, data.per_page, data.total);
+                hasMore = data.has_more;
+                currentSkip += data.commits.length;
+
+                data.commits.forEach(function (c) {
+                    allCommits.push(c);
+                });
+
+                renderTimeline();
             } catch (e) {
-                commitsContainer.innerHTML = '<div class="commits-error">数据解析失败</div>';
+                // ignore parse errors
             }
         };
         xhr.onerror = function () {
-            commitsContainer.innerHTML = '<div class="commits-error">网络异常，请稍后重试</div>';
+            isLoading = false;
+            commitsLoading.style.display = 'none';
         };
         xhr.send();
     }
 
-    function renderCommits(commits) {
-        if (!commits || commits.length === 0) {
-            commitsContainer.innerHTML = '<div class="commits-empty">暂无开发记录</div>';
-            return;
-        }
+    function renderTimeline() {
+        var grouped = {};
+        allCommits.forEach(function (c) {
+            var year = c.year || 'unknown';
+            if (!grouped[year]) grouped[year] = {};
+            var month = c.month || 'unknown';
+            if (!grouped[year][month]) grouped[year][month] = [];
+            grouped[year][month].push(c);
+        });
 
         var html = '';
-        commits.forEach(function (commit) {
-            var timeStr = commit.time || '';
-            if (timeStr.length > 19) {
-                timeStr = timeStr.substring(0, 19);
-            }
-            html += '<div class="commit-item">';
-            html += '<div class="commit-header">';
-            html += '<span class="commit-time"><i class="bx bx-time-five"></i> ' + escapeHtml(timeStr) + '</span>';
-            html += '<span class="commit-author"><i class="bx bx-user"></i> ' + escapeHtml(commit.author) + '</span>';
+        var years = Object.keys(grouped).sort().reverse();
+
+        years.forEach(function (year) {
+            html += '<div class="timeline-year">';
+            html += '<div class="timeline-year-header" onclick="this.classList.toggle(\'collapsed\'); this.nextElementSibling.classList.toggle(\'collapsed\')">';
+            html += '<i class=\'bx bx-calendar\'></i> ' + escapeHtml(year) + ' 年';
+            html += ' <span style="font-size:12px;font-weight:400;opacity:0.8">(' + countYearCommits(grouped[year]) + ' 条记录)</span>';
+            html += '<i class=\'bx bx-chevron-down toggle-icon\'></i>';
             html += '</div>';
-            html += '<div class="commit-message">' + escapeHtml(commit.message) + '</div>';
-            html += '</div>';
+            html += '<div class="timeline-year-content">';
+
+            var months = Object.keys(grouped[year]).sort().reverse();
+            months.forEach(function (month) {
+                var monthNames = ['', '一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'];
+                var monthLabel = monthNames[parseInt(month)] || month + '月';
+
+                html += '<div class="timeline-month">';
+                html += '<div class="timeline-month-header" onclick="this.classList.toggle(\'collapsed\'); this.nextElementSibling.classList.toggle(\'collapsed\')">';
+                html += '<i class=\'bx bx-calendar-event\'></i> ' + escapeHtml(monthLabel);
+                html += ' <span style="font-size:11px;font-weight:400;opacity:0.7">(' + grouped[year][month].length + ' 条)</span>';
+                html += '<i class=\'bx bx-chevron-down toggle-icon\'></i>';
+                html += '</div>';
+                html += '<div class="timeline-month-content">';
+
+                grouped[year][month].forEach(function (c) {
+                    var timeStr = c.time || '';
+                    if (timeStr.length > 19) timeStr = timeStr.substring(0, 19);
+                    html += '<div class="commit-item">';
+                    html += '<div class="commit-icon"><i class=\'bx bx-git-commit\'></i></div>';
+                    html += '<div class="commit-info">';
+                    html += '<div class="commit-message">' + escapeHtml(c.message) + '</div>';
+                    html += '<div class="commit-meta">';
+                    html += '<span><i class=\'bx bx-time-five\'></i> ' + escapeHtml(timeStr) + '</span>';
+                    html += '<span><i class=\'bx bx-user\'></i> ' + escapeHtml(c.author) + '</span>';
+                    html += '</div>';
+                    html += '</div>';
+                    html += '</div>';
+                });
+
+                html += '</div></div>';
+            });
+
+            html += '</div></div>';
         });
 
         commitsContainer.innerHTML = html;
+
+        if (!hasMore) {
+            commitsEnd.style.display = 'block';
+        } else {
+            commitsEnd.style.display = 'none';
+        }
     }
 
-    function renderPagination(page, perPage, total) {
-        if (!commitsPagination) return;
-
-        var totalPages = Math.ceil(total / perPage);
-        if (totalPages <= 1) {
-            commitsPagination.innerHTML = '';
-            return;
-        }
-
-        var html = '';
-
-        html += '<button class="page-btn" data-page="1"' + (page <= 1 ? ' disabled' : '') + '><i class="bx bx-chevrons-left"></i></button>';
-        html += '<button class="page-btn" data-page="' + (page - 1) + '"' + (page <= 1 ? ' disabled' : '') + '><i class="bx bx-chevron-left"></i></button>';
-
-        var startPage = Math.max(1, page - 2);
-        var endPage = Math.min(totalPages, page + 2);
-
-        if (startPage > 1) {
-            html += '<span class="page-ellipsis">...</span>';
-        }
-
-        for (var i = startPage; i <= endPage; i++) {
-            html += '<button class="page-btn' + (i === page ? ' active' : '') + '" data-page="' + i + '">' + i + '</button>';
-        }
-
-        if (endPage < totalPages) {
-            html += '<span class="page-ellipsis">...</span>';
-        }
-
-        html += '<button class="page-btn" data-page="' + (page + 1) + '"' + (page >= totalPages ? ' disabled' : '') + '><i class="bx bx-chevron-right"></i></button>';
-        html += '<button class="page-btn" data-page="' + totalPages + '"' + (page >= totalPages ? ' disabled' : '') + '><i class="bx bx-chevrons-right"></i></button>';
-
-        commitsPagination.innerHTML = html;
-
-        var pageButtons = commitsPagination.querySelectorAll('.page-btn[data-page]');
-        pageButtons.forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                if (this.disabled) return;
-                var p = parseInt(this.getAttribute('data-page'));
-                if (p >= 1 && p <= totalPages) {
-                    loadCommits(p);
-                }
-            });
+    function countYearCommits(yearData) {
+        var count = 0;
+        Object.keys(yearData).forEach(function (month) {
+            count += yearData[month].length;
         });
+        return count;
     }
 
     function initExportPdf() {
@@ -195,15 +210,13 @@
             btnExportPdf.classList.add('loading');
             var spanEl = btnExportPdf.querySelector('span');
             var originalText = spanEl ? spanEl.textContent : '';
-            if (spanEl) spanEl.textContent = '正在生成PDF...';
+            if (spanEl) spanEl.textContent = '正在生成...';
 
             var xhr = new XMLHttpRequest();
             xhr.open('GET', '/dev-guide/api/export-pdf', true);
             xhr.responseType = 'blob';
             xhr.onreadystatechange = function () {
-                if (xhr.readyState !== 4) {
-                    return;
-                }
+                if (xhr.readyState !== 4) return;
 
                 isExporting = false;
                 btnExportPdf.classList.remove('loading');
@@ -243,7 +256,7 @@
         });
     }
 
-    function initSidebarToggle() {
+    function initMobileSidebar() {
         if (!sidebarToggle || !sidebar) return;
 
         sidebarToggle.addEventListener('click', function () {
@@ -268,11 +281,13 @@
     }
 
     function init() {
+        initSidebarToggle();
         initNavigation();
         initScrollSpy();
+        initInfiniteScroll();
         initExportPdf();
-        initSidebarToggle();
-        loadCommits(1);
+        initMobileSidebar();
+        loadCommits();
     }
 
     if (document.readyState === 'loading') {
