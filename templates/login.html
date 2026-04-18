@@ -4,303 +4,773 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>德育AI智能系统 - 登录</title>
-    <!-- 引入 Bootstrap CSS -->
     <link href="/css/bootstrap.min.css" rel="stylesheet">
     <link href="/css/boxicons-local.css" rel="stylesheet">
-    <!-- 自定义样式 -->
     <style>
-        body {
+        * {
             margin: 0;
             padding: 0;
-            height: 100vh;
-            overflow: hidden;
-            position: relative;
-            background-image: url('/img/backgrounds/bg01.jpg');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
+            box-sizing: border-box;
         }
-        
-        .login-wrapper {
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            min-height: 100vh;
             display: flex;
-            align-items: center; /* 垂直居中 */
-            justify-content: center; /* 水平居中 */
-            height: 100vh;
-            position: relative;
-            z-index: 1;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-attachment: fixed;
+            padding: 20px;
         }
-        
-        .login-container {
-            /* 设置为三行布局 */
-            max-width: 800px;
-            width: 90%;
-            padding: 1.5rem 2rem;
-            /* 透明度改为15% */
-            background-color: rgba(255, 255, 255, 0.35);
-            border-radius: 10px;
-            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.35);
-            backdrop-filter: blur(8px);
-            /* 位置保持在上方 */
-            transform: translateY(calc(40vh - 120px));
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 420px;
+            padding: 48px 40px;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .logo-wrapper {
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: space-between;
-            min-height: 250px;
-        }
-        
-        .login-header-section {
-            display: flex;
-            align-items: center;
             justify-content: center;
-            flex-wrap: wrap; /* 允许在需要时换行 */
+            margin-bottom: 24px;
         }
-        
-        .login-logo {
-            align-items: center;
-            width: 180px;
-            margin-right: 6rem; /* 增加右侧间距 */
-            flex-shrink: 0; /* 防止logo缩小 */
-            padding-right: 1rem; /* 添加额外右侧内边距 */
-            position: relative; /* 为伪元素定位 */
-        }
-        
-        .login-logo img {
-            max-width: 200%;
+
+        .logo-wrapper img {
+            width: 160px;
             height: auto;
-            transform: scale(0.85); /* 稍微缩小图片避免重叠 */
-            transform-origin: left center; /* 从左侧开始缩放 */
-            margin-right: 1rem; /* 额外的间距 */
+            margin-bottom: 20px;
         }
-        
-        .login-header {
-            margin-bottom: 0;
-            flex-grow: 1; /* 允许标题区域扩展 */
-            min-width: 200px; /* 确保标题有足够空间 */
-            padding-left: 1rem; /* 添加左侧内边距 */
-        }
-        
-        .login-header h1 {
-            color: #dc3545;
+
+        .logo-wrapper h1 {
+            font-size: 28px;
             font-weight: 600;
-            font-size: 1.8rem;
-            margin-bottom: 0;
-            
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
-        
-        .login-form-section {
+
+        .system-title {
+            font-size: 14px;
+            color: #666;
+            margin-top: 8px;
+        }
+
+        .role-switcher {
             display: flex;
-            align-items: flex-end;
-            width: 100%;
-            margin-bottom: 1.5rem;
-            justify-content: center;
+            background: #f0f2f5;
+            border-radius: 10px;
+            padding: 4px;
+            margin-bottom: 28px;
             position: relative;
-            padding-top: 1rem;
         }
-        
-        .form-group {
-            margin-right: 1rem;
-            margin-bottom: 0;
-            flex: 0 0 auto;
-            width: 200px;
+
+        .role-switcher-indicator {
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            width: calc(50% - 4px);
+            height: calc(100% - 8px);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
         }
-        
-        .form-control {
-            background-color: rgba(255, 255, 255, 0.15);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: #dc3545;
+
+        .role-switcher-indicator.parent-active {
+            transform: translateX(100%);
         }
-        
-        .form-control::placeholder {
-            color: rgba(26, 95, 180, 0.6);
-        }
-        
-        .form-control:focus {
-            background-color: rgba(255, 255, 255, 0.25);
-            border-color: rgba(26, 95, 180, 0.5);
-            box-shadow: 0 0 0 0.25rem rgba(26, 95, 180, 0.1);
-            color: #dc3545;
-        }
-        
-        .form-label {
-            color: #ffffff;
-            font-size: 0.9rem;
-            font-weight: bold;
-            
-        }
-        
-        .btn-login {
-            background-color: rgba(26, 95, 180, 0.8);
+
+        .role-btn {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 10px 0;
             border: none;
-            min-width: 80px;
-            height: 38px;
+            background: none;
+            font-size: 15px;
+            font-weight: 500;
+            color: #666;
+            cursor: pointer;
+            position: relative;
+            z-index: 1;
+            transition: color 0.3s ease;
+            border-radius: 8px;
+        }
+
+        .role-btn i {
+            font-size: 18px;
+        }
+
+        .role-btn.active {
             color: #fff;
         }
-        
-        .btn-login:hover {
-            background-color: rgba(26, 95, 180, 1);
+
+        .form-group {
+            margin-bottom: 24px;
         }
-        
-        .alert {
-            margin-bottom: 1rem;
-            background-color: rgba(220, 53, 69, 0.7);
-            border-color: rgba(220, 53, 69, 0.3);
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper i {
             position: absolute;
-            top: -40px;
-            left: 0;
-            right: 0;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+            font-size: 18px;
         }
-        
-        .copyright-section {
+
+        .form-control {
             width: 100%;
-            text-align: center;
-            margin-top: auto;
-            padding-top: 1rem;
+            padding: 12px 14px 12px 44px;
+            font-size: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            background: #fafafa;
         }
-        
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-control::placeholder {
+            color: #aaa;
+        }
+
+        .form-select-login {
+            width: 100%;
+            padding: 12px 14px 12px 44px;
+            font-size: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            background: #fafafa;
+            appearance: none;
+            -webkit-appearance: none;
+            cursor: pointer;
+        }
+
+        .form-select-login:focus {
+            outline: none;
+            border-color: #667eea;
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .select-wrapper {
+            position: relative;
+        }
+
+        .select-wrapper i.bx-chevron-down {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+            font-size: 18px;
+            pointer-events: none;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: 500;
+            color: #fff;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
+        }
+
+        .btn-login:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .form-section {
+            display: none;
+        }
+
+        .form-section.active {
+            display: block;
+            animation: formFadeIn 0.35s ease-out;
+        }
+
+        @keyframes formFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .parent-error {
+            padding: 10px 14px;
+            border-radius: 8px;
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            font-size: 14px;
+            display: none;
+            align-items: center;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .parent-error.show {
+            display: flex;
+        }
+
+        .parent-error i {
+            font-size: 16px;
+        }
+
         .copyright {
-            color: #ffffff;
-            font-size: 0.8rem;
-            
+            text-align: center;
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid #eee;
+            font-size: 13px;
+            color: #999;
         }
-        
-        /* 在小屏幕上调整登录框位置和布局 */
-        @media (max-width: 768px) {
-            .login-container {
-                transform: translateY(calc(35vh - 100px));
-                padding: 1.2rem;
-                background-color: rgba(255, 255, 255, 0.1);
-                min-height: 320px;
-            }
-            
-            .login-header-section {
-                flex-direction: column;
-                text-align: center;
-                margin-bottom: 1.2rem;
-            }
-            
-            .login-logo {
-                width: 140px;
-                margin-right: 0;
-                margin-bottom: 0.8rem;
-            }
-            
-            .login-form-section {
-                flex-direction: column;
-                margin-bottom: 1.2rem;
-                padding-top: 0.5rem;
-            }
-            
-            .form-group {
-                margin-right: 0;
-                margin-bottom: 0.8rem;
-                width: 100%;
-            }
-            
-            .btn-login {
-                width: 100%;
-            }
-            
-            .copyright-section {
-                padding-top: 0.5rem;
-            }
-        }
-        
-        /* 添加样式 */
-        .timeout-message {
-            margin-bottom: 15px;
-        }
-        
+
         .alert {
-            padding: 10px 15px;
-            border-radius: 4px;
+            padding: 12px 16px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            font-size: 14px;
         }
-        
+
+        .alert i {
+            font-size: 18px;
+        }
+
         .alert-warning {
-            background-color: #fff3cd;
+            background: #fff3cd;
             border: 1px solid #ffeeba;
             color: #856404;
         }
-        
+
         .alert-danger {
-            background-color: #f8d7da;
+            background: #f8d7da;
             border: 1px solid #f5c6cb;
             color: #721c24;
         }
-        
-        .alert i {
-            margin-right: 8px;
-            font-size: 1.2em;
+
+        @media (max-width: 480px) {
+            .login-card {
+                padding: 32px 24px;
+            }
+
+            .logo-wrapper {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .logo-wrapper h1 {
+                font-size: 20px;
+            }
+
+            .role-btn {
+                font-size: 14px;
+                padding: 9px 0;
+            }
+
+            .dev-guide-btn {
+                top: 12px;
+                right: 12px;
+                padding: 8px 14px;
+                font-size: 13px;
+            }
+
+            .dev-guide-close {
+                width: 36px;
+                height: 36px;
+                font-size: 22px;
+            }
+        }
+
+        .dev-guide-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 18px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 24px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .dev-guide-btn:hover {
+            background: rgba(255, 255, 255, 0.35);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .dev-guide-btn i {
+            font-size: 18px;
+        }
+
+        .dev-guide-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .dev-guide-modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .dev-guide-modal-content {
+            position: relative;
+            width: calc(100% - 40px);
+            height: calc(100% - 40px);
+            background: #fff;
+            border-radius: 12px;
+            overflow: hidden;
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
+        }
+
+        .dev-guide-modal.active .dev-guide-modal-content {
+            transform: scale(1);
+        }
+
+        .dev-guide-close {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            z-index: 10000;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.6);
+            border: none;
+            border-radius: 50%;
+            color: #fff;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            line-height: 1;
+        }
+
+        .dev-guide-close:hover {
+            background: rgba(0, 0, 0, 0.8);
+            transform: scale(1.1);
+        }
+
+        .dev-guide-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
         }
     </style>
-    <script>
-        // 检查是否是由于会话超时导致的重定向
-        document.addEventListener('DOMContentLoaded', function() {
-            // 从URL参数中检查是否有超时标记
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.has('timeout') && urlParams.get('timeout') === 'true') {
-                // 不必添加额外的超时消息，模板已经处理了这个情况
-                console.log("检测到会话超时重定向");
-            }  
-        });
-    </script>
 </head>
 <body>
-    <div class="login-wrapper">
-        <div class="login-container">
-            <!-- 第一行：Logo和标题 -->
-            <div class="login-header-section">
-                <div class="login-logo">
-                    <img src="/img/logo.png" alt="泉州东海湾实验学校">
-                </div>
-                <div class="login-header">
-                    <h1>德育AI智能系统</h1>
-                </div>
+    <button class="dev-guide-btn" id="devGuideBtn">
+        <i class='bx bx-book-open'></i>
+        <span>开发指南</span>
+    </button>
+
+    <div class="dev-guide-modal" id="devGuideModal">
+        <div class="dev-guide-modal-content">
+            <button class="dev-guide-close" id="devGuideClose">&times;</button>
+            <iframe class="dev-guide-iframe" src="/dev-guide"></iframe>
+        </div>
+    </div>
+
+    <div class="login-card">
+        <div class="login-header">
+            <div class="logo-wrapper">
+                <img src="/img/logo.png" alt="泉州东海湾实验学校">
+                <h1>德育AI智能系统</h1>
             </div>
-            
-            <!-- 第二行：登录表单 -->
-            <form method="post" action="/login" class="login-form-section">
+        </div>
+
+        <div class="role-switcher">
+            <div class="role-switcher-indicator" id="switchIndicator"></div>
+            <button type="button" class="role-btn active" id="teacherTab" data-role="teacher">
+                <i class='bx bx-chalkboard'></i>
+                <span>教师端</span>
+            </button>
+            <button type="button" class="role-btn" id="parentTab" data-role="parent">
+                <i class='bx bx-home-heart'></i>
+                <span>家长端</span>
+            </button>
+        </div>
+
+        <div id="teacherForm" class="form-section active">
+            <form method="post" action="/login">
                 {% if timeout %}
-                <div class="timeout-message">
-                    <div class="alert alert-warning">
-                        <i class='bx bx-time'></i>
-                        <span>您的会话已超时，请重新登录</span>
-                    </div>
+                <div class="alert alert-warning">
+                    <i class='bx bx-time'></i>
+                    <span>您的会话已超时，请重新登录</span>
                 </div>
                 {% endif %}
 
                 {% if error %}
-                <div class="error-message">
-                    <div class="alert alert-danger">
-                        <i class='bx bx-error'></i>
-                        <span>{{ error }}</span>
-                    </div>
+                <div class="alert alert-danger">
+                    <i class='bx bx-error'></i>
+                    <span>{{ error }}</span>
                 </div>
                 {% endif %}
-                
+
                 <div class="form-group">
-                    <label for="username" class="form-label">用户名</label>
-                    <input type="text" class="form-control" id="username" name="username" required autofocus>
+                    <label for="username">用户名</label>
+                    <div class="input-wrapper">
+                        <i class='bx bx-user'></i>
+                        <input type="text" class="form-control" id="username" name="username" placeholder="请输入用户名" required autofocus>
+                    </div>
                 </div>
+
                 <div class="form-group">
-                    <label for="password" class="form-label">密码</label>
-                    <input type="password" class="form-control" id="password" name="password" required>
+                    <label for="password">密码</label>
+                    <div class="input-wrapper">
+                        <i class='bx bx-lock'></i>
+                        <input type="password" class="form-control" id="password" name="password" placeholder="请输入密码" required>
+                    </div>
                 </div>
-                <button type="submit" class="btn btn-login">登录</button>
+
+                <button type="submit" class="btn-login">登 录</button>
             </form>
-            
-            <!-- 第三行：版权信息 -->
-            <div class="copyright-section">
-                <div class="copyright">
-                    © 2025 青柠半夏
+        </div>
+
+        <div id="parentForm" class="form-section">
+            <div class="form-group">
+                <label for="p-grade">年级</label>
+                <div class="select-wrapper">
+                    <div class="input-wrapper">
+                        <i class='bx bx-book'></i>
+                        <select id="p-grade" class="form-select-login">
+                            <option value="">请选择年级</option>
+                        </select>
+                    </div>
+                    <i class='bx bx-chevron-down'></i>
                 </div>
             </div>
+
+            <div class="form-group">
+                <label for="p-class">班级</label>
+                <div class="select-wrapper">
+                    <div class="input-wrapper">
+                        <i class='bx bx-group'></i>
+                        <select id="p-class" class="form-select-login" disabled>
+                            <option value="">请先选择年级</option>
+                        </select>
+                    </div>
+                    <i class='bx bx-chevron-down'></i>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="p-name">学生姓名</label>
+                <div class="input-wrapper">
+                    <i class='bx bx-user'></i>
+                    <input type="text" class="form-control" id="p-name" placeholder="请输入学生姓名" maxlength="10">
+                </div>
+            </div>
+
+            <button type="button" class="btn-login" id="parentLoginBtn">
+                <span class="btn-text">查 询</span>
+                <span class="btn-loading" style="display:none;">
+                    <span class="spinner-border spinner-border-sm me-1"></span>查询中...
+                </span>
+            </button>
+
+            <div class="parent-error" id="parentError">
+                <i class='bx bx-error-circle'></i>
+                <span id="parentErrorMsg"></span>
+            </div>
+        </div>
+
+        <div class="copyright">
+            © 2025 青柠半夏
         </div>
     </div>
-    
-    <!-- 引入 Bootstrap JS -->
+
+    <script src="/js/libs/jquery.min.js"></script>
     <script src="/js/libs/bootstrap.bundle.min.js"></script>
+    <script>
+        (function() {
+            var devBtn = document.getElementById('devGuideBtn');
+            var devModal = document.getElementById('devGuideModal');
+            var devClose = document.getElementById('devGuideClose');
+
+            devBtn.addEventListener('click', function() {
+                devModal.classList.add('active');
+            });
+
+            devClose.addEventListener('click', function() {
+                devModal.classList.remove('active');
+            });
+
+            devModal.addEventListener('click', function(e) {
+                if (e.target === devModal) {
+                    devModal.classList.remove('active');
+                }
+            });
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && devModal.classList.contains('active')) {
+                    devModal.classList.remove('active');
+                }
+            });
+        })();
+
+        (function() {
+            var currentRole = 'teacher';
+            var gradesLoaded = false;
+
+            var $teacherTab = $('#teacherTab');
+            var $parentTab = $('#parentTab');
+            var $indicator = $('#switchIndicator');
+            var $teacherForm = $('#teacherForm');
+            var $parentForm = $('#parentForm');
+            var $pGrade = $('#p-grade');
+            var $pClass = $('#p-class');
+            var $pName = $('#p-name');
+            var $loginBtn = $('#parentLoginBtn');
+            var $parentError = $('#parentError');
+            var $parentErrorMsg = $('#parentErrorMsg');
+
+            $teacherTab.on('click', function() {
+                if (currentRole === 'teacher') return;
+                switchRole('teacher');
+            });
+
+            $parentTab.on('click', function() {
+                if (currentRole === 'parent') return;
+                switchRole('parent');
+            });
+
+            function switchRole(role) {
+                currentRole = role;
+
+                if (role === 'teacher') {
+                    $teacherTab.addClass('active');
+                    $parentTab.removeClass('active');
+                    $indicator.removeClass('parent-active');
+                    $teacherForm.addClass('active');
+                    $parentForm.removeClass('active');
+                    hideParentError();
+                } else {
+                    $parentTab.addClass('active');
+                    $teacherTab.removeClass('active');
+                    $indicator.addClass('parent-active');
+                    $parentForm.addClass('active');
+                    $teacherForm.removeClass('active');
+                    if (!gradesLoaded) {
+                        loadGrades();
+                    }
+                }
+            }
+
+            function loadGrades() {
+                $.get('/api/parent/grades')
+                    .done(function(data) {
+                        if (data.status === 'ok' && data.grades) {
+                            $pGrade.find('option:not(:first)').remove();
+                            data.grades.forEach(function(g) {
+                                $pGrade.append($('<option>').val(g).text(g));
+                            });
+                            gradesLoaded = true;
+                        }
+                    })
+                    .fail(function() {
+                        showParentError('网络异常，请稍后重试');
+                    });
+            }
+
+            $pGrade.on('change', function() {
+                var grade = $(this).val();
+                $pClass.find('option:not(:first)').remove();
+                $pClass.append($('<option>').val('').text('请选择班级'));
+
+                if (!grade) {
+                    $pClass.prop('disabled', true);
+                    return;
+                }
+
+                $pClass.prop('disabled', false);
+
+                $.get('/api/parent/classes', { grade: grade })
+                    .done(function(data) {
+                        if (data.status === 'ok' && data.classes) {
+                            data.classes.forEach(function(c) {
+                                $pClass.append($('<option>').val(c.id).text(c.class_name));
+                            });
+                        }
+                    })
+                    .fail(function() {
+                        showParentError('网络异常，请稍后重试');
+                    });
+            });
+
+            $loginBtn.on('click', function() {
+                var grade = $pGrade.val();
+                var classId = $pClass.val();
+                var name = $pName.val().trim();
+
+                hideParentError();
+
+                if (!grade) {
+                    showParentError('请选择年级');
+                    return;
+                }
+                if (!classId) {
+                    showParentError('请选择班级');
+                    return;
+                }
+                if (!name) {
+                    showParentError('请输入学生姓名');
+                    return;
+                }
+                if (name.length < 2 || name.length > 10) {
+                    showParentError('学生姓名应为2-10个字符');
+                    return;
+                }
+
+                setBtnLoading(true);
+
+                $.ajax({
+                    url: '/api/parent/verify',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        grade: grade,
+                        class_id: classId,
+                        student_name: name
+                    })
+                })
+                .done(function(data) {
+                    if (data.status === 'ok') {
+                        window.location.href = '/parent';
+                    } else {
+                        showParentError(data.message || '验证失败');
+                        setBtnLoading(false);
+                    }
+                })
+                .fail(function(xhr) {
+                    var msg = '网络异常，请稍后重试';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        msg = xhr.responseJSON.message;
+                    }
+                    showParentError(msg);
+                    setBtnLoading(false);
+                });
+            });
+
+            function setBtnLoading(loading) {
+                if (loading) {
+                    $loginBtn.prop('disabled', true);
+                    $loginBtn.find('.btn-text').hide();
+                    $loginBtn.find('.btn-loading').show();
+                } else {
+                    $loginBtn.prop('disabled', false);
+                    $loginBtn.find('.btn-text').show();
+                    $loginBtn.find('.btn-loading').hide();
+                }
+            }
+
+            function showParentError(msg) {
+                $parentErrorMsg.text(msg);
+                $parentError.addClass('show');
+            }
+
+            function hideParentError() {
+                $parentError.removeClass('show');
+            }
+
+            $pName.on('keypress', function(e) {
+                if (e.which === 13) {
+                    e.preventDefault();
+                    $loginBtn.trigger('click');
+                }
+            });
+        })();
+    </script>
 </body>
-</html> 
+</html>
